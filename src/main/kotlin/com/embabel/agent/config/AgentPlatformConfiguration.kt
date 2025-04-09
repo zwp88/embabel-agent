@@ -1,0 +1,93 @@
+/*
+ * Copyright 2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.embabel.agent.config
+
+import com.embabel.agent.ToolGroup
+import com.embabel.agent.ToolGroupMetadata
+import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.event.logging.LoggingAgenticEventListener
+import com.embabel.agent.shell.DefaultPromptProvider
+import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.agent.support.RegistryToolGroupResolver
+import com.embabel.common.textio.template.JinjavaTemplateRenderer
+import com.embabel.common.textio.template.TemplateRenderer
+import com.embabel.agent.toolgroups.WebScraperTools
+import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
+import com.embabel.agent.toolgroups.web.search.brave.BraveWebSearchService
+//import com.embabel.state.toolCallback
+//import com.embabel.services.web.JSoupWebCrawler
+//import com.embabel.services.WebScraperTools
+//import com.embabel.examples.marketing.braveWebSearchService
+import org.springframework.ai.tool.ToolCallbacks
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.shell.jline.PromptProvider
+import org.springframework.web.client.RestTemplate
+
+
+@Configuration
+class AgentPlatformConfiguration(
+) {
+
+    @Bean
+    fun templateRenderer(): TemplateRenderer = JinjavaTemplateRenderer()
+
+    @Bean
+    @ConditionalOnMissingBean(LoggingAgenticEventListener::class)
+    fun defaultLogger(): AgenticEventListener = LoggingAgenticEventListener()
+
+    @Bean
+    @ConditionalOnMissingBean(PromptProvider::class)
+    fun defaultPromptProvider(): PromptProvider = DefaultPromptProvider()
+
+    @Bean
+    fun restTemplate() = RestTemplate()
+
+    @Bean
+    fun webtoolsGroup(braveWebSearchService: BraveWebSearchService): ToolGroup {
+        val webSearch = ToolCallbacks.from(braveWebSearchService).toList()
+        val scraper = ToolCallbacks.from(WebScraperTools(JSoupWebCrawler(maxDepth = 3))).toList()
+        return ToolGroup(
+            metadata = ToolGroupMetadata(
+                role = ToolGroup.WEB,
+                artifact = "web-scraper",
+                provider = "Embabel",
+            ),
+            toolCallbacks = webSearch + scraper,
+        )
+    }
+
+
+//    @Bean
+//    fun astrologyToolGroup(): ToolGroup {
+//        return ToolGroup(
+//            metadata = ToolGroupMetadata(
+//                role = "astrology",
+//                artifact = "default-starman",
+//                provider = "Embabel",
+//            ),
+//            toolCallbacks = ToolCallbacks.from(horoscopeTools).toList()
+//        )
+//    }
+
+    @Bean
+    fun toolGroupResolver(toolGroups: List<ToolGroup>): ToolGroupResolver = RegistryToolGroupResolver(
+        name = "RegistryToolGroupResolver",
+        toolGroups
+    )
+
+}
