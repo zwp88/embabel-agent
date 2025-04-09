@@ -18,8 +18,6 @@ package com.embabel.agent
 import com.embabel.agent.support.SerializableAction
 import com.embabel.common.util.kotlin.loggerFor
 import com.embabel.plan.goap.*
-import com.embabel.textio.graph.schema.NodeDefinition
-import com.embabel.textio.graph.schema.PropertyDefinition
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -176,15 +174,15 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
     val transitions: List<Transition>
     val qos: Qos
 
-    override val nodeTypes: Collection<NodeDefinition>
+    override val schemaTypes: Collection<SchemaType>
         get() =
             (inputs + outputs)
                 .mapNotNull {
                     referencedType(it, this)
                 }
 
-    private fun referencedType(binding: IoBinding, action: Action): NodeDefinition? {
-        var type = NodeDefinition(name = binding.type)
+    private fun referencedType(binding: IoBinding, action: Action): SchemaType? {
+        var type = SchemaType(name = binding.type)
         for (prop in action.referencedInputProperties(binding.name)) {
             loggerFor<Action>().debug("Discovered property {}", prop)
             type = type.withProperty(PropertyDefinition(name = prop))

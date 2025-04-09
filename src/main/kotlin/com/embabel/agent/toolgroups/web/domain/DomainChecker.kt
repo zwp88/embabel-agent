@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups
+package com.embabel.agent.toolgroups.web.domain
 
 
-import com.embabel.common.util.kotlin.loggerFor
 import com.embabel.agent.toolgroups.web.crawl.ContentSavingPageHandler
 import com.embabel.agent.toolgroups.web.crawl.WebCrawler
+import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.stereotype.Service
 import java.net.InetAddress

@@ -15,6 +15,10 @@
  */
 package com.embabel.agent.config
 
+//import com.embabel.state.toolCallback
+//import com.embabel.services.web.JSoupWebCrawler
+//import com.embabel.services.WebScraperTools
+//import com.embabel.examples.marketing.braveWebSearchService
 import com.embabel.agent.ToolGroup
 import com.embabel.agent.ToolGroupMetadata
 import com.embabel.agent.event.AgenticEventListener
@@ -22,15 +26,11 @@ import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.support.RegistryToolGroupResolver
+import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
+import com.embabel.agent.toolgroups.web.domain.WebScraperTools
+import com.embabel.agent.toolgroups.web.search.brave.BraveWebSearchService
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
-import com.embabel.agent.toolgroups.WebScraperTools
-import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
-import com.embabel.agent.toolgroups.web.search.brave.BraveWebSearchService
-//import com.embabel.state.toolCallback
-//import com.embabel.services.web.JSoupWebCrawler
-//import com.embabel.services.WebScraperTools
-//import com.embabel.examples.marketing.braveWebSearchService
 import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean

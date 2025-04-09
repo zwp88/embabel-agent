@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.textio.graph.schema
+package com.embabel.agent
 
-data class NodeDefinition(
+/**
+ * Simple data type
+ */
+data class SchemaType(
     val name: String,
     val properties: List<PropertyDefinition> = emptyList(),
 ) {
 
     fun withProperty(
-        propertyDefinition: PropertyDefinition,
-    ): NodeDefinition {
-        return copy(properties = properties + properties)
+        property: PropertyDefinition,
+    ): SchemaType {
+        return copy(properties = properties + property)
     }
 }
 
-class PropertyDefinition(
+data class PropertyDefinition(
     val name: String,
     val type: String = "string",
     val description: String? = name,
-) {
-    override fun toString(): String {
-        return "PropertyDefinition(name='$name', type='$type', description=$description)"
-    }
-}
+)

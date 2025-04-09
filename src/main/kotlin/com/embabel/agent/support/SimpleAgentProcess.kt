@@ -19,7 +19,6 @@ import com.embabel.agent.*
 import com.embabel.agent.event.*
 import com.embabel.plan.goap.AStarGoapPlanner
 import com.embabel.plan.goap.WorldStateDeterminer
-import com.embabel.textio.graph.schema.NodeDefinition
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -138,7 +137,7 @@ internal class SimpleAgentProcess(
     }
 
     private fun executeAction(action: Action) {
-        val outputTypes: Map<String, NodeDefinition> =
+        val outputTypes: Map<String, SchemaType> =
             action.outputs.associateBy({ it.name }, { agent.findDataType(it.type) })
         logger.debug(
             "⚙️ Process {} executing action {}: outputTypes={}",

@@ -24,7 +24,6 @@ import com.embabel.agent.dsl.TransformationPayload
 import com.embabel.agent.dsl.expandInputBindings
 import com.embabel.agent.primitive.LlmOptions
 import com.embabel.agent.support.AbstractAction
-import com.embabel.textio.graph.schema.NodeDefinition
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
@@ -254,7 +253,7 @@ private class MultiTransformer<O : Any>(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: com.embabel.agent.Action
     ): ActionStatus = ActionRunner.execute {
         val inputValues: List<Any> = inputs.map {

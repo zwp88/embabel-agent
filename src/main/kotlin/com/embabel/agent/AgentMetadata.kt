@@ -16,7 +16,6 @@
 package com.embabel.agent
 
 import com.embabel.common.core.types.HasInfoString
-import com.embabel.textio.graph.schema.NodeDefinition
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 interface Conditions {
@@ -75,7 +74,7 @@ private data class AgentMetadataImpl(
     override val actions: List<Action>,
     override val goals: Set<Goal>,
     override val conditions: List<Condition>,
-    override val nodeTypes: Collection<NodeDefinition> = emptyList(),
+    override val schemaTypes: Collection<SchemaType> = emptyList(),
 ) : AgentMetadata
 
 interface AgentFactory {

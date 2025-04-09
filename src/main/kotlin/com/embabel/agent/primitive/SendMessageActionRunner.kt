@@ -15,11 +15,7 @@
  */
 package com.embabel.agent.primitive
 
-import com.embabel.agent.Action
-import com.embabel.agent.ActionRunner
-import com.embabel.agent.ActionStatus
-import com.embabel.agent.ProcessContext
-import com.embabel.textio.graph.schema.NodeDefinition
+import com.embabel.agent.*
 
 // TODO Jinja utils
 data class SendMessageActionRunner(
@@ -32,7 +28,7 @@ data class SendMessageActionRunner(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action,
     ): ActionStatus = ActionRunner.execute {
         TODO("Not yet implemented")

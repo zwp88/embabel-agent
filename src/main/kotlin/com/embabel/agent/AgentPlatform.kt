@@ -23,7 +23,6 @@ import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.testing.DummyGoalRanker
 import com.embabel.common.util.kotlin.loggerFor
-import com.embabel.textio.graph.schema.NodeDefinition
 import java.util.function.Function
 
 /**
@@ -157,8 +156,8 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
         parentAgentProcess: AgentProcess,
     ): AgentProcess
 
-    override val nodeTypes: Collection<NodeDefinition>
-        get() = agents().flatMap { it.nodeTypes }.distinct()
+    override val schemaTypes: Collection<SchemaType>
+        get() = agents().flatMap { it.schemaTypes }.distinct()
 
     override val domainTypes: Collection<Class<*>>
         get() = agents().flatMap { it.domainTypes }.distinct()

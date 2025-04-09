@@ -15,8 +15,8 @@
  */
 package com.embabel.agent
 
-import com.embabel.agent.primitive.*
-import com.embabel.textio.graph.schema.NodeDefinition
+import com.embabel.agent.primitive.ExpressionActionRunner
+import com.embabel.agent.primitive.QueryActionRunner
 import com.embabel.util.time
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -40,7 +40,7 @@ interface ActionRunner {
      */
     fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action,
     ): ActionStatus
 

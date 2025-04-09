@@ -16,7 +16,6 @@
 package com.embabel.agent
 
 import com.embabel.plan.goap.GoapSystem
-import com.embabel.textio.graph.schema.NodeDefinition
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
@@ -33,7 +32,7 @@ import org.springframework.ai.tool.ToolCallback
  * @param toolGroups The tool groups the agent can use
  * @param conditions Well known conditions that can be referenced by actions
  * @param actions The actions the agent can use
- * @param nodeTypes Data types used in this agent
+ * @param schemaTypes Data types used in this agent
  */
 data class Agent(
     override val name: String,
@@ -44,7 +43,7 @@ data class Agent(
     override val conditions: List<Condition> = emptyList(),
     override val actions: List<Action>,
     override val goals: Set<Goal>,
-    override val nodeTypes: Collection<NodeDefinition> = inferDataTypes(
+    override val schemaTypes: Collection<SchemaType> = inferDataTypes(
         agentName = name,
         defaultDataTypes = emptyList(),
         actions = actions,
@@ -57,8 +56,8 @@ data class Agent(
     fun withSingleGoal(goal: Goal): Agent =
         copy(goals = setOf(goal))
 
-    fun findDataType(name: String): NodeDefinition {
-        return nodeTypes.find { it.name == name }
+    fun findDataType(name: String): SchemaType {
+        return schemaTypes.find { it.name == name }
             ?: error("Data type $name not found in agent $name")
     }
 
@@ -74,20 +73,20 @@ data class Agent(
 
         fun inferDataTypes(
             agentName: String,
-            defaultDataTypes: List<NodeDefinition>,
+            defaultDataTypes: List<SchemaType>,
             actions: List<Action>
-        ): List<NodeDefinition> {
+        ): List<SchemaType> {
             // Merge properties from multiple type references
             for (action in actions) {
                 logger.debug(
                     "Action {} has types {}, inputBinding={}",
                     action.name,
-                    action.nodeTypes,
+                    action.schemaTypes,
                     action.inputs,
                 )
             }
             val types = (defaultDataTypes + actions
-                .flatMap { it.nodeTypes }
+                .flatMap { it.schemaTypes }
                 .groupBy { it.name }
                 .mapValues { (_, types) ->
                     types.reduce { acc, type ->

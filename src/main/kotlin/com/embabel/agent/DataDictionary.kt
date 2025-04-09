@@ -15,17 +15,16 @@
  */
 package com.embabel.agent
 
-import com.embabel.textio.graph.schema.NodeDefinition
-
 /**
  * Implemented by types that reference data types
  */
 interface DataDictionary {
 
     /**
-     * Data types referenced by this component
+     * Schema types referenced by this component.
+     * These are not backed by JVM objects.
      */
-    val nodeTypes: Collection<NodeDefinition>
+    val schemaTypes: Collection<SchemaType>
 
     /**
      * Referenced domain types.

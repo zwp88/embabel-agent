@@ -21,7 +21,6 @@ import com.embabel.agent.primitive.LlmOptions
 import com.embabel.agent.support.AbstractAction
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
-import com.embabel.textio.graph.schema.NodeDefinition
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.Modifier
 
@@ -337,7 +336,7 @@ class Transformer<I, O>(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action
     ): ActionStatus = ActionRunner.execute {
         val input = processContext.getValue(inputVarName, inputClass.simpleName) as I
@@ -411,7 +410,7 @@ class ForkJoin<I, O : Any>(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action
     ): ActionStatus = ActionRunner.execute {
         // TODO get variable?
@@ -482,7 +481,7 @@ class Aggregator<I, O>(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action
     ): ActionStatus = ActionRunner.execute {
         val input = processContext.blackboard.entries.filterIsInstance(inputClass)
@@ -543,7 +542,7 @@ class Consumer<I>(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action
     ): ActionStatus = ActionRunner.execute {
         val input = processContext.getValue(inputVarName, inputClass.simpleName) as I
@@ -597,7 +596,7 @@ class Supplier<O>(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action
     ): ActionStatus = ActionRunner.execute {
         val output = block(SupplyPayload(processContext = processContext, action = this, outputClass = outputClass))

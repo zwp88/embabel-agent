@@ -16,7 +16,6 @@
 package com.embabel.agent.primitive
 
 import com.embabel.agent.*
-import com.embabel.textio.graph.schema.NodeDefinition
 import com.embabel.util.time
 import java.time.Duration
 
@@ -30,7 +29,7 @@ data class QueryActionRunner(
 
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, NodeDefinition>,
+        outputTypes: Map<String, SchemaType>,
         action: Action,
     ): ActionStatus {
         val (_, ms) = time {
