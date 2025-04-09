@@ -116,7 +116,7 @@ class AgentMetadataReader {
             }
         }
         if (goalGetters.isEmpty()) {
-            logger.info("No goal getters found in {}", type)
+            logger.debug("No goal getters found in {}", type)
         }
         return goalGetters
     }

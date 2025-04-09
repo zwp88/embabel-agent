@@ -114,8 +114,8 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
     fun deploy(agentMetadata: AgentMetadata): AgentPlatform {
         deploy(
             Agent(
-                name = "x",
-                description = "yz",
+                name = agentMetadata.name,
+                description = agentMetadata.name,
                 actions = agentMetadata.actions,
                 goals = agentMetadata.goals,
                 conditions = agentMetadata.conditions,

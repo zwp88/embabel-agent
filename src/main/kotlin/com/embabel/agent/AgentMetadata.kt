@@ -29,15 +29,6 @@ interface GoalsContributor {
     val goals: Set<Goal>
 }
 
-interface GoalContributor : GoalsContributor {
-
-    val goal: Goal
-
-    override val goals: Set<Goal>
-        get() = setOf(goal)
-
-}
-
 /**
  * Metadata of an agent, along with ability to instantiate an agent.
  */
@@ -52,7 +43,7 @@ interface AgentMetadata : GoalsContributor, Conditions, DataDictionary, HasInfoS
         get() = actions.flatMap { it.domainTypes }.distinct()
 
     override fun infoString(verbose: Boolean?): String =
-        "Agent %s\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdata types: %s".format(
+        "%s:\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdata types: %s".format(
             name,
             goals.joinToString("\n\t\t") { "${it.name} - pre=${it.preconditions} value=${it.value}" },
             actions.joinToString("\n\t\t") { "${it.name} - pre=${it.preconditions} post=${it.effects}" },
