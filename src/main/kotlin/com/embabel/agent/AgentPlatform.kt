@@ -21,7 +21,7 @@ import com.embabel.agent.event.GoalChoiceRequestEvent
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.spi.ToolGroupResolver
-import com.embabel.agent.support.DummyGoalRanker
+import com.embabel.agent.testing.DummyGoalRanker
 import com.embabel.common.util.kotlin.loggerFor
 import com.embabel.textio.graph.schema.NodeDefinition
 import java.util.function.Function

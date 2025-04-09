@@ -20,7 +20,6 @@ import com.embabel.agent.GoalResult
 import com.embabel.agent.ProcessOptions
 import com.embabel.agent.Verbosity
 import com.embabel.agent.domain.HasContent
-import com.embabel.agent.primitive.LlmOptions
 import com.embabel.util.AnsiColor
 import com.embabel.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -48,15 +47,6 @@ class ShellCommands(
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
-
-//    init {
-//        val amd = agentMetadataReader.createAgentMetadata(starNewsFinder)
-//        agentPlatform.deploy(amd!!)
-//
-//        agentPlatform.deploy(
-//            marketResearchAgent,
-//        )
-//    }
 
     @ShellMethod("List agents")
     fun agents(): String {

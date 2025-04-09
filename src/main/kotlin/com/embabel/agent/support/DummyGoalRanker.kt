@@ -14,26 +14,3 @@
  * limitations under the License.
  */
 package com.embabel.agent.support
-
-import com.embabel.agent.AgentMetadata
-import com.embabel.agent.UserInput
-import com.embabel.agent.spi.GoalRanker
-import com.embabel.agent.spi.GoalRanking
-import com.embabel.agent.spi.GoalRankings
-import kotlin.random.Random
-
-class DummyGoalRanker : GoalRanker {
-    private val random = Random(System.currentTimeMillis())
-
-    override fun rankGoals(
-        userInput: UserInput,
-        agentMetadata: AgentMetadata
-    ): GoalRankings {
-        return GoalRankings(agentMetadata.goals.map {
-            GoalRanking(
-                goal = it,
-                confidence = random.nextDouble(),
-            )
-        })
-    }
-}
