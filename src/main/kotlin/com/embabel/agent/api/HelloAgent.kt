@@ -18,6 +18,6 @@ package com.embabel.agent.api
 import com.embabel.common.core.SimpleVersioned
 
 fun helloAgent() {
-    val versioned = SimpleVersioned("agent", 1, "1")
+    val versioned = SimpleVersioned("agent", 1, "2")
     println("Hello Versioned ${versioned}")
 }
