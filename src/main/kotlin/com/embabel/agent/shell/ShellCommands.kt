@@ -53,6 +53,22 @@ class ShellCommands(
         return agentPlatform.infoString(verbose = true)
     }
 
+    @ShellMethod("List available tool groups")
+    fun tools(): String {
+        return agentPlatform.toolGroupResolver.availableToolGroups()
+            .map {
+                val tgr = agentPlatform.toolGroupResolver.resolveToolGroup(it.role)
+                return tgr.resolvedToolGroup?.let {
+                    "${it.metadata}: ${it.toolCallbacks.map { tc -> tc.toolDefinition.name() }}"
+                } ?: "Failure: ${tgr.failureMessage}"
+            }
+            .joinToString(
+                separator = "\n",
+                prefix = "\t",
+                postfix = "\n",
+            )
+    }
+
     /**
      * Example
      * execute "lynda is a scorpio. find news for her" -p -r

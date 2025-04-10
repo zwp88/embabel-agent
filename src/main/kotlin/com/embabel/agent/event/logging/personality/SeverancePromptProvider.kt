@@ -42,6 +42,17 @@ val LumonQuotes = listOf(
     kier("Render not my creation in miniature."),
     kier("Be content in my words, and dally not in the scholastic pursuits of lesser men."),
     kier("️No workplace shall be repurposed for slumber."),
+    character("9", "I was blind till you gave me Vision"),
+    character("9", "I was languid till you gave me Verve"),
+    character("9", "I was simple till you gave me Wit"),
+    character("9", "I was peevish till you gave me Cheer"),
+    character("9", "I was in vain till you gave me Humility"),
+    character("9", "I was cruel till you gave me Benevolence"),
+    character("9", "I was gawkish till you gave me Nimbleness"),
+    character("9", "I was false till you gave me Probity"),
+    character("9", "I was dim till you gave me Wiles"),
+    character("9", "I was Me till you gave me You"),
+    "I see Kier in you",
     kier(
         """
         And I shall whisper to ye dutiful through the ages.
