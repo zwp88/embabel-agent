@@ -20,7 +20,7 @@ import com.embabel.agent.GoalResult
 import com.embabel.agent.ProcessOptions
 import com.embabel.agent.Verbosity
 import com.embabel.agent.domain.HasContent
-import com.embabel.common.util.AnsiColor
+import com.embabel.agent.event.logging.personality.LumonColors
 import com.embabel.common.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.apache.commons.lang3.text.WordUtils
@@ -97,7 +97,7 @@ class ShellCommands(
                 showLlmResponses = showLlmResponses,
             )
         )
-        logger.info("Created process options: $processOptions".color(AnsiColor.CYAN))
+        logger.info("Created process options: $processOptions".color(LumonColors.Membrane))
         val result = agentPlatform.chooseAndAccomplishGoal(
             intent = intent,
             processOptions = processOptions
@@ -122,14 +122,14 @@ class ShellCommands(
             is GoalResult.Success -> {
                 if (result.output is HasContent) {
                     return WordUtils.wrap(result.output.text, 140).color(
-                        AnsiColor.BRIGHT_CYAN,
+                        LumonColors.Green,
                     ) + "\n"
                 }
 
                 return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(
                     result.output
                 ).color(
-                    AnsiColor.BRIGHT_CYAN
+                    LumonColors.Green
                 )
             }
         }

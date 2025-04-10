@@ -15,7 +15,6 @@
                                 */
 package com.embabel.agent
 
-import com.embabel.agent.primitive.ExpressionActionRunner
 import com.embabel.agent.primitive.QueryActionRunner
 import com.embabel.common.util.time
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -28,7 +27,6 @@ import java.time.Duration
     property = "type",
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = ExpressionActionRunner::class, name = "expression"),
     JsonSubTypes.Type(value = QueryActionRunner::class, name = "query"),
 )
 interface ActionRunner {

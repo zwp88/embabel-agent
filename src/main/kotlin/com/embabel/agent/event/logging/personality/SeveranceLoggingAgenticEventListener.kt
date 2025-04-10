@@ -40,7 +40,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ▐▌   ▐▌ ▐▌▐▌  ▐▌▐▌ ▐▌▐▌ ▝▜▌
         ▐▙▄▄▖▝▚▄▞▘▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌
 
-    """.trimIndent().color(hexToRgb(LumonMembrane)),
+    """.trimIndent().color(hexToRgb(LumonColors.Membrane)),
     goalChoiceRequestEventMessage = kier("Choosing goal based on {}"),
     goalChoiceMadeEventMessage = kier(
         """

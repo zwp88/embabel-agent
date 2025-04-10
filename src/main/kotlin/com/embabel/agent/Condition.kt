@@ -15,7 +15,6 @@
                                 */
 package com.embabel.agent
 
-import com.embabel.agent.primitive.ExpressionCondition
 import com.embabel.agent.primitive.PromptCondition
 import com.embabel.plan.goap.ConditionDetermination
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -31,7 +30,6 @@ typealias ZeroToOne = Double
     use = JsonTypeInfo.Id.DEDUCTION,
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = ExpressionCondition::class),
     JsonSubTypes.Type(value = PromptCondition::class),
 )
 interface Condition {

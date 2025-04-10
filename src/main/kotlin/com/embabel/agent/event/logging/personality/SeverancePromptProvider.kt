@@ -23,13 +23,17 @@ import org.springframework.context.annotation.Profile
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.stereotype.Service
 
-fun tyya(text: String) = "📙 ${"The You You Are".bold()} ${text.italic().color(LumonMembrane)}"
+fun tyya(text: String) = "📙 ${"The You You Are".bold()} ${text.italic().color(LumonColors.Membrane)}"
 
-fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonMembrane)}"
+fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColors.Membrane)}"
 
-fun character(name: String, text: String) = "${name.bold()}: ${text.italic().color(LumonMembrane)}"
+fun character(name: String, text: String) = "${name.bold()}: ${text.italic().color(LumonColors.Membrane)}"
 
 val LumonQuotes = listOf(
+    character("Ms Casey", "Your outie enjoys coding in Python"),
+    character("Ms Casey", "Your outie loves YML"),
+    character("Ms Casey", "Your outie once wrote a 1,000 line shell script"),
+    character("Ms Casey", "Your outie revels in writing documentation"),
     kier("️May my cunning acument slice through the fog of small minds, guiding them to their great purpose in labor."),
     kier("Keep a merry humor ever in your heart."),
     kier(
@@ -107,6 +111,8 @@ val LumonQuotes = listOf(
     character("Milchick", "Some of you may be quietly yearning to learn more."),
     character("Milchick", "Marshmallows are for team players."),
     character("Milchick", "There will be no formal valediction, catered or otherwise"),
+    character("Milchick", "The Music Dance Experience is officially cancelled."),
+    character("Milchick", "Devour feculence"),
     character(
         "Milchick",
         """
@@ -187,13 +193,17 @@ val LumonQuotes = listOf(
     )
 )
 
-const val LumonMembrane: Int = 0xbeb780
+object LumonColors {
+    const val Membrane: Int = 0xbeb780
+    const val Green: Int = 0x7da17e
+
+}
 
 @Service
 @Profile("severance")
 class SeverancePromptProvider : PromptProvider {
     override fun getPrompt() = AttributedString(
-        LumonQuotes.random().color(LumonMembrane) + "\nLumon> ".color(LumonMembrane),
+        LumonQuotes.random().color(LumonColors.Membrane) + "\nLumon> ".color(LumonColors.Membrane),
 //        AttributedStyle.DEFAULT.foregroundRgb(LumonMembrane)
     )
 }
