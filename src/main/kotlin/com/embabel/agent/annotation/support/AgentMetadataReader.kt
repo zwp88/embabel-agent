@@ -80,6 +80,13 @@ class AgentMetadataReader {
         )
     }
 
+    /**
+     * Generate a qualified name to avoid name clashes.
+     */
+    private fun generateName(instance: Any, name: String): String {
+        return "${instance.javaClass.name}.$name"
+    }
+
     private fun findConditionMethods(type: Class<*>): List<Method> {
         val conditionMethods = mutableListOf<Method>()
         ReflectionUtils.doWithMethods(
@@ -132,7 +139,7 @@ class AgentMetadataReader {
     ): Goal {
         // We need to change the name to be the property name
         val rawg = ReflectionUtils.invokeMethod(method, instance) as Goal
-        return rawg.copy(name = getterToPropertyName(method.name))
+        return rawg.copy(name = generateName(instance, getterToPropertyName(method.name)))
     }
 
     private fun createCondition(
@@ -141,7 +148,7 @@ class AgentMetadataReader {
     ): BooleanCondition {
         val conditionAnnotation = method.getAnnotation(Condition::class.java)
         return BooleanCondition(
-            name = method.name,
+            name = generateName(instance, method.name),
             cost = conditionAnnotation.cost,
         )
         { processContext -> ReflectionUtils.invokeMethod(method, instance, processContext) as Boolean }
@@ -162,7 +169,7 @@ class AgentMetadataReader {
             }
             .flatten()
         return MultiTransformer(
-            name = method.name,
+            name = generateName(instance, method.name),
             description = actionAnnotation.description.ifBlank { method.name },
             cost = actionAnnotation.cost,
             inputs = inputs.toSet(),

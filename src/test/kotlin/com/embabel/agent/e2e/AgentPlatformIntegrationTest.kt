@@ -16,11 +16,16 @@
 package com.embabel.agent.e2e
 
 import com.embabel.agent.AgentPlatform
+import com.embabel.agent.GoalResult
 import com.embabel.agent.ProcessOptions
+import com.embabel.examples.dogfood.FunnyWriteup
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import kotlin.test.assertNotNull
 
 /**
  * Integration tests
@@ -37,11 +42,24 @@ class AgentPlatformIntegrationTest(
     }
 
     @Test
-    @Disabled("Not yet ready")
+    @Disabled("too many goals for test")
     fun `run star finder agent`() {
-        agentPlatform.chooseAndAccomplishGoal(
+        val goalResult = agentPlatform.chooseAndAccomplishGoal(
             "Lynda is a Scorpio, find some news for her",
             ProcessOptions(test = true),
         )
+        when (goalResult) {
+            is GoalResult.Success -> {
+                assertNotNull(goalResult.output)
+                assertTrue(
+                    goalResult.output is FunnyWriteup,
+                    "Expected FunnyWriteup, got ${goalResult.output?.javaClass?.name}"
+                )
+            }
+
+            is GoalResult.NoGoalFound -> {
+                fail("Goal not found: $goalResult")
+            }
+        }
     }
 }

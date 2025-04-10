@@ -313,10 +313,15 @@ class AgentMetadataReaderTest {
             val metadata = reader.createAgentMetadata(TwoGoalsOnly())
             assertNotNull(metadata)
             assertEquals(2, metadata!!.goals.size)
-            val t1 = metadata.goals.single { it.name == "thing1" }
-            val t2 = metadata.goals.single { it.name == "thing2" }
-            assertEquals("Thanks to Dr Seuss", t1.description)
-            assertEquals("Thanks again to Dr Seuss", t2.description)
+            val expectedThing1GoalName = "${TwoGoalsOnly::class.java.name}.thing1"
+            val expectedThing2GoalName = "${TwoGoalsOnly::class.java.name}.thing2"
+            val t1 = metadata.goals.find { it.name == expectedThing1GoalName }
+            val t2 = metadata.goals.find { it.name == expectedThing2GoalName }
+            assertNotNull(t1, "Should have $expectedThing1GoalName goal: " + metadata.goals.map { it.name })
+            assertNotNull(t2, "Should have $expectedThing2GoalName goal: " + metadata.goals.map { it.name })
+
+            assertEquals("Thanks to Dr Seuss", t1!!.description)
+            assertEquals("Thanks again to Dr Seuss", t2!!.description)
         }
 
         @Test
@@ -348,6 +353,7 @@ class AgentMetadataReaderTest {
             val metadata = reader.createAgentMetadata(OneConditionOnly())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.conditions.size)
+            assertEquals("${OneConditionOnly::class.java.name}.condition1", metadata.conditions.first().name)
         }
 
         @Test
