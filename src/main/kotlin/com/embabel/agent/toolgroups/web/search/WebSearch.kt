@@ -22,7 +22,7 @@ import java.time.Instant
  * SearchResults for any search service.
  * Returns EntityGraphReturn so will be persisted
  */
-interface WebSearchResults  {
+interface WebSearchResults {
     val name: String
     val request: WebSearchRequest
     val results: List<WebSearchResult>
@@ -33,6 +33,7 @@ interface WebSearchResults  {
 interface WebSearchRequest {
     val query: String
     val count: Int
+
     val offset: Int
 
     companion object {
@@ -43,18 +44,18 @@ interface WebSearchRequest {
     }
 }
 
-data class SimpleWebSearchRequest(
+private data class SimpleWebSearchRequest(
     override val query: String,
     override val count: Int,
     override val offset: Int = 0,
 ) : WebSearchRequest
 
-interface WebSearchResult  {
+interface WebSearchResult {
     val title: String
     val url: String
-     val description: String
+    val description: String
 
-   val name: String
+    val name: String
         get() = title
 
 }

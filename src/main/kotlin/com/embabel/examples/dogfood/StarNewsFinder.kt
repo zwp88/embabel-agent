@@ -15,6 +15,7 @@
  */
 package com.embabel.examples.dogfood
 
+import com.embabel.agent.ToolGroup
 import com.embabel.agent.UserInput
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
@@ -66,7 +67,7 @@ class StarNewsFinder(
         return Horoscope(horoscope)
     }
 
-    @Action
+    @Action(toolGroups = [ToolGroup.WEB])
     fun findNewsStories(person: Subject, horoscope: Horoscope): RelevantNewsStories {
         return PromptRunner().run(
             """

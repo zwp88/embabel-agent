@@ -13,5 +13,22 @@ Agent API
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
 
-Agent programming model.
+Embabel agent programming model.
 
+## Environment variables
+
+Required:
+
+- `OPENAI_API_KEY`: For the OpenAI API
+
+Optional:
+
+Optional external services:
+
+- `BRAVE_API_KEY`: For the Brave Search API. Web, news and video search is exposed if this key is available.
+
+## Spring profiles
+
+- `shell`: Runs agent in interactive shell.
+- `severance`: [Severance](https://www.youtube.com/watch?v=xEQP4VVuyrY&ab_channel=AppleTV) specific logging.
+- Praise Kier!

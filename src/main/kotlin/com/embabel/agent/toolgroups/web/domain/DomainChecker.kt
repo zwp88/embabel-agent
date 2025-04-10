@@ -24,9 +24,11 @@ import org.springframework.stereotype.Service
 import java.net.InetAddress
 import java.net.Socket
 
-class WebScraperTools(private val webcrawler: WebCrawler) {
+class WebScraperTools(
+    private val webcrawler: WebCrawler
+) {
 
-    @Tool(description = "Scrape web pages")
+    @Tool(description = "Scrape web page content")
     fun scrape(url: String): String {
         loggerFor<WebScraperTools>().info("Scraping URL: {}", url)
         val ph = ContentSavingPageHandler()

@@ -15,14 +15,12 @@
  */
 package com.embabel.agent.toolgroups.web.search.brave
 
-import com.embabel.agent.toolgroups.web.search.SimpleWebSearchRequest
 import com.embabel.agent.toolgroups.web.search.WebSearchRequest
 import com.embabel.agent.toolgroups.web.search.WebSearchResult
 import com.embabel.agent.toolgroups.web.search.WebSearchResults
 import com.embabel.agent.toolgroups.web.search.WebSearchService
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import org.springframework.ai.tool.annotation.Tool
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpEntity
@@ -32,6 +30,10 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import java.time.Instant
 
+/**
+ * Common base class for Brave search services,
+ * whether web, news, or video.
+ */
 abstract class BraveSearchService(
     override val name: String,
     override val description: String,
@@ -40,9 +42,8 @@ abstract class BraveSearchService(
     private val restTemplate: RestTemplate,
 ) : WebSearchService<BraveSearchResults> {
 
-    override val payloadType: Class<out WebSearchRequest> = SimpleWebSearchRequest::class.java
+    override val payloadType: Class<out WebSearchRequest> = WebSearchRequest::class.java
 
-    @Tool
     override fun search(request: WebSearchRequest): BraveSearchResults {
         val headers = HttpHeaders().apply {
             set("X-Subscription-Token", apiKey)
