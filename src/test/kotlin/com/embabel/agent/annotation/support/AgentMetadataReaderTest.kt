@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.annotation.Tool
 
@@ -282,9 +281,7 @@ class AgentMetadataReaderTest {
         @Test
         fun `no methods`() {
             val reader = AgentMetadataReader()
-            assertThrows<IllegalArgumentException> {
-                reader.createAgentMetadata(NoMethods())
-            }
+            assertNull(reader.createAgentMetadata(NoMethods()))
         }
 
         @Test

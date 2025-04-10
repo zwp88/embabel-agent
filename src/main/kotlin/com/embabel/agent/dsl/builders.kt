@@ -216,30 +216,6 @@ inline fun <reified I, reified O : Any> transformer(
     )
 }
 
-inline fun <reified I, reified O : Any> forkJoin(
-    name: String = "s${I::class.simpleName}*->${O::class.simpleName}",
-    description: String = name,
-    transformation: Transformation<I, O>,
-    pre: List<Condition> = emptyList(),
-    post: List<Condition> = emptyList(),
-    inputVarName: String = "it",
-    canRerun: Boolean = false,
-    noinline joinWith: (l: List<I>) -> O,
-): Action {
-    return ForkJoin<I, O>(
-        name = name, description = description,
-        pre = pre.map { it.name },
-        post = post.map { it.name },
-        inputClass = I::class.java,
-        outputClass = O::class.java,
-        inputVarName = inputVarName,
-        transformation = transformation,
-        canRerun = canRerun,
-        joinWith = joinWith,
-        toolCallbacks = TODO(),
-    )
-}
-
 inline fun <reified I, reified O> aggregator(
     name: String,
     description: String = name,
@@ -356,84 +332,6 @@ class Transformer<I, O>(
                 processContext.blackboard += output
             }
         }
-    }
-
-    override fun referencedInputProperties(variable: String): Set<String> {
-        return referencedInputProperties ?: run {
-            val fields = inputClass.declaredFields.map { it.name }.toSet()
-            fields
-        }
-    }
-}
-
-// DOES each split get its own process? how do you join?
-// Otherwise how does downstream triggering work from each "it"?
-// Numbered it naming it_2/20
-// Maybe downstream triggering is not possible, although state triggering is?
-// Or do we get a second it at each time and it does fire?, even in parallel
-class ForkJoin<I, O : Any>(
-    name: String,
-    description: String = name,
-    pre: List<String> = emptyList(),
-    post: List<String> = emptyList(),
-    cost: Double = 0.0,
-    value: Double = 0.0,
-    qos: Qos = Qos(),
-    private val inputClass: Class<I>,
-    private val outputClass: Class<O>,
-    private val inputVarName: String,
-    private val outputVarName: String = "it",
-    private val referencedInputProperties: Set<String>? = null,
-    toolCallbacks: Collection<ToolCallback>,
-    toolGroups: Collection<String> = emptySet(),
-    private val transformation: Transformation<I, O>,
-    private val joinWith: (l: List<I>) -> O,
-    canRerun: Boolean = false,
-) : AbstractAction(
-    name = name,
-    description = description,
-    pre = pre,
-    post = post,
-    cost = cost,
-    value = value,
-    inputs = setOf(IoBinding(inputVarName, "List")),
-    outputs = setOf(IoBinding(outputVarName, outputClass.simpleName)),
-    transitions = emptyList(),
-    toolCallbacks = toolCallbacks,
-    toolGroups = toolGroups,
-    canRerun = canRerun,
-    qos = qos,
-) {
-
-    override val domainTypes
-        get() = setOf(inputClass, outputClass)
-
-    override fun execute(
-        processContext: ProcessContext,
-        outputTypes: Map<String, SchemaType>,
-        action: Action
-    ): ActionStatus = ActionRunner.execute {
-        // TODO get variable?
-        val inputs = processContext.blackboard.entries.filterIsInstance(inputClass)
-        // TODO runner modes for parallelization etc.
-        val outputs = mutableListOf<O>()
-
-        inputs.forEach { input ->
-            val output = transformation.transform(
-                // TODO do we spawn here?
-                TransformationPayload(
-                    input = input,
-                    processContext = processContext,
-                    inputClass = inputClass,
-                    outputClass = outputClass,
-                    action = this,
-                )
-            )
-            // TODO put entries
-            outputs.add(output)
-        }
-        val joined = joinWith(inputs)
-        processContext.blackboard[outputVarName] = joined
     }
 
     override fun referencedInputProperties(variable: String): Set<String> {

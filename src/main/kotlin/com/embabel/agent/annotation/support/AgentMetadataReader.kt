@@ -35,6 +35,8 @@ import java.lang.reflect.Method
  * Read AgentMetadata from annotated classes.
  * Looks for @Agentic, @Condition and @Action annotations
  * and properties of type Goal.
+ * Warn on invalid or missing annotations but never throw an exception
+ * as this could affect application startup.
  */
 @Service
 class AgentMetadataReader {
@@ -60,9 +62,13 @@ class AgentMetadataReader {
         val goals = getterGoals + actionGoals
 
         if (actionMethods.isEmpty() && goals.isEmpty() && conditionMethods.isEmpty()) {
-            throw IllegalArgumentException(
-                "No methods annotated with @${Action::class.simpleName} or @${Condition::class.simpleName} and no goals defined on ${type.simpleName}",
+            logger.warn(
+                "No methods annotated with @{} or @{} and no goals defined on {}",
+                Action::class.simpleName,
+                Condition::class.simpleName,
+                type.simpleName,
             )
+            return null
         }
 
         val toolCallbacks = ToolCallbacks.from(instance).toList()
