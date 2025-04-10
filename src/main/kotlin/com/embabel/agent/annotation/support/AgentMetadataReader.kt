@@ -185,6 +185,10 @@ class AgentMetadataReader {
         }
     }
 
+    /**
+     * If the @Action method also has an @AchievesGoal annotation,
+     * create a goal from it.
+     */
     private fun createGoalFromActionMethod(
         method: Method,
     ): Goal? {
@@ -198,7 +202,7 @@ class AgentMetadataReader {
             type = method.returnType.simpleName,
         )
         return Goal(
-            name = "Create ${method.returnType.simpleName}",
+            name = "create_${method.returnType.simpleName}",
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,

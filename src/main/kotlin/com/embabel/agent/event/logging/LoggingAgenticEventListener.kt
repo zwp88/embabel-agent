@@ -32,7 +32,7 @@ open class LoggingAgenticEventListener(
     welcomeMessage: String? = null,
     private val goalChoiceRequestEventMessage: String = "Choosing goal based on {}",
     private val goalChoiceMadeEventMessage: String = "Chose goal '{}' with confidence {} based on {}",
-    private val goalChoiceNotMadeEventMessage: String = "Failed to choose goal based on {}: {}",
+    private val goalChoiceNotMadeEventMessage: String = "Failed to choose goal based on {}: {}. Confidence cutoff: {}",
     private val dymamicAgentCreationMessage: String = "Created agent {}",
     private val agentProcessCreationEventMessage: String = "Process {} created",
     private val agentProcessReadyToPlanEventMessage: String = "Process {} ready to plan from {}",
@@ -78,8 +78,9 @@ open class LoggingAgenticEventListener(
             is GoalChoiceCouldNotBeMadeEvent -> {
                 logger.info(
                     goalChoiceNotMadeEventMessage,
-                    event.basis.javaClass.simpleName,
+                    event.basis,
                     event.goalRankings.infoString(),
+                    event.goalConfidenceCutOff,
                 )
             }
 

@@ -59,9 +59,10 @@ annotation class Condition(
  * @param pre Preconditions for the action
  * @param outputBinding Output binding for the action.
  * Only required for a custom binding.
- * @param cost Cost of the action
+ * @param cost Cost of executing the action
  * @param value Value of performing the action
- * @param toolGroups Tool groups that this action requires
+ * @param toolGroups Tool groups that this action requires. These are well known tools from the server.
+ * @Tool methods on the @Agentic class are automatically added.
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

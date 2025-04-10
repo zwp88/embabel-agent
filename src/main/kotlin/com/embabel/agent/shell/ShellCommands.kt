@@ -81,6 +81,7 @@ class ShellCommands(
         @ShellOption(value = ["-t", "--test"], help = "run in help mode") test: Boolean = false,
         @ShellOption(value = ["-p", "--showPrompts"], help = "show prompts to LLMs") showPrompts: Boolean,
         @ShellOption(value = ["-r", "--showResponses"], help = "show LLM responses") showLlmResponses: Boolean = false,
+        @ShellOption(value = ["-d", "--debug"], help = "show debug info") debug: Boolean = false,
     ): String {
         val processOptions = ProcessOptions(
             test = test,
@@ -98,12 +99,18 @@ class ShellCommands(
         logger.debug("Result: {}\n", result)
 
         when (result) {
-            is GoalResult.NoGoalFound ->
-                return """
+            is GoalResult.NoGoalFound -> {
+                if (debug) {
+                    logger.info(
+                        """
                     Failed to choose goal:
                         Rankings were: [${result.goalRankings.infoString()}]
                         Cutoff was ${agentPlatform.properties.goalConfidenceCutOff}
-                    """.trimIndent().color(AnsiColor.YELLOW)
+                    """.trimIndent().color(0xbfb8b8)
+                    )
+                }
+                return "I'm sorry. I don't know how to do that.\n"
+            }
 
             is GoalResult.Success -> {
                 if (result.output is HasContent) {

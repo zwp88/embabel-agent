@@ -48,7 +48,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
             May my cunning acument slice through the fog of small minds, guiding them to their great purpose in labor.
         """.trimIndent()
     ),
-    goalChoiceNotMadeEventMessage = "WOE: Failed to choose goal based on {}: {}",
+    goalChoiceNotMadeEventMessage = "WOE: Failed to choose goal based on {}: {}. Confidence cutoff: {}",
     dymamicAgentCreationMessage = "WILES: Created agent {}",
     agentProcessCreationEventMessage = kier(
         """
