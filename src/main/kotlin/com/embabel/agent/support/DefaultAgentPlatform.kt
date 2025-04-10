@@ -17,7 +17,6 @@ package com.embabel.agent.support
 
 //import com.embabel.ScriptEvaluationService
 import com.embabel.agent.*
-import com.embabel.agent.annotation.support.AgentMetadataReader
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.primitive.LlmOptions
@@ -32,7 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -40,14 +38,15 @@ import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.stereotype.Service
 
 /**
+ * Agent platform properties
  * @param autoRegister whether to auto register beans with
  * @Agentic annotation
  */
 @ConfigurationProperties("embabel.agent-platform")
 data class DefaultAgentPlatformProperties(
     override val goalConfidenceCutOff: ZeroToOne = 0.6,
-    val autoRegister: Boolean = true,
-) : AgentPlatformProperties
+    override val autoRegister: Boolean = true,
+) : AutoRegisteringAgentPlatformProperties
 
 @Service
 class DefaultAgentPlatform(
@@ -60,8 +59,7 @@ class DefaultAgentPlatform(
     eventListeners: List<AgenticEventListener>,
     private val nameGenerator: NameGenerator = MobyNameGenerator,
     override val properties: DefaultAgentPlatformProperties,
-    private val agentMetadataReader: AgentMetadataReader,
-) : AgentPlatform, BeanPostProcessor {
+) : AgentPlatform {
 
     private val logger = LoggerFactory.getLogger(DefaultAgentPlatform::class.java)
 
@@ -90,16 +88,6 @@ class DefaultAgentPlatform(
 
     override fun agents(): List<Agent> =
         agents.values.toList()
-
-    override fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
-        if (properties.autoRegister) {
-            val agentMetadata = agentMetadataReader.createAgentMetadata(bean)
-            if (agentMetadata != null) {
-                deploy(agentMetadata)
-            }
-        }
-        return bean
-    }
 
     override fun deploy(agent: Agent): DefaultAgentPlatform {
         logger.info("Deploying agent {}", agent.name)
