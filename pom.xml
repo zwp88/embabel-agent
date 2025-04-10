@@ -90,7 +90,6 @@
         <dependency>
             <groupId>org.springframework.shell</groupId>
             <artifactId>spring-shell-starter</artifactId>
-            <version>3.4.0</version>
         </dependency>
 
         <!-- Spring AI -->
@@ -107,7 +106,6 @@
         <dependency>
             <groupId>info.schnatterer.moby-names-generator</groupId>
             <artifactId>moby-names-generator</artifactId>
-            <version>20.10.1-r0</version>
         </dependency>
 
         <!-- Unit and Integration Testing -->
@@ -145,7 +143,6 @@
         <dependency>
             <groupId>com.ninja-squad</groupId>
             <artifactId>springmockk</artifactId>
-            <version>4.0.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

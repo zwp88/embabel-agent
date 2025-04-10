@@ -20,8 +20,8 @@ import com.embabel.agent.GoalResult
 import com.embabel.agent.ProcessOptions
 import com.embabel.agent.Verbosity
 import com.embabel.agent.domain.HasContent
-import com.embabel.util.AnsiColor
-import com.embabel.util.color
+import com.embabel.common.util.AnsiColor
+import com.embabel.common.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.apache.commons.lang3.text.WordUtils
 import org.jline.utils.AttributedString

@@ -17,8 +17,8 @@ package com.embabel.agent.event.logging
 
 import com.embabel.agent.AgentProcessStatus
 import com.embabel.agent.event.*
-import com.embabel.util.AnsiColor
-import com.embabel.util.color
+import com.embabel.common.util.AnsiColor
+import com.embabel.common.util.color
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

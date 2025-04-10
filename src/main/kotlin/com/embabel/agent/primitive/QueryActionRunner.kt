@@ -16,7 +16,7 @@
 package com.embabel.agent.primitive
 
 import com.embabel.agent.*
-import com.embabel.util.time
+import com.embabel.common.util.time
 import java.time.Duration
 
 // TODO could combine into an action, filling in types. Would be simpler and avoid errors

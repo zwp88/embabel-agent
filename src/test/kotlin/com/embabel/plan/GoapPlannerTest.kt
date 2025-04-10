@@ -15,8 +15,8 @@
  */
 package com.embabel.plan
 
+import com.embabel.common.util.time
 import com.embabel.plan.goap.*
-import com.embabel.util.time
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

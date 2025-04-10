@@ -17,7 +17,7 @@ package com.embabel.agent
 
 import com.embabel.agent.primitive.ExpressionActionRunner
 import com.embabel.agent.primitive.QueryActionRunner
-import com.embabel.util.time
+import com.embabel.common.util.time
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.Duration

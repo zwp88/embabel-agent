@@ -18,7 +18,7 @@ package com.embabel.agent.support
 import com.embabel.agent.AgentProcess
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
 import com.embabel.agent.primitive.LlmOptions
-import com.embabel.util.time
+import com.embabel.common.util.time
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration

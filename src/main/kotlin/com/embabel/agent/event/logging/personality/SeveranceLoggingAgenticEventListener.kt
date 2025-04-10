@@ -16,8 +16,8 @@
 package com.embabel.agent.event.logging.personality
 
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
-import com.embabel.util.color
-import com.embabel.util.hexToRgb
+import com.embabel.common.util.color
+import com.embabel.common.util.hexToRgb
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 

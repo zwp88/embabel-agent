@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.event.logging.personality
 
-import com.embabel.util.bold
-import com.embabel.util.color
-import com.embabel.util.italic
+import com.embabel.common.util.bold
+import com.embabel.common.util.color
+import com.embabel.common.util.italic
 import org.jline.utils.AttributedString
 import org.springframework.context.annotation.Profile
 import org.springframework.shell.jline.PromptProvider
