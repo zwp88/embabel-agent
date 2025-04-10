@@ -25,7 +25,7 @@ import com.embabel.common.core.types.HasInfoString
  * It's possible that no ranking will be high enough to progress with,
  * but that's a matter for the AgentPlatform using this service.
  */
-interface GoalRanker {
+fun interface GoalRanker {
 
     fun rankGoals(
         userInput: UserInput,

@@ -19,10 +19,12 @@ import com.embabel.agent.AgentPlatform
 import com.embabel.agent.GoalResult
 import com.embabel.agent.ProcessOptions
 import com.embabel.agent.UserInput
+import com.embabel.agent.spi.GoalRanking
+import com.embabel.agent.spi.GoalRankings
+import com.embabel.agent.testing.FakeGoalRanker
 import com.embabel.examples.dogfood.FunnyWriteup
 import com.embabel.examples.dogfood.HoroscopeService
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,19 +36,23 @@ import org.springframework.context.annotation.Primary
 import kotlin.test.assertNotNull
 
 @TestConfiguration
-class FakeHoroscopeConfig {
+class FakeConfig {
+
     @Bean
     @Primary
-    fun testHoroscopeService() = HoroscopeService {
+    fun fakeHoroscopeService() = HoroscopeService {
         """"
-            |On Monday, try to avoid being eaten by wolves
-            |On Tuesday, you will be chased by a bear
-            |On Wednesday, you will be bitten by a snake
-            |On Thursday, you will be chased by a lion
-            |On Friday, you will be chased by a tiger
-            |On Saturday, you will be chased by a crocodile
-            |On Sunday, relax if you're still alive.
+            |On Monday, try to avoid being eaten by wolves            .
         """.trimMargin()
+    }
+
+    @Bean
+    @Primary
+    fun fakeGoalRanker() = FakeGoalRanker { ui, amd ->
+        val g = amd.goals.find { it.description.contains("horoscope") }!!
+        GoalRankings(
+            rankings = listOf(GoalRanking(g, .9))
+        )
     }
 }
 
@@ -54,7 +60,7 @@ class FakeHoroscopeConfig {
  * Integration tests
  */
 @SpringBootTest
-@Import(FakeHoroscopeConfig::class)
+@Import(FakeConfig::class)
 class AgentPlatformIntegrationTest(
     @Autowired
     private val agentPlatform: AgentPlatform,
@@ -78,7 +84,6 @@ class AgentPlatformIntegrationTest(
     }
 
     @Test
-    @Disabled("not yet working")
     fun `run star finder agent`() {
         val goalResult = agentPlatform.chooseAndAccomplishGoal(
             "Lynda is a Scorpio, find some news for her",

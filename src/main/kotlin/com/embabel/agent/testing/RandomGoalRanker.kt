@@ -22,7 +22,12 @@ import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
 import kotlin.random.Random
 
-class DummyGoalRanker : GoalRanker {
+/**
+ * Identifies goal rankers used for test
+ */
+fun interface FakeGoalRanker : GoalRanker
+
+class RandomGoalRanker : FakeGoalRanker {
     private val random = Random(System.currentTimeMillis())
 
     override fun rankGoals(

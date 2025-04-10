@@ -21,7 +21,8 @@ import com.embabel.agent.event.GoalChoiceRequestEvent
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.spi.ToolGroupResolver
-import com.embabel.agent.testing.DummyGoalRanker
+import com.embabel.agent.testing.FakeGoalRanker
+import com.embabel.agent.testing.RandomGoalRanker
 import com.embabel.common.util.kotlin.loggerFor
 import java.util.function.Function
 
@@ -236,8 +237,10 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
     ): GoalResult {
         val userInput = UserInput(intent)
 
-        val goalRanker = if (processOptions.test) {
-            DummyGoalRanker()
+        // Use a fake goal ranker if we are in test mode and don't already have a fake one
+        // Enables running under integration tests and in test mode otherwise with production config
+        val goalRanker = if (processOptions.test && goalRanker !is FakeGoalRanker) {
+            RandomGoalRanker()
         } else {
             goalRanker
         }
