@@ -18,7 +18,7 @@ package com.embabel.examples.dogfood
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
-interface HoroscopeService {
+fun interface HoroscopeService {
 
     fun dailyHoroscope(sign: String): String
 }
@@ -30,7 +30,7 @@ class RestClientHoroscopeService : HoroscopeService {
         .baseUrl("https://horoscope-app-api.vercel.app")
         .build()
 
-     override fun dailyHoroscope(sign: String): String {
+    override fun dailyHoroscope(sign: String): String {
         val response = restClient.get()
             .uri("/api/v1/get-horoscope/daily?sign={sign}", sign.lowercase())
             .retrieve()
