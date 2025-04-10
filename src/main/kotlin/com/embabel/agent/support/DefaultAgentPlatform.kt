@@ -24,8 +24,6 @@ import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.testing.FakeLlmTransformer
 import com.embabel.common.ai.model.ModelProvider
-import com.embabel.common.core.MobyNameGenerator
-import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -57,7 +55,7 @@ class DefaultAgentPlatform(
     override val toolGroupResolver: ToolGroupResolver,
     private val modelProvider: ModelProvider,
     eventListeners: List<AgenticEventListener>,
-    private val nameGenerator: NameGenerator = MobyNameGenerator,
+    private val processIdGenerator: ProcessIdGenerator,
     override val properties: DefaultAgentPlatformProperties,
 ) : AgentPlatform {
 
@@ -197,18 +195,13 @@ class DefaultAgentPlatform(
             agent = agent,
             platformServices = platformServicesToUse,
             blackboard = blackboard,
-            id = createProcessId(agent, processOptions),
+            id = processIdGenerator.createProcessId(agent, processOptions),
             parentId = null,
             processOptions = processOptions,
         )
         logger.debug("🚀 Creating process {}", agentProcess.id)
         eventListener.onProcessEvent(AgentProcessCreationEvent(agentProcess))
         return agentProcess
-    }
-
-    private fun createProcessId(agent: Agent, processOptions: ProcessOptions): String {
-        val randomPart = nameGenerator.generateName()
-        return "${agent.name}-${agent.version}-$randomPart"
     }
 
     override fun createChildProcess(
@@ -222,7 +215,7 @@ class DefaultAgentPlatform(
             platformServices = parentAgentProcess.processContext.platformServices,
             blackboard = childBlackboard,
             id = "${parentAgentProcess.agent.name} >> ${
-                createProcessId(
+                processIdGenerator.createProcessId(
                     agent,
                     processOptions,
                 )
