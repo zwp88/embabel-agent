@@ -59,7 +59,9 @@ class ShellCommands(
             .map {
                 val tgr = agentPlatform.toolGroupResolver.resolveToolGroup(it.role)
                 return tgr.resolvedToolGroup?.let {
-                    "${it.metadata}: ${it.toolCallbacks.map { tc -> tc.toolDefinition.name() }}"
+                    "${it.metadata}:\n\t${
+                        it.toolCallbacks.joinToString("\n\t") { tc -> "${tc.toolDefinition.name()}: ${tc.toolDefinition.description()}" }
+                    }"
                 } ?: "Failure: ${tgr.failureMessage}"
             }
             .joinToString(
