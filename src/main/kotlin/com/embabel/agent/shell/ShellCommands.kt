@@ -53,6 +53,13 @@ class ShellCommands(
         return agentPlatform.infoString(verbose = true)
     }
 
+    @ShellMethod("Information about the AgentPlatform")
+    fun platform(): String {
+        return """
+            AgentPlatform: ${agentPlatform.name}
+        """.trimIndent()
+    }
+
     @ShellMethod("List available tool groups")
     fun tools(): String {
         return agentPlatform.toolGroupResolver.availableToolGroups()
