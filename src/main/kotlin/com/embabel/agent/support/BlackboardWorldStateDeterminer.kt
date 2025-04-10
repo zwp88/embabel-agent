@@ -41,8 +41,11 @@ class BlackboardWorldStateDeterminer(
         return when {
             // Well known conditions, defined for reuse, with their own evaluation function
             processContext.agentProcess.agent.conditions.any { it.name == condition } -> {
-                val c = processContext.agentProcess.agent.conditions.single { it.name == condition }
-                c.evaluate(processContext)
+                val conditions = processContext.agentProcess.agent.conditions.filter { it.name == condition }
+                if (conditions.size != 1) {
+                    throw IllegalStateException("Condition $condition is not unique in agent ${processContext.agentProcess.agent.name}: ${conditions.size} found")
+                }
+                conditions.single().evaluate(processContext)
             }
 
             // Data binding condition

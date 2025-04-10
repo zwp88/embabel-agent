@@ -173,13 +173,6 @@ inline fun <reified T> Blackboard.count(): Int {
 }
 
 /**
- * Single entry of the given type
- */
-inline fun <reified T> Blackboard.single(): T {
-    return entries.filterIsInstance<T>().single()
-}
-
-/**
  * Last entry of the given type, if there is one
  */
 inline fun <reified T> Blackboard.last(): T? {
