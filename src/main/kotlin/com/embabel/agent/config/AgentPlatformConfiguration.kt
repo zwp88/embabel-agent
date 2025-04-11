@@ -21,6 +21,8 @@ import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.support.RegistryToolGroupResolver
+import com.embabel.common.core.MobyNameGenerator
+import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -33,6 +35,12 @@ import org.springframework.web.client.RestTemplate
 @Configuration
 class AgentPlatformConfiguration(
 ) {
+
+    /**
+     * Used for process id generation
+     */
+    @Bean
+    fun nameGenerator(): NameGenerator = MobyNameGenerator
 
     @Bean
     fun templateRenderer(): TemplateRenderer = JinjavaTemplateRenderer()

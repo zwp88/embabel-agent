@@ -17,28 +17,11 @@ package com.embabel.agent.support
 
 import com.embabel.agent.Agent
 import com.embabel.agent.ProcessOptions
-import com.embabel.common.core.MobyNameGenerator
-import com.embabel.common.core.NameGenerator
-import org.springframework.stereotype.Service
 
+/**
+ * Generate names for agent processes
+ */
 interface ProcessIdGenerator {
     fun createProcessId(agent: Agent, processOptions: ProcessOptions): String
 
-}
-
-@Service
-class DefaultProcessIdGenerator(
-    private val nameGenerator: NameGenerator = MobyNameGenerator,
-    private val includeVersion: Boolean = false,
-) : ProcessIdGenerator {
-
-    override fun createProcessId(agent: Agent, processOptions: ProcessOptions): String {
-        val version = if (includeVersion) {
-            "-${agent.version}"
-        } else {
-            ""
-        }
-        val randomPart = nameGenerator.generateName()
-        return "${agent.name}$version-$randomPart"
-    }
 }
