@@ -17,6 +17,7 @@ package com.embabel.agent
 
 import com.embabel.agent.domain.special.Aggregation
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.util.findAllSupertypes
 import com.embabel.common.util.kotlin.loggerFor
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -79,7 +80,7 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
 
     /**
      * Return the value of a variable, if it is set.
-     * Does not include type information.
+     * Does not limit return via type information.
      */
     operator fun get(name: String): Any?
 
@@ -88,7 +89,11 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
      * Resolve superclasses
      * For example, getValue("it", "Animal") will match a Dog if Dog extends Animal
      */
-    fun getValue(variable: String, type: String, domainTypes: Collection<Class<*>>): Any? {
+    fun getValue(
+        variable: String,
+        type: String,
+        domainTypes: Collection<Class<*>>,
+    ): Any? {
         val bound = this[variable]
         if (bound != null && satisfiesType(bound, type)) {
             return bound
@@ -140,7 +145,7 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
 
     /**
      * Expose the model data for use in prompts
-     * Prefer more strongly typed used
+     * Prefer more strongly typed usage patterns
      */
     fun expressionEvaluationModel(): Map<String, Any>
 
@@ -165,7 +170,6 @@ inline fun <reified T> Blackboard.all(): List<T> {
     return entries.filterIsInstance<T>()
 }
 
-
 /**
  * Count entries of the given type
  */
@@ -186,7 +190,6 @@ inline fun <reified T> Blackboard.last(): T? {
 fun <T> Blackboard.last(clazz: Class<T>): T? {
     return entries.filterIsInstance<T>(clazz).lastOrNull()
 }
-
 
 /**
  * Try to instantiate an Aggregation subclass from the blackboard
@@ -224,17 +227,4 @@ private fun KType.toJavaClass(): Class<*> {
         is java.lang.reflect.ParameterizedType -> type.rawType as Class<*>
         else -> throw IllegalArgumentException("Cannot convert KType to Class: $this")
     }
-}
-
-/**
- * Find all supertypes: classes and interfaces
- */
-private fun findAllSupertypes(clazz: Class<*>): Set<Class<*>> {
-    val supertypes = mutableSetOf<Class<*>>()
-    supertypes += clazz.interfaces
-    clazz.superclass?.let { superclass ->
-        supertypes += clazz
-        supertypes += findAllSupertypes(superclass)
-    }
-    return supertypes.toSet()
 }
