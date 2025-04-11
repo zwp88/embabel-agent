@@ -109,14 +109,18 @@ class GoapPlannerTest {
             poisonEnemy,
         )
 
+        val bestPlanActions =
+            listOf("Cook drugs", "Sell drugs", "Buy gun", "Cook drugs", "Shoot enemy", "Sell drugs", "Bribe cop")
+
 
         @Test
         fun `single plan`() {
             val planner = AStarGoapPlanner(EmptyWorldStateDeterminer)
             val plan = planner.planToGoal(actions, getAwayWithMurderGoal)
-            println(plan)
-            println("Cost: ${plan?.cost}, net value = ${plan?.netValue}")
             assertTrue(plan != null)
+            assertEquals(
+                bestPlanActions,
+                plan!!.actions.map { it.name })
         }
 
         @Test
@@ -126,17 +130,24 @@ class GoapPlannerTest {
             val goapSystem = GoapSystem(actions, setOf(getAwayWithMurderGoal, hasGunGoal))
             val plans = planner.plansToGoals(goapSystem)
             assertEquals(plans.size, 2)
-            println(plans.joinToString("\n") { it.infoString() })
+            val best = plans.first()
+            assertEquals(
+                bestPlanActions,
+                best.actions.map { it.name })
+            assertTrue(best.netValue > 0.0)
+            assertTrue(best.cost > 0.0)
         }
 
         @Test
-        fun `cheapest plan to any goal`() {
+        fun `best plan to any goal`() {
             val planner = AStarGoapPlanner(EmptyWorldStateDeterminer)
             val hasGunGoal = GoapGoal(name = "hasGun", value = 1.0)
             val goapSystem = GoapSystem(actions, setOf(getAwayWithMurderGoal, hasGunGoal))
             val plan = planner.bestValuePlanToAnyGoal(goapSystem)
             assertNotNull(plan)
-            println("Plan ${plan!!.infoString()}")
+            assertEquals(
+                bestPlanActions,
+                plan!!.actions.map { it.name })
         }
 
         @Test
@@ -156,8 +167,9 @@ class GoapPlannerTest {
             }
             val planner = AStarGoapPlanner(touchyWorldStateDeterminer)
             val plan = planner.planToGoal(actions, getAwayWithMurderGoal)
-            println(plan!!.infoString())
-            println("Cost: ${plan.cost}, net value = ${plan.netValue}")
+            assertTrue(
+                plan!!.actions.map { it.name }.containsAll(bestPlanActions.drop(2))
+            )
         }
 
         @Test
@@ -187,9 +199,8 @@ class GoapPlannerTest {
                 actions,
                 getAwayWithMurderGoal
             )
-            println(plan!!.infoString())
-            println("Cost: ${plan.cost}, net value = ${plan.netValue}")
-            assertEquals(0, plan.actions.size)
+            assertNotNull(plan)
+            assertEquals(0, plan!!.actions.size)
             assertTrue(forceEvaluated.contains("enemyDead"), "Should have force evaluated enemy dead")
         }
 
@@ -221,7 +232,6 @@ class GoapPlannerTest {
                 planner.planToGoal(paddedActions, getAwayWithMurderGoal)
             }
             assertTrue(plan != null)
-            println("Formulated plan with ${paddedActions.size} actions in $ms ms: ${plan!!.infoString()}")
         }
     }
 
