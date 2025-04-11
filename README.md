@@ -1,4 +1,4 @@
-# Embabel Agent programming model
+# Embabel Agent Framework
 
 Agent API
 
@@ -13,7 +13,68 @@ Agent API
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
 
-Embabel agent programming model.
+<img align="left" src="https://github.com/embabel/agent-api/blob/main/images/315px-Meister_der_Weltenchronik_001.jpg?raw=true" width="180">
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+Embabel agent programming model. Framework for authoring agentic flows that seamlessly mix LLM-prompted interactions
+with manual code and domain models.
+
+## Key Concepts
+
+Models agentic flows in terms of:
+
+- **Actions**: Steps an agent takes
+- **Goals**: What the agent is trying to achieve
+- **Conditions**: Conditions to assess before executing an action or determining that a goal has been achieved
+- **Domain model**: Objects underpinning the flow and informing Actions, Goals and Conditions.
+- **Plan**: A sequence of actions to achieve a goal. Plans are dynamically formulated by the system, not the programmer.
+
+These concepts deliver the following differentiators versus other agentic systems:
+
+- **Sophisticated planning.** Goes beyond a finite state machine or sequential execution
+  with nesting by introducing a true planning step, using a
+  non-LLM AI algorithm. This enables the system to perform tasks it wasn’t programmed to do by combining known
+  steps in
+  a novel order, as well as make decisions about parallelization and other runtime behavior.
+- **Superior extensibility and reuse**: Because of dynamic planning, adding more domain objects, actions, goals and
+  conditions
+  can extend the capability of the system, _without editing FSM definitions._
+- **Strong typing and the benefits of object orientation**: Actions, goals and conditions are informed by a domain
+  model, which can
+  include behavior. Everything is strongly typed and prompts and
+  manually authored code interact cleanly. No more magic maps. Enjoy full refactoring support.
+
+Other benefits:
+
+- **Platform abstraction**: Clean separation between programming model and platform concept allow running locally while
+  potentially offering higher QoS changing application code.
+- **Designed for LLM mixing**: It is easy to build applications that mix LLMs, ensuring the most cost effective yet
+  capable solution.
+  models. This enables the system to leverage the strengths of different models for different tasks.
+- **Built on Spring and the JVM,** making it easy to access existing enterprise functionality and capabilities.
+- **Designed for testability** from the ground up. Both unit testing and flow testing are easy.
+
+Flows can be authored in one of two ways:
+
+- Annotation-based model similar to Spring MVC, with types annotated with `@Agent` with `@Goal`, `@Condition` and
+  `@Action` methods.
+- Kotlin DSL.
+
+Either way, flows are backed by a domain model of objects that can defined behavior.
+
+> We are working toward allowing natural language actions and goals to be deployed.
+
+The planning step is pluggable.
+
+The default planning approach is
+GOAP: [Goal Oriented Action Planning](https://medium.com/@vedantchaudhari/goal-oriented-action-planning-34035ed40d0b).
+GOAP is a popular AI planning algorithm used in gaming. It allows for dynamic decision-making and action selection based
+on the current state of the world and the goals of the agent.
+
+Goals, actions and plans are independent of GOAP. Future planning options include:
+
+- Plans created by a reasoning model such as OpenAI o1 or DeepSeek R1.
 
 ## Environment variables
 
@@ -55,15 +116,31 @@ Omit these for less verbose logging.
 
 ## Running Tests
 
-You can run the tests using Maven. This will run both unit and integration tests
-but will not require an internet connection or any external services.
+Run the tests via Maven.
 
 ```bash
 mvn test
 ```
 
+This will run both unit and integration tests
+but will not require an internet connection or any external services.
+
 ## Spring profiles
 
 - `shell`: Runs agent in interactive shell.
-- `severance`: [Severance](https://www.youtube.com/watch?v=xEQP4VVuyrY&ab_channel=AppleTV) specific logging.
-- Praise Kier!
+- `severance`: [Severance](https://www.youtube.com/watch?v=xEQP4VVuyrY&ab_channel=AppleTV) specific logging. Praise
+  Kier!
+-
+
+## Miscellaneous
+
+- _Why the name Embabel?_
+  The "babel" part is inspired by the story of the Tower of Babel. Embabel is intended to bring many languages to
+  applications.
+  "embabel" also sounds like "enable."
+- Milestone names are Australian animals. Mythical animals such as "bunyip" and "yowie" are used for futures that may or
+  not be implemented.
+- README badges come from [here](https://github.com/Ileriayo/markdown-badges).
+
+--------------------
+(c) Embabel Software Inc 2024-2025.
