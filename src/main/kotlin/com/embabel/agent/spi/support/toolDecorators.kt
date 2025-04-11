@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.support
+package com.embabel.agent.spi.support
 
 import com.embabel.agent.AgentProcess
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent

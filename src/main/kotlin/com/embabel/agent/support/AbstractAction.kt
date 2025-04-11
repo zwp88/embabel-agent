@@ -31,7 +31,7 @@ import org.springframework.ai.tool.ToolCallback
  * @param name the name of the action
  * @param description a description of the action
  * @param pre a list of preconditions. These are additional to the input
- * @param post a list of postconditions. These are additional to the output
+ * @param post a list of expected effects. These are additional to the output
  * @param cost the cost of the action
  * @param inputs the input bindings
  * @param outputs the output bindings

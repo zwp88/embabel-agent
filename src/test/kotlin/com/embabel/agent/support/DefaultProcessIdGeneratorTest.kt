@@ -17,6 +17,8 @@ package com.embabel.agent.support
 
 import com.embabel.agent.Agent
 import com.embabel.agent.ProcessOptions
+import com.embabel.agent.spi.support.DefaultProcessIdGenerator
+import com.embabel.agent.spi.support.DefaultProcessIdGeneratorProperties
 import com.embabel.common.core.MobyNameGenerator
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue

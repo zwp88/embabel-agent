@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.support
+package com.embabel.agent.spi.support
 
 import com.embabel.agent.Agent
 import com.embabel.agent.ProcessOptions
+import com.embabel.agent.spi.ProcessIdGenerator
 import com.embabel.common.core.NameGenerator
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service

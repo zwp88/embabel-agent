@@ -23,7 +23,9 @@ import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.primitive.LlmOptions
 import com.embabel.agent.spi.GoalRanker
+import com.embabel.agent.spi.ProcessIdGenerator
 import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
 import com.embabel.agent.testing.FakeLlmTransformer
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer

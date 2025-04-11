@@ -17,7 +17,7 @@ package com.embabel.agent
 
 import com.embabel.agent.event.LlmTransformRequestEvent
 import com.embabel.agent.primitive.LlmOptions
-import com.embabel.agent.support.forProcess
+import com.embabel.agent.spi.support.forProcess
 import com.embabel.common.util.time
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

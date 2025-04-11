@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.support
+package com.embabel.agent.spi.support
 
 import com.embabel.agent.ToolGroup
 import com.embabel.agent.ToolGroupMetadata
@@ -22,7 +22,9 @@ import com.embabel.agent.spi.ToolGroupResolver
 import org.slf4j.LoggerFactory
 
 /**
- * Resolves
+ * Resolves ToolGroups based on a list.
+ * The list is normally Spring-injected,
+ * with ToolGroup instances being Spring beans.
  */
 class RegistryToolGroupResolver(
     override val name: String,

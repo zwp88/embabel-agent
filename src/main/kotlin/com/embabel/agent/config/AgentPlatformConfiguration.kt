@@ -20,7 +20,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider
 import com.embabel.agent.spi.ToolGroupResolver
-import com.embabel.agent.support.RegistryToolGroupResolver
+import com.embabel.agent.spi.support.RegistryToolGroupResolver
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
