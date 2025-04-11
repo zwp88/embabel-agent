@@ -16,9 +16,7 @@
 package com.embabel.agent.annotation.support
 
 import com.embabel.agent.*
-import com.embabel.agent.annotation.*
-import com.embabel.agent.annotation.Action
-import com.embabel.agent.annotation.Condition
+import com.embabel.agent.annotation.Agent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.primitive.LlmOptions
@@ -32,239 +30,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.ai.tool.annotation.Tool
-
-data class Person(val name: String) {
-
-    @Tool
-    fun reverse() = name.reversed()
-
-}
-
-@Agentic
-class NoMethods
-
-@Agentic
-class OneGoalOnly {
-
-    val thing1 = Goal.createInstance(
-        name = "thing1",
-        description = "Thanks to Dr Seuss",
-        type = Person::class.java,
-    ).withValue(30.0)
-}
-
-@Agentic
-class TwoGoalsOnly {
-
-    val thing1 = Goal.createInstance(
-        description = "Thanks to Dr Seuss",
-        type = Person::class.java,
-    )
-    val thing2 = Goal.createInstance(
-        description = "Thanks again to Dr Seuss",
-        type = Person::class.java,
-    )
-}
-
-@Agentic
-class ActionGoal {
-
-    @Action
-    @AchievesGoal(description = "Creating a user")
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
-    }
-
-}
-
-@Agentic
-class NoConditions {
-
-    // A goal makes it legal
-    val g = Goal.createInstance(
-        name = "thing1",
-        description = "Thanks to Dr Seuss",
-        type = Person::class.java,
-    ).withValue(30.0)
-
-}
-
-@Agentic
-class OneConditionOnly {
-
-    @Condition(cost = .5)
-    fun condition1(processContext: ProcessContext): Boolean {
-        return true
-    }
-
-}
-
-@Agentic
-class OneTransformerActionOnly {
-
-    @Action(cost = 500.0)
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
-    }
-
-}
-
-@Agentic
-class OneTransformerActionReferencingConditionByName {
-
-    @Action(pre = ["condition1"])
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
-    }
-
-}
-
-@Agentic
-class OneTransformerActionWithCustomToolGroupOnly {
-
-    @Action(cost = 500.0, toolGroups = ["magic"])
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
-    }
-
-}
-
-data class Task(
-    val what: String,
-)
-
-
-@Agentic
-class OneTransformerActionWith2ArgsOnly {
-
-    @Action(cost = 500.0)
-    fun toPerson(userInput: UserInput, task: Task): Person {
-        return Person(userInput.content)
-    }
-
-}
-
-@Agentic
-class OneTransformerActionWith2ArgsAndCustomInputBindings {
-
-    @Action
-    fun toPerson(
-        @RequireNameMatch userInput: UserInput,
-        @RequireNameMatch task: Task,
-    ): Person {
-        return Person(userInput.content)
-    }
-
-}
-
-@Agentic
-class OneTransformerActionWith2ArgsAndCustomOutputBinding {
-
-    @Action(outputBinding = "person")
-    fun toPerson(userInput: UserInput, task: Task): Person {
-        return Person(userInput.content)
-    }
-
-}
-
-@Agentic
-class OnePromptActionOnly(
-) {
-
-    val promptRunner = PromptRunner(
-        // Java style usage
-        llm = LlmOptions.DEFAULT.withTemperature(1.7).withModel("magical"),
-    )
-
-    @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): Person {
-        return promptRunner.run("Generated prompt for ${userInput.content}")
-    }
-
-}
-
-@Agentic
-class Combined {
-
-    val planner = Goal.createInstance(
-        description = "Create a person",
-        type = Person::class.java,
-    ).withValue(30.0)
-
-    // Can reuse this or inject
-    val magicalLlm = PromptRunner(
-        // Java style usage
-        llm = LlmOptions.DEFAULT.withTemperature(1.7).withModel("magical"),
-    )
-
-    @Condition(cost = .5)
-    fun condition1(processContext: ProcessContext): Boolean {
-        return true
-    }
-
-    @Action
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
-    }
-
-    @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): Person {
-        return magicalLlm.run("Generated prompt for ${userInput.content}")
-    }
-
-    @Tool
-    fun weatherService(location: String) =
-        "The weather in $location is ${listOf("sunny", "raining", "foggy").random()}"
-
-
-}
-
-@Agentic
-class OnePromptActionWithToolOnly(
-) {
-
-    @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): Person {
-        return Prompt.run("Generated prompt for ${userInput.content}")
-    }
-
-    @Tool
-    fun thing(): String {
-        return "foobar"
-    }
-
-}
-
-@Agentic
-class FromPersonUsesDomainObjectTools {
-
-    @Action
-    fun fromPerson(
-        person: Person
-    ): UserInput {
-        return Prompt.run("Create a UserInput")
-    }
-}
-
-@Agentic
-class OneTransformerActionWith2Tools {
-
-    @Action
-    fun toPerson(
-        @RequireNameMatch userInput: UserInput,
-        @RequireNameMatch task: Task,
-    ): Person {
-        return Person(userInput.content)
-    }
-
-    @Tool
-    fun toolWithoutArg(): String = "foo"
-
-    @Tool
-    fun toolWithArg(location: String) = "bar"
-
-}
+import com.embabel.agent.Agent as IAgent
 
 
 class AgentMetadataReaderTest {
@@ -434,7 +200,7 @@ class AgentMetadataReaderTest {
         @Test
         fun `one action with 2 args only`() {
             val reader = AgentMetadataReader()
-            val metadata = reader.createAgentMetadata(OneTransformerActionWith2ArgsOnly())
+            val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnly())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.single()
@@ -453,7 +219,7 @@ class AgentMetadataReaderTest {
             assertNotNull(metadata)
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.first()
-            val agent = mockk<Agent>()
+            val agent = mockk<IAgent>()
             every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
@@ -474,11 +240,11 @@ class AgentMetadataReaderTest {
         @Test
         fun `transformer action with 2 args invocation`() {
             val reader = AgentMetadataReader()
-            val metadata = reader.createAgentMetadata(OneTransformerActionWith2ArgsOnly())
+            val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnly())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.first()
-            val agent = mockk<Agent>()
+            val agent = mockk<IAgent>()
             every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
@@ -503,7 +269,6 @@ class AgentMetadataReaderTest {
         @Test
         @Disabled
         fun `consumer action with no parameters`() {
-
         }
 
         @Nested
@@ -569,7 +334,7 @@ class AgentMetadataReaderTest {
                 assertNotNull(metadata)
                 assertEquals(1, metadata!!.actions.size)
                 val action = metadata.actions.first()
-                val agent = mockk<Agent>()
+                val agent = mockk<IAgent>()
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
@@ -609,7 +374,7 @@ class AgentMetadataReaderTest {
                 assertNotNull(metadata)
                 assertEquals(1, metadata!!.actions.size)
                 val action = metadata.actions.first()
-                val agent = mockk<Agent>()
+                val agent = mockk<IAgent>()
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
@@ -652,7 +417,7 @@ class AgentMetadataReaderTest {
                 assertNotNull(metadata)
                 assertEquals(1, metadata!!.actions.size)
                 val action = metadata.actions.first()
-                val agent = mockk<Agent>()
+                val agent = mockk<IAgent>()
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
@@ -690,5 +455,31 @@ class AgentMetadataReaderTest {
 
         }
 
+    }
+
+    @Nested
+    inner class Agents {
+
+        @Test
+        fun `not an agent`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(OneTransformerActionOnly())
+            assertNotNull(metadata)
+            assertFalse(metadata!! is Agent)
+        }
+
+        @Test
+        fun `recognize an agent`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnly())
+            assertNotNull(metadata)
+            assertTrue(metadata is IAgent, "@Agent should create an agent")
+            metadata as IAgent
+            assertEquals(1, metadata.actions.size)
+            assertEquals(
+                AgentWithOneTransformerActionWith2ArgsOnly::class.java.name,
+                metadata.name,
+            )
+        }
     }
 }

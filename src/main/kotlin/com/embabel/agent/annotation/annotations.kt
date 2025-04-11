@@ -30,8 +30,22 @@ import org.springframework.stereotype.Component
     AnnotationTarget.CLASS,
 )
 @Component
-annotation class Agentic(
+annotation class Agentic
 
+/**
+ * Indicates that this class is an agent.
+ * It doesn't just contribution actions, goals and conditions:
+ * it is an agent in itself.
+ * Either @Agent or @Agentic should be used: not both
+ */
+@Retention(AnnotationRetention.RUNTIME)
+@Target(
+    AnnotationTarget.CLASS,
+)
+@Component
+annotation class Agent(
+    val name: String = "",
+    val description: String,
 )
 
 /**

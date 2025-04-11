@@ -102,6 +102,9 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
     fun deploy(agent: Agent): AgentPlatform
 
     fun deploy(agentMetadata: AgentMetadata): AgentPlatform {
+        if (agentMetadata is Agent) {
+            return deploy(agentMetadata)
+        }
         deploy(
             Agent(
                 name = agentMetadata.name,

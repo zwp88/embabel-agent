@@ -30,6 +30,8 @@ import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
+import com.embabel.agent.Goal as IGoal
+
 
 /**
  * Read AgentMetadata from annotated classes.
@@ -48,11 +50,29 @@ class AgentMetadataReader {
      * The instance will have been previous injected by Spring if it's Spring-managed.
      * @return null if the class doesn't satisfy the requirements of @Agentic
      * or doesn't have the annotation at all.
+     * @return an Agent if the class has the @Agent annotation,
+     * otherwise the AgentMetadata superinterface
      */
     fun createAgentMetadata(instance: Any): AgentMetadata? {
         val type = instance.javaClass
-        if (!type.isAnnotationPresent(Agentic::class.java)) {
-            logger.debug("No @{} annotation found on {}", Agentic::class.simpleName, type)
+        val agenticAnnotation = type.getAnnotation(Agentic::class.java)
+        val agentAnnotation = type.getAnnotation(com.embabel.agent.annotation.Agent::class.java)
+        if (agenticAnnotation == null && agentAnnotation == null) {
+            logger.debug(
+                "No @{} or @{} annotation found on {}",
+                Agentic::class.simpleName,
+                com.embabel.agent.annotation.Agent::class.simpleName,
+                type.name,
+            )
+            return null
+        }
+        if (agenticAnnotation != null && agentAnnotation != null) {
+            logger.debug(
+                "Both @{} and @{} annotations found on {}. Treating class as Agent, but both should not be used",
+                Agentic::class.simpleName,
+                com.embabel.agent.annotation.Agent::class.simpleName,
+                type.name,
+            )
             return null
         }
         val getterGoals = findGoalGetters(type).map { getGoal(it, instance) }
@@ -70,12 +90,32 @@ class AgentMetadataReader {
             )
             return null
         }
-
         val toolCallbacks = ToolCallbacks.from(instance).toList()
+
+        val conditions = conditionMethods.map { createCondition(it, instance) }
+        val actions = actionMethods.map { createAction(it, instance, toolCallbacks) }
+
+        if (agentAnnotation != null) {
+            return com.embabel.agent.Agent(
+                name = agentAnnotation.name.ifBlank { type.name },
+                description = agentAnnotation.description.ifBlank {
+                    logger.error(
+                        "No description provided for @{} on {}",
+                        com.embabel.agent.annotation.Agent::class.simpleName,
+                        type.simpleName,
+                    )
+                    type.simpleName
+                },
+                conditions = conditions,
+                actions = actions,
+                goals = goals.toSet(),
+            )
+        }
+
         return AgentMetadata(
             name = type.name,
-            actions = actionMethods.map { createAction(it, instance, toolCallbacks) },
-            conditions = conditionMethods.map { createCondition(it, instance) },
+            conditions = conditions,
+            actions = actions,
             goals = goals.toSet(),
         )
     }
@@ -122,7 +162,7 @@ class AgentMetadataReader {
             if (method.parameterCount == 0 &&
                 method.returnType != Void.TYPE
             ) {
-                if (Goal::class.java.isAssignableFrom(method.returnType)) {
+                if (IGoal::class.java.isAssignableFrom(method.returnType)) {
                     goalGetters.add(method)
                 }
             }
@@ -136,9 +176,9 @@ class AgentMetadataReader {
     private fun getGoal(
         method: Method,
         instance: Any,
-    ): Goal {
+    ): IGoal {
         // We need to change the name to be the property name
-        val rawg = ReflectionUtils.invokeMethod(method, instance) as Goal
+        val rawg = ReflectionUtils.invokeMethod(method, instance) as IGoal
         return rawg.copy(name = generateName(instance, getterToPropertyName(method.name)))
     }
 
@@ -204,7 +244,7 @@ class AgentMetadataReader {
      */
     private fun createGoalFromActionMethod(
         method: Method,
-    ): Goal? {
+    ): IGoal? {
         val actionAnnotation = method.getAnnotation(Action::class.java)
         val goalAnnotation = method.getAnnotation(AchievesGoal::class.java)
         if (goalAnnotation == null) {
@@ -214,7 +254,7 @@ class AgentMetadataReader {
             name = actionAnnotation.outputBinding,
             type = method.returnType.simpleName,
         )
-        return Goal(
+        return IGoal(
             name = "create_${method.returnType.simpleName}",
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
