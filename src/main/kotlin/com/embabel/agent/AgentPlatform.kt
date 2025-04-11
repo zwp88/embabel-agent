@@ -25,17 +25,6 @@ import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.testing.FakeGoalRanker
 import com.embabel.agent.testing.RandomGoalRanker
 import com.embabel.common.util.kotlin.loggerFor
-import java.util.function.Function
-
-/**
- * Reusable AgentFunction.
- * Allows use of AgentPlatform as a function from I to O.
- */
-interface AgentFunction<I, O> : Function<I, O> {
-    val processOptions: ProcessOptions
-    val agentMetadata: AgentMetadata
-    val outputClass: Class<O>
-}
 
 /**
  * Controls log output.
@@ -55,7 +44,6 @@ data class ProcessOptions(
     val test: Boolean = false,
     val verbosity: Verbosity = Verbosity(),
     val allowGoalChange: Boolean = true,
-//    val contextId: ContextId? = null,
     val maxActions: Int = 20,
 )
 
@@ -94,14 +82,15 @@ interface AgentPlatformProperties {
  * An AgentPlatform can run agents. It can also act as an agent itself,
  * drawing on all of its agents as its own actions, goals, and conditions.
  * An AgentPlatform is stateful, as agents can be deployed to it.
- * Note the inline extension functions, which allow type reification
- * for simpler signatures.
+ * See TypedOps for a higher level API with typed I/O.
  */
 interface AgentPlatform : AgentMetadata, AgentFactory {
 
+    val properties: AgentPlatformProperties
+
     val goalRanker: GoalRanker
 
-    val properties: AgentPlatformProperties
+    val eventListener: AgenticEventListener
 
     val toolGroupResolver: ToolGroupResolver
 
@@ -135,18 +124,6 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
 
     fun deploy(goal: Goal): AgentPlatform
 
-    /**
-     * Run this particular agent.
-     */
-    fun runAgentFrom(
-        agentName: String,
-        processOptions: ProcessOptions = ProcessOptions(),
-        bindings: Map<String, Any>,
-    ): AgentProcessStatus {
-        val agent = agentByName(agentName)
-        return runAgentFrom(agent, processOptions, bindings)
-    }
-
     fun runAgentFrom(
         agent: Agent,
         processOptions: ProcessOptions = ProcessOptions(),
@@ -173,8 +150,6 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
     override val conditions: List<Condition>
         get() = agents().flatMap { it.conditions }.distinct()
 
-    val eventListener: AgenticEventListener
-
     override fun createAgent(name: String, description: String): Agent {
         // TODO this isn't great, as we may not want all of them
         val toolCallbacks =
@@ -191,41 +166,6 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
             conditions = conditions,
         )
         return newAgent
-    }
-
-    /**
-     * Transform between these two types if possible.
-     */
-    fun <I : Any, O> transform(
-        input: I,
-        outputClass: Class<O>,
-        processOptions: ProcessOptions = ProcessOptions(),
-    ): O = asFunction<I, O>(outputClass, processOptions).apply(input)
-
-    /**
-     * Return a reusable function that performs this transformation.
-     * Validates whether it's possible and include metadata.
-     */
-    fun <I : Any, O> asFunction(
-        outputClass: Class<O>,
-        processOptions: ProcessOptions = ProcessOptions(),
-    ): AgentFunction<I, O> =
-        AgentPlatformBackedAgentFunction(
-            processOptions = processOptions,
-            outputClass = outputClass,
-            agentPlatform = this,
-        )
-
-    /**
-     * Transform user input into the target type
-     */
-    fun <O> handleUserInput(
-        intent: String,
-        outputClass: Class<O>,
-        processOptions: ProcessOptions = ProcessOptions(),
-    ): O {
-        val input = UserInput(intent)
-        return transform(input, outputClass, processOptions)
     }
 
     /**
@@ -305,71 +245,5 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
             output = processStatus.finalResult()!!,
             processStatus = processStatus,
         )
-    }
-}
-
-/**
- * Perform the magic trick of getting from A to B
- */
-inline fun <I : Any, reified O : Any> AgentPlatform.transform(
-    input: I,
-    processOptions: ProcessOptions = ProcessOptions(),
-): O {
-    return transform(
-        input = input,
-        outputClass = O::class.java,
-        processOptions = processOptions,
-    )
-}
-
-/**
- * Turn user input into this type
- */
-inline fun <reified O> AgentPlatform.handleUserInput(
-    intent: String,
-    processOptions: ProcessOptions = ProcessOptions(),
-): O =
-    handleUserInput(
-        intent = intent,
-        outputClass = O::class.java,
-        processOptions = processOptions,
-    )
-
-inline fun <I : Any, reified O> AgentPlatform.asFunction(
-    processOptions: ProcessOptions = ProcessOptions(),
-): AgentFunction<I, O> = asFunction(O::class.java, processOptions)
-
-private class AgentPlatformBackedAgentFunction<I : Any, O>(
-    override val processOptions: ProcessOptions,
-    override val outputClass: Class<O>,
-    private val agentPlatform: AgentPlatform,
-) : AgentFunction<I, O> {
-
-    // TODO verify if it's impossible to get from I to O
-
-    override val agentMetadata: AgentMetadata
-        get() = agentPlatform
-
-    override fun apply(input: I): O {
-        val goalAgent = agentPlatform.createAgent(
-            name = "goal-${outputClass.simpleName}",
-            description = "Goal agent for ${outputClass.simpleName}",
-        )
-            .withSingleGoal(
-                Goal(
-                    name = "create-${outputClass.simpleName}",
-                    description = "Create ${outputClass.simpleName}",
-                    satisfiedBy = outputClass,
-                )
-            )
-
-        val processStatus = agentPlatform.runAgentFrom(
-            processOptions = processOptions,
-            agent = goalAgent,
-            bindings = mapOf(
-                "it" to input,
-            )
-        )
-        return processStatus.resultOfType(outputClass)
     }
 }

@@ -59,11 +59,12 @@ interface ToolConsumer {
         for (role in toolGroups) {
             val resolution = toolGroupResolver.resolveToolGroup(role)
             if (resolution.resolvedToolGroup == null) {
-                throw IllegalStateException(
-                    "Could not resolve tool group '$role': ${resolution.failureMessage}",
+                loggerFor<ToolConsumer>().warn(
+                    "Could not resolve tool group with role='{}': {}", role, resolution.failureMessage
                 )
+            } else {
+                tools += resolution.resolvedToolGroup.toolCallbacks
             }
-            tools += resolution.resolvedToolGroup.toolCallbacks
         }
         loggerFor<ToolConsumer>().debug(
             "{} resolved {} tools from {} tools and {} tool groups: {}",

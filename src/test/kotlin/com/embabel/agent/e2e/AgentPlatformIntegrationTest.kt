@@ -15,9 +15,7 @@
  */
 package com.embabel.agent.e2e
 
-import com.embabel.agent.AgentPlatform
-import com.embabel.agent.GoalResult
-import com.embabel.agent.ProcessOptions
+import com.embabel.agent.*
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
@@ -69,6 +67,8 @@ class AgentPlatformIntegrationTest(
     private val agentPlatform: AgentPlatform,
 ) {
 
+    private val typedOps: TypedOps = AgentPlatformTypedOps(agentPlatform)
+
     @Test
     fun `agent starts up`() {
         // Nothing to test
@@ -76,7 +76,7 @@ class AgentPlatformIntegrationTest(
 
     @Test
     fun `run star finder as transform`() {
-        val funnyWriteup = agentPlatform.asFunction<UserInput, FunnyWriteup>(
+        val funnyWriteup = typedOps.asFunction<UserInput, FunnyWriteup>(
             processOptions = ProcessOptions(test = true),
             outputClass = FunnyWriteup::class.java,
         ).apply(
