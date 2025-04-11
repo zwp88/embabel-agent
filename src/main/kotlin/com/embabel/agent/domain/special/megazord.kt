@@ -13,30 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent
+package com.embabel.agent.domain.special
 
-import com.embabel.agent.dsl.Transformer
-import com.embabel.agent.primitive.LlmOptions
-
-data class UserInput(
-    val content: String,
-)
 
 /**
- * Interface implemented by objects that can be extracted from text using an LLM.
+ * Tag interface to indicate that an implementing type can be decomposed
+ * into its fields.
+ * Can be used for input or output.
  */
-interface Extractable {
-    val companion: ExtractableCompanion
-}
-
-interface ExtractableCompanion {
-    fun extractionAction(llmOptions: LlmOptions): Transformer<UserInput, out Extractable>
-
-}
+interface Megazord
 
 /**
  * Tag interface to indicate that an implementing type should be built from the context from its bound fields.
  * Provides a strongly typed way to wait on combined results.
  * Makes a megazord!
  */
-interface Aggregation
+interface Aggregation : Megazord

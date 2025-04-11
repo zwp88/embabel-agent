@@ -15,6 +15,7 @@
  */
 package com.embabel.agent
 
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.GoalChoiceRequestEvent

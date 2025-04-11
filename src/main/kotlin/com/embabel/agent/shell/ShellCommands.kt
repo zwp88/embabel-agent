@@ -19,7 +19,7 @@ import com.embabel.agent.AgentPlatform
 import com.embabel.agent.GoalResult
 import com.embabel.agent.ProcessOptions
 import com.embabel.agent.Verbosity
-import com.embabel.agent.domain.HasContent
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.LumonColors
 import com.embabel.common.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

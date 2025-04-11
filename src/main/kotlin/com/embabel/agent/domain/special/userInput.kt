@@ -13,12 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain
+package com.embabel.agent.domain.special
+
+import com.embabel.agent.dsl.Transformer
+import com.embabel.agent.primitive.LlmOptions
 
 /**
- * Interface when an object has a single important text component.
+ * Represents a single user input
  */
-interface HasContent {
+data class UserInput(
+    val content: String,
+)
 
-    val text: String
+/**
+ * Interface implemented by objects that can be extracted from text using an LLM.
+ */
+interface Extractable {
+    val companion: ExtractableCompanion
+}
+
+interface ExtractableCompanion {
+    fun extractionAction(llmOptions: LlmOptions): Transformer<UserInput, out Extractable>
+
 }

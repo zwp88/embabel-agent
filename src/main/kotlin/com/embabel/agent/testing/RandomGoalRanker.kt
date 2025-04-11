@@ -16,7 +16,7 @@
 package com.embabel.agent.testing
 
 import com.embabel.agent.AgentMetadata
-import com.embabel.agent.UserInput
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings

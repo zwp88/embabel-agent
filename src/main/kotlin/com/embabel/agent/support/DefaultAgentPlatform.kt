@@ -17,6 +17,8 @@ package com.embabel.agent.support
 
 //import com.embabel.ScriptEvaluationService
 import com.embabel.agent.*
+import com.embabel.agent.domain.special.Extractable
+import com.embabel.agent.domain.special.ExtractableCompanion
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.primitive.LlmOptions

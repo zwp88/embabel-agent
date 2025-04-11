@@ -256,7 +256,7 @@ fun expandInputBindings(
     inputVarName: String,
     inputClass: Class<*>
 ): Set<IoBinding> {
-    if (com.embabel.agent.Aggregation::class.java.isAssignableFrom(inputClass)) {
+    if (com.embabel.agent.domain.special.Aggregation::class.java.isAssignableFrom(inputClass)) {
         return inputClass.declaredFields
             .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
             .map { field ->

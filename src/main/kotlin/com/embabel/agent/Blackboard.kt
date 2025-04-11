@@ -15,6 +15,7 @@
  */
 package com.embabel.agent
 
+import com.embabel.agent.domain.special.Aggregation
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.kotlin.loggerFor
 import kotlin.reflect.KClass

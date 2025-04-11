@@ -15,8 +15,13 @@
  */
 package com.embabel.agent.support
 
-import com.embabel.agent.*
+import com.embabel.agent.AgentProcess
+import com.embabel.agent.PlatformServices
+import com.embabel.agent.ProcessContext
+import com.embabel.agent.ProcessOptions
 import com.embabel.agent.annotation.support.Person
+import com.embabel.agent.domain.special.Aggregation
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.dsl.agent
 import com.embabel.agent.dsl.transformer
 import com.embabel.plan.goap.ConditionDetermination

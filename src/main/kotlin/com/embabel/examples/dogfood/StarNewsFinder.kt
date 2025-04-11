@@ -16,12 +16,12 @@
 package com.embabel.examples.dogfood
 
 import com.embabel.agent.ToolGroup
-import com.embabel.agent.UserInput
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
 import com.embabel.agent.annotation.Agentic
 import com.embabel.agent.annotation.support.PromptRunner
-import com.embabel.agent.domain.HasContent
+import com.embabel.agent.domain.library.HasContent
+import com.embabel.agent.domain.special.UserInput
 
 
 data class RelevantNewsStories(

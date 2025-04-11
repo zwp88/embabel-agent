@@ -19,6 +19,7 @@ import com.embabel.agent.*
 import com.embabel.agent.annotation.*
 import com.embabel.agent.annotation.Action
 import com.embabel.agent.annotation.Condition
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.primitive.LlmOptions
 import com.embabel.agent.support.InMemoryBlackboard

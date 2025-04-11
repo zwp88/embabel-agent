@@ -17,7 +17,7 @@ package com.embabel.agent.support
 
 import com.embabel.agent.AgentMetadata
 import com.embabel.agent.LlmTransformer
-import com.embabel.agent.UserInput
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.primitive.LlmOptions
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.GoalRanking

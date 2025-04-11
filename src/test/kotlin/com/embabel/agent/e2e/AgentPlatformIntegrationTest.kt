@@ -18,7 +18,7 @@ package com.embabel.agent.e2e
 import com.embabel.agent.AgentPlatform
 import com.embabel.agent.GoalResult
 import com.embabel.agent.ProcessOptions
-import com.embabel.agent.UserInput
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.testing.FakeGoalRanker
