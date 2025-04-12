@@ -152,15 +152,16 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
 }
 
 /**
- * Does the bound instance satisfy the type
+ * Does the bound instance satisfy the type.
+ * Match on simple name or FQN of type or any supertype
  */
-private fun satisfiesType(boundInstance: Any, type: String): Boolean {
+fun satisfiesType(boundInstance: Any, type: String): Boolean {
     if (boundInstance::class.simpleName == type) {
         return true
     }
     // Check if the class or any of its superclasses implement the interface
     val interfaces = findAllSupertypes(boundInstance::class.java)
-    return interfaces.any { it.simpleName == type }
+    return interfaces.any { it.simpleName == type || it.name == type }
 }
 
 /**

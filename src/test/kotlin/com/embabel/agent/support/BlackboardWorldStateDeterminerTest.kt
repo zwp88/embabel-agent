@@ -53,6 +53,28 @@ val SimpleTestAgent = agent("SimpleTest", description = "Simple test agent") {
     goal(name = "done", description = "done", satisfiedBy = Person::class)
 }
 
+interface Fancy
+
+data class FancyPerson(
+    val name: String,
+) : Fancy
+
+val InterfaceTestAgent = agent("SimpleTest", description = "Simple test agent") {
+    action {
+        transformer<UserInput, FancyPerson>(name = "thing") {
+            FancyPerson(name = "Rod")
+        }
+    }
+
+    action {
+        transformer<AllOfTheAbove, FancyPerson>(name = "reverse-name") {
+            FancyPerson(it.input.person.name.reversed())
+        }
+    }
+
+    goal(name = "done", description = "done", satisfiedBy = FancyPerson::class)
+}
+
 class BlackboardWorldStateDeterminerTest {
 
     val mockPlatformServices = mockk<PlatformServices>()
@@ -143,6 +165,79 @@ class BlackboardWorldStateDeterminerTest {
                 action.isAchievable(worldState)
             )
         }
+    }
+
+    @Nested
+    inner class TypeChecks {
+
+        @Test
+        fun `exact type match with simple name`() {
+            val blackboard = InMemoryBlackboard()
+            val mockAgentProcess = mockk<AgentProcess>()
+            every { mockAgentProcess.agent } returns SimpleTestAgent
+            val bsb = BlackboardWorldStateDeterminer(
+                processContext = ProcessContext(
+                    blackboard = blackboard,
+                    platformServices = mockPlatformServices,
+                    agentProcess = mockAgentProcess,
+                    processOptions = ProcessOptions(),
+                )
+            )
+
+            blackboard["input"] = UserInput("xyz")
+            blackboard["person"] = Person("Rod")
+            val pc = bsb.determineCondition("it:Person")
+            assertEquals(ConditionDetermination.TRUE, pc)
+        }
+
+        @Test
+        fun `subclass match`() {
+            val blackboard = InMemoryBlackboard()
+            val mockAgentProcess = mockk<AgentProcess>()
+            every { mockAgentProcess.agent } returns InterfaceTestAgent
+            val bsb = BlackboardWorldStateDeterminer(
+                processContext = ProcessContext(
+                    blackboard = blackboard,
+                    platformServices = mockPlatformServices,
+                    agentProcess = mockAgentProcess,
+                    processOptions = ProcessOptions(),
+                )
+            )
+
+            blackboard["input"] = UserInput("xyz")
+            blackboard["person"] = FancyPerson("Rod")
+            val pc = bsb.determineCondition("it:FancyPerson")
+            assertEquals(ConditionDetermination.FALSE, bsb.determineCondition("it:Person"))
+            assertEquals(ConditionDetermination.TRUE, pc)
+            assertEquals(
+                ConditionDetermination.TRUE, bsb.determineCondition("it:Fancy"),
+                "Should match against interface",
+            )
+        }
+
+    }
+
+    @Test
+    fun `exact type match with fqn`() {
+        val blackboard = InMemoryBlackboard()
+        val mockAgentProcess = mockk<AgentProcess>()
+        every { mockAgentProcess.agent } returns SimpleTestAgent
+        val bsb = BlackboardWorldStateDeterminer(
+            processContext = ProcessContext(
+                blackboard = blackboard,
+                platformServices = mockPlatformServices,
+                agentProcess = mockAgentProcess,
+                processOptions = ProcessOptions(),
+            )
+        )
+
+        blackboard["input"] = UserInput("xyz")
+        blackboard["person"] = Person("Rod")
+        assertEquals(
+            ConditionDetermination.TRUE,
+            bsb.determineCondition("it:${Person::class.qualifiedName}"),
+            "Should match against fully qualified name",
+        )
     }
 
 }

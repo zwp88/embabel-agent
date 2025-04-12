@@ -16,6 +16,7 @@
 package com.embabel.agent.support
 
 import com.embabel.agent.ProcessContext
+import com.embabel.agent.satisfiesType
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.WorldState
 import com.embabel.plan.goap.WorldStateDeterminer
@@ -60,7 +61,7 @@ class BlackboardWorldStateDeterminer(
                     variable == "all" -> true // TODO fix this
                     else -> {
                         val determination =
-                            value != null && value::class.simpleName == type
+                            value != null && satisfiesType(value, type)
                         logger.debug(
                             "Determined condition {}={}: variable={}, type={}, value={}",
                             condition,
