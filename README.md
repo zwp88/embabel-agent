@@ -76,6 +76,8 @@ Goals, actions and plans are independent of GOAP. Future planning options includ
 
 - Plans created by a reasoning model such as OpenAI o1 or DeepSeek R1.
 
+## Getting Started
+
 ## Environment variables
 
 Required:
@@ -90,8 +92,18 @@ Optional external services:
 
 ## Running via Spring Shell
 
-You can run the application under your IDE or from the command line
-using Maven.
+The easiest way to run the application using using one of the scripts in the
+`scripts` directory. You can start the shell with:
+
+```bash
+cd scripts
+./shell.sh
+````
+
+This script will also warn of any missing environment variables.
+
+You can also run the shell under your IDE or from the command line
+using Maven directly.
 
 This will run the application in interactive shell mode:
 
