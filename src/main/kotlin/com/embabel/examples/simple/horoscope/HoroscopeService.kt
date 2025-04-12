@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.examples.dogfood
+package com.embabel.examples.simple.horoscope
 
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
@@ -24,7 +24,7 @@ fun interface HoroscopeService {
 }
 
 @Service
-class RestClientHoroscopeService : HoroscopeService {
+class HoroscopeAppApiHoroscopeService : HoroscopeService {
 
     private val restClient = RestClient.builder()
         .baseUrl("https://horoscope-app-api.vercel.app")

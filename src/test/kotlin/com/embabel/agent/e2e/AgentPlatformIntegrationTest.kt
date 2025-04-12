@@ -20,8 +20,8 @@ import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.testing.FakeGoalRanker
-import com.embabel.examples.dogfood.FunnyWriteup
-import com.embabel.examples.dogfood.HoroscopeService
+import com.embabel.examples.simple.horoscope.FunnyWriteup
+import com.embabel.examples.simple.horoscope.HoroscopeService
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
