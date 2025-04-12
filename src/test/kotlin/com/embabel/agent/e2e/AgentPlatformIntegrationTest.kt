@@ -24,8 +24,6 @@ import com.embabel.examples.simple.horoscope.FunnyWriteup
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledOnOs
-import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -61,7 +59,6 @@ class FakeConfig {
  */
 @SpringBootTest
 @Import(FakeConfig::class)
-@DisabledOnOs(OS.LINUX)
 class AgentPlatformIntegrationTest(
     @Autowired
     private val agentPlatform: AgentPlatform,
