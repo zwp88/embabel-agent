@@ -252,7 +252,7 @@ class AgentMetadataReader {
         }
         val inputBinding = IoBinding(
             name = actionAnnotation.outputBinding,
-            type = method.returnType.simpleName,
+            type = method.returnType.name,
         )
         return IGoal(
             name = "create_${method.returnType.simpleName}",
@@ -297,7 +297,7 @@ private class MultiTransformer<O : Any>(
     cost = cost,
     value = value,
     inputs,
-    outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.simpleName)),
+    outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.name)),
     transitions = transitions,
     toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,

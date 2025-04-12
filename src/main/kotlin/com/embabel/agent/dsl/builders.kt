@@ -270,7 +270,7 @@ fun expandInputBindings(
     }
 
     // Default case: just return the input itself
-    return setOf(IoBinding(inputVarName, inputClass.simpleName))
+    return setOf(IoBinding(inputVarName, inputClass.name))
 }
 
 class Transformer<I, O>(
@@ -299,7 +299,7 @@ class Transformer<I, O>(
     cost = cost,
     value = value,
     inputs = expandInputBindings(inputVarName, inputClass),
-    outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.simpleName)),
+    outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.name)),
     transitions = transitions,
     toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,
@@ -315,7 +315,7 @@ class Transformer<I, O>(
         outputTypes: Map<String, SchemaType>,
         action: Action
     ): ActionStatus = ActionRunner.execute {
-        val input = processContext.getValue(inputVarName, inputClass.simpleName) as I
+        val input = processContext.getValue(inputVarName, inputClass.name) as I
         val output = block.transform(
             TransformationPayload(
                 input = input,
@@ -366,7 +366,7 @@ class Aggregator<I, O>(
     cost = cost,
     value = value,
     inputs = emptySet(),
-    outputs = setOf(IoBinding(outputVarName, outputClass.simpleName)),
+    outputs = setOf(IoBinding(outputVarName, outputClass.name)),
     transitions = transitions,
     toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,
@@ -478,7 +478,7 @@ class Supplier<O>(
     cost = cost,
     value = value,
     inputs = emptySet(),
-    outputs = setOf(IoBinding(outputVarName, outputClass.simpleName)),
+    outputs = setOf(IoBinding(outputVarName, outputClass.name)),
     transitions = transitions,
     toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,

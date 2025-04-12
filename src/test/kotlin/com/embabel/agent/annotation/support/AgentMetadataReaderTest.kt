@@ -99,7 +99,11 @@ class AgentMetadataReaderTest {
             assertEquals(1, metadata!!.goals.size)
             val g = metadata.goals.single()
             assertEquals("Creating a user", g.description)
-            assertEquals(mapOf("it:Person" to ConditionDetermination.TRUE), g.preconditions)
+            assertEquals(
+                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
+                g.preconditions,
+                "Should have precondition for Person",
+            )
         }
     }
 
@@ -154,9 +158,13 @@ class AgentMetadataReaderTest {
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.single()
             assertEquals(1, action.inputs.size, "Should have 1 input")
-            assertEquals(UserInput::class.java.simpleName, action.inputs.single().type)
+            assertEquals(UserInput::class.java.name, action.inputs.single().type)
             assertEquals(1, action.outputs.size, "Should have 1 output")
-            assertEquals(Person::class.java.simpleName, action.outputs.single().type)
+            assertEquals(
+                Person::class.java.name,
+                action.outputs.single().type,
+                "Output name must match",
+            )
         }
 
         @Test
@@ -167,12 +175,16 @@ class AgentMetadataReaderTest {
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.single()
             assertEquals(1, action.inputs.size, "Should have 1 input")
-            assertEquals(UserInput::class.java.simpleName, action.inputs.single().type)
+            assertEquals(UserInput::class.java.name, action.inputs.single().type)
             assertEquals(1, action.outputs.size, "Should have 1 output")
-            assertEquals(Person::class.java.simpleName, action.outputs.single().type)
+            assertEquals(
+                Person::class.java.name,
+                action.outputs.single().type,
+                "Output name must match",
+            )
             assertEquals(
                 ConditionDetermination.TRUE,
-                action.preconditions["it:UserInput"],
+                action.preconditions["it:${UserInput::class.qualifiedName}"],
                 "Should have input precondition",
             )
             assertEquals(
@@ -190,9 +202,13 @@ class AgentMetadataReaderTest {
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.single()
             assertEquals(1, action.inputs.size, "Should have 1 input")
-            assertEquals(UserInput::class.java.simpleName, action.inputs.single().type)
+            assertEquals(UserInput::class.java.name, action.inputs.single().type)
             assertEquals(1, action.outputs.size, "Should have 1 output")
-            assertEquals(Person::class.java.simpleName, action.outputs.single().type)
+            assertEquals(
+                Person::class.java.name,
+                action.outputs.single().type,
+                "Output name must match",
+            )
             assertEquals(1, action.toolGroups.size)
             assertEquals("magic", action.toolGroups.single())
         }
@@ -206,9 +222,13 @@ class AgentMetadataReaderTest {
             val action = metadata.actions.single()
             assertEquals(2, action.inputs.size, "Should have 2 inputs")
             assertEquals(1, action.outputs.size, "Should have 1 output")
-            assertTrue(action.inputs.any { it.type == UserInput::class.java.simpleName })
-            assertTrue(action.inputs.any { it.type == Task::class.java.simpleName })
-            assertEquals(Person::class.java.simpleName, action.outputs.single().type)
+            assertTrue(action.inputs.any { it.type == UserInput::class.java.name })
+            assertTrue(action.inputs.any { it.type == Task::class.java.name })
+            assertEquals(
+                Person::class.java.name,
+                action.outputs.single().type,
+                "Output name must match"
+            )
             assertEquals(IoBinding.DEFAULT_BINDING, action.outputs.single().name)
         }
 
@@ -301,12 +321,20 @@ class AgentMetadataReaderTest {
                 val action = metadata.actions.single()
                 assertEquals(2, action.inputs.size, "Should have 2 inputs")
                 assertEquals(1, action.outputs.size, "Should have 1 output")
-                val uib = action.inputs.single { it.type == UserInput::class.java.simpleName }
-                val tb = action.inputs.single { it.type == Task::class.java.simpleName }
+                val uib = action.inputs.single { it.type == UserInput::class.java.name }
+                val tb = action.inputs.single { it.type == Task::class.java.name }
                 assertEquals("userInput", uib.name)
                 assertEquals("task", tb.name)
-                assertEquals(Person::class.java.simpleName, action.outputs.single().type)
-                assertEquals(IoBinding.DEFAULT_BINDING, action.outputs.single().name)
+                assertEquals(
+                    Person::class.java.name,
+                    action.outputs.single().type,
+                    "Output name must match",
+                )
+                assertEquals(
+                    IoBinding.DEFAULT_BINDING,
+                    action.outputs.single().name,
+                    "Output name must match",
+                )
             }
 
             @Test
@@ -318,9 +346,13 @@ class AgentMetadataReaderTest {
                 val action = metadata.actions.single()
                 assertEquals(2, action.inputs.size, "Should have 2 inputs")
                 assertEquals(1, action.outputs.size, "Should have 1 output")
-                assertTrue(action.inputs.any { it.type == UserInput::class.java.simpleName })
-                assertTrue(action.inputs.any { it.type == Task::class.java.simpleName })
-                assertEquals(Person::class.java.simpleName, action.outputs.single().type)
+                assertTrue(action.inputs.any { it.type == UserInput::class.java.name })
+                assertTrue(action.inputs.any { it.type == Task::class.java.name })
+                assertEquals(
+                    Person::class.java.name,
+                    action.outputs.single().type,
+                    "Output name must match",
+                )
                 assertEquals("person", action.outputs.single().name)
             }
         }

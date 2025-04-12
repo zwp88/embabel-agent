@@ -39,8 +39,8 @@ value class IoBinding(val value: String) {
 
     constructor(name: String, type: String) : this("$name:$type")
 
-    constructor(name: String? = DEFAULT_BINDING, type: Class<*>) : this("$name:${type.simpleName}")
-    constructor(name: String? = DEFAULT_BINDING, type: KClass<*>) : this("$name:${type.simpleName}")
+    constructor(name: String? = DEFAULT_BINDING, type: Class<*>) : this("$name:${type.name}")
+    constructor(name: String? = DEFAULT_BINDING, type: KClass<*>) : this("$name:${type.qualifiedName}")
 
     val type: String
         get() = if (value.contains(":")) {

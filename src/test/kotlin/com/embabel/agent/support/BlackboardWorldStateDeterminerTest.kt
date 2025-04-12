@@ -102,10 +102,11 @@ class BlackboardWorldStateDeterminerTest {
             val worldState = bsb.determineWorldState().state
             assertEquals(
                 mapOf(
-                    "it:UserInput" to ConditionDetermination.FALSE,
-                    "it:Person" to ConditionDetermination.FALSE,
+                    "it:${UserInput::class.qualifiedName}" to ConditionDetermination.FALSE,
+                    "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
                 ),
-                worldState
+                worldState,
+                "World state must use qualified names",
             )
 
         }
@@ -129,10 +130,11 @@ class BlackboardWorldStateDeterminerTest {
             val worldState = bsb.determineWorldState().state
             assertEquals(
                 mapOf(
-                    "it:UserInput" to ConditionDetermination.TRUE,
-                    "it:Person" to ConditionDetermination.FALSE,
+                    "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
+                    "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
                 ),
-                worldState
+                worldState,
+                "World state must use qualified names"
             )
         }
 
@@ -156,9 +158,10 @@ class BlackboardWorldStateDeterminerTest {
             assertEquals(
                 worldState.state,
                 mapOf(
-                    "it:UserInput" to ConditionDetermination.TRUE,
-                    "it:Person" to ConditionDetermination.TRUE,
+                    "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
+                    "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
                 ),
+                "World state must use qualified names",
             )
             val action = SimpleTestAgent.actions.single { it.name == "reverse-name" }
             assertTrue(
