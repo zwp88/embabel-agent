@@ -22,8 +22,10 @@ import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.testing.FakeGoalRanker
 import com.embabel.examples.simple.horoscope.FunnyWriteup
 import com.embabel.examples.simple.horoscope.HoroscopeService
+import com.embabel.examples.simple.horoscope.StarNewsFinder
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -72,7 +74,31 @@ class AgentPlatformIntegrationTest(
     }
 
     @Test
-    fun `run star finder as transform`() {
+    fun `run star finder as transform by name`() {
+        val funnyWriteup = typedOps.asFunction<UserInput, FunnyWriteup>(
+            processOptions = ProcessOptions(test = true),
+            outputClass = FunnyWriteup::class.java,
+            agentName = StarNewsFinder::class.qualifiedName!!,
+        ).apply(
+            UserInput("Lynda is a Scorpio, find some news for her"),
+        )
+        assertNotNull(funnyWriteup)
+        assertNotNull(funnyWriteup.text)
+    }
+
+    @Test
+    fun `reject unknown agent in transform by name`() {
+        assertThrows<NoSuchAgentException> {
+            typedOps.asFunction<UserInput, FunnyWriteup>(
+                processOptions = ProcessOptions(test = true),
+                outputClass = FunnyWriteup::class.java,
+                agentName = "stuff and nonsense",
+            )
+        }
+    }
+
+    @Test
+    fun `run star finder as AgentPlatform transform`() {
         val funnyWriteup = typedOps.asFunction<UserInput, FunnyWriteup>(
             processOptions = ProcessOptions(test = true),
             outputClass = FunnyWriteup::class.java,

@@ -85,6 +85,10 @@ interface AgentPlatformProperties {
     val goalConfidenceCutOff: ZeroToOne
 }
 
+class NoSuchAgentException(
+    agentName: String,
+) : IllegalArgumentException("No such agent: $agentName")
+
 /**
  * An AgentPlatform can run agents. It can also act as an agent itself,
  * drawing on all of its agents as its own actions, goals, and conditions.

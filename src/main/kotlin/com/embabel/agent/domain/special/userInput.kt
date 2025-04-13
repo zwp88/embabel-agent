@@ -19,7 +19,7 @@ import com.embabel.agent.dsl.Transformer
 import com.embabel.agent.primitive.LlmOptions
 
 /**
- * Represents a single user input
+ * Special class that represents a single user input
  */
 data class UserInput(
     val content: String,

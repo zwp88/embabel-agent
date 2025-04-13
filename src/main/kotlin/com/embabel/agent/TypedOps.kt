@@ -52,6 +52,13 @@ interface TypedOps {
         processOptions: ProcessOptions = ProcessOptions(),
     ): AgentFunction<I, O>
 
+    @Throws(NoSuchAgentException::class)
+    fun <I : Any, O> asFunction(
+        outputClass: Class<O>,
+        agentName: String,
+        processOptions: ProcessOptions = ProcessOptions(),
+    ): AgentFunction<I, O>
+
     /**
      * Transform user input into the target type
      */
@@ -64,24 +71,6 @@ interface TypedOps {
         return transform(input, outputClass, processOptions)
     }
 
-}
-
-/**
- * Typed operations over an agent platform
- */
-class AgentPlatformTypedOps(
-    private val agentPlatform: AgentPlatform
-) : TypedOps {
-
-    override fun <I : Any, O> asFunction(
-        outputClass: Class<O>,
-        processOptions: ProcessOptions,
-    ): AgentFunction<I, O> =
-        AgentPlatformBackedAgentFunction(
-            processOptions = processOptions,
-            outputClass = outputClass,
-            agentPlatform = agentPlatform,
-        )
 }
 
 
@@ -115,38 +104,3 @@ inline fun <reified O> TypedOps.handleUserInput(
 inline fun <I : Any, reified O> TypedOps.asFunction(
     processOptions: ProcessOptions = ProcessOptions(),
 ): AgentFunction<I, O> = asFunction(O::class.java, processOptions)
-
-private class AgentPlatformBackedAgentFunction<I : Any, O>(
-    override val processOptions: ProcessOptions,
-    override val outputClass: Class<O>,
-    private val agentPlatform: AgentPlatform,
-) : AgentFunction<I, O> {
-
-    // TODO verify if it's impossible to get from I to O
-
-    override val agentMetadata: AgentMetadata
-        get() = agentPlatform
-
-    override fun apply(input: I): O {
-        val goalAgent = agentPlatform.createAgent(
-            name = "goal-${outputClass.simpleName}",
-            description = "Goal agent for ${outputClass.simpleName}",
-        )
-            .withSingleGoal(
-                Goal(
-                    name = "create-${outputClass.simpleName}",
-                    description = "Create ${outputClass.simpleName}",
-                    satisfiedBy = outputClass,
-                )
-            )
-
-        val processStatus = agentPlatform.runAgentFrom(
-            processOptions = processOptions,
-            agent = goalAgent,
-            bindings = mapOf(
-                "it" to input,
-            )
-        )
-        return processStatus.resultOfType(outputClass)
-    }
-}
