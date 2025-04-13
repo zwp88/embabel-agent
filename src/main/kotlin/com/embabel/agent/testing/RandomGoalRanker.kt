@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.testing
 
-import com.embabel.agent.AgentMetadata
+import com.embabel.agent.Goal
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.GoalRanking
@@ -32,9 +32,9 @@ class RandomGoalRanker : FakeGoalRanker {
 
     override fun rankGoals(
         userInput: UserInput,
-        agentMetadata: AgentMetadata
+        goals: Set<Goal>,
     ): GoalRankings {
-        return GoalRankings(agentMetadata.goals.map {
+        return GoalRankings(goals.map {
             GoalRanking(
                 goal = it,
                 confidence = random.nextDouble(),

@@ -48,8 +48,8 @@ class FakeConfig {
 
     @Bean
     @Primary
-    fun fakeGoalRanker() = FakeGoalRanker { ui, amd ->
-        val g = amd.goals.find { it.description.contains("horoscope") }!!
+    fun fakeGoalRanker() = FakeGoalRanker { ui, goals ->
+        val g = goals.find { it.description.contains("horoscope") }!!
         GoalRankings(
             rankings = listOf(GoalRanking(g, .9))
         )

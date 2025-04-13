@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.AgentMetadata
+import com.embabel.agent.Goal
 import com.embabel.agent.LlmTransformer
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.primitive.LlmOptions
@@ -31,8 +31,12 @@ class LlmGoalRanker(
 
     override fun rankGoals(
         userInput: UserInput,
-        agentMetadata: AgentMetadata,
+        goals: Set<Goal>,
     ): GoalRankings {
+
+        if (goals.isEmpty()) {
+            return GoalRankings(emptyList())
+        }
 
         val prompt = """
             Given the user input, choose the goal that best reflects the user's intent.
@@ -40,7 +44,7 @@ class LlmGoalRanker(
             User input: ${userInput.content}
 
             Available goals:
-            ${agentMetadata.goals.joinToString("\n") { "- ${it.name}: ${it.description}" }}
+            ${goals.joinToString("\n") { "- ${it.name}: ${it.description}" }}
 
             Return the name of the chosen goal and the confidence score (0-1).
         """.trimIndent()
@@ -53,19 +57,19 @@ class LlmGoalRanker(
         return GoalRankings(
             rankings = grr.rankings.map {
                 GoalRanking(
-                    goal = agentMetadata.goals.single { goal -> goal.name == it.name },
+                    goal = goals.single { goal -> goal.name == it.name },
                     confidence = it.confidence,
                 )
-            }
+            }.sortedBy { it.confidence }.reversed()
         )
     }
 }
 
-private data class GoalRankingsResponse(
+internal data class GoalRankingsResponse(
     val rankings: List<GoalChoiceResponse>,
 )
 
-private data class GoalChoiceResponse(
+internal data class GoalChoiceResponse(
     val name: String,
     val confidence: Double,
 )

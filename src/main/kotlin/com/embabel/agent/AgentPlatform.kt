@@ -206,7 +206,7 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
         )
         eventListener.onPlatformEvent(goalChoiceEvent)
         val goalRankings = goalRanker
-            .rankGoals(userInput = userInput, agentMetadata = this)
+            .rankGoals(userInput = userInput, goals = this.goals)
         val credibleGoals = goalRankings
             .rankings
             .filter { it.confidence > properties.goalConfidenceCutOff }

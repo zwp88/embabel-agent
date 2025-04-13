@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.spi
 
-import com.embabel.agent.AgentMetadata
 import com.embabel.agent.Goal
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.core.types.HasInfoString
@@ -29,7 +28,7 @@ fun interface GoalRanker {
 
     fun rankGoals(
         userInput: UserInput,
-        agentMetadata: AgentMetadata,
+        goals: Set<Goal>,
     ): GoalRankings
 }
 
