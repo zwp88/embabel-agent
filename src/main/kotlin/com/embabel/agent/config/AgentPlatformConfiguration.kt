@@ -21,6 +21,7 @@ import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
+import com.embabel.common.ai.model.*
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
@@ -61,5 +62,20 @@ class AgentPlatformConfiguration(
         name = "RegistryToolGroupResolver",
         toolGroups
     )
+
+    @Bean
+    fun modelProvider(
+        llms: List<Llm>,
+        embeddingServices: List<EmbeddingService>,
+        properties: ModelProperties,
+    ): ModelProvider {
+
+        return ApplicationPropertiesModelProvider(
+            llms = llms,
+            embeddingServices = embeddingServices,
+            properties = properties,
+        )
+
+    }
 
 }
