@@ -22,3 +22,9 @@ interface HasContent {
 
     val text: String
 }
+
+
+interface Person {
+
+    val name: String
+}

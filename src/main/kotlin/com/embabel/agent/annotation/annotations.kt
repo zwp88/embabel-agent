@@ -69,7 +69,11 @@ annotation class Condition(
  * necessary input types.
  * Methods can return any type. The return type will become
  * an effect.
- * @param description Description of the action
+ * @param description Description of the action. Less important than for
+ * goals as a planner chooses actions based on preconditions
+ * and effects rather than by description. The description property is
+ * used for documentation purposes, having the advantage over comments
+ * that it can appear in logs.
  * @param pre Preconditions for the action
  * @param outputBinding Output binding for the action.
  * Only required for a custom binding.

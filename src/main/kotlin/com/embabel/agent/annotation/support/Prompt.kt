@@ -52,7 +52,10 @@ class PromptRunner(
 ) {
 
     /**
-     * Run a prompt. Type safe.
+     * Run a prompt.
+     * Prompt is typically created within the scope of an
+     * @Action method that provides access to
+     * domain object instances, offering type safety.
      */
     fun <T> run(prompt: String): T {
         throw ExecutePromptException(prompt, llm = llm)

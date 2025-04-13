@@ -82,13 +82,13 @@ Milchick: There will be no formal valediction, catered or otherwise
 Milchick: The Music Dance Experience is officially cancelled.
 Milchick: Devour feculence
 
-"""Milchick,
+"""Milchick:
 Welcome. I'm agog at how well I can tell you're already fitting in.
 The office feels whole. Now, let's get this party started.
 """
 
-Drummond: Your attendance and urinalysis are both in the excellent range
-Drummond: Anti-deflections will be heard after the lunch break.
+Mr Drummond: Your attendance and urinalysis are both in the excellent range
+Mr Drummond: Anti-deflections will be heard after the lunch break.
 🧔🏼‍♂️ Kier: And all in Lumon's care shall revel in the bounty of the incentives spur
 
 """🧔🏼‍♂️ Kier:
@@ -104,22 +104,22 @@ I hope to pass on to all of you, my children.
 """
 
 Dr. Mauer: The efficacy test will begin shortly.
-Drummond: The medical team says your tempers will rebalance quickly.
+Mr Drummond: The medical team says your tempers will rebalance quickly.
 
-"""Drummond:
+"""Mr Drummond:
 Mark Scout's completion of Cold Harbor will be remembered as one of the greatest moments in the history of this planet.
 """
 
-Drummond: 🐐 Has it verve?,
-Drummond: 🐐 Has it wiles?,
-Drummond: 🐐 We commit this animal to Kier, and his eternal war against pain.
-
-"""Drummond:
+Mr Drummond: 🐐 Has it verve?,
+Mr Drummond: 🐐 Has it wiles?,
+Mr Drummond: 🐐 We commit this animal to Kier, and his eternal war against pain.
+Mr Drummond: Some residual trauma is to be expected after such an ordeal.
+"""Mr Drummond:
 I think it's time to go back to the basics, Seth.
 To remember these severed workers' greater purpose, and to treat them as what they really are.
 """
 
-"""Drummond:
+"""Mr Drummond:
 Welcome. Today, I will be conducting your monthly performance review.
 This review can take anywhere from two to six hours, depending on the number of atonements and approbations required.
 If the review is to take longer than four hours, there will be a break for lunch, with the order taken in advance.
@@ -139,3 +139,30 @@ A kind and empathetic revolution that puts the human being at the center of indu
 """Natalie:The Board austerely desires for you to feel connected to Lumon's history.
 To that end, please accept from the Board these inclusively re-canonicalized paintings
 intended to help you see yourself in Kier, our founder."""
+
+Hi kids, what's for dinner
+
+Dylan G: Page 197 slaps.
+
+Gemma: We have never owned an electric grouter and we look forward to the many happy memories it will provide.
+
+Milchick: I’ll ready the refreshments. You focus on the mournful signage.
+
+Milchick: May I introduce choreography and merriment.
+
+Harmony: Child. Do not test me.
+
+Milchick: The team I thought I knew would have processed more thoughtfully.
+
+"""Burt G:
+The impression you’ve left on me is indelible, though I’m unaware of it on a conscious level...
+I will never forget any of you, even though sitting here right now, I have no recollection of actually
+ever meeting you and no idea of your names or any of your physical characteristics
+or even how many of you there are.
+"""
+
+Mark S: Every time you find yourself here, it’s because you chose to come back
+
+Harmony: A handshake is available on request
+
+Inving: I bet it's a loyalty test. Remember the spicy candy?

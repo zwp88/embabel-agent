@@ -15,11 +15,11 @@
  */
 package com.embabel.examples.simple.horoscope
 
-import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
-import com.embabel.agent.annotation.Agentic
+import com.embabel.agent.annotation.Agent
 import com.embabel.agent.annotation.support.PromptRunner
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 
@@ -50,7 +50,7 @@ data class FunnyWriteup(
 /**
  * Find news based on a person's star sign
  */
-@Agentic
+@Agent(description = "Find news based on a person's star sign")
 class StarNewsFinder(
     private val horoscopeService: HoroscopeService,
     private val storyCount: Int = 5,

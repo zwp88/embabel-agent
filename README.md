@@ -79,7 +79,7 @@ Goals, actions and plans are independent of GOAP. Future planning options includ
 ## Show Me The Code
 
 ```kotlin
-@Agent
+@Agent(description = "Find news based on a person's star sign")
 class StarNewsFinder(
     // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
