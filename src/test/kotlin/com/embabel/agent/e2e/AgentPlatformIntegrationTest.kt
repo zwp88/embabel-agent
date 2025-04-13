@@ -64,34 +64,10 @@ class FakeConfig {
 }
 
 /**
- * This is a test configuration for the model provider
- * based on application properties.
- */
-@TestConfiguration
-class ModelProviderConfig {
-
-    @Bean
-    fun modelProvider(
-        llms: List<Llm>,
-        embeddingServices: List<EmbeddingService>,
-        properties: ModelProperties,
-    ): ModelProvider {
-
-        return ApplicationPropertiesModelProvider(
-            llms = llms,
-            embeddingServices = embeddingServices,
-            properties = properties,
-        )
-
-    }
-}
-
-
-/**
  * Integration tests
  */
 @SpringBootTest
-@Import(FakeConfig::class, ModelProviderConfig::class)
+@Import(FakeConfig::class)
 class AgentPlatformIntegrationTest(
     @Autowired
     private val agentPlatform: AgentPlatform,
