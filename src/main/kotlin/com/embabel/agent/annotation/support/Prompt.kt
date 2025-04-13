@@ -19,15 +19,37 @@ import com.embabel.agent.core.primitive.BuildableLlmOptions
 import com.embabel.agent.core.primitive.LlmOptions
 
 /**
- * Run a prompt.
+ * Interface for executing prompts
  */
-object Prompt {
+interface PromptRunner {
 
     /**
-     * Run a prompt using default LLM
+     * Run a prompt using LLM options from context
+     * (process context or implementing class).
+     * Prompt is typically created within the scope of an
+     * @Action method that provides access to
+     * domain object instances, offering type safety.
      */
-    @JvmStatic
-    fun <T> run(prompt: String): T {
+    fun <T> run(prompt: String): T
+
+    companion object {
+
+        operator fun invoke(llm: LlmOptions? = null): BuildablePromptRunner {
+            return BuildablePromptRunner(llm)
+        }
+    }
+
+}
+
+/**
+ * Run a prompt.
+ */
+object Prompt : PromptRunner {
+
+    /**
+     * Run a prompt using contextual LLM
+     */
+    override fun <T> run(prompt: String): T {
         throw ExecutePromptException(prompt)
     }
 
@@ -47,26 +69,20 @@ object Prompt {
  * and reuse between different execution
  * With methods make it easier to use from Java in a builder style
  */
-class PromptRunner(
-    val llm: LlmOptions = LlmOptions(),
-) {
+class BuildablePromptRunner(
+    val llm: LlmOptions? = null,
+) : PromptRunner {
 
-    /**
-     * Run a prompt.
-     * Prompt is typically created within the scope of an
-     * @Action method that provides access to
-     * domain object instances, offering type safety.
-     */
-    fun <T> run(prompt: String): T {
+    override fun <T> run(prompt: String): T {
         throw ExecutePromptException(prompt, llm = llm)
     }
 
     fun withTemperature(temperature: Double): PromptRunner {
-        return PromptRunner(BuildableLlmOptions(llm).copy(temperature = temperature))
+        return BuildablePromptRunner(BuildableLlmOptions(llm ?: LlmOptions()).copy(temperature = temperature))
     }
 
     fun withModel(model: String): PromptRunner {
-        return PromptRunner(BuildableLlmOptions(llm).copy(model = model))
+        return BuildablePromptRunner(BuildableLlmOptions(llm ?: LlmOptions()).copy(model = model))
     }
 
 }
@@ -76,7 +92,7 @@ class PromptRunner(
  * This is not a real failure but meant to be intercepted by infrastructure.
  * It allows us to maintain strong typing.
  * @param prompt prompt to run
- * @param llm llm to use
+ * @param llm llm to use. Contextual LLM will be used if not set
  */
 internal class ExecutePromptException(
     val prompt: String,

@@ -73,7 +73,9 @@ Also they are made of metal, whereas man is made of skin.
 Irving: You are sparing with the facial encouragements.
 
 """Milchick:
-Hey, I know this has been a tough quarter. I’m gonna see about rustling you up some special perks. That sound good?
+Hey, I know this has been a tough quarter.
+I’m gonna see about rustling you up some special perks.
+That sound good?
 """
 
 Milchick: Some of you may be quietly yearning to learn more.
@@ -110,8 +112,8 @@ Mr Drummond: The medical team says your tempers will rebalance quickly.
 Mark Scout's completion of Cold Harbor will be remembered as one of the greatest moments in the history of this planet.
 """
 
-Mr Drummond: 🐐 Has it verve?,
-Mr Drummond: 🐐 Has it wiles?,
+Mr Drummond: 🐐 Has it verve?
+Mr Drummond: 🐐 Has it wiles?
 Mr Drummond: 🐐 We commit this animal to Kier, and his eternal war against pain.
 Mr Drummond: Some residual trauma is to be expected after such an ordeal.
 """Mr Drummond:
