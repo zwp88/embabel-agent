@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.config
 
-import com.embabel.agent.ToolGroup
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider

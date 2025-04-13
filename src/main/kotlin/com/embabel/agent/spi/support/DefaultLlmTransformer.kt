@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.AbstractLlmTransformer
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.AbstractLlmTransformer
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient

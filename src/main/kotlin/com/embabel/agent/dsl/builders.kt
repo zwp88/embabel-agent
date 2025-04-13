@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.dsl
 
-import com.embabel.agent.*
+import com.embabel.agent.core.*
+import com.embabel.agent.core.support.AbstractAction
 import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.primitive.LlmOptions
-import com.embabel.agent.support.AbstractAction
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
 import org.springframework.ai.tool.ToolCallback

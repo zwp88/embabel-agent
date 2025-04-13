@@ -16,6 +16,7 @@
 package com.embabel.agent.support
 
 import com.embabel.agent.annotation.support.Person
+import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull

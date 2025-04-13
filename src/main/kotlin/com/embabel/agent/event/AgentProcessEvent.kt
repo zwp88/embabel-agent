@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.event
 
-import com.embabel.agent.Action
-import com.embabel.agent.ActionStatus
-import com.embabel.agent.AgentProcess
-import com.embabel.agent.AgentProcessStatus
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.Action
+import com.embabel.agent.core.ActionStatus
+import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.AgentProcessStatus
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.common.core.types.Timed
 import com.embabel.plan.Plan
 import com.embabel.plan.goap.WorldState

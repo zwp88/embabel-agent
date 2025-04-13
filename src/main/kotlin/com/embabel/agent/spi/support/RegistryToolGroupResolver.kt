@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.ToolGroup
-import com.embabel.agent.ToolGroupMetadata
-import com.embabel.agent.ToolGroupResolution
+import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.core.ToolGroupResolution
 import com.embabel.agent.spi.ToolGroupResolver
 import org.slf4j.LoggerFactory
 

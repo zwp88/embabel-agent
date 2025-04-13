@@ -16,8 +16,8 @@
 package com.embabel.agent.config
 
 
-import com.embabel.agent.ToolGroup
-import com.embabel.agent.ToolGroupMetadata
+import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
 import com.embabel.agent.toolgroups.web.domain.WebScraperTools
 import com.embabel.agent.toolgroups.web.search.brave.BraveNewsSearchService

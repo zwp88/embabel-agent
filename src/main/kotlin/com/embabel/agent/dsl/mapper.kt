@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.dsl
 
-import com.embabel.agent.Action
-import com.embabel.agent.ProcessContext
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.Action
+import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.primitive.LlmOptions
 import kotlinx.coroutines.*
 import org.springframework.ai.tool.ToolCallback
 

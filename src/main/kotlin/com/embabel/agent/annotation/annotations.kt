@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.annotation
 
-import com.embabel.agent.IoBinding
-import com.embabel.agent.ZeroToOne
+import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ZeroToOne
 import org.springframework.stereotype.Component
 
 

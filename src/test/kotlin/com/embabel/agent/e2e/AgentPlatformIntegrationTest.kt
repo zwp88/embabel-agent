@@ -15,7 +15,12 @@
  */
 package com.embabel.agent.e2e
 
-import com.embabel.agent.*
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.AgentPlatformTypedOps
+import com.embabel.agent.core.GoalResult
+import com.embabel.agent.core.NoSuchAgentException
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.TypedOps
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings

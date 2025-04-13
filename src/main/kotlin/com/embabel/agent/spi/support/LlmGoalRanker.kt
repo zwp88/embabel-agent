@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.Goal
-import com.embabel.agent.LlmTransformer
+import com.embabel.agent.core.Goal
+import com.embabel.agent.core.LlmTransformer
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings

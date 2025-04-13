@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.Agent
-import com.embabel.agent.ProcessOptions
+import com.embabel.agent.core.Agent
+import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.spi.ProcessIdGenerator
 import com.embabel.common.core.NameGenerator
 import org.springframework.boot.context.properties.ConfigurationProperties

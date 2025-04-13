@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.AgentProcess
-import com.embabel.agent.PlatformServices
+import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.PlatformServices
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
 import com.embabel.agent.event.AgentProcessFunctionCallResponseEvent
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.primitive.LlmOptions
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

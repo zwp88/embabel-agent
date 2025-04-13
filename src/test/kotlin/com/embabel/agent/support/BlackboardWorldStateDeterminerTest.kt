@@ -15,11 +15,13 @@
  */
 package com.embabel.agent.support
 
-import com.embabel.agent.AgentProcess
-import com.embabel.agent.PlatformServices
-import com.embabel.agent.ProcessContext
-import com.embabel.agent.ProcessOptions
 import com.embabel.agent.annotation.support.Person
+import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.PlatformServices
+import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.support.BlackboardWorldStateDeterminer
+import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.Aggregation
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.dsl.agent

@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.dsl
 
-import com.embabel.agent.ProcessContext
+import com.embabel.agent.core.ProcessContext
 
 
 interface PromptMaker {

@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.annotation.support
 
-import com.embabel.agent.primitive.BuildableLlmOptions
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.primitive.BuildableLlmOptions
+import com.embabel.agent.core.primitive.LlmOptions
 
 /**
  * Run a prompt.

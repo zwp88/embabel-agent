@@ -15,7 +15,7 @@
  */
 package com.embabel.examples.simple.horoscope
 
-import com.embabel.agent.ToolGroup
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
 import com.embabel.agent.annotation.Agentic

@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.event
 
-import com.embabel.agent.Agent
-import com.embabel.agent.AgentPlatform
-import com.embabel.agent.ZeroToOne
+import com.embabel.agent.core.Agent
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.ZeroToOne
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
 import java.time.Instant

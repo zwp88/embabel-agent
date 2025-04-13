@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.spi
 
-import com.embabel.agent.Agent
-import com.embabel.agent.ProcessOptions
+import com.embabel.agent.core.Agent
+import com.embabel.agent.core.ProcessOptions
 
 /**
  * Generate names for agent processes

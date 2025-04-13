@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.shell
 
-import com.embabel.agent.AgentPlatform
-import com.embabel.agent.GoalResult
-import com.embabel.agent.ProcessOptions
-import com.embabel.agent.Verbosity
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.GoalResult
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.LumonColors
 import com.embabel.common.util.color

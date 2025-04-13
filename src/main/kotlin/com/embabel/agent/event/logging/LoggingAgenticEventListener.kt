@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.event.logging
 
-import com.embabel.agent.AgentProcessStatus
+import com.embabel.agent.core.AgentProcessStatus
 import com.embabel.agent.event.*
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color

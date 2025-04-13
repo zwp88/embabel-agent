@@ -16,7 +16,7 @@
 package com.embabel.agent.domain.special
 
 import com.embabel.agent.dsl.Transformer
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.primitive.LlmOptions
 
 /**
  * Special class that represents a single user input

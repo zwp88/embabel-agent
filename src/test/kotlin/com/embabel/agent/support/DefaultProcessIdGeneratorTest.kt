@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.support
 
-import com.embabel.agent.Agent
-import com.embabel.agent.ProcessOptions
+import com.embabel.agent.core.Agent
+import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.spi.support.DefaultProcessIdGenerator
 import com.embabel.agent.spi.support.DefaultProcessIdGeneratorProperties
 import com.embabel.common.core.MobyNameGenerator

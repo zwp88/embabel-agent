@@ -15,22 +15,23 @@
  */
 package com.embabel.agent.annotation.support
 
-import com.embabel.agent.*
 import com.embabel.agent.annotation.*
 import com.embabel.agent.annotation.Action
+import com.embabel.agent.annotation.Agent
 import com.embabel.agent.annotation.Condition
+import com.embabel.agent.core.*
+import com.embabel.agent.core.support.AbstractAction
 import com.embabel.agent.dsl.Transformation
 import com.embabel.agent.dsl.TransformationPayload
 import com.embabel.agent.dsl.expandInputBindings
-import com.embabel.agent.primitive.LlmOptions
-import com.embabel.agent.support.AbstractAction
+import com.embabel.agent.core.primitive.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
-import com.embabel.agent.Goal as IGoal
+import com.embabel.agent.core.Goal as IGoal
 
 
 /**
@@ -96,12 +97,12 @@ class AgentMetadataReader {
         val actions = actionMethods.map { createAction(it, instance, toolCallbacks) }
 
         if (agentAnnotation != null) {
-            return com.embabel.agent.Agent(
+            return com.embabel.agent.core.Agent(
                 name = agentAnnotation.name.ifBlank { type.name },
                 description = agentAnnotation.description.ifBlank {
                     logger.error(
                         "No description provided for @{} on {}",
-                        com.embabel.agent.annotation.Agent::class.simpleName,
+                        Agent::class.simpleName,
                         type.simpleName,
                     )
                     type.simpleName
@@ -311,7 +312,7 @@ private class MultiTransformer<O : Any>(
     override fun execute(
         processContext: ProcessContext,
         outputTypes: Map<String, SchemaType>,
-        action: com.embabel.agent.Action
+        action: com.embabel.agent.core.Action
     ): ActionStatus = ActionRunner.execute {
         val inputValues: List<Any> = inputs.map {
             processContext.getValue(variable = it.name, type = it.type)

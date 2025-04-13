@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.spi
 
-import com.embabel.agent.ToolGroupMetadata
-import com.embabel.agent.ToolGroupResolution
+import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.core.ToolGroupResolution
 
 interface ToolGroupResolver {
 

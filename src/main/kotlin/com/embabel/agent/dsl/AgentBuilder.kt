@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.dsl
 
-import com.embabel.agent.*
-import com.embabel.agent.primitive.LlmOptions
-import com.embabel.agent.primitive.PromptCondition
+import com.embabel.agent.core.*
+import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.core.primitive.PromptCondition
 import com.embabel.plan.goap.ConditionDetermination
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty

@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.annotation.support
 
-import com.embabel.agent.Goal
-import com.embabel.agent.ProcessContext
 import com.embabel.agent.annotation.*
+import com.embabel.agent.core.Goal
+import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.primitive.LlmOptions
 import org.springframework.ai.tool.annotation.Tool
 
 data class Person(val name: String) {

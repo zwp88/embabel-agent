@@ -15,12 +15,12 @@
  */
 package com.embabel.agent.annotation.support
 
-import com.embabel.agent.*
 import com.embabel.agent.annotation.Agent
+import com.embabel.agent.core.*
+import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
-import com.embabel.agent.primitive.LlmOptions
-import com.embabel.agent.support.InMemoryBlackboard
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
 import io.mockk.mockk
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.ai.tool.ToolCallback
-import com.embabel.agent.Agent as IAgent
+import com.embabel.agent.core.Agent as IAgent
 
 
 class AgentMetadataReaderTest {

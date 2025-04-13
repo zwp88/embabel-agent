@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.dsl
 
-import com.embabel.agent.*
-import com.embabel.agent.primitive.LlmOptions
+import com.embabel.agent.core.*
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
