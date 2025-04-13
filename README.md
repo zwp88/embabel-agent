@@ -1,6 +1,6 @@
 # Embabel Agent Framework
 
-Agent API
+![Build](https://github.com/embabel/agent-api/actions/workflows/maven.yml/badge.svg)
 
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
@@ -75,6 +75,112 @@ on the current state of the world and the goals of the agent.
 Goals, actions and plans are independent of GOAP. Future planning options include:
 
 - Plans created by a reasoning model such as OpenAI o1 or DeepSeek R1.
+
+## Show Me The Code
+
+```kotlin
+@Agent
+class StarNewsFinder(
+    // Services such as Horoscope are injected using Spring
+    private val horoscopeService: HoroscopeService,
+    private val storyCount: Int = 5,
+) {
+
+    // An action method defines an action
+    @Action
+    fun extractPerson(userInput: UserInput): Subject {
+        // All prompts are typesafe
+        return PromptRunner().run("Create a person from this user input, extracting their name and star sign: $userInput")
+    }
+
+    @Action
+    fun retrieveHoroscope(subject: Subject): Horoscope {
+        val horoscope = horoscopeService.dailyHoroscope(subject.sign)
+        return Horoscope(horoscope)
+    }
+
+    // toolGroups specifies tools that are required for this action to run
+    @Action(toolGroups = [ToolGroup.WEB])
+    fun findNewsStories(person: Subject, horoscope: Horoscope): RelevantNewsStories {
+        return PromptRunner().run(
+            """
+            ${person.name} is an astrology believer with the sign ${person.sign}.
+            Their horoscope for today is:
+                <horoscope>${horoscope.summary}</horoscope>
+            Given this, use web tools and generate search queries
+            to find $storyCount relevant news stories summarize them in a few sentences.
+            Include the URL for each story.
+            Do not look for another horoscope reading or return results directly about astrology;
+            find stories relevant to the reading above.
+
+            For example:
+            - If the horoscope says that they may
+            want to work on relationships, you could find news stories about
+            novel gifts
+            - If the horoscope says that they may want to work on their career,
+            find news stories about training courses.
+        """.trimIndent()
+        )
+    }
+
+    // The @AchievesGoal annotation indicates that completing this action
+    // achieves the given goal, so the agent can be complete
+    @AchievesGoal(
+        description = "Write an amusing writeup for the target person based on their horoscope and current news stories",
+    )
+    @Action
+    fun writeup(
+        person: Subject,
+        relevantNewsStories: RelevantNewsStories,
+        horoscope: Horoscope,
+    ): FunnyWriteup =
+        PromptRunner().withTemperature(1.2).run(
+            """
+            Take the following news stories and write up something
+            amusing for the target person.
+
+            Begin by summarizing their horoscope in a concise, amusing way, then
+            talk about the news. End with a surprising signoff.
+
+            ${person.name} is an astrology believer with the sign ${person.sign}.
+            Their horoscope for today is:
+                <horoscope>${horoscope.summary}</horoscope>
+            Relevant news stories are:
+            ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
+
+            Format it as Markdown with links.
+        """.trimIndent()
+        )
+
+}
+```
+
+The following domain classes ensure type safety:
+
+```kotlin
+data class RelevantNewsStories(
+    val items: List<NewsStory>
+)
+
+data class NewsStory(
+    val url: String,
+
+    val summary: String,
+)
+
+data class Subject(
+    val name: String,
+    val sign: String,
+)
+
+data class Horoscope(
+    val summary: String,
+)
+
+data class FunnyWriteup(
+    override val text: String,
+) : HasContent
+```
 
 ## Getting Started
 
