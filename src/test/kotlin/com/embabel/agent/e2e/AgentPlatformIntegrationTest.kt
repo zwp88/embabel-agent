@@ -25,6 +25,7 @@ import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.testing.FakeGoalRanker
+import com.embabel.common.ai.model.*
 import com.embabel.examples.simple.horoscope.FunnyWriteup
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.examples.simple.horoscope.StarNewsFinder
@@ -59,13 +60,38 @@ class FakeConfig {
             rankings = listOf(GoalRanking(g, .9))
         )
     }
+
 }
+
+/**
+ * This is a test configuration for the model provider
+ * based on application properties.
+ */
+@TestConfiguration
+class ModelProviderConfig {
+
+    @Bean
+    fun modelProvider(
+        llms: List<Llm>,
+        embeddingServices: List<EmbeddingService>,
+        properties: ModelProperties,
+    ): ModelProvider {
+
+        return ApplicationPropertiesModelProvider(
+            llms = llms,
+            embeddingServices = embeddingServices,
+            properties = properties,
+        )
+
+    }
+}
+
 
 /**
  * Integration tests
  */
 @SpringBootTest
-@Import(FakeConfig::class)
+@Import(FakeConfig::class, ModelProviderConfig::class)
 class AgentPlatformIntegrationTest(
     @Autowired
     private val agentPlatform: AgentPlatform,
