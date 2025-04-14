@@ -89,23 +89,19 @@ class StarNewsFinder(
     private val storyCount: Int = 5,
 ) {
 
-    // An action method defines an action
     @Action
-    fun extractPerson(userInput: UserInput): Subject {
+    fun extractPerson(userInput: UserInput): StarPerson =
         // All prompts are typesafe
-        return PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
-    }
+        PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
 
     @Action
-    fun retrieveHoroscope(subject: Subject): Horoscope {
-        val horoscope = horoscopeService.dailyHoroscope(subject.sign)
-        return Horoscope(horoscope)
-    }
+    fun retrieveHoroscope(starPerson: StarPerson) =
+        Horoscope(horoscopeService.dailyHoroscope(starPerson.sign))
 
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
-    fun findNewsStories(person: Subject, horoscope: Horoscope): RelevantNewsStories {
-        return PromptRunner().createObject(
+    fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
+        PromptRunner().createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -124,7 +120,6 @@ class StarNewsFinder(
             find news stories about training courses.
         """.trimIndent()
         )
-    }
 
     // The @AchievesGoal annotation indicates that completing this action
     // achieves the given goal, so the agent can be complete
@@ -133,10 +128,11 @@ class StarNewsFinder(
     )
     @Action
     fun writeup(
-        person: Subject,
+        person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
-    ): FunnyWriteup =
+    ): Writeup =
+        // Customize LLM call
         PromptRunner().withTemperature(1.2).createObject(
             """
             Take the following news stories and write up something

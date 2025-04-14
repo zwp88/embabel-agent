@@ -133,12 +133,13 @@ Harmony: I welcome your contrition.
 The Board is jubilant at your ascendance. It wants you to feel appreciated and asks if you do.
 """
 
-"""Natalie,
+"""Natalie:
 I'm here tonight to tell you that we are on the verge of a revolution.
 A kind and empathetic revolution that puts the human being at the center of industry.
 """
 
-"""Natalie:The Board austerely desires for you to feel connected to Lumon's history.
+"""Natalie:
+The Board austerely desires for you to feel connected to Lumon's history.
 To that end, please accept from the Board these inclusively re-canonicalized paintings
 intended to help you see yourself in Kier, our founder."""
 

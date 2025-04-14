@@ -21,6 +21,7 @@ import com.embabel.agent.annotation.Agent
 import com.embabel.agent.annotation.support.PromptRunner
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
+import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.special.UserInput
 
 
@@ -34,16 +35,16 @@ data class NewsStory(
     val summary: String,
 )
 
-data class Subject(
-    val name: String,
+data class StarPerson(
+    override val name: String,
     val sign: String,
-)
+) : Person
 
 data class Horoscope(
     val summary: String,
 )
 
-data class FunnyWriteup(
+data class Writeup(
     override val text: String,
 ) : HasContent
 
@@ -52,24 +53,24 @@ data class FunnyWriteup(
  */
 @Agent(description = "Find news based on a person's star sign")
 class StarNewsFinder(
+    // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
     private val storyCount: Int = 5,
 ) {
 
     @Action
-    fun extractPerson(userInput: UserInput): Subject {
-        return PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
-    }
+    fun extractPerson(userInput: UserInput): StarPerson =
+        // All prompts are typesafe
+        PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
 
     @Action
-    fun retrieveHoroscope(subject: Subject): Horoscope {
-        val horoscope = horoscopeService.dailyHoroscope(subject.sign)
-        return Horoscope(horoscope)
-    }
+    fun retrieveHoroscope(starPerson: StarPerson) =
+        Horoscope(horoscopeService.dailyHoroscope(starPerson.sign))
 
+    // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
-    fun findNewsStories(person: Subject, horoscope: Horoscope): RelevantNewsStories {
-        return PromptRunner().createObject(
+    fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
+        PromptRunner().createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -88,17 +89,19 @@ class StarNewsFinder(
             find news stories about training courses.
         """.trimIndent()
         )
-    }
 
+    // The @AchievesGoal annotation indicates that completing this action
+    // achieves the given goal, so the agent can be complete
     @AchievesGoal(
         description = "Write an amusing writeup for the target person based on their horoscope and current news stories",
     )
     @Action
     fun writeup(
-        person: Subject,
+        person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
-    ): FunnyWriteup =
+    ): Writeup =
+        // Customize LLM call
         PromptRunner().withTemperature(1.2).createObject(
             """
             Take the following news stories and write up something

@@ -15,20 +15,14 @@
  */
 package com.embabel.agent.e2e
 
-import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.AgentPlatformTypedOps
-import com.embabel.agent.core.GoalResult
-import com.embabel.agent.core.NoSuchAgentException
-import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.core.TypedOps
+import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.testing.FakeGoalRanker
-import com.embabel.common.ai.model.*
-import com.embabel.examples.simple.horoscope.FunnyWriteup
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.examples.simple.horoscope.StarNewsFinder
+import com.embabel.examples.simple.horoscope.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -82,23 +76,23 @@ class AgentPlatformIntegrationTest(
 
     @Test
     fun `run star finder as transform by name`() {
-        val funnyWriteup = typedOps.asFunction<UserInput, FunnyWriteup>(
+        val writeup = typedOps.asFunction<UserInput, Writeup>(
             processOptions = ProcessOptions(test = true),
-            outputClass = FunnyWriteup::class.java,
+            outputClass = Writeup::class.java,
             agentName = StarNewsFinder::class.qualifiedName!!,
         ).apply(
             UserInput("Lynda is a Scorpio, find some news for her"),
         )
-        assertNotNull(funnyWriteup)
-        assertNotNull(funnyWriteup.text)
+        assertNotNull(writeup)
+        assertNotNull(writeup.text)
     }
 
     @Test
     fun `reject unknown agent in transform by name`() {
         assertThrows<NoSuchAgentException> {
-            typedOps.asFunction<UserInput, FunnyWriteup>(
+            typedOps.asFunction<UserInput, Writeup>(
                 processOptions = ProcessOptions(test = true),
-                outputClass = FunnyWriteup::class.java,
+                outputClass = Writeup::class.java,
                 agentName = "stuff and nonsense",
             )
         }
@@ -106,14 +100,14 @@ class AgentPlatformIntegrationTest(
 
     @Test
     fun `run star finder as AgentPlatform transform`() {
-        val funnyWriteup = typedOps.asFunction<UserInput, FunnyWriteup>(
+        val writeup = typedOps.asFunction<UserInput, Writeup>(
             processOptions = ProcessOptions(test = true),
-            outputClass = FunnyWriteup::class.java,
+            outputClass = Writeup::class.java,
         ).apply(
             UserInput("Lynda is a Scorpio, find some news for her"),
         )
-        assertNotNull(funnyWriteup)
-        assertNotNull(funnyWriteup.text)
+        assertNotNull(writeup)
+        assertNotNull(writeup.text)
     }
 
     @Test
@@ -126,7 +120,7 @@ class AgentPlatformIntegrationTest(
             is GoalResult.Success -> {
                 assertNotNull(goalResult.output)
                 assertTrue(
-                    goalResult.output is FunnyWriteup,
+                    goalResult.output is Writeup,
                     "Expected FunnyWriteup, got ${goalResult.output?.javaClass?.name}"
                 )
             }
