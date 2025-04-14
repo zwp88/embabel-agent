@@ -18,8 +18,11 @@ package com.embabel.examples.simple.movie
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
 import com.embabel.agent.annotation.Agent
+import com.embabel.agent.annotation.Condition
 import com.embabel.agent.annotation.support.PromptRunner
+import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.all
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
@@ -36,6 +39,7 @@ data class MovieBuff(
     val countryCode: String,
     val hobbies: List<String>,
     val about: String,
+    val streamingServices: List<String> = listOf("Netflix", "Stan", "Disney+")
 ) : Person {
 
     /**
@@ -75,8 +79,13 @@ data class StreamableMovies(
 
 data class StreamableMovie(
     val movie: MovieResponse,
-    val streamingOptions: List<StreamingOption>,
-)
+    val availableStreamingOptions: List<StreamingOption>,
+    val allStreamingOptions: List<StreamingOption>,
+) {
+
+    val unavailableStreamingOptions: List<StreamingOption> =
+        allStreamingOptions.filter { it !in availableStreamingOptions }
+}
 
 data class SuggestionWriteup(
     override val text: String,
@@ -144,16 +153,18 @@ class MovieFinder(
             }
 
             Return a summary of their taste profile as you understand it,
-            in $tasteProfileWordCount words or less. Cover what that like and don't like.
+            in $tasteProfileWordCount words or less. Cover what they like and don't like.
             """
         )
 
-    @Action
+    @Action(post = ["haveEnoughMovies"], canRerun = true)
     fun suggestMovieTitles(
         userInput: UserInput,
         dmb: DecoratedMovieBuff,
         relevantNewsStories: RelevantNewsStories,
     ): SuggestedMovieTitles =
+    // TODO need access to process context for blackboard,
+        // or binding
         PromptRunner().createObject(
             """
             Suggest $suggestionCount movies titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
@@ -168,10 +179,14 @@ class MovieFinder(
 
             Don't include the following movies, which they've seen (rating attached):
             ${
-                dmb.movieBuff.movieRatings.joinToString("\n") {
-                    "${it.title}: ${it.rating}"
-                }
+                dmb.movieBuff.movieRatings
+                    .sortedBy { it.title }
+                    .joinToString("\n") {
+                        "${it.title}: ${it.rating}"
+                    }
             }
+            Don't include these movies we've already suggested:
+            ${emptyList<StreamableMovie>().joinToString("\n") { it.movie.Title }}
 
             Consider also the following news stories for topical inspiration:
             ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
@@ -195,24 +210,51 @@ class MovieFinder(
         movieBuff: MovieBuff,
         suggestedMovies: SuggestedMovies,
     ): StreamableMovies {
-        val streamables = suggestedMovies.movies.mapNotNull { movie ->
-            try {
-                val streamingOptions =
-                    streamingAvailabilityClient.getShowStreamingIn(imdb = movie.imdbID, country = movieBuff.countryCode)
-                if (streamingOptions.isNotEmpty()) {
-                    StreamableMovie(movie, streamingOptions)
-                } else {
+        val streamables = suggestedMovies.movies
+            // Sometimes the LLM ignores being told not to
+            // include movies the user has seen
+            .filterNot { it.Title in movieBuff.movieRatings.map { it.title } }
+            .mapNotNull { movie ->
+                try {
+                    val allStreamingOptions =
+                        streamingAvailabilityClient.getShowStreamingIn(
+                            imdb = movie.imdbID,
+                            country = movieBuff.countryCode
+                        )
+                    val availableToUser = allStreamingOptions.filter {
+                        it.service.name.lowercase() in movieBuff.streamingServices.map { it.lowercase() }
+                    }
+                    if (allStreamingOptions.isNotEmpty()) {
+                        StreamableMovie(
+                            movie = movie,
+                            allStreamingOptions = allStreamingOptions,
+                            availableStreamingOptions = availableToUser
+                        )
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
                     null
                 }
-            } catch (e: Exception) {
-                null
             }
-        }
         return StreamableMovies(streamables)
     }
 
+    // TODO simplify signature
+    @Condition
+    fun haveEnoughMovies(processContext: ProcessContext): Boolean =
+        allStreamableMovies(processContext).size > 5
 
-    @Action
+    private fun allStreamableMovies(
+        processContext: ProcessContext,
+    ): List<StreamableMovie> {
+        return processContext.blackboard
+            .all<StreamableMovies>()
+            .flatMap { it.movies }
+            .distinctBy { it.movie.imdbID }
+    }
+
+    @Action(pre = ["haveEnoughMovies"])
     @AchievesGoal(description = "Recommend movies for a movie buff using what we know about them")
     fun writeUpSuggestions(
         dmb: DecoratedMovieBuff,
@@ -225,7 +267,7 @@ class MovieFinder(
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
             Their movie taste profile is ${dmb.tasteProfile}
 
-            The streamable recommendations are:
+            The movie recommendations are:
             ${
                 streamableMovies.movies.joinToString("\n\n") {
                     """
@@ -233,10 +275,13 @@ class MovieFinder(
                     Director: ${it.movie.Director}
                     Actors: ${it.movie.Actors}
                     ${it.movie.Plot}
-                    Streaming on ${it.streamingOptions.joinToString(", ") { it.service.name }}
+                    Streaming available to ${dmb.movieBuff.name} on ${it.availableStreamingOptions.joinToString(", ") { it.service.name }}
+                    Also available on ${it.unavailableStreamingOptions.joinToString(", ") { it.service.name }}
+                    but ${dmb.movieBuff.name} doesn't have a subscription
                     """.trimIndent()
                 }
             }
+            Focus on streamable movies.
             """
         )
 }

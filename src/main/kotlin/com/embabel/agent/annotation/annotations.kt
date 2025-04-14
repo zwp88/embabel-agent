@@ -88,6 +88,8 @@ annotation class Condition(
 annotation class Action(
     val description: String = "",
     val pre: Array<String> = [],
+    val post: Array<String> = [],
+    val canRerun: Boolean = false,
     val outputBinding: String = IoBinding.DEFAULT_BINDING,
     val cost: Double = 0.0,
     val value: Double = 0.0,

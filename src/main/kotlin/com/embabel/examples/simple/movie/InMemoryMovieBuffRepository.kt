@@ -40,7 +40,7 @@ fun populateMovieBuffRepository(
             name = "Rod",
             movieRatings = ratings,
             hobbies = listOf("Travel", "Skiing", "Chess", "Hiking", "Reading"),
-            countryCode = "AU",
+            countryCode = "au",
             about = """
                 Rod is an Australian man who has a PhD in Musicology and
                 has a career as a software engineer, author and tech entrepreneur.
