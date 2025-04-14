@@ -15,15 +15,24 @@
  */
 package com.embabel.agent.event.logging.personality
 
-import com.embabel.common.util.*
-import org.jline.utils.AttributedString
+import com.embabel.agent.shell.MessageGeneratorPromptProvider
+import com.embabel.common.util.RandomFromFileMessageGenerator
+import com.embabel.common.util.bold
+import com.embabel.common.util.color
+import com.embabel.common.util.italic
 import org.springframework.context.annotation.Profile
-import org.springframework.shell.jline.PromptProvider
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 
 fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColors.Membrane)}"
 
-fun character(name: String, text: String) = "${name.bold()}: ${text.italic().color(LumonColors.Membrane)}"
+fun character(name: String, text: String): String {
+    val namePart = if (name.isNotBlank()) {
+        "${name.bold()}: "
+    } else {
+        ""
+    }
+    return "$namePart${text.italic().color(LumonColors.Membrane)}"
+}
 
 object LumonColors {
     const val Membrane: Int = 0xbeb780
@@ -31,23 +40,11 @@ object LumonColors {
 
 }
 
-@Service
+@Component
 @Profile("severance")
-class SeverancePromptProvider(
-    private val messageGenerator: MessageGenerator = RandomFromFileMessageGenerator("logging/severance.txt")
-) : PromptProvider {
-
-    override fun getPrompt(): AttributedString {
-        val msg = messageGenerator.generate()
-        val (character, text) = if (":" in msg) {
-            msg.split(":", limit = 2).map { it.trim() }
-        } else {
-            listOf("", msg.trim())
-        }
-        return AttributedString(
-            character(character, text).color(LumonColors.Membrane) + "\nLumon> ".color(LumonColors.Membrane),
-//        AttributedStyle.DEFAULT.foregroundRgb(LumonMembrane)
-        )
-    }
-
-}
+class SeverancePromptProvider : MessageGeneratorPromptProvider(
+    color = LumonColors.Membrane,
+    messageGenerator = RandomFromFileMessageGenerator(
+        url = "logging/severance.txt",
+    )
+)

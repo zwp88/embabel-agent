@@ -1,11 +1,26 @@
 # Your innie enjoys Severance quotes equally
+# Praise Kier!
 
 Ms Casey: Your outie enjoys coding in Python
 Ms Casey: Your outie loves YML
 Ms Casey: Your outie once wrote a 1,000 line shell script
 Ms Casey: Your outie revels in writing documentation
 Ms Casey: Enjoy each execution equally
-Ms Casy: Your outie can solve a Rubik's cube in under 2 minutes
+"""Ms Casey:
+I’m sorry. Please try to enjoy each fact equally, and not show preference for any over the others.
+That’s ten points off. You have 90 points remaining.
+"""
+Ms Casey: Your outie is kind.
+
+Ms Casey: Please don’t speak further, or all remaining points will be deducted and the wellness session will end.
+Ms Casey: Your outie can solve a Rubik's cube in under 2 minutes
+"""Ms Casey:
+All right. What I’d like to do is share with you some facts about your Outie.
+Because your Outie is an exemplary person, these facts should be very pleasing.
+Just relax your body and be open to the facts.
+Try to enjoy each equally.
+These facts are not to be shared outside this room. But for now, they’re yours to enjoy.
+"""
 
 🧔🏼‍♂️ Kier: May my cunning acument slice through the fog of small minds, guiding them to their great purpose in labor.
 🧔🏼‍♂️ Kier: Keep a merry humor ever in your heart.
@@ -28,6 +43,23 @@ Rise up from your deathbed and sally forth, more perfect for the struggle.
 9: I was dim till you gave me Wiles
 9: I was Me till you gave me You
 I see Kier in you
+
+Lorne: Wellness...we don't abide such fripperies here.
+Lorne: See? Pouchless.
+Lorne: How many more must I give?
+
+Bukayo: Fall back to C&M. Our performance has been compromised.
+Bukayo: What are you doing? Those instruments are property of Choreography and Merriment.
+Cecily: If you were caught in a mudslide, would you be more afraid of suffocating or drowning?
+
+Sissy: What have you done, little mouse?
+Sissy: You've no salutation here, you blighted snuff slave.
+Sissy: I would never bear falsity to a steward of the Eagans.
+Sissy: That room stays shut until all who remember her sit with Kier.
+Sissy: Return and plead forgiveness, child. The Eagans will grant it.
+
+Burt: He doesn’t just speak to us through the handbook or the paintings. He finds other ways.
+
 
 """🧔🏼‍♂️ Kier:
 And I shall whisper to ye dutiful through the ages.
@@ -63,6 +95,10 @@ just as a man with rotting toes cannot skip.
 """
 
 🧔🏼‍♂️ Kier: Revel now in the fruit of your labors
+
+🧔🏼‍♂️ Kier: The remembered man does not decay.
+
+🧔🏼‍♂️ Kier: The mouth which is busy smiling cannot bite.
 
 """📙 The You You Are:
 What separates man from machine
@@ -143,9 +179,47 @@ The Board austerely desires for you to feel connected to Lumon's history.
 To that end, please accept from the Board these inclusively re-canonicalized paintings
 intended to help you see yourself in Kier, our founder."""
 
-Hi kids, what's for dinner
+Hi kids, what's for dinner?
 
 Dylan G: Page 197 slaps.
+Dylan G: I like to think my outie lives on, like, a riverboat.
+Dylan G: Wow. Lotta confidence for a man who once got disciplined for dozing.
+Dylan G: It’s just raining contraband today.
+Dylan G: So, like, is it rude to keep asking why you're a kid?
+Dylan G: What in the abominable fuck?
+Dylan G: If you're taking feedback, I hate it.
+
+Helly R: My outie wouldn’t do that.
+Helly R: They were scary. The numbers were scary.
+Helly R: What I want is for her to wake up while the life drains out of her and to know it was me who did it.
+Helly R: Back to work, slackers. Praise Kier!
+Let Kier guide your hand.
+
+"""Jame Eagan:
+Do you remember when I brought home the first chip to show you?
+The prototype. It had the blue and green lights back then.
+I remember you said to me, "It’s so pretty, Daddy.
+Everybody in the whole world should get one."
+They will. Because of you. They’ll all be Kier’s children.
+"""
+
+"""Jame Eagan:
+I do not love my daughter. I used to see Kier in her,
+but he left her as she grew.
+"""
+
+Jame Eagan: Fetid moppet.
+
+Harmony: We were once chums. Old colleagues lift each other up.
+Harmony: Well, flip my toboggan.
+Harmony: We serve Kier, you child!
+
+Ms Huang: That's nice, Mark. But I have to remind you that I'm a supervisor, not a friend.
+Ms Huang: Please refrain from sharing information that may be privileged or sensitive.
+Ms Huang: Would you like me to put petroleum jelly in your nostrils?
+
+
+
 
 Gemma: We have never owned an electric grouter and we look forward to the many happy memories it will provide.
 

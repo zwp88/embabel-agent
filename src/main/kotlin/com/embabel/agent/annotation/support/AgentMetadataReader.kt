@@ -238,6 +238,8 @@ class AgentMetadataReader {
         val result = try {
             ReflectionUtils.invokeMethod(method, instance, *payload.input.toTypedArray()) as Any
         } catch (e: ExecutePromptException) {
+            // This is our own exception to get typesafe prompt execution
+            // It is not a failure
             if (e.requireResult) {
                 payload.transform(
                     input = payload.input,
@@ -258,6 +260,14 @@ class AgentMetadataReader {
                 )
                 result.getOrThrow()
             }
+        } catch (t: Throwable) {
+            logger.error(
+                "Error invoking action method {} with payload {}",
+                method.name,
+                payload.input,
+                t,
+            )
+            throw t
         }
         logger.info(
             "Result of invoking action method {} was {}: payload {}",
