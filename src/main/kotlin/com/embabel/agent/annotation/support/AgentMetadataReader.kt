@@ -16,15 +16,11 @@
 package com.embabel.agent.annotation.support
 
 import com.embabel.agent.annotation.*
-import com.embabel.agent.annotation.Action
-import com.embabel.agent.annotation.Agent
-import com.embabel.agent.annotation.Condition
-import com.embabel.agent.core.*
-import com.embabel.agent.core.support.AbstractAction
-import com.embabel.agent.dsl.Transformation
-import com.embabel.agent.dsl.TransformationPayload
-import com.embabel.agent.dsl.expandInputBindings
+import com.embabel.agent.core.AgentMetadata
+import com.embabel.agent.core.BooleanCondition
+import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.dsl.expandInputBindings
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
@@ -227,14 +223,26 @@ class AgentMetadataReader {
             try {
                 ReflectionUtils.invokeMethod(method, instance, *payload.input.toTypedArray()) as Any
             } catch (e: ExecutePromptException) {
-                payload.transform(
-                    input = payload.input,
-                    prompt = { e.prompt },
-                    // TODO or default options
-                    llmOptions = e.llm ?: LlmOptions(),
-                    toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
-                    outputClass = payload.outputClass as Class<Any>,
-                )
+                if (e.requireResult) {
+                    payload.transform(
+                        input = payload.input,
+                        prompt = { e.prompt },
+                        // TODO or default options
+                        llmOptions = e.llm ?: LlmOptions(),
+                        toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
+                        outputClass = payload.outputClass as Class<Any>,
+                    )
+                } else {
+                    val result = payload.maybeTransform(
+                        input = payload.input,
+                        prompt = { e.prompt },
+                        // TODO or default options
+                        llmOptions = e.llm ?: LlmOptions(),
+                        toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
+                        outputClass = payload.outputClass as Class<Any>,
+                    )
+                    result.getOrThrow()
+                }
             }
         }
     }
@@ -269,76 +277,5 @@ private fun getterToPropertyName(name: String): String {
         name.substring(3).decapitalize()
     } else {
         name
-    }
-}
-
-private class MultiTransformer<O : Any>(
-    name: String,
-    description: String = name,
-    pre: List<String> = emptyList(),
-    post: List<String> = emptyList(),
-    cost: Double = 0.0,
-    value: Double = 0.0,
-    transitions: List<Transition> = emptyList(),
-    canRerun: Boolean = false,
-    qos: Qos = Qos(),
-    inputs: Set<IoBinding>,
-    private val inputClasses: List<Class<*>>,
-    private val outputClass: Class<O>,
-    private val outputVarName: String? = "it",
-    private val referencedInputProperties: Set<String>? = null,
-    override val toolCallbacks: Collection<ToolCallback>,
-    toolGroups: Collection<String>,
-    private val block: Transformation<List<Any>, O>,
-) : AbstractAction(
-    name = name,
-    description = description,
-    pre = pre,
-    post = post,
-    cost = cost,
-    value = value,
-    inputs,
-    outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.name)),
-    transitions = transitions,
-    toolCallbacks = toolCallbacks,
-    toolGroups = toolGroups,
-    canRerun = canRerun,
-    qos = qos,
-) {
-
-    override val domainTypes
-        get() = inputClasses + outputClass
-
-    override fun execute(
-        processContext: ProcessContext,
-        outputTypes: Map<String, SchemaType>,
-        action: com.embabel.agent.core.Action
-    ): ActionStatus = ActionRunner.execute {
-        val inputValues: List<Any> = inputs.map {
-            processContext.getValue(variable = it.name, type = it.type)
-                ?: throw IllegalArgumentException("Input ${it.name} of type ${it.type} not found in process context")
-        }
-        logger.debug("Resolved action {} inputs {}", name, inputValues)
-        val output = block.transform(
-            TransformationPayload(
-                input = inputValues,
-                processContext = processContext,
-                inputClass = List::class.java as Class<List<Any>>,
-                outputClass = outputClass,
-                action = this,
-            )
-        )
-        if (outputVarName != null) {
-            processContext.blackboard[outputVarName] = output
-        } else {
-            processContext.blackboard += output
-        }
-    }
-
-    override fun referencedInputProperties(variable: String): Set<String> {
-        return referencedInputProperties ?: run {
-            val fields = inputClasses.map { it.declaredFields.map { it.name } }.flatten().toSet()
-            fields
-        }
     }
 }

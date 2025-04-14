@@ -50,6 +50,27 @@ interface LlmTransformer {
     ): O
 
     /**
+     * Perform a transformation from the given input object
+     * to the output object which might not succeed.
+     * @param input Input object
+     * @param prompt Function to generate the prompt from the input object
+     * @param llmOptions Options for the LLM. Controls model and hyperparameters
+     * @param toolCallbacks Tool callbacks to use for this transformation.
+     * @param outputClass Class of the output object
+     * @param agentProcess Agent process we are running within
+     * @param action Action we are running within if we are running within an action
+     */
+    fun <I, O> maybeTransform(
+        input: I,
+        prompt: (input: I) -> String,
+        llmOptions: LlmOptions = LlmOptions.Companion(),
+        toolCallbacks: List<ToolCallback> = emptyList(),
+        outputClass: Class<O>,
+        agentProcess: AgentProcess,
+        action: Action?,
+    ): Result<O>
+
+    /**
      * Low level transform, which can also be called
      * directly by user code.
      */
@@ -60,4 +81,5 @@ interface LlmTransformer {
         allToolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
     ): O
+
 }

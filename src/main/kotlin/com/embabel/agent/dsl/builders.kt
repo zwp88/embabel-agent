@@ -16,9 +16,9 @@
 package com.embabel.agent.dsl
 
 import com.embabel.agent.core.*
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.core.support.AbstractAction
 import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
 import org.springframework.ai.tool.ToolCallback
@@ -74,6 +74,18 @@ data class TransformationPayload<I, O>(
         toolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
     ): O = processContext.transform(
+        input, prompt, llmOptions, toolCallbacks, outputClass,
+        agentProcess = processContext.agentProcess,
+        action = this.action,
+    )
+
+    fun <I, O> maybeTransform(
+        input: I,
+        prompt: (input: I) -> String,
+        llmOptions: LlmOptions = LlmOptions.Companion(),
+        toolCallbacks: List<ToolCallback> = emptyList(),
+        outputClass: Class<O>,
+    ): Result<O> = processContext.maybeTransform(
         input, prompt, llmOptions, toolCallbacks, outputClass,
         agentProcess = processContext.agentProcess,
         action = this.action,

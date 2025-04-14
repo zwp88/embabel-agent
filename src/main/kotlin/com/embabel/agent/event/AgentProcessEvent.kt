@@ -126,12 +126,29 @@ class LlmTransformRequestEvent<I, O>(
             runningTime = runningTime
         )
     }
+
+    fun maybeResponseEvent(response: Result<O>, runningTime: Duration): LlmTransformResponseEvent<I, Result<O>> {
+        return LlmTransformResponseEvent<I, Result<O>>(
+            agentProcess = agentProcess,
+            input = input,
+            outputClass = outputClass,
+            llmOptions = llmOptions,
+            prompt = prompt,
+            response = response,
+            runningTime = runningTime
+        )
+    }
 }
 
+/**
+ * Response from an LLM
+ * @param outputClass normally O, except if this is a maybe response
+ * in which case it will be Result<O>
+ */
 class LlmTransformResponseEvent<I, O> internal constructor(
     agentProcess: AgentProcess,
     val input: I,
-    val outputClass: Class<O>,
+    val outputClass: Class<*>,
     val llmOptions: LlmOptions,
     val prompt: String,
     val response: O,

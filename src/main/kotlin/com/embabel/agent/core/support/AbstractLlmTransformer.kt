@@ -47,23 +47,14 @@ abstract class AbstractLlmTransformer : LlmTransformer {
         agentProcess: AgentProcess,
         action: Action?,
     ): O {
-        val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
-        val allToolCallbacks =
-            (toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
-                toolGroupResolver,
-            ) + (action?.resolveToolCallbacks(toolGroupResolver)
-                ?: emptySet())).distinctBy { it.toolDefinition.name() }
-        val literalPrompt = prompt(input)
-        val transformRequestEvent = LlmTransformRequestEvent(
-            agentProcess = agentProcess,
-            input = input,
-            outputClass = outputClass,
-            llmOptions = llmOptions,
-            prompt = literalPrompt,
-            tools = allToolCallbacks,
-        )
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
-            transformRequestEvent
+        val (allToolCallbacks, literalPrompt, transformRequestEvent) = setup<I, O>(
+            agentProcess,
+            toolCallbacks,
+            action,
+            prompt,
+            input,
+            outputClass,
+            llmOptions
         )
         val (response, ms) = time {
             doTransform(
@@ -83,4 +74,79 @@ abstract class AbstractLlmTransformer : LlmTransformer {
         )
         return response
     }
+
+    private fun <I, O> setup(
+        agentProcess: AgentProcess,
+        toolCallbacks: List<ToolCallback>,
+        action: Action?,
+        prompt: (I) -> String,
+        input: I,
+        outputClass: Class<O>,
+        llmOptions: LlmOptions
+    ): Triple<List<ToolCallback>, String, LlmTransformRequestEvent<I, O>> {
+        val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
+        val allToolCallbacks =
+            (toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
+                toolGroupResolver,
+            ) + (action?.resolveToolCallbacks(toolGroupResolver)
+                ?: emptySet())).distinctBy { it.toolDefinition.name() }
+        val literalPrompt = prompt(input)
+        val transformRequestEvent = LlmTransformRequestEvent(
+            agentProcess = agentProcess,
+            input = input,
+            outputClass = outputClass,
+            llmOptions = llmOptions,
+            prompt = literalPrompt,
+            tools = allToolCallbacks,
+        )
+        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
+            transformRequestEvent
+        )
+        return Triple(allToolCallbacks, literalPrompt, transformRequestEvent)
+    }
+
+    final override fun <I, O> maybeTransform(
+        input: I,
+        prompt: (I) -> String,
+        llmOptions: LlmOptions,
+        toolCallbacks: List<ToolCallback>,
+        outputClass: Class<O>,
+        agentProcess: AgentProcess,
+        action: Action?
+    ): Result<O> {
+        val (allToolCallbacks, literalPrompt, transformRequestEvent) = setup<I, O>(
+            agentProcess,
+            toolCallbacks,
+            action,
+            prompt,
+            input,
+            outputClass,
+            llmOptions
+        )
+        val (response, ms) = time {
+            doMaybeTransform(
+                input = input,
+                literalPrompt = literalPrompt,
+                llmOptions = llmOptions,
+                allToolCallbacks = allToolCallbacks.map { it.forProcess(agentProcess, llmOptions) },
+                outputClass = outputClass,
+            )
+        }
+        logger.debug("LLM response={}", response)
+        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
+            transformRequestEvent.maybeResponseEvent(
+                response = response,
+                runningTime = Duration.ofMillis(ms),
+            ),
+        )
+        return response
+    }
+
+    protected abstract fun <I, O> doMaybeTransform(
+        input: I,
+        literalPrompt: String,
+        llmOptions: LlmOptions,
+        allToolCallbacks: List<ToolCallback> = emptyList(),
+        outputClass: Class<O>,
+    ): Result<O>
 }

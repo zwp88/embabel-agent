@@ -17,16 +17,16 @@ package com.embabel.agent.core.support
 
 //import com.embabel.ScriptEvaluationService
 import com.embabel.agent.core.*
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.domain.special.Extractable
 import com.embabel.agent.domain.special.ExtractableCompanion
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.ProcessIdGenerator
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
-import com.embabel.agent.testing.FakeLlmTransformer
+import com.embabel.agent.testing.DummyObjectCreatingLlmTransformer
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -190,7 +190,7 @@ class DefaultAgentPlatform(
         blackboard: Blackboard,
     ): AgentProcess {
         val platformServicesToUse = if (processOptions.test) {
-            platformServices.copy(llmTransformer = FakeLlmTransformer.LoremIpsum)
+            platformServices.copy(llmTransformer = DummyObjectCreatingLlmTransformer.LoremIpsum)
         } else {
             platformServices
         }

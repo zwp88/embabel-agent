@@ -32,6 +32,8 @@ interface PromptRunner {
      */
     fun <T> run(prompt: String): T
 
+    fun <T> runMaybe(prompt: String): T?
+
     companion object {
 
         operator fun invoke(llm: LlmOptions? = null): BuildablePromptRunner {
@@ -46,11 +48,12 @@ interface PromptRunner {
  */
 object Prompt : PromptRunner {
 
-    /**
-     * Run a prompt using contextual LLM
-     */
     override fun <T> run(prompt: String): T {
-        throw ExecutePromptException(prompt)
+        throw ExecutePromptException(prompt = prompt, requireResult = true)
+    }
+
+    override fun <T> runMaybe(prompt: String): T? {
+        throw ExecutePromptException(prompt = prompt, requireResult = true)
     }
 
     /**
@@ -59,7 +62,7 @@ object Prompt : PromptRunner {
      */
     @JvmStatic
     fun <T> run(prompt: String, llm: LlmOptions): T {
-        throw ExecutePromptException(prompt, llm)
+        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
     }
 
 }
@@ -74,7 +77,11 @@ class BuildablePromptRunner(
 ) : PromptRunner {
 
     override fun <T> run(prompt: String): T {
-        throw ExecutePromptException(prompt, llm = llm)
+        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
+    }
+
+    override fun <T> runMaybe(prompt: String): T? {
+        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
     }
 
     fun withTemperature(temperature: Double): PromptRunner {
@@ -92,10 +99,13 @@ class BuildablePromptRunner(
  * This is not a real failure but meant to be intercepted by infrastructure.
  * It allows us to maintain strong typing.
  * @param prompt prompt to run
+ * @param requireResult whether to require a result or allow the LLM to
+ * say that it cannot produce a result
  * @param llm llm to use. Contextual LLM will be used if not set
  */
 internal class ExecutePromptException(
     val prompt: String,
+    val requireResult: Boolean,
     val llm: LlmOptions? = null,
 ) : RuntimeException(
     "Not a real failure but meant to be intercepted by infrastructure: Generated prompt=[$prompt]"

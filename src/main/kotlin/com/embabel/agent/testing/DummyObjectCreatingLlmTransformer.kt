@@ -29,7 +29,7 @@ import java.util.*
 /**
  * Fake LLM transformer that generates valid classes with random strings.
  */
-class FakeLlmTransformer(
+class DummyObjectCreatingLlmTransformer(
     private val stringsToUse: List<String>,
 ) : LlmTransformer {
 
@@ -44,11 +44,30 @@ class FakeLlmTransformer(
         allToolCallbacks: List<ToolCallback>,
         outputClass: Class<O>,
     ): O {
-        logger.debug("Creating Lorem Ipsum response for class: ${outputClass.name}")
+        logger.debug("Creating fake response for class: ${outputClass.name}")
 
         // Create a mock instance based on the output class structure
         @Suppress("UNCHECKED_CAST")
         return createMockInstance(outputClass) as O
+    }
+
+    override fun <I, O> maybeTransform(
+        input: I,
+        prompt: (I) -> String,
+        llmOptions: LlmOptions,
+        toolCallbacks: List<ToolCallback>,
+        outputClass: Class<O>,
+        agentProcess: AgentProcess,
+        action: Action?
+    ): Result<O> {
+        logger.debug("Creating fake response for class: ${outputClass.name}")
+
+        // Create a mock instance based on the output class structure
+        @Suppress("UNCHECKED_CAST")
+        val o = createMockInstance(outputClass) as O
+
+        // TODO simulate occasional failures
+        return Result.success(o)
     }
 
     override fun <I, O> transform(
@@ -151,7 +170,11 @@ class FakeLlmTransformer(
 
     companion object {
 
-        val LoremIpsum: LlmTransformer = FakeLlmTransformer(
+        /**
+         * A fake LLM transformer that generates Lorem Ipsum
+         * style fake test
+         */
+        val LoremIpsum: LlmTransformer = DummyObjectCreatingLlmTransformer(
             listOf(
                 "Lorem ipsum dolor sit amet", "consectetur adipiscing elit", "sed do eiusmod tempor",
                 "incididunt ut labore", "et dolore magna aliqua", "Ut enim ad minim veniam",
