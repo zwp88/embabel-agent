@@ -69,6 +69,15 @@ data class SuggestedMovies(
     val movies: List<MovieResponse>,
 )
 
+data class StreamableMovies(
+    val movies: List<StreamableMovie>,
+)
+
+data class StreamableMovie(
+    val movie: MovieResponse,
+    val streamingOptions: List<StreamingOption>,
+)
+
 data class SuggestionWriteup(
     override val text: String,
 ) : HasContent
@@ -82,6 +91,7 @@ interface MovieBuffRepository : CrudRepository<MovieBuff, String>
 )
 class MovieFinder(
     private val omdbClient: OmdbClient,
+    private val streamingAvailabilityClient: StreamingAvailabilityClient,
     private val movieBuffRepository: MovieBuffRepository,
     private val suggestionCount: Int = 5,
     private val tasteProfileWordCount: Int = 40,
@@ -180,12 +190,33 @@ class MovieFinder(
         return SuggestedMovies(movies)
     }
 
+    @Action
+    fun streamable(
+        movieBuff: MovieBuff,
+        suggestedMovies: SuggestedMovies,
+    ): StreamableMovies {
+        val streamables = suggestedMovies.movies.mapNotNull { movie ->
+            try {
+                val streamingOptions =
+                    streamingAvailabilityClient.getShowStreamingIn(imdb = movie.imdbID, country = movieBuff.countryCode)
+                if (streamingOptions.isNotEmpty()) {
+                    StreamableMovie(movie, streamingOptions)
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+        return StreamableMovies(streamables)
+    }
+
 
     @Action
     @AchievesGoal(description = "Recommend movies for a movie buff using what we know about them")
-    fun writeUpSuggestion(
+    fun writeUpSuggestions(
         dmb: DecoratedMovieBuff,
-        suggestedMoviesWithDetails: SuggestedMovies,
+        streamableMovies: StreamableMovies,
     ): SuggestionWriteup =
         PromptRunner().withModel("gpt-4o").createObject(
             """
@@ -194,14 +225,15 @@ class MovieFinder(
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
             Their movie taste profile is ${dmb.tasteProfile}
 
-            The recommendations are:
+            The streamable recommendations are:
             ${
-                suggestedMoviesWithDetails.movies.joinToString("\n\n") {
+                streamableMovies.movies.joinToString("\n\n") {
                     """
-                    ${it.Title} (${it.Year}): ${it.imdbID}
-                    Director: ${it.Director}
-                    Actors: ${it.Actors}
-                    ${it.Plot}
+                    ${it.movie.Title} (${it.movie.Year}): ${it.movie.imdbID}
+                    Director: ${it.movie.Director}
+                    Actors: ${it.movie.Actors}
+                    ${it.movie.Plot}
+                    Streaming on ${it.streamingOptions.joinToString(", ") { it.service.name }}
                     """.trimIndent()
                 }
             }
