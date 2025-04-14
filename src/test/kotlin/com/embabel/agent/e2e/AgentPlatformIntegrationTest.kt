@@ -20,6 +20,7 @@ import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
 import com.embabel.agent.testing.FakeGoalRanker
+import com.embabel.common.test.config.FakeAiConfiguration
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.examples.simple.horoscope.StarNewsFinder
 import com.embabel.examples.simple.horoscope.Writeup
@@ -61,7 +62,10 @@ class FakeConfig {
  * Integration tests
  */
 @SpringBootTest
-@Import(FakeConfig::class)
+@Import(value=[
+    FakeConfig::class,
+    FakeAiConfiguration::class,
+])
 class AgentPlatformIntegrationTest(
     @Autowired
     private val agentPlatform: AgentPlatform,
