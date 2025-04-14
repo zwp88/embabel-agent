@@ -40,7 +40,7 @@ abstract class OptimizingGoapPlanner(
         val unknownConditions = startState.unknownConditions()
         if (unknownConditions.isNotEmpty()) {
             if (unknownConditions.size > 1) {
-                TODO("Handle more than one unknown condition")
+                TODO("Handle more than one unknown condition: Have $unknownConditions")
             }
             val condition = unknownConditions.single()
             val variants = startState.variants(condition)

@@ -20,6 +20,7 @@ import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.dsl.TransformationPayload
 import org.springframework.ai.tool.annotation.Tool
 
 data class Person(val name: String) {
@@ -93,6 +94,19 @@ class OneTransformerActionOnly {
 
     @Action(cost = 500.0)
     fun toPerson(userInput: UserInput): Person {
+        return Person(userInput.content)
+    }
+
+}
+
+@Agentic
+class OneTransformerActionTakingPayloadOnly {
+
+    @Action(cost = 500.0)
+    fun toPerson(
+        userInput: UserInput,
+        payload: TransformationPayload<UserInput, Person>,
+    ): Person {
         return Person(userInput.content)
     }
 

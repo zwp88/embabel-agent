@@ -17,7 +17,6 @@ package com.embabel.examples.simple.movie
 
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
-import com.embabel.agent.annotation.Agent
 import com.embabel.agent.annotation.Condition
 import com.embabel.agent.annotation.support.PromptRunner
 import com.embabel.agent.core.ProcessContext
@@ -27,7 +26,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import com.embabel.agent.dsl.TransformationPayload
 import org.springframework.data.repository.CrudRepository
 
 
@@ -94,10 +93,11 @@ data class SuggestionWriteup(
 interface MovieBuffRepository : CrudRepository<MovieBuff, String>
 
 
-@ConditionalOnProperty("OMDB_API_KEY")
-@Agent(
-    description = "Find movies a person hasn't seen and may find interesting"
-)
+//@Profile("!test")
+//@ConditionalOnProperty("OMDB_API_KEY")
+//@Agent(
+//    description = "Find movies a person hasn't seen and may find interesting"
+//)
 class MovieFinder(
     private val omdbClient: OmdbClient,
     private val streamingAvailabilityClient: StreamingAvailabilityClient,
@@ -157,15 +157,29 @@ class MovieFinder(
             """
         )
 
-    @Action(post = ["haveEnoughMovies"], canRerun = true)
+    @Action(
+        post = ["haveEnoughMovies"],
+        canRerun = true,
+    )
     fun suggestMovieTitles(
         userInput: UserInput,
         dmb: DecoratedMovieBuff,
         relevantNewsStories: RelevantNewsStories,
-    ): SuggestedMovieTitles =
-    // TODO need access to process context for blackboard,
-        // or binding
-        PromptRunner().createObject(
+        payload: TransformationPayload<*, SuggestedMovieTitles>,
+    ): SuggestedMovieTitles {
+        // We do this to break potential LLM caching
+        // as this will be run many times
+        val randomPart = listOf(
+            "be creative",
+            "be inventive",
+            "think different",
+            "think like Roger Ebert",
+            "think like an auteur",
+            "think of things that are fun",
+            "make it entertaining!"
+        )
+            .random()
+        return PromptRunner().withModel("gpt-4o").createObject(
             """
             Suggest $suggestionCount movies titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
@@ -186,12 +200,14 @@ class MovieFinder(
                     }
             }
             Don't include these movies we've already suggested:
-            ${emptyList<StreamableMovie>().joinToString("\n") { it.movie.Title }}
+            ${allStreamableMovies(payload.processContext).joinToString("\n") { it.movie.Title }}
 
             Consider also the following news stories for topical inspiration:
             ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
+            $randomPart
             """
         )
+    }
 
     @Action
     fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
@@ -241,9 +257,13 @@ class MovieFinder(
     }
 
     // TODO simplify signature
+    // Should have same signature as actions
     @Condition
-    fun haveEnoughMovies(processContext: ProcessContext): Boolean =
-        allStreamableMovies(processContext).size > 5
+    fun haveEnoughMovies(processContext: ProcessContext): Boolean {
+        val count = allStreamableMovies(processContext).size
+        println("Condition count=$count")
+        return count > 4
+    }
 
     private fun allStreamableMovies(
         processContext: ProcessContext,

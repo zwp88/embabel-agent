@@ -258,6 +258,36 @@ class AgentMetadataReaderTest {
         }
 
         @Test
+        fun `transformer action invocation with payload`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(OneTransformerActionTakingPayloadOnly())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.actions.size)
+            val action = metadata.actions.first()
+            assertEquals(
+                UserInput::class.java.name,
+                action.inputs.single().type,
+                "Should not consider payload as input",
+            )
+            val agent = mockk<IAgent>()
+            every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
+            val mockAgentProcess = mockk<AgentProcess>()
+            every { mockAgentProcess.agent } returns agent
+            val mockPlatformServices = mockk<PlatformServices>()
+            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.eventListener } returns DevNull
+
+            val pc = ProcessContext(
+                blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe")),
+                platformServices = mockPlatformServices,
+                agentProcess = mockAgentProcess,
+            )
+            val result = action.execute(pc, mockk(), action)
+            assertEquals(ActionStatusCode.COMPLETED, result.status)
+            assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+        }
+
+        @Test
         fun `transformer action with 2 args invocation`() {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnly())

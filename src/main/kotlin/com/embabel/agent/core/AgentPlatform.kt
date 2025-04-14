@@ -51,7 +51,7 @@ data class ProcessOptions(
     val test: Boolean = false,
     val verbosity: Verbosity = Verbosity(),
     val allowGoalChange: Boolean = true,
-    val maxActions: Int = 20,
+    val maxActions: Int = 40,
 )
 
 /**

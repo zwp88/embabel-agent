@@ -201,6 +201,7 @@ class AgentMetadataReader {
         val inputClasses = method.parameters
             .map { it.type }
         val inputs = method.parameters
+            .filterNot { it.type == TransformationPayload::class.java }
             .map {
                 val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
                 expandInputBindings(if (nameMatchAnnotation != null) it.name else IoBinding.DEFAULT_BINDING, it.type)
@@ -237,8 +238,13 @@ class AgentMetadataReader {
     ): O {
         logger.info("Invoking action method {} with payload {}", method.name, payload.input)
         val toolCallbacksOnDomainObjects = ToolCallbacks.from(*payload.input.toTypedArray())
+        var args = payload.input.toTypedArray()
+        if (method.parameters.any { it.type == TransformationPayload::class.java }) {
+            // We need to add the payload as the last argument
+            args += payload
+        }
         val result = try {
-            ReflectionUtils.invokeMethod(method, instance, *payload.input.toTypedArray()) as Any
+            ReflectionUtils.invokeMethod(method, instance, *args) as Any
         } catch (e: ExecutePromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
