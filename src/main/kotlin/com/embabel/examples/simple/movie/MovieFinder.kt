@@ -51,10 +51,6 @@ data class MovieRating(
     val title: String,
 )
 
-data class Movie(
-    val title: String,
-//    val imdb: String,
-)
 
 data class DecoratedMovieBuff(
     val movieBuff: MovieBuff,
@@ -86,6 +82,7 @@ class MovieFinder(
     private val omdbClient: OmdbClient,
     private val movieBuffRepository: MovieBuffRepository,
     private val suggestionCount: Int = 5,
+    private val tasteProfileWordCount: Int = 40,
 ) {
     init {
         // TODO this is only for example purposes
@@ -93,7 +90,7 @@ class MovieFinder(
     }
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
-    fun findMovieBuff(userInput: UserInput): MovieBuff {
+    fun findMovieBuff(userInput: UserInput): MovieBuff? {
 //        return movieBuffRepository.findById(userInput.content).orElse(null)
         val buff = movieBuffRepository.findAll().first()
         return buff
@@ -109,10 +106,10 @@ class MovieFinder(
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
             Their movie taste profile is ${dmb.tasteProfile}
-            A summary of them: "${dmb.movieBuff.about}"
-            
-            Consider the following request: '${userInput.content}'
-            
+            About them: "${dmb.movieBuff.about}"
+
+            Consider the following specific request: '${userInput.content}'
+
             Given this, use web tools and generate search queries
             to find 5 relevant news stories that might inspire
             movie choice for them tonight.
@@ -126,7 +123,7 @@ class MovieFinder(
     ): DecoratedMovieBuff =
         PromptRunner().createObject(
             """
-            $movieBuff is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
+            ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
             ${
                 movieBuff.randomRatings(50).joinToString("\n") {
@@ -134,8 +131,8 @@ class MovieFinder(
                 }
             }
 
-            Return their tasteProfile as you understand it,
-            in 25 words or less.
+            Return a summary of their taste profile as you understand it,
+            in $tasteProfileWordCount words or less. Cover what that like and don't like.
             """
         )
 
@@ -147,17 +144,17 @@ class MovieFinder(
     ): SuggestedMovieTitles =
         PromptRunner().createObject(
             """
-            Suggest $suggestionCount movies titles that ${dmb.movieBuff.name} has not seen, but may find interesting.
+            Suggest $suggestionCount movies titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
             Consider the specific request: "${userInput.content}"
 
             Use the information about their preferences from below:
             Their movie taste: "${dmb.tasteProfile}"
-            
+
             Their hobbies: ${dmb.movieBuff.hobbies.joinToString()}
             About them: "${dmb.movieBuff.about}"
-            
-            Do not include the following movies, which they've seen (rating attached):
+
+            Don't include the following movies, which they've seen (rating attached):
             ${
                 dmb.movieBuff.movieRatings.joinToString("\n") {
                     "${it.title}: ${it.rating}"
@@ -198,7 +195,12 @@ class MovieFinder(
             The recommendations are:
             ${
                 suggestedMoviesWithDetails.movies.joinToString("\n") {
-                    "" + it
+                    """
+                    ${it.Title} (${it.Year}): ${it.imdbID}
+                    Director: ${it.Director}
+                    Actors: ${it.Actors}
+                    ${it.Plot}
+                    """.trimIndent()
                 }
             }
             """
