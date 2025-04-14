@@ -24,6 +24,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.repository.CrudRepository
 
 
@@ -75,6 +76,7 @@ data class SuggestionWriteup(
 interface MovieBuffRepository : CrudRepository<MovieBuff, String>
 
 
+@ConditionalOnProperty("OMDB_API_KEY")
 @Agent(
     description = "Find movies a person hasn't seen and may find interesting"
 )
