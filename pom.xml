@@ -156,6 +156,12 @@
             <artifactId>springmockk</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.embabel.common</groupId>
+            <artifactId>embabel-common-test</artifactId>
+        </dependency>
+
     </dependencies>
 
 

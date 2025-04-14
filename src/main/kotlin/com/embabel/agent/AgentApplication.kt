@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.context.annotation.Import
 
 @SpringBootApplication
 // TODO shouldn't do this magically but should bring them in
@@ -26,8 +27,12 @@ import org.springframework.context.annotation.ComponentScan
 @ComponentScan(
     basePackages = [
         "com.embabel.agent",
-        "com.embabel.common.ai.model",
         "com.embabel.examples",
+    ]
+)
+@Import(
+    value = [
+        com.embabel.common.ai.model.config.OpenAiConfiguration::class,
     ]
 )
 class AgentApplication
