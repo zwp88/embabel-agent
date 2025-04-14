@@ -19,10 +19,9 @@ import org.springframework.data.repository.CrudRepository
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-interface HasId {
-    val id: String?
-}
-
+/**
+ * Spring Data CRUD with in memory storage
+ */
 open class InMemoryRepository<T : Any>(
     private val idGetter: (T) -> String?,
     private val idWither: ((T, String) -> T),
@@ -32,12 +31,10 @@ open class InMemoryRepository<T : Any>(
 
     override fun <S : T> save(entity: S): S {
         var savedEntity = entity
-        if (idGetter.invoke(entity) == null) {
-            val newId = UUID.randomUUID().toString()
-            // TODO this is dirty
-            savedEntity = idWither.invoke(savedEntity, newId) as S
-            storage[newId] = savedEntity
-        }
+        val id = idGetter.invoke(entity) ?: UUID.randomUUID().toString()
+        // TODO this is dirty
+        savedEntity = idWither.invoke(savedEntity, id) as S
+        storage[id] = savedEntity
         return savedEntity
     }
 

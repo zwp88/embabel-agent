@@ -28,3 +28,14 @@ interface Person {
 
     val name: String
 }
+
+
+data class RelevantNewsStories(
+    val items: List<NewsStory>
+)
+
+data class NewsStory(
+    val url: String,
+    val title: String,
+    val summary: String,
+)

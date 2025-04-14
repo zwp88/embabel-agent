@@ -17,12 +17,14 @@ package com.embabel.examples.simple.movie
 
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
+import com.embabel.agent.annotation.Agent
 import com.embabel.agent.annotation.support.PromptRunner
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
+import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import org.springframework.data.repository.CrudRepository
-import org.springframework.stereotype.Service
 
 
 typealias OneThroughTen = Int
@@ -32,21 +34,35 @@ data class MovieBuff(
     val movieRatings: List<MovieRating>,
     val countryCode: String,
     val hobbies: List<String>,
-) : Person
+    val about: String,
+) : Person {
+
+    /**
+     * We use this so we don't overwhelm the prompt
+     */
+    fun randomRatings(n: Int): List<MovieRating> {
+        // Take random n ratings
+        return movieRatings.shuffled().take(n)
+    }
+}
 
 data class MovieRating(
     val rating: OneThroughTen,
-    val movie: Movie,
+    val title: String,
 )
 
 data class Movie(
     val title: String,
-    val imdb: String,
+//    val imdb: String,
+)
+
+data class DecoratedMovieBuff(
+    val movieBuff: MovieBuff,
+    val tasteProfile: String,
 )
 
 data class SuggestedMovieTitles(
     val movies: List<String>,
-    val tasteProfile: String,
 )
 
 /**
@@ -62,38 +78,10 @@ data class Recommendation(
 
 interface MovieBuffRepository : CrudRepository<MovieBuff, String>
 
-@Service
-class InMemoryMovieBuffRepository : MovieBuffRepository,
-    InMemoryRepository<MovieBuff>(
-        idGetter = { it.name },
-        idWither = { it, id -> it.copy(name = id) },
-    )
 
-fun populateMovieBuffRepository(
-    movieBuffRepository: MovieBuffRepository,
-) {
-    movieBuffRepository.save(
-        MovieBuff(
-            name = "Rod",
-            movieRatings = listOf(
-                MovieRating(
-                    movie = Movie(
-                        title = "The Godfather",
-                        imdb = "tt0068646",
-                    ),
-                    rating = 10,
-                )
-            ),
-            hobbies = listOf("Travel", "Skiing", "Chess", "Hiking", "Reading"),
-            countryCode = "AU",
-        )
-    )
-
-}
-
-//@Agent(
-//    description = "Find movies a person hasn't seen and may find interesting"
-//)
+@Agent(
+    description = "Find movies a person hasn't seen and may find interesting"
+)
 class MovieFinder(
     private val omdbClient: OmdbClient,
     private val movieBuffRepository: MovieBuffRepository,
@@ -111,32 +99,73 @@ class MovieFinder(
         return buff
     }
 
-    // TODO horoscope or other things to consider
-    // Or things in the news?
+    @Action(toolGroups = [ToolGroup.WEB])
+    fun findNewsStories(
+        dmb: DecoratedMovieBuff,
+        userInput: UserInput
+    ): RelevantNewsStories =
+        PromptRunner().createObject(
+            """
+            ${dmb.movieBuff.name} is a movie buff.
+            Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
+            Their movie taste profile is ${dmb.tasteProfile}
+            A summary of them: "${dmb.movieBuff.about}"
+            
+            Consider the following request: '${userInput.content}'
+            
+            Given this, use web tools and generate search queries
+            to find 5 relevant news stories that might inspire
+            movie choice for them tonight.
+        """.trimIndent()
+        )
+
+
+    @Action
+    fun analyzeTasteProfile(
+        movieBuff: MovieBuff
+    ): DecoratedMovieBuff =
+        PromptRunner().createObject(
+            """
+            $movieBuff is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
+            They have rated the following movies out of 10:
+            ${
+                movieBuff.randomRatings(50).joinToString("\n") {
+                    "${it.title}: ${it.rating}"
+                }
+            }
+
+            Return their tasteProfile as you understand it,
+            in 25 words or less.
+            """
+        )
 
     @Action
     fun suggestMovieTitles(
         userInput: UserInput,
-        movieBuff: MovieBuff
+        dmb: DecoratedMovieBuff,
+        relevantNewsStories: RelevantNewsStories,
     ): SuggestedMovieTitles =
         PromptRunner().createObject(
             """
-            Suggest $suggestionCount movies titles that ${movieBuff.name} has not seen, but may find interesting.
+            Suggest $suggestionCount movies titles that ${dmb.movieBuff.name} has not seen, but may find interesting.
 
-            Consider the specific request: '$${userInput.content}'
+            Consider the specific request: "${userInput.content}"
 
             Use the information about their preferences from below:
-            Consider their hobbies:
-            ${movieBuff.hobbies.joinToString("\n- ")}
-            They have rated the following movies out of 10:
+            Their movie taste: "${dmb.tasteProfile}"
+            
+            Their hobbies: ${dmb.movieBuff.hobbies.joinToString()}
+            About them: "${dmb.movieBuff.about}"
+            
+            Do not include the following movies, which they've seen (rating attached):
             ${
-                movieBuff.movieRatings.joinToString("\n") {
-                    "${it.movie.title}: ${it.rating}"
+                dmb.movieBuff.movieRatings.joinToString("\n") {
+                    "${it.title}: ${it.rating}"
                 }
             }
 
-            Also return their tasteProfile as you understand it,
-            in 25 words of less.
+            Consider also the following news stories for topical inspiration:
+            ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
             """
         )
 
@@ -156,16 +185,15 @@ class MovieFinder(
     @Action
     @AchievesGoal(description = "Recommend movies for a movie buff using what we know about them")
     fun writeUpSuggestions(
-        movieBuff: MovieBuff,
-        suggestedMovies: SuggestedMovieTitles,
+        dmb: DecoratedMovieBuff,
         suggestedMoviesWithDetails: SuggestedMovies,
     ): Recommendation =
         PromptRunner().createObject(
             """
-            Write up a movie recommendation for ${movieBuff.name}
+            Write up a movie recommendation for ${dmb.movieBuff.name}
             based on the following information:
-            Their hobbies are ${movieBuff.hobbies.joinToString(", ")}
-            Their movie taste profile is ${suggestedMovies.tasteProfile}
+            Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
+            Their movie taste profile is ${dmb.tasteProfile}
 
             The recommendations are:
             ${

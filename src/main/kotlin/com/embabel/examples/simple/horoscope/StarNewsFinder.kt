@@ -22,18 +22,9 @@ import com.embabel.agent.annotation.support.PromptRunner
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
+import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 
-
-data class RelevantNewsStories(
-    val items: List<NewsStory>
-)
-
-data class NewsStory(
-    val url: String,
-
-    val summary: String,
-)
 
 data class StarPerson(
     override val name: String,
