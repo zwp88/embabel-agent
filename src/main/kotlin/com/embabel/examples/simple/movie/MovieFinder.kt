@@ -63,7 +63,7 @@ class MovieFinder {
 
     @Action
     fun suggestMovies(movieBuff: MovieBuff): SuggestedMovies =
-        PromptRunner().run(
+        PromptRunner().createObject(
             """
             Suggest movies that ${movieBuff.name} has not seen, but may find interesting.
             They have seen the following movies: ${movieBuff.moviesSeen}

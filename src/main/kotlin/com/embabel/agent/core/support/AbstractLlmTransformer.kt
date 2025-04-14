@@ -105,7 +105,7 @@ abstract class AbstractLlmTransformer : LlmTransformer {
         return Triple(allToolCallbacks, literalPrompt, transformRequestEvent)
     }
 
-    final override fun <I, O> maybeTransform(
+    final override fun <I, O> transformIfPossible(
         input: I,
         prompt: (I) -> String,
         llmOptions: LlmOptions,
@@ -124,7 +124,7 @@ abstract class AbstractLlmTransformer : LlmTransformer {
             llmOptions
         )
         val (response, ms) = time {
-            doMaybeTransform(
+            doTransformIfPossible(
                 input = input,
                 literalPrompt = literalPrompt,
                 llmOptions = llmOptions,
@@ -142,7 +142,7 @@ abstract class AbstractLlmTransformer : LlmTransformer {
         return response
     }
 
-    protected abstract fun <I, O> doMaybeTransform(
+    protected abstract fun <I, O> doTransformIfPossible(
         input: I,
         literalPrompt: String,
         llmOptions: LlmOptions,

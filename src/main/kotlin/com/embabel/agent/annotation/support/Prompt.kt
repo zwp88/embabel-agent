@@ -24,15 +24,22 @@ import com.embabel.agent.core.primitive.LlmOptions
 interface PromptRunner {
 
     /**
-     * Run a prompt using LLM options from context
+     * Create an object of the given type using the given prompt and LLM options from context
      * (process context or implementing class).
      * Prompt is typically created within the scope of an
      * @Action method that provides access to
      * domain object instances, offering type safety.
      */
-    fun <T> run(prompt: String): T
+    fun <T> createObject(prompt: String): T
 
-    fun <T> runMaybe(prompt: String): T?
+    /**
+     * Try to create an object of the given type using the given prompt and LLM options from context
+     * (process context or implementing class).
+     * Prompt is typically created within the scope of an
+     * @Action method that provides access to
+     * domain object instances, offering type safety.
+     */
+    fun <T> createObjectIfPossible(prompt: String): T?
 
     companion object {
 
@@ -48,11 +55,11 @@ interface PromptRunner {
  */
 object Prompt : PromptRunner {
 
-    override fun <T> run(prompt: String): T {
+    override fun <T> createObject(prompt: String): T {
         throw ExecutePromptException(prompt = prompt, requireResult = true)
     }
 
-    override fun <T> runMaybe(prompt: String): T? {
+    override fun <T> createObjectIfPossible(prompt: String): T? {
         throw ExecutePromptException(prompt = prompt, requireResult = true)
     }
 
@@ -76,11 +83,11 @@ class BuildablePromptRunner(
     val llm: LlmOptions? = null,
 ) : PromptRunner {
 
-    override fun <T> run(prompt: String): T {
+    override fun <T> createObject(prompt: String): T {
         throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
     }
 
-    override fun <T> runMaybe(prompt: String): T? {
+    override fun <T> createObjectIfPossible(prompt: String): T? {
         throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
     }
 

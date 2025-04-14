@@ -76,7 +76,7 @@ class ChatClientLlmTransformer(
         return output
     }
 
-    override fun <I, O> doMaybeTransform(
+    override fun <I, O> doTransformIfPossible(
         input: I,
         literalPrompt: String,
         llmOptions: LlmOptions,

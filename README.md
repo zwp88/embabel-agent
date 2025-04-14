@@ -93,7 +93,7 @@ class StarNewsFinder(
     @Action
     fun extractPerson(userInput: UserInput): Subject {
         // All prompts are typesafe
-        return PromptRunner().run("Create a person from this user input, extracting their name and star sign: $userInput")
+        return PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
     }
 
     @Action
@@ -105,7 +105,7 @@ class StarNewsFinder(
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
     fun findNewsStories(person: Subject, horoscope: Horoscope): RelevantNewsStories {
-        return PromptRunner().run(
+        return PromptRunner().createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -137,7 +137,7 @@ class StarNewsFinder(
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
     ): FunnyWriteup =
-        PromptRunner().withTemperature(1.2).run(
+        PromptRunner().withTemperature(1.2).createObject(
             """
             Take the following news stories and write up something
             amusing for the target person.

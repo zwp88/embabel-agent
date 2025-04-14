@@ -85,7 +85,7 @@ data class TransformationPayload<I, O>(
         llmOptions: LlmOptions = LlmOptions.Companion(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
-    ): Result<O> = processContext.maybeTransform(
+    ): Result<O> = processContext.transformIfPossible(
         input, prompt, llmOptions, toolCallbacks, outputClass,
         agentProcess = processContext.agentProcess,
         action = this.action,

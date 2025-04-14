@@ -267,7 +267,7 @@ class ChatClientLlmTransformerTest {
             every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
 
             val transformer = ChatClientLlmTransformer(mockModelProvider)
-            val result = transformer.maybeTransform(
+            val result = transformer.transformIfPossible(
                 input = "Hello, world!",
                 prompt = { "Say hello" },
                 llmOptions = LlmOptions(),

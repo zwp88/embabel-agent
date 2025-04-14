@@ -18,8 +18,8 @@ package com.embabel.agent.annotation.support
 import com.embabel.agent.annotation.*
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.domain.special.UserInput
 import org.springframework.ai.tool.annotation.Tool
 
 data class Person(val name: String) {
@@ -169,7 +169,7 @@ class OnePromptActionOnly(
 
     @Action(cost = 500.0)
     fun toPersonWithPrompt(userInput: UserInput): Person {
-        return promptRunner.run("Generated prompt for ${userInput.content}")
+        return promptRunner.createObject("Generated prompt for ${userInput.content}")
     }
 
 }
@@ -200,7 +200,7 @@ class Combined {
 
     @Action(cost = 500.0)
     fun toPersonWithPrompt(userInput: UserInput): Person {
-        return magicalLlm.run("Generated prompt for ${userInput.content}")
+        return magicalLlm.createObject("Generated prompt for ${userInput.content}")
     }
 
     @Tool
@@ -216,7 +216,7 @@ class OnePromptActionWithToolOnly(
 
     @Action(cost = 500.0)
     fun toPersonWithPrompt(userInput: UserInput): Person {
-        return Prompt.run("Generated prompt for ${userInput.content}")
+        return Prompt.createObject("Generated prompt for ${userInput.content}")
     }
 
     @Tool
@@ -233,7 +233,7 @@ class FromPersonUsesDomainObjectTools {
     fun fromPerson(
         person: Person
     ): UserInput {
-        return Prompt.run("Create a UserInput")
+        return Prompt.createObject("Create a UserInput")
     }
 }
 

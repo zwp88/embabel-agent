@@ -60,7 +60,7 @@ interface LlmTransformer {
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
      */
-    fun <I, O> maybeTransform(
+    fun <I, O> transformIfPossible(
         input: I,
         prompt: (input: I) -> String,
         llmOptions: LlmOptions = LlmOptions.Companion(),

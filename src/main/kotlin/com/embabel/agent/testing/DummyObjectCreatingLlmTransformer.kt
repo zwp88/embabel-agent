@@ -51,7 +51,7 @@ class DummyObjectCreatingLlmTransformer(
         return createMockInstance(outputClass) as O
     }
 
-    override fun <I, O> maybeTransform(
+    override fun <I, O> transformIfPossible(
         input: I,
         prompt: (I) -> String,
         llmOptions: LlmOptions,
