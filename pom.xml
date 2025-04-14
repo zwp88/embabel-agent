@@ -160,6 +160,7 @@
         <dependency>
             <groupId>com.embabel.common</groupId>
             <artifactId>embabel-common-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
