@@ -53,7 +53,10 @@ Other benefits:
   capable solution.
   models. This enables the system to leverage the strengths of different models for different tasks.
 - **Built on Spring and the JVM,** making it easy to access existing enterprise functionality and capabilities.
-- **Designed for testability** from the ground up. Both unit testing and flow testing are easy.
+  For example:
+    - Spring can inject and manage agents, including using Spring AOP to decorate functions.
+    - Robust persistence and transaction management solutions are available.
+- **Designed for testability** from the ground up. Both unit testing and agent end to end testing are easy.
 
 Flows can be authored in one of two ways:
 

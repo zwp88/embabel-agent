@@ -22,6 +22,10 @@ import com.embabel.plan.goap.WorldState
 import com.embabel.plan.goap.WorldStateDeterminer
 import org.slf4j.LoggerFactory
 
+/**
+ * Determine world state for the given ProcessContext,
+ * using the blackboard.
+ */
 class BlackboardWorldStateDeterminer(
     private val processContext: ProcessContext,
 ) : WorldStateDeterminer {

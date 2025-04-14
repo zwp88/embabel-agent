@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.core.AbstractLlmTransformer
 import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.core.support.AbstractLlmTransformer
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
@@ -25,8 +25,11 @@ import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.stereotype.Service
 
+/**
+ * LlmTransformer implementation that uses the Spring AI ChatClient
+ */
 @Service
-class DefaultLlmTransformer(
+class ChatClientLlmTransformer(
     private val modelProvider: ModelProvider,
 ) : AbstractLlmTransformer() {
 

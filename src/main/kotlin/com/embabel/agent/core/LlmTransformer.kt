@@ -15,19 +15,16 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.agent.event.LlmTransformRequestEvent
 import com.embabel.agent.core.primitive.LlmOptions
-import com.embabel.agent.spi.support.forProcess
-import com.embabel.common.util.time
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
-import java.time.Duration
 
 /**
  * Uses an LLM to transform an input into an output.
  * All LLM operations go through this,
  * allowing the AgentPlatform to mediate them.
+ * An LlmTransformer is responsible for resolving all relevant
+ * tool callbacks for the current AgentProcess, and emitting
+ * events.
  */
 interface LlmTransformer {
 
@@ -53,7 +50,8 @@ interface LlmTransformer {
     ): O
 
     /**
-     * Low level transform
+     * Low level transform, which can also be called
+     * directly by user code.
      */
     fun <I, O> doTransform(
         input: I,
@@ -62,60 +60,4 @@ interface LlmTransformer {
         allToolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
     ): O
-}
-
-/**
- * Find all tool callbacks and decorate them to be aware of the platform
- * All LlmTransformers should extend this.
- * Also emits events.
- */
-abstract class AbstractLlmTransformer : LlmTransformer {
-
-    protected val logger: Logger = LoggerFactory.getLogger(javaClass)
-
-    final override fun <I, O> transform(
-        input: I,
-        prompt: (I) -> String,
-        llmOptions: LlmOptions,
-        toolCallbacks: List<ToolCallback>,
-        outputClass: Class<O>,
-        agentProcess: AgentProcess,
-        action: Action?,
-    ): O {
-        val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
-        val allToolCallbacks =
-            (toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
-                toolGroupResolver,
-            ) + (action?.resolveToolCallbacks(toolGroupResolver)
-                ?: emptySet())).distinctBy { it.toolDefinition.name() }
-        val literalPrompt = prompt(input)
-        val transformRequestEvent = LlmTransformRequestEvent(
-            agentProcess = agentProcess,
-            input = input,
-            outputClass = outputClass,
-            llmOptions = llmOptions,
-            prompt = literalPrompt,
-            tools = allToolCallbacks,
-        )
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
-            transformRequestEvent
-        )
-        val (response, ms) = time {
-            doTransform(
-                input = input,
-                literalPrompt = literalPrompt,
-                llmOptions = llmOptions,
-                allToolCallbacks = allToolCallbacks.map { it.forProcess(agentProcess, llmOptions) },
-                outputClass = outputClass,
-            )
-        }
-        logger.debug("LLM response={}", response)
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
-            transformRequestEvent.responseEvent(
-                response = response,
-                runningTime = Duration.ofMillis(ms),
-            ),
-        )
-        return response
-    }
 }

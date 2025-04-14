@@ -25,6 +25,7 @@ import com.embabel.agent.domain.special.UserInput
 data class MovieBuff(
     override val name: String,
     val moviesSeen: List<String>,
+    val countryCode: String,
 ) : Person
 
 data class SuggestedMovie(
@@ -45,6 +46,8 @@ data class Recommendation(
 //@Agent(
 //    description = "Find movies a person hasn't seen and may find interesting"
 //)
+
+// TODO include streaming service based on country
 class MovieFinder {
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
