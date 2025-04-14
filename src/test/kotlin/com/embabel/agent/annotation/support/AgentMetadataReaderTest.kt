@@ -17,10 +17,10 @@ package com.embabel.agent.annotation.support
 
 import com.embabel.agent.annotation.Agent
 import com.embabel.agent.core.*
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
-import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
 import io.mockk.mockk

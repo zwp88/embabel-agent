@@ -17,8 +17,8 @@ package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.LlmTransformer
-import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.GoalRanking
 import com.embabel.agent.spi.GoalRankings
@@ -51,7 +51,7 @@ class LlmGoalRanker(
         val grr = llmTransformer.doTransform<UserInput, GoalRankingsResponse>(
             input = userInput,
             literalPrompt = prompt,
-            llmOptions = LlmOptions.Companion(model = "gpt-4o-mini"),
+            llmOptions = LlmOptions(model = "gpt-4o-mini"),
             outputClass = GoalRankingsResponse::class.java,
         )
         return GoalRankings(

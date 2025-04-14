@@ -65,7 +65,7 @@ internal class MultiTransformer<O : Any>(
         processContext: ProcessContext,
         outputTypes: Map<String, SchemaType>,
         action: Action
-    ): ActionStatus = ActionRunner.Companion.execute {
+    ): ActionStatus = ActionRunner.execute {
         val inputValues: List<Any> = inputs.map {
             processContext.getValue(variable = it.name, type = it.type)
                 ?: throw IllegalArgumentException("Input ${it.name} of type ${it.type} not found in process context")

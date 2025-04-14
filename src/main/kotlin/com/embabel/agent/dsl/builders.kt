@@ -70,7 +70,7 @@ data class TransformationPayload<I, O>(
     fun <I, O> transform(
         input: I,
         prompt: (input: I) -> String,
-        llmOptions: LlmOptions = LlmOptions.Companion(),
+        llmOptions: LlmOptions = LlmOptions(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
     ): O = processContext.transform(
@@ -82,7 +82,7 @@ data class TransformationPayload<I, O>(
     fun <I, O> maybeTransform(
         input: I,
         prompt: (input: I) -> String,
-        llmOptions: LlmOptions = LlmOptions.Companion(),
+        llmOptions: LlmOptions = LlmOptions(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
     ): Result<O> = processContext.transformIfPossible(

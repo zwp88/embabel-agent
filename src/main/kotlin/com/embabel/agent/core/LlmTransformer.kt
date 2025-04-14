@@ -42,7 +42,7 @@ interface LlmTransformer {
     fun <I, O> transform(
         input: I,
         prompt: (input: I) -> String,
-        llmOptions: LlmOptions = LlmOptions.Companion(),
+        llmOptions: LlmOptions = LlmOptions(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
         agentProcess: AgentProcess,
@@ -63,7 +63,7 @@ interface LlmTransformer {
     fun <I, O> transformIfPossible(
         input: I,
         prompt: (input: I) -> String,
-        llmOptions: LlmOptions = LlmOptions.Companion(),
+        llmOptions: LlmOptions = LlmOptions(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
         agentProcess: AgentProcess,
