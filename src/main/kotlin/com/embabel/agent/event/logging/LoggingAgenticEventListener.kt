@@ -46,9 +46,8 @@ open class LoggingAgenticEventListener(
     private val transformResponseEventMessage: String = "Process {} received LLM response of type {} from {} in {} seconds",
     private val actionExecutionStartMessage: String = "Process {} executing action {}",
     private val actionExecutionResultMessage: String = "Process {} executed action {} in {}",
+    val logger: Logger = LoggerFactory.getLogger("Events"),
 ) : AgenticEventListener {
-
-    protected val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     init {
         welcomeMessage?.let {

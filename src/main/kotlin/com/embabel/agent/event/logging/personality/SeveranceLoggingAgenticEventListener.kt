@@ -18,6 +18,7 @@ package com.embabel.agent.event.logging.personality
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.common.util.color
 import com.embabel.common.util.hexToRgb
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("severance")
 class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
+    logger = LoggerFactory.getLogger("MDR"),
     welcomeMessage = """
         ----------------------------------------------------------------------
         Kier, chosen one, Kier.
@@ -59,7 +61,8 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     agentProcessReadyToPlanEventMessage = "WIT: Process {} ready to plan from {}",
     agentProcessPlanFormulatedEventMessage = "WILES: Process {} formulated plan <{}> from {}",
     processCompletionMessage = """
-        🧔🏼‍♂️ PRAISE KIER: Process {} completed in {}
+        🧔🏼‍♂️ PRAISE KIER: Cold Harbor 100% complete.
+        Process {} completed in {}
         In refining your macrodata file, you have brought glory to this company, and to me, Kier Eagan.
 
         The Board has concluded the call.

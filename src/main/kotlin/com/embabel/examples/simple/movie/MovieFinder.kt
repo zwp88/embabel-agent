@@ -68,7 +68,7 @@ data class SuggestedMovies(
     val movies: List<MovieResponse>,
 )
 
-data class Recommendation(
+data class SuggestionWriteup(
     override val text: String,
 ) : HasContent
 
@@ -181,11 +181,11 @@ class MovieFinder(
 
     @Action
     @AchievesGoal(description = "Recommend movies for a movie buff using what we know about them")
-    fun writeUpSuggestions(
+    fun writeUpSuggestion(
         dmb: DecoratedMovieBuff,
         suggestedMoviesWithDetails: SuggestedMovies,
-    ): Recommendation =
-        PromptRunner().createObject(
+    ): SuggestionWriteup =
+        PromptRunner().withModel("gpt-4o").createObject(
             """
             Write up a movie recommendation for ${dmb.movieBuff.name}
             based on the following information:
@@ -194,7 +194,7 @@ class MovieFinder(
 
             The recommendations are:
             ${
-                suggestedMoviesWithDetails.movies.joinToString("\n") {
+                suggestedMoviesWithDetails.movies.joinToString("\n\n") {
                     """
                     ${it.Title} (${it.Year}): ${it.imdbID}
                     Director: ${it.Director}
