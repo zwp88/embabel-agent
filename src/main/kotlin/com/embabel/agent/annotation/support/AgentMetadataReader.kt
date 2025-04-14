@@ -20,6 +20,7 @@ import com.embabel.agent.core.AgentMetadata
 import com.embabel.agent.core.BooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.dsl.TransformationPayload
 import com.embabel.agent.dsl.expandInputBindings
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
@@ -216,35 +217,56 @@ class AgentMetadataReader {
             outputVarName = actionAnnotation.outputBinding,
             toolCallbacks = toolCallbacks,
             toolGroups = actionAnnotation.toolGroups.asList(),
-        )
-        { payload ->
-            logger.info("Invoking action method {} with payload {}", method.name, payload.input)
-            val toolCallbacksOnDomainObjects = ToolCallbacks.from(*payload.input.toTypedArray())
-            try {
-                ReflectionUtils.invokeMethod(method, instance, *payload.input.toTypedArray()) as Any
-            } catch (e: ExecutePromptException) {
-                if (e.requireResult) {
-                    payload.transform(
-                        input = payload.input,
-                        prompt = { e.prompt },
-                        // TODO or default options
-                        llmOptions = e.llm ?: LlmOptions(),
-                        toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
-                        outputClass = payload.outputClass as Class<Any>,
-                    )
-                } else {
-                    val result = payload.maybeTransform(
-                        input = payload.input,
-                        prompt = { e.prompt },
-                        // TODO or default options
-                        llmOptions = e.llm ?: LlmOptions(),
-                        toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
-                        outputClass = payload.outputClass as Class<Any>,
-                    )
-                    result.getOrThrow()
-                }
+        ) { payload ->
+            invokeActionMethod(
+                method = method,
+                instance = instance,
+                payload = payload,
+                toolCallbacks = toolCallbacks,
+            )
+        }
+    }
+
+    private fun <O> invokeActionMethod(
+        method: Method,
+        instance: Any,
+        payload: TransformationPayload<List<Any>, O>,
+        toolCallbacks: List<ToolCallback>,
+    ): O {
+        logger.info("Invoking action method {} with payload {}", method.name, payload.input)
+        val toolCallbacksOnDomainObjects = ToolCallbacks.from(*payload.input.toTypedArray())
+        val result = try {
+            ReflectionUtils.invokeMethod(method, instance, *payload.input.toTypedArray()) as Any
+        } catch (e: ExecutePromptException) {
+            if (e.requireResult) {
+                payload.transform(
+                    input = payload.input,
+                    prompt = { e.prompt },
+                    // TODO or default options
+                    llmOptions = e.llm ?: LlmOptions(),
+                    toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
+                    outputClass = payload.outputClass as Class<Any>,
+                )
+            } else {
+                val result = payload.maybeTransform(
+                    input = payload.input,
+                    prompt = { e.prompt },
+                    // TODO or default options
+                    llmOptions = e.llm ?: LlmOptions(),
+                    toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
+                    outputClass = payload.outputClass as Class<Any>,
+                )
+                result.getOrThrow()
             }
         }
+        logger.info(
+            "Result of invoking action method {} was {}: payload {}",
+            method.name,
+            result,
+            payload.input
+        )
+
+        return result as O
     }
 
     /**

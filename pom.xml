@@ -30,7 +30,18 @@
         </dependencies>
     </dependencyManagement>
 
+
     <dependencies>
+
+        <!--
+        We want to be able to work with Repository conventions
+        but don't want heavyweight dependencies here like JPA
+        -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+            <version>${spring-boot.version}</version> <!-- Use your preferred version -->
+        </dependency>
 
         <!-- Embabel Common Dependencies are imported one-by-one on purpose-->
         <dependency>
