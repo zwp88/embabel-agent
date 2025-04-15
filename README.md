@@ -17,8 +17,9 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;
 
-Embabel agent programming model. Framework for authoring agentic flows that seamlessly mix LLM-prompted interactions
-with manual code and domain models.
+Framework for authoring agentic flows that seamlessly mix LLM-prompted interactions
+with manual code and domain models and support
+intelligent path finding towards goals.
 
 ## Key Concepts
 
@@ -94,7 +95,7 @@ An agent platform supports three modes of execution:
   expresses an intent and the platform tries to find a
   suitable goal among all the goals it knows about.
 
-Open mode is the most powerful, but also less deterministic.
+Open mode is the most powerful, but least deterministic.
 > In open mode, the platform is capable of finding novel paths that were not envisioned by developers, and even
 > combining functionality from multiple providers.
 
