@@ -41,7 +41,7 @@ data class Agent(
     override val description: String,
     override val toolCallbacks: Collection<ToolCallback> = emptyList(),
     override val toolGroups: Collection<String> = emptyList(),
-    override val conditions: List<Condition> = emptyList(),
+    override val conditions: Set<Condition> = emptySet(),
     override val actions: List<Action>,
     override val goals: Set<Goal>,
     override val schemaTypes: Collection<SchemaType> = inferDataTypes(

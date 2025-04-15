@@ -23,6 +23,7 @@ import com.embabel.agent.annotation.support.PromptRunner
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
@@ -57,6 +58,10 @@ data class MovieRating(
     val title: String,
 )
 
+
+data class TasteProfile(
+    val tasteProfile: String,
+)
 
 data class DecoratedMovieBuff(
     val movieBuff: MovieBuff,
@@ -123,7 +128,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        PromptRunner().createObject(
+        PromptRunner(LlmOptions("gpt-4o")).createObject(
             """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
@@ -142,8 +147,8 @@ class MovieFinder(
     @Action
     fun analyzeTasteProfile(
         movieBuff: MovieBuff
-    ): DecoratedMovieBuff =
-        PromptRunner().createObject(
+    ): TasteProfile =
+        PromptRunner().withModel("gpt-4o").createObject(
             """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
@@ -157,6 +162,17 @@ class MovieFinder(
             in $tasteProfileWordCount words or less. Cover what they like and don't like.
             """
         )
+
+    @Action
+    fun decorateMovieBuff(
+        movieBuff: MovieBuff,
+        tasteProfile: TasteProfile,
+    ): DecoratedMovieBuff =
+        DecoratedMovieBuff(
+            movieBuff = movieBuff,
+            tasteProfile = tasteProfile.tasteProfile
+        )
+
 
     @Action(
         post = ["haveEnoughMovies"],
@@ -210,7 +226,10 @@ class MovieFinder(
         )
     }
 
-    @Action
+    @Action(
+        post = ["haveEnoughMovies"],
+        canRerun = true,
+    )
     fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
         val movies = suggestedMovieTitles.movies.mapNotNull { title ->
             try {
@@ -222,7 +241,10 @@ class MovieFinder(
         return SuggestedMovies(movies)
     }
 
-    @Action
+    @Action(
+        post = ["haveEnoughMovies"],
+        canRerun = true,
+    )
     fun streamable(
         movieBuff: MovieBuff,
         suggestedMovies: SuggestedMovies,
@@ -269,6 +291,7 @@ class MovieFinder(
     private fun allStreamableMovies(
         processContext: ProcessContext,
     ): List<StreamableMovie> {
+        println("StreamableMovies count=${processContext.blackboard.all<StreamableMovies>().size}")
         return processContext.blackboard
             .all<StreamableMovies>()
             .flatMap { it.movies }

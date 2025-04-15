@@ -20,7 +20,6 @@ import com.embabel.agent.core.support.AbstractLlmTransformer
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
-import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.tool.ToolCallback
@@ -58,13 +57,7 @@ class ChatClientLlmTransformer(
             error("Output class must not be a List")
         }
 
-        val chatModel = modelProvider.getLlm(
-            ByNameModelSelectionCriteria(
-                name = llmOptions.model,
-            )
-        ).model
-
-        val chatClient = createChatClient(chatModel, llmOptions)
+        val chatClient = createChatClient(llmOptions)
 
         val springAiPrompt = Prompt(literalPrompt)
 
@@ -83,13 +76,7 @@ class ChatClientLlmTransformer(
         allToolCallbacks: List<ToolCallback>,
         outputClass: Class<O>
     ): Result<O> {
-        val chatModel = modelProvider.getLlm(
-            ByNameModelSelectionCriteria(
-                name = llmOptions.model,
-            )
-        ).model
-
-        val chatClient = createChatClient(chatModel, llmOptions)
+        val chatClient = createChatClient(llmOptions)
         val springAiPrompt = Prompt("$literalPrompt\n$maybeReturnPromptContribution")
 
         val typeReference = createParameterizedTypeReference<MaybeReturn<*>>(
@@ -123,9 +110,13 @@ class ChatClientLlmTransformer(
     }
 
     private fun createChatClient(
-        chatModel: ChatModel,
         llmOptions: LlmOptions
     ): ChatClient {
+        val chatModel = modelProvider.getLlm(
+            ByNameModelSelectionCriteria(
+                name = llmOptions.model,
+            )
+        ).model
         val chatClient = ChatClient
             .builder(chatModel)
             .defaultOptions(

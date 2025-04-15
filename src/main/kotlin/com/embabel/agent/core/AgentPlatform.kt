@@ -168,8 +168,8 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
     override val goals: Set<Goal>
         get() = agents().flatMap { it.goals }.toSet()
 
-    override val conditions: List<Condition>
-        get() = agents().flatMap { it.conditions }.distinct()
+    override val conditions: Set<Condition>
+        get() = agents().flatMap { it.conditions }.distinctBy { it.name }.toSet()
 
     override fun createAgent(name: String, description: String): Agent {
         // TODO this isn't great, as we may not want all of them

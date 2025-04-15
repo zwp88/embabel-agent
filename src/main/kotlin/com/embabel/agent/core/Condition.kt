@@ -56,13 +56,19 @@ interface Condition {
     operator fun inv(): Condition = UnknownCondition(this)
 }
 
-class BooleanCondition(
+/**
+ * Convenient class for a condition that evaluates to true or false.
+ */
+class ComputedBooleanCondition(
     override val name: String,
     override val cost: ZeroToOne = 0.0,
     private val evaluator: (ProcessContext) -> Boolean,
 ) : Condition {
+
     override fun evaluate(processContext: ProcessContext): ConditionDetermination =
         ConditionDetermination(evaluator(processContext))
+
+    override fun toString(): String = "${javaClass.simpleName}(name='$name', cost=$cost)"
 }
 
 

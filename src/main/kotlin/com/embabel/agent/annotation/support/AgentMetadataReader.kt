@@ -17,7 +17,7 @@ package com.embabel.agent.annotation.support
 
 import com.embabel.agent.annotation.*
 import com.embabel.agent.core.AgentMetadata
-import com.embabel.agent.core.BooleanCondition
+import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.dsl.TransformationPayload
@@ -90,7 +90,7 @@ class AgentMetadataReader {
         }
         val toolCallbacks = ToolCallbacks.from(instance).toList()
 
-        val conditions = conditionMethods.map { createCondition(it, instance) }
+        val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
         val actions = actionMethods.map { createAction(it, instance, toolCallbacks) }
 
         if (agentAnnotation != null) {
@@ -183,9 +183,9 @@ class AgentMetadataReader {
     private fun createCondition(
         method: Method,
         instance: Any,
-    ): BooleanCondition {
+    ): ComputedBooleanCondition {
         val conditionAnnotation = method.getAnnotation(Condition::class.java)
-        return BooleanCondition(
+        return ComputedBooleanCondition(
             name = generateName(instance, method.name),
             cost = conditionAnnotation.cost,
         )

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 
 interface Conditions {
 
-    val conditions: List<Condition>
+    val conditions: Set<Condition>
 }
 
 interface GoalsContributor {
@@ -55,7 +55,7 @@ interface AgentMetadata : Named, GoalsContributor, Conditions, DataDictionary, H
             name: String,
             actions: List<Action> = emptyList(),
             goals: Set<Goal> = emptySet(),
-            conditions: List<Condition> = emptyList(),
+            conditions: Set<Condition> = emptySet(),
         ): AgentMetadata {
             return AgentMetadataImpl(
                 name = name,
@@ -72,7 +72,7 @@ private data class AgentMetadataImpl(
     override val name: String,
     override val actions: List<Action>,
     override val goals: Set<Goal>,
-    override val conditions: List<Condition>,
+    override val conditions: Set<Condition>,
     override val schemaTypes: Collection<SchemaType> = emptyList(),
 ) : AgentMetadata
 

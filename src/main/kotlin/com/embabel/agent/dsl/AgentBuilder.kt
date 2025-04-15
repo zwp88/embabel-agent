@@ -52,7 +52,7 @@ class AgentBuilder(
 
     private val goals = mutableSetOf<Goal>()
 
-    private val conditions = mutableListOf<Condition>()
+    private val conditions = mutableSetOf<Condition>()
 
     private var _toolGroups = mutableListOf<String>()
 
@@ -105,7 +105,7 @@ class AgentBuilder(
     class ConditionDelegateProvider(
         private val specifiedName: String? = null,
         private val factory: (name: String) -> Condition,
-        private val conditions: MutableList<Condition>
+        private val conditions: MutableSet<Condition>
     ) {
         operator fun provideDelegate(thisRef: Any?, prop: KProperty<*>): ConditionDelegate {
             val condition = factory(specifiedName ?: prop.name)

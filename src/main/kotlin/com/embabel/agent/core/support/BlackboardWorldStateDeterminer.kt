@@ -46,15 +46,6 @@ class BlackboardWorldStateDeterminer(
 
     override fun determineCondition(condition: String): ConditionDetermination {
         val conditionDetermination = when {
-            // Well known conditions, defined for reuse, with their own evaluation function
-            processContext.agentProcess.agent.conditions.any { it.name == condition } -> {
-                val conditions = processContext.agentProcess.agent.conditions.filter { it.name == condition }
-                if (conditions.size != 1) {
-                    throw IllegalStateException("Condition $condition is not unique in agent ${processContext.agentProcess.agent.name}: ${conditions.size} found")
-                }
-                conditions.single().evaluate(processContext)
-            }
-
             // Data binding condition
             condition.contains(":") -> {
                 val (variable, type) = condition.split(":")
@@ -69,7 +60,7 @@ class BlackboardWorldStateDeterminer(
                         val determination =
                             value != null && satisfiesType(value, type)
                         logger.debug(
-                            "Determined condition {}={}: variable={}, type={}, value={}",
+                            "Determined binding condition {}={}: variable={}, type={}, value={}",
                             condition,
                             determination,
                             variable,
@@ -79,22 +70,50 @@ class BlackboardWorldStateDeterminer(
                         determination
                     }
                 }
+                ConditionDetermination(determination)
+            }
+
+            // Well known conditions, defined for reuse, with their own evaluation function
+            knownConditions.any { knownCondition -> knownCondition == condition } -> {
+                // Match FQN condition
+                val condition = processContext.agentProcess.agent.conditions.find {
+                    it.name == condition || it.name.endsWith(
+                        ".$condition"
+                    )
+                }
+                    ?: throw IllegalArgumentException(
+                        "Condition $condition not found in agent ${processContext.agentProcess.agent.name}: Agent known conditions are ${
+                            processContext.agentProcess.agent.conditions.map { it.name }.sorted()
+                        }"
+                    )
+                val determination = condition.evaluate(processContext)
                 logger.debug(
-                    "Determined binding condition {}={}: bindings={}",
+                    "Determined known condition {}={}, bindings={}",
                     condition,
                     determination,
                     processContext.blackboard.infoString(),
                 )
-                ConditionDetermination(determination)
+                determination
             }
 
             // Maybe the condition was explicitly set
-            else -> ConditionDetermination(processContext.blackboard.getCondition(condition))
+            else -> {
+                val determination = ConditionDetermination(processContext.blackboard.getCondition(condition))
+                logger.info(
+                    "Looked for explicitly set condition: determined condition {}={}: known conditions={}, bindings={}",
+                    condition,
+                    determination,
+                    knownConditions.sorted(),
+                    processContext.blackboard.infoString(),
+                )
+                determination
+            }
         }
         if (conditionDetermination == ConditionDetermination.UNKNOWN) {
             logger.warn(
-                "Determined condition {} to be unknown: bindings={}",
+                "Determined condition {} to be unknown: knownConditions={}, bindings={}",
                 condition,
+                knownConditions.sorted(),
                 processContext.blackboard.infoString(),
             )
         }
