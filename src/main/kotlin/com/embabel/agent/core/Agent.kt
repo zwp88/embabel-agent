@@ -49,7 +49,7 @@ data class Agent(
         defaultDataTypes = emptyList(),
         actions = actions,
     ),
-) : Described, AgentMetadata, ToolConsumer {
+) : Described, AgentScope, ToolConsumer {
 
     /**
      * Return a version of the agent with the single goal
@@ -67,6 +67,10 @@ data class Agent(
         val actions = actions.toSet()
         logger.debug(infoString())
         GoapSystem(actions, goals)
+    }
+
+    override fun infoString(verbose: Boolean?): String {
+        return "Agent " + super.infoString(verbose)
     }
 
     private companion object {

@@ -61,7 +61,7 @@ private class AgentPlatformBackedAgentFunction<I : Any, O>(
 
     // TODO verify if it's impossible to get from I to O
 
-    override val agentMetadata: AgentMetadata
+    override val agentScope: AgentScope
         get() = agentPlatform
 
     override fun apply(input: I): O {
@@ -97,7 +97,7 @@ private class AgentBackedAgentFunction<I : Any, O>(
 
     // TODO verify if it's impossible to get from I to O
 
-    override val agentMetadata: AgentMetadata
+    override val agentScope: AgentScope
         get() = agentPlatform
 
     override fun apply(input: I): O {

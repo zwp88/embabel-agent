@@ -102,7 +102,7 @@ class NoSuchAgentException(
  * An AgentPlatform is stateful, as agents can be deployed to it.
  * See TypedOps for a higher level API with typed I/O.
  */
-interface AgentPlatform : AgentMetadata, AgentFactory {
+interface AgentPlatform : AgentScope {
 
     val properties: AgentPlatformProperties
 
@@ -119,17 +119,17 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
 
     fun deploy(agent: Agent): AgentPlatform
 
-    fun deploy(agentMetadata: AgentMetadata): AgentPlatform {
-        if (agentMetadata is Agent) {
-            return deploy(agentMetadata)
+    fun deploy(agentScope: AgentScope): AgentPlatform {
+        if (agentScope is Agent) {
+            return deploy(agentScope)
         }
         deploy(
             Agent(
-                name = agentMetadata.name,
-                description = agentMetadata.name,
-                actions = agentMetadata.actions,
-                goals = agentMetadata.goals,
-                conditions = agentMetadata.conditions,
+                name = agentScope.name,
+                description = agentScope.name,
+                actions = agentScope.actions,
+                goals = agentScope.goals,
+                conditions = agentScope.conditions,
                 toolGroups = emptyList(),
             )
         )
@@ -171,23 +171,6 @@ interface AgentPlatform : AgentMetadata, AgentFactory {
     override val conditions: Set<Condition>
         get() = agents().flatMap { it.conditions }.distinctBy { it.name }.toSet()
 
-    override fun createAgent(name: String, description: String): Agent {
-        // TODO this isn't great, as we may not want all of them
-        val toolCallbacks =
-            (actions.flatMap { it.toolCallbacks } + agents().flatMap { it.toolCallbacks }).distinct()
-        val toolGroups =
-            (actions.flatMap { it.toolGroups } + agents().flatMap { it.toolGroups }).distinct()
-        val newAgent = Agent(
-            name = name,
-            description = name,
-            toolCallbacks = toolCallbacks,
-            toolGroups = toolGroups,
-            actions = actions,
-            goals = goals,
-            conditions = conditions,
-        )
-        return newAgent
-    }
 
     /**
      * Choose a goal based on the user input and try to achieve it.

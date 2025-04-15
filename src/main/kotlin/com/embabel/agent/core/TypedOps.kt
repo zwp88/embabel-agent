@@ -25,7 +25,7 @@ import java.util.function.Function
  */
 interface AgentFunction<I, O> : Function<I, O> {
     val processOptions: ProcessOptions
-    val agentMetadata: AgentMetadata
+    val agentScope: AgentScope
     val outputClass: Class<O>
 }
 

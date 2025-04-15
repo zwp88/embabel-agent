@@ -16,7 +16,7 @@
 package com.embabel.agent.annotation.support
 
 import com.embabel.agent.annotation.*
-import com.embabel.agent.core.AgentMetadata
+import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.primitive.LlmOptions
@@ -51,7 +51,7 @@ class AgentMetadataReader {
      * @return an Agent if the class has the @Agent annotation,
      * otherwise the AgentMetadata superinterface
      */
-    fun createAgentMetadata(instance: Any): AgentMetadata? {
+    fun createAgentMetadata(instance: Any): AgentScope? {
         val type = instance.javaClass
         val agenticAnnotation = type.getAnnotation(Agentic::class.java)
         val agentAnnotation = type.getAnnotation(com.embabel.agent.annotation.Agent::class.java)
@@ -110,7 +110,7 @@ class AgentMetadataReader {
             )
         }
 
-        return AgentMetadata(
+        return AgentScope(
             name = type.name,
             conditions = conditions,
             actions = actions,
