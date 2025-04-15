@@ -24,7 +24,13 @@ import org.springframework.context.annotation.Import
 
 @SpringBootApplication
 // TODO shouldn't do this magically but should bring them in
-@ConfigurationPropertiesScan(basePackages = ["com.embabel.agent", "com.embabel.common.ai.model"])
+@ConfigurationPropertiesScan(
+    basePackages = [
+        "com.embabel.agent",
+        "com.embabel.common.ai.model",
+        "com.embabel.examples",
+    ]
+)
 @ComponentScan(
     basePackages = [
         "com.embabel.agent",

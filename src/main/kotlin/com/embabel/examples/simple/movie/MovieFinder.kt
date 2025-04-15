@@ -29,6 +29,8 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.dsl.TransformationPayload
+import com.embabel.agent.dsl.createObject
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.CrudRepository
 
@@ -99,6 +101,13 @@ data class SuggestionWriteup(
 
 interface MovieBuffRepository : CrudRepository<MovieBuff, String>
 
+@ConfigurationProperties(prefix = "moviefinder")
+data class MovieFinderConfig(
+    val suggestionCount: Int = 5,
+    val tasteProfileWordCount: Int = 40,
+    val writeupWordCount: Int = 200,
+)
+
 
 @Profile("!test")
 @Agent(
@@ -108,8 +117,7 @@ class MovieFinder(
     private val omdbClient: OmdbClient,
     private val streamingAvailabilityClient: StreamingAvailabilityClient,
     private val movieBuffRepository: MovieBuffRepository,
-    private val suggestionCount: Int = 5,
-    private val tasteProfileWordCount: Int = 40,
+    private val config: MovieFinderConfig,
 ) {
     init {
         // TODO this is only for example purposes
@@ -159,7 +167,7 @@ class MovieFinder(
             }
 
             Return a summary of their taste profile as you understand it,
-            in $tasteProfileWordCount words or less. Cover what they like and don't like.
+            in ${config.tasteProfileWordCount} words or less. Cover what they like and don't like.
             """
         )
 
@@ -178,13 +186,13 @@ class MovieFinder(
         post = ["haveEnoughMovies"],
         canRerun = true,
     )
-    fun suggestMovieTitles(
+    fun suggestMovies(
         userInput: UserInput,
         dmb: DecoratedMovieBuff,
         relevantNewsStories: RelevantNewsStories,
         payload: TransformationPayload<*, SuggestedMovieTitles>,
-    ): SuggestedMovieTitles {
-        // We do this to break potential LLM caching
+    ): StreamableMovies {
+        // We do this to break any potential LLM caching
         // as this will be run many times
         val randomPart = listOf(
             "be creative",
@@ -196,9 +204,10 @@ class MovieFinder(
             "make it entertaining!"
         )
             .random()
-        return PromptRunner().withModel("gpt-4o").createObject(
+        val suggestedMovieTitles = payload.createObject<SuggestedMovieTitles>(
+            LlmOptions(model = "gpt-4o"),
             """
-            Suggest $suggestionCount movies titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
+            Suggest ${config.suggestionCount} movies titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
             Consider the specific request: "${userInput.content}"
 
@@ -224,13 +233,15 @@ class MovieFinder(
             $randomPart
             """
         )
+        val suggestedMovies = lookUpMovies(suggestedMovieTitles)
+        return streamable(
+            movieBuff = dmb.movieBuff,
+            suggestedMovies = suggestedMovies
+        )
     }
 
-    @Action(
-        post = ["haveEnoughMovies"],
-        canRerun = true,
-    )
-    fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
+
+    private fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
         val movies = suggestedMovieTitles.movies.mapNotNull { title ->
             try {
                 omdbClient.getMovieByTitle(title)
@@ -241,11 +252,7 @@ class MovieFinder(
         return SuggestedMovies(movies)
     }
 
-    @Action(
-        post = ["haveEnoughMovies"],
-        canRerun = true,
-    )
-    fun streamable(
+    private fun streamable(
         movieBuff: MovieBuff,
         suggestedMovies: SuggestedMovies,
     ): StreamableMovies {
@@ -306,10 +313,12 @@ class MovieFinder(
     ): SuggestionWriteup =
         PromptRunner().withModel("gpt-4o").createObject(
             """
-            Write up a movie recommendation for ${dmb.movieBuff.name}
+            Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount}
+            for ${dmb.movieBuff.name}
             based on the following information:
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
             Their movie taste profile is ${dmb.tasteProfile}
+            A bit about them: "${dmb.movieBuff.about}"
 
             The movie recommendations are:
             ${
@@ -326,6 +335,8 @@ class MovieFinder(
                 }
             }
             Focus on streamable movies.
+
+            Format in Markdown and include links to the movies on IMDB and the streaming services.
             """
         )
 }

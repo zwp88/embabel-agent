@@ -45,6 +45,23 @@ inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformatio
 interface OperationPayload : Blackboard {
     val processContext: ProcessContext
     val action: Action?
+
+    fun <O> OperationPayload.createObject(
+        llm: LlmOptions = LlmOptions(),
+        prompt: String,
+        outputClass: Class<O>,
+    ): O {
+        return processContext.transform<Unit, O>(
+            Unit,
+            { prompt },
+            // TODO fix callbacks
+            llmOptions = llm,
+//        toolCallbacks,
+            outputClass = outputClass,
+            agentProcess = processContext.agentProcess,
+            action = this.action,
+        )
+    }
 }
 
 interface InputPayload<I> : OperationPayload {
@@ -52,6 +69,17 @@ interface InputPayload<I> : OperationPayload {
 
     fun agentPlatform() = processContext.platformServices.agentPlatform
 
+}
+
+inline fun <reified O> OperationPayload.createObject(
+    llm: LlmOptions = LlmOptions(),
+    prompt: String,
+): O {
+    return createObject(
+        prompt = prompt,
+        outputClass = O::class.java,
+        llm = llm,
+    )
 }
 
 
