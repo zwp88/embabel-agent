@@ -39,7 +39,7 @@ class LlmGoalRankerTest {
         @Test
         fun `no goals`() {
             val llmt = mockk<LlmTransformer>()
-            val ranker = LlmGoalRanker(llmt)
+            val ranker = LlmRanker(llmt)
             val result = ranker.rankGoals(
                 UserInput("whatever"), emptySet(),
             )
@@ -52,21 +52,21 @@ class LlmGoalRankerTest {
         @Test
         fun `successful choice`() {
             val llmt = mockk<LlmTransformer>()
-            val llmr = GoalRankingsResponse(
+            val llmr = RankingsResponse(
                 rankings = listOf(
-                    GoalChoiceResponse("horoscope", .2),
-                    GoalChoiceResponse("weather", .8),
+                    RankedChoiceResponse("horoscope", .2),
+                    RankedChoiceResponse("weather", .8),
                 )
             )
             every {
-                llmt.doTransform<UserInput, GoalRankingsResponse>(
+                llmt.doTransform<UserInput, RankingsResponse>(
                     input = any(),
                     literalPrompt = any(),
                     llmOptions = any(),
-                    outputClass = GoalRankingsResponse::class.java,
+                    outputClass = RankingsResponse::class.java,
                 )
             } returns llmr
-            val ranker = LlmGoalRanker(llmt)
+            val ranker = LlmRanker(llmt)
             val rankings = ranker.rankGoals(
                 goals = setOf(
                     Goal(
@@ -79,7 +79,7 @@ class LlmGoalRankerTest {
                     ),
                 ), userInput = UserInput("What is my horoscope for today?")
             )
-            assertEquals("weather", rankings.rankings[0].goal.name)
+            assertEquals("weather", rankings.rankings[0].ranked.name)
         }
     }
 

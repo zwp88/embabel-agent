@@ -15,28 +15,41 @@
  */
 package com.embabel.agent.testing
 
+import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.spi.GoalRanker
-import com.embabel.agent.spi.GoalRanking
-import com.embabel.agent.spi.GoalRankings
+import com.embabel.agent.spi.Ranker
+import com.embabel.agent.spi.Ranking
+import com.embabel.agent.spi.Rankings
 import kotlin.random.Random
 
 /**
  * Identifies goal rankers used for test
  */
-fun interface FakeGoalRanker : GoalRanker
+interface FakeRanker : Ranker
 
-class RandomGoalRanker : FakeGoalRanker {
+class RandomRanker : FakeRanker {
     private val random = Random(System.currentTimeMillis())
+
+    override fun rankAgents(
+        userInput: UserInput,
+        agents: Set<Agent>
+    ): Rankings<Agent> {
+        return Rankings(agents.map {
+            Ranking(
+                ranked = it,
+                confidence = random.nextDouble(),
+            )
+        })
+    }
 
     override fun rankGoals(
         userInput: UserInput,
         goals: Set<Goal>,
-    ): GoalRankings {
-        return GoalRankings(goals.map {
-            GoalRanking(
-                goal = it,
+    ): Rankings<Goal> {
+        return Rankings(goals.map {
+            Ranking(
+                ranked = it,
                 confidence = random.nextDouble(),
             )
         })

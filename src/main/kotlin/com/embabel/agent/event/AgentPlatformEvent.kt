@@ -18,8 +18,10 @@ package com.embabel.agent.event
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ZeroToOne
-import com.embabel.agent.spi.GoalRanking
-import com.embabel.agent.spi.GoalRankings
+import com.embabel.agent.spi.Ranking
+import com.embabel.agent.spi.Rankings
+import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.Named
 import java.time.Instant
 
 /**
@@ -30,30 +32,33 @@ interface AgentPlatformEvent : AgenticEvent {
     val agentPlatform: AgentPlatform
 }
 
-data class GoalChoiceRequestEvent(
+data class RankingChoiceRequestEvent<T>(
     override val agentPlatform: AgentPlatform,
+    val type: Class<T>,
     val basis: Any,
     override val timestamp: Instant = Instant.now(),
-) : AgentPlatformEvent {
+) : AgentPlatformEvent where T : Named, T : Described {
 
-    fun determinationEvent(goalChoice: GoalRanking, goalRankings: GoalRankings): GoalChoiceMadeEvent {
-        return GoalChoiceMadeEvent(
+    fun determinationEvent(choice: Ranking<T>, rankings: Rankings<T>): RankingChoiceMadeEvent<T> {
+        return RankingChoiceMadeEvent(
             agentPlatform = agentPlatform,
-            goalChoice = goalChoice,
-            goalRankings = goalRankings,
+            type = type,
+            choice = choice,
+            rankings = rankings,
             basis = basis,
             timestamp = timestamp,
         )
     }
 
     fun noDeterminationEvent(
-        goalRankings: GoalRankings,
-        goalConfidenceCutOff: ZeroToOne
-    ): GoalChoiceCouldNotBeMadeEvent {
-        return GoalChoiceCouldNotBeMadeEvent(
+        rankings: Rankings<T>,
+        confidenceCutoff: ZeroToOne
+    ): RankingChoiceCouldNotBeMadeEvent<T> {
+        return RankingChoiceCouldNotBeMadeEvent(
             agentPlatform = agentPlatform,
-            goalRankings = goalRankings,
-            goalConfidenceCutOff = goalConfidenceCutOff,
+            type = type,
+            rankings = rankings,
+            confidenceCutOff = confidenceCutoff,
             basis = basis,
             timestamp = timestamp,
         )
@@ -61,23 +66,25 @@ data class GoalChoiceRequestEvent(
 }
 
 /**
- * @param basis why we chose this goal
+ * @param basis why we chose this ranked
  */
-data class GoalChoiceMadeEvent(
+data class RankingChoiceMadeEvent<T>(
     override val agentPlatform: AgentPlatform,
-    val goalChoice: GoalRanking,
-    val goalRankings: GoalRankings,
+    val type: Class<T>,
+    val choice: Ranking<T>,
+    val rankings: Rankings<T>,
     val basis: Any,
     override val timestamp: Instant = Instant.now(),
-) : AgentPlatformEvent
+) : AgentPlatformEvent where T : Named, T : Described
 
-data class GoalChoiceCouldNotBeMadeEvent(
+data class RankingChoiceCouldNotBeMadeEvent<T>(
     override val agentPlatform: AgentPlatform,
-    val goalRankings: GoalRankings,
-    val goalConfidenceCutOff: ZeroToOne,
+    val type: Class<T>,
+    val rankings: Rankings<T>,
+    val confidenceCutOff: ZeroToOne,
     val basis: Any,
     override val timestamp: Instant = Instant.now(),
-) : AgentPlatformEvent
+) : AgentPlatformEvent where T : Named, T : Described
 
 /**
  * Emitted when we've created an agent for a specific task

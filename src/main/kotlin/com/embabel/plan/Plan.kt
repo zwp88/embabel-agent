@@ -16,16 +16,17 @@
 package com.embabel.plan
 
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.Named
 
 /**
  * A step in a plan. Can be an action or a goal
  */
-interface Step {
+interface Step : Named {
 
     /**
      * Unique name of the step
      */
-    val name: String
+    override val name: String
 
     /**
      * Value of completing this step.

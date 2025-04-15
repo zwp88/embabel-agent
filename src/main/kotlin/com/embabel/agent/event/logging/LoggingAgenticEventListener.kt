@@ -30,9 +30,9 @@ import org.slf4j.LoggerFactory
  */
 open class LoggingAgenticEventListener(
     welcomeMessage: String? = null,
-    private val goalChoiceRequestEventMessage: String = "Choosing goal based on {}",
-    private val goalChoiceMadeEventMessage: String = "Chose goal '{}' with confidence {} based on {}",
-    private val goalChoiceNotMadeEventMessage: String = "Failed to choose goal based on {}: {}. Confidence cutoff: {}",
+    private val rankingChoiceRequestEventMessage: String = "Choosing {} based on {}",
+    private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}",
+    private val rankingChoiceNotMadeEventMessage: String = "Failed to choose {} based on {}: {}. Confidence cutoff: {}",
     private val dymamicAgentCreationMessage: String = "Created agent {}",
     private val agentProcessCreationEventMessage: String = "Process {} created",
     private val agentProcessReadyToPlanEventMessage: String = "Process {} ready to plan from {}",
@@ -57,29 +57,32 @@ open class LoggingAgenticEventListener(
 
     override fun onPlatformEvent(event: AgentPlatformEvent) {
         when (event) {
-            is GoalChoiceRequestEvent -> {
+            is RankingChoiceRequestEvent<*> -> {
                 logger.info(
-                    goalChoiceRequestEventMessage,
+                    rankingChoiceRequestEventMessage,
+                    event.type.simpleName,
                     event.basis.javaClass.simpleName,
                 )
             }
 
-            is GoalChoiceMadeEvent -> {
+            is RankingChoiceMadeEvent<*> -> {
                 logger.info(
-                    goalChoiceMadeEventMessage,
-                    event.goalChoice.goal.name,
-                    event.goalChoice.confidence,
+                    rankingChoiceMadeEventMessage,
+                    event.type.simpleName,
+                    event.choice.ranked.name,
+                    event.choice.confidence,
                     event.basis.javaClass.simpleName,
-                    event.goalRankings.infoString(),
+                    event.rankings.infoString(),
                 )
             }
 
-            is GoalChoiceCouldNotBeMadeEvent -> {
+            is RankingChoiceCouldNotBeMadeEvent<*> -> {
                 logger.info(
-                    goalChoiceNotMadeEventMessage,
+                    rankingChoiceNotMadeEventMessage,
+                    event.type.simpleName,
                     event.basis,
-                    event.goalRankings.infoString(),
-                    event.goalConfidenceCutOff,
+                    event.rankings.infoString(),
+                    event.confidenceCutOff,
                 )
             }
 

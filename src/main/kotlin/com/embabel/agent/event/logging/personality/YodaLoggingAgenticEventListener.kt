@@ -31,7 +31,7 @@ class YodaLoggingAgenticEventListener : LoggingAgenticEventListener(
 |__|     |_______||_______||_______|       |__|     |__|  |__| |_______|   |__|      \______/  | _| `._____| \______||_______|(__)
                                                                                                                                                                                                                                                                                                                                                                                                |/
     """.trimIndent(),
-    goalChoiceMadeEventMessage = "Chosen goal {} I have with confidence {} based on {}",
+    rankingChoiceMadeEventMessage = "Chosen goal {} I have with confidence {} based on {}",
     dymamicAgentCreationMessage = "You will find only what you bring in: Created agent {}",
     agentProcessCreationEventMessage = "Created a process I have: {}",
     agentProcessReadyToPlanEventMessage = "Difficult to see. Always in motion is the future: Process {} ready to plan from {}",

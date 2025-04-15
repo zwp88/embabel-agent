@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.common.core.types.Described
 import com.embabel.plan.goap.GoapSystem
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.LoggerFactory
@@ -37,7 +38,7 @@ import org.springframework.ai.tool.ToolCallback
 data class Agent(
     override val name: String,
     val version: String = "0.1.0-SNAPSHOT",
-    val description: String,
+    override val description: String,
     override val toolCallbacks: Collection<ToolCallback> = emptyList(),
     override val toolGroups: Collection<String> = emptyList(),
     override val conditions: List<Condition> = emptyList(),
@@ -48,7 +49,7 @@ data class Agent(
         defaultDataTypes = emptyList(),
         actions = actions,
     ),
-) : AgentMetadata, ToolConsumer {
+) : Described, AgentMetadata, ToolConsumer {
 
     /**
      * Return a version of the agent with the single goal

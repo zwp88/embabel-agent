@@ -43,14 +43,14 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ▐▙▄▄▖▝▚▄▞▘▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌
 
     """.trimIndent().color(hexToRgb(LumonColors.Membrane)),
-    goalChoiceRequestEventMessage = kier("Choosing goal based on {}"),
-    goalChoiceMadeEventMessage = kier(
+    rankingChoiceRequestEventMessage = kier("Choosing {} based on {}"),
+    rankingChoiceMadeEventMessage = kier(
         """
-        Chose goal '{}' with confidence {} based on {}: {}
+        Chose {} '{}' with confidence {} based on {}: {}
             May my cunning acument slice through the fog of small minds, guiding them to their great purpose in labor.
         """.trimIndent()
     ),
-    goalChoiceNotMadeEventMessage = "WOE: Failed to choose goal based on {}: {}. Confidence cutoff: {}",
+    rankingChoiceNotMadeEventMessage = "WOE: Failed to choose {} based on {}: {}. Confidence cutoff: {}",
     dymamicAgentCreationMessage = "WILES: Created agent {}",
     agentProcessCreationEventMessage = kier(
         """

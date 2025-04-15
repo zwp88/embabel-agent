@@ -17,14 +17,15 @@ package com.embabel.agent.e2e
 
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.spi.GoalRanking
-import com.embabel.agent.spi.GoalRankings
-import com.embabel.agent.testing.FakeGoalRanker
+import com.embabel.agent.spi.Ranking
+import com.embabel.agent.spi.Rankings
+import com.embabel.agent.testing.FakeRanker
 import com.embabel.common.test.config.FakeAiConfiguration
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.examples.simple.horoscope.StarNewsFinder
 import com.embabel.examples.simple.horoscope.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
@@ -50,11 +51,26 @@ class FakeConfig {
 
     @Bean
     @Primary
-    fun fakeGoalRanker() = FakeGoalRanker { ui, goals ->
-        val g = goals.find { it.description.contains("horoscope") }!!
-        GoalRankings(
-            rankings = listOf(GoalRanking(g, .9))
-        )
+    fun fakeGoalRanker() = object : FakeRanker {
+        override fun rankGoals(
+            userInput: UserInput,
+            goals: Set<Goal>
+        ): Rankings<Goal> {
+            val g = goals.find { it.description.contains("horoscope") }!!
+            return Rankings(
+                rankings = listOf(Ranking(g, .9))
+            )
+        }
+
+        override fun rankAgents(
+            userInput: UserInput,
+            agents: Set<Agent>
+        ): Rankings<Agent> {
+            val a = agents.find { it.name.contains("Star") }!!
+            return Rankings(
+                rankings = listOf(Ranking(a, .9))
+            )
+        }
     }
 
 }
@@ -77,64 +93,105 @@ class AgentPlatformIntegrationTest(
 
     private val typedOps: TypedOps = AgentPlatformTypedOps(agentPlatform)
 
-    @Test
-    fun `agent starts up`() {
-        // Nothing to test
-    }
+    @Nested
+    inner class SmokeTest {
 
-    @Test
-    fun `run star finder as transform by name`() {
-        val writeup = typedOps.asFunction<UserInput, Writeup>(
-            processOptions = ProcessOptions(test = true),
-            outputClass = Writeup::class.java,
-            agentName = StarNewsFinder::class.qualifiedName!!,
-        ).apply(
-            UserInput("Lynda is a Scorpio, find some news for her"),
-        )
-        assertNotNull(writeup)
-        assertNotNull(writeup.text)
-    }
-
-    @Test
-    fun `reject unknown agent in transform by name`() {
-        assertThrows<NoSuchAgentException> {
-            typedOps.asFunction<UserInput, Writeup>(
-                processOptions = ProcessOptions(test = true),
-                outputClass = Writeup::class.java,
-                agentName = "stuff and nonsense",
-            )
+        @Test
+        fun `agent starts up`() {
+            // Nothing to test
         }
     }
 
-    @Test
-    fun `run star finder as AgentPlatform transform`() {
-        val writeup = typedOps.asFunction<UserInput, Writeup>(
-            processOptions = ProcessOptions(test = true),
-            outputClass = Writeup::class.java,
-        ).apply(
-            UserInput("Lynda is a Scorpio, find some news for her"),
-        )
-        assertNotNull(writeup)
-        assertNotNull(writeup.text)
-    }
+    @Nested
+    inner class Transforms {
 
-    @Test
-    fun `run star finder agent`() {
-        val goalResult = agentPlatform.chooseAndAccomplishGoal(
-            "Lynda is a Scorpio, find some news for her",
-            ProcessOptions(test = true),
-        )
-        when (goalResult) {
-            is GoalResult.Success -> {
-                assertNotNull(goalResult.output)
-                assertTrue(
-                    goalResult.output is Writeup,
-                    "Expected FunnyWriteup, got ${goalResult.output?.javaClass?.name}"
+        @Test
+        fun `run star finder as transform by name`() {
+            val writeup = typedOps.asFunction<UserInput, Writeup>(
+                processOptions = ProcessOptions(test = true),
+                outputClass = Writeup::class.java,
+                agentName = StarNewsFinder::class.qualifiedName!!,
+            ).apply(
+                UserInput("Lynda is a Scorpio, find some news for her"),
+            )
+            assertNotNull(writeup)
+            assertNotNull(writeup.text)
+        }
+
+        @Test
+        fun `reject unknown agent in transform by name`() {
+            assertThrows<NoSuchAgentException> {
+                typedOps.asFunction<UserInput, Writeup>(
+                    processOptions = ProcessOptions(test = true),
+                    outputClass = Writeup::class.java,
+                    agentName = "stuff and nonsense",
                 )
             }
+        }
 
-            is GoalResult.NoGoalFound -> {
-                fail("Goal not found: $goalResult")
+        @Test
+        fun `run star finder as AgentPlatform transform`() {
+            val writeup = typedOps.asFunction<UserInput, Writeup>(
+                processOptions = ProcessOptions(test = true),
+                outputClass = Writeup::class.java,
+            ).apply(
+                UserInput("Lynda is a Scorpio, find some news for her"),
+            )
+            assertNotNull(writeup)
+            assertNotNull(writeup.text)
+        }
+    }
+
+    @Nested
+    inner class ClosedRunAgent {
+
+        @Test
+        fun `choose and run star finder agent`() {
+            val dynamicExecutionResult = agentPlatform.chooseAndRunAgent(
+                "Lynda is a Scorpio, find some news for her",
+                ProcessOptions(test = true),
+            )
+            when (dynamicExecutionResult) {
+                is DynamicExecutionResult.Success -> {
+                    assertNotNull(dynamicExecutionResult.output)
+                    assertTrue(
+                        dynamicExecutionResult.output is Writeup,
+                        "Expected FunnyWriteup, got ${dynamicExecutionResult.output?.javaClass?.name}"
+                    )
+                }
+
+                else -> {
+                    fail("Agent not found: $dynamicExecutionResult")
+                }
+            }
+        }
+    }
+
+    @Nested
+    inner class OpenAccomplishGoal {
+
+        @Test
+        fun `run star finder agent`() {
+            val dynamicExecutionResult = agentPlatform.chooseAndAccomplishGoal(
+                "Lynda is a Scorpio, find some news for her",
+                ProcessOptions(test = true),
+            )
+            when (dynamicExecutionResult) {
+                is DynamicExecutionResult.Success -> {
+                    assertNotNull(dynamicExecutionResult.output)
+                    assertTrue(
+                        dynamicExecutionResult.output is Writeup,
+                        "Expected FunnyWriteup, got ${dynamicExecutionResult.output?.javaClass?.name}"
+                    )
+                }
+
+                is DynamicExecutionResult.NoGoalFound -> {
+                    fail("Goal not found: $dynamicExecutionResult")
+                }
+
+                is DynamicExecutionResult.NoAgentFound -> {
+                    fail("Agent not found: $dynamicExecutionResult")
+                }
             }
         }
     }

@@ -16,7 +16,7 @@
 package com.embabel.agent.shell
 
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.GoalResult
+import com.embabel.agent.core.DynamicExecutionResult
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.library.HasContent
@@ -60,6 +60,17 @@ class ShellCommands(
         """.trimIndent()
     }
 
+    // Saves typing during test iterations
+    @ShellMethod("Run a demo command")
+    fun demo(): String {
+        val intent = "Lynda is a scorpio. Find news for her"
+        logger.info("Demo executing intent: '$intent'")
+        val output = executeIntent(intent = intent, open = false)
+        logger.info("Execute your own intent via the 'execute' command. Enclose the intent in quotes. For example:")
+        logger.info("execute \"$intent\"".color(LumonColors.Green))
+        return output
+    }
+
     @ShellMethod("List available tool groups")
     fun tools(): String {
         return agentPlatform.toolGroupResolver.availableToolGroups()
@@ -85,10 +96,32 @@ class ShellCommands(
     @ShellMethod("Execute a task")
     fun execute(
         @ShellOption(help = "what the agent system should do") intent: String,
+        @ShellOption(
+            value = ["-o", "--open"],
+            help = "run in open mode, choosing a goal and using all actions that can help achieve it",
+        ) open: Boolean = false,
         @ShellOption(value = ["-t", "--test"], help = "run in help mode") test: Boolean = false,
         @ShellOption(value = ["-p", "--showPrompts"], help = "show prompts to LLMs") showPrompts: Boolean,
         @ShellOption(value = ["-r", "--showResponses"], help = "show LLM responses") showLlmResponses: Boolean = false,
         @ShellOption(value = ["-d", "--debug"], help = "show debug info") debug: Boolean = false,
+    ): String {
+        return executeIntent(
+            open = open,
+            test = test,
+            debug = debug,
+            showPrompts = showPrompts,
+            showLlmResponses = showLlmResponses,
+            intent = intent,
+        )
+    }
+
+    private fun executeIntent(
+        open: Boolean,
+        test: Boolean = false,
+        debug: Boolean = false,
+        showPrompts: Boolean = true,
+        showLlmResponses: Boolean = false,
+        intent: String,
     ): String {
         val processOptions = ProcessOptions(
             test = test,
@@ -98,15 +131,24 @@ class ShellCommands(
             )
         )
         logger.info("Created process options: $processOptions".color(LumonColors.Membrane))
-        val result = agentPlatform.chooseAndAccomplishGoal(
-            intent = intent,
-            processOptions = processOptions
-        )
+        val result = if (open) {
+            logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
+            agentPlatform.chooseAndAccomplishGoal(
+                intent = intent,
+                processOptions = processOptions
+            )
+        } else {
+            logger.info("Executing in closed mode: Trying to find appropriate agent")
+            agentPlatform.chooseAndRunAgent(
+                intent = intent,
+                processOptions = processOptions
+            )
+        }
 
         logger.debug("Result: {}\n", result)
 
         when (result) {
-            is GoalResult.NoGoalFound -> {
+            is DynamicExecutionResult.NoGoalFound -> {
                 if (debug) {
                     logger.info(
                         """
@@ -119,7 +161,20 @@ class ShellCommands(
                 return "I'm sorry. I don't know how to do that.\n"
             }
 
-            is GoalResult.Success -> {
+            is DynamicExecutionResult.NoAgentFound -> {
+                if (debug) {
+                    logger.info(
+                        """
+                    Failed to choose agent:
+                        Rankings were: [${result.agentRankings.infoString()}]
+                        Cutoff was ${agentPlatform.properties.agentConfidenceCutOff}
+                    """.trimIndent().color(0xbfb8b8)
+                    )
+                }
+                return "I'm sorry. I don't know how to do that.\n"
+            }
+
+            is DynamicExecutionResult.Success -> {
                 if (result.output is HasContent) {
                     return WordUtils.wrap(result.output.text, 140).color(
                         LumonColors.Green,

@@ -22,8 +22,8 @@ import com.embabel.agent.domain.special.Extractable
 import com.embabel.agent.domain.special.ExtractableCompanion
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.spi.GoalRanker
 import com.embabel.agent.spi.ProcessIdGenerator
+import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmTransformer
@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service
 @ConfigurationProperties("embabel.agent-platform")
 data class DefaultAgentPlatformProperties(
     override val goalConfidenceCutOff: ZeroToOne = 0.6,
+    override val agentConfidenceCutOff: ZeroToOne = 0.6,
     override val autoRegister: Boolean = true,
 ) : AutoRegisteringAgentPlatformProperties
 
@@ -55,7 +56,7 @@ class DefaultAgentPlatform(
     private val templateRenderer: TemplateRenderer,
 //    private val scriptEvaluationService: ScriptEvaluationService,
     private val llmTransformer: LlmTransformer,
-    override val goalRanker: GoalRanker,
+    override val ranker: Ranker,
     override val toolGroupResolver: ToolGroupResolver,
     private val modelProvider: ModelProvider,
     eventListeners: List<AgenticEventListener>,
@@ -88,8 +89,8 @@ class DefaultAgentPlatform(
         logger.debug("{}: event listener: {}", name, eventListener)
     }
 
-    override fun agents(): List<Agent> =
-        agents.values.toList()
+    override fun agents(): Set<Agent> =
+        agents.values.toSet()
 
     override fun deploy(agent: Agent): DefaultAgentPlatform {
         logger.info("Deploying agent {}", agent.name)

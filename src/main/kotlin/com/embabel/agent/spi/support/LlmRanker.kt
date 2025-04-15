@@ -15,49 +15,63 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.LlmTransformer
 import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.spi.GoalRanker
-import com.embabel.agent.spi.GoalRanking
-import com.embabel.agent.spi.GoalRankings
+import com.embabel.agent.spi.Ranker
+import com.embabel.agent.spi.Ranking
+import com.embabel.agent.spi.Rankings
+import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.Named
 import org.springframework.stereotype.Service
 
 @Service
-class LlmGoalRanker(
+class LlmRanker(
     private val llmTransformer: LlmTransformer,
-) : GoalRanker {
+) : Ranker {
+
+    override fun rankAgents(
+        userInput: UserInput,
+        agents: Set<Agent>
+    ): Rankings<Agent> = rankThings(userInput, agents, "agent")
 
     override fun rankGoals(
         userInput: UserInput,
         goals: Set<Goal>,
-    ): GoalRankings {
+    ): Rankings<Goal> = rankThings(userInput, goals, "goal")
 
-        if (goals.isEmpty()) {
-            return GoalRankings(emptyList())
+    private fun <T> rankThings(
+        userInput: UserInput,
+        things: Set<T>,
+        wordForThing: String,
+    ): Rankings<T> where T : Named, T : Described {
+
+        if (things.isEmpty()) {
+            return Rankings(emptyList())
         }
 
         val prompt = """
-            Given the user input, choose the goal that best reflects the user's intent.
+            Given the user input, choose the $wordForThing that best reflects the user's intent.
 
             User input: ${userInput.content}
 
-            Available goals:
-            ${goals.joinToString("\n") { "- ${it.name}: ${it.description}" }}
+            Available ${wordForThing}s:
+            ${things.joinToString("\n") { "- ${it.name}: ${it.description}" }}
 
-            Return the name of the chosen goal and the confidence score (0-1).
+            Return the name of the chosen $wordForThing and the confidence score (0-1).
         """.trimIndent()
-        val grr = llmTransformer.doTransform<UserInput, GoalRankingsResponse>(
+        val grr = llmTransformer.doTransform<UserInput, RankingsResponse>(
             input = userInput,
             literalPrompt = prompt,
             llmOptions = LlmOptions(model = "gpt-4o-mini"),
-            outputClass = GoalRankingsResponse::class.java,
+            outputClass = RankingsResponse::class.java,
         )
-        return GoalRankings(
+        return Rankings(
             rankings = grr.rankings.map {
-                GoalRanking(
-                    goal = goals.single { goal -> goal.name == it.name },
+                Ranking(
+                    ranked = things.single { thing -> thing.name == it.name },
                     confidence = it.confidence,
                 )
             }.sortedBy { it.confidence }.reversed()
@@ -65,11 +79,11 @@ class LlmGoalRanker(
     }
 }
 
-internal data class GoalRankingsResponse(
-    val rankings: List<GoalChoiceResponse>,
+internal data class RankingsResponse(
+    val rankings: List<RankedChoiceResponse>,
 )
 
-internal data class GoalChoiceResponse(
+internal data class RankedChoiceResponse(
     val name: String,
     val confidence: Double,
 )

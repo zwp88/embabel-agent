@@ -16,6 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.core.support.SerializableAction
+import com.embabel.common.core.types.Described
 import com.embabel.common.util.kotlin.loggerFor
 import com.embabel.plan.goap.*
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -140,9 +141,7 @@ data class Goal(
 
 }
 
-interface AgentSystemStep : GoapStep {
-
-    val description: String
+interface AgentSystemStep : GoapStep, Described {
 
     /**
      * Data inputs to this set.

@@ -37,13 +37,15 @@ class BlackboardWorldStateDeterminer(
     override fun determineWorldState(): WorldState {
         val map = mutableMapOf<String, ConditionDetermination>()
         knownConditions.forEach { condition ->
+            // TODO shouldn't evaluate expensive conditions, just
+            // return unknown
             map[condition] = determineCondition(condition)
         }
         return WorldState(map)
     }
 
     override fun determineCondition(condition: String): ConditionDetermination {
-        return when {
+        val conditionDetermination = when {
             // Well known conditions, defined for reuse, with their own evaluation function
             processContext.agentProcess.agent.conditions.any { it.name == condition } -> {
                 val conditions = processContext.agentProcess.agent.conditions.filter { it.name == condition }
@@ -89,5 +91,13 @@ class BlackboardWorldStateDeterminer(
             // Maybe the condition was explicitly set
             else -> ConditionDetermination(processContext.blackboard.getCondition(condition))
         }
+        if (conditionDetermination == ConditionDetermination.UNKNOWN) {
+            logger.warn(
+                "Determined condition {} to be unknown: bindings={}",
+                condition,
+                processContext.blackboard.infoString(),
+            )
+        }
+        return conditionDetermination
     }
 }

@@ -15,39 +15,48 @@
  */
 package com.embabel.agent.spi
 
+import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.Named
 
 /**
- * Rank available goals based on user input and agent metadata.
+ * Rank available choices based on user input and agent metadata.
  * It's possible that no ranking will be high enough to progress with,
  * but that's a matter for the AgentPlatform using this service.
  */
-fun interface GoalRanker {
+interface Ranker {
 
     fun rankGoals(
         userInput: UserInput,
         goals: Set<Goal>,
-    ): GoalRankings
+    ): Rankings<Goal>
+
+    fun rankAgents(
+        userInput: UserInput,
+        agents: Set<Agent>,
+    ): Rankings<Agent>
 }
 
-data class GoalRankings(
-    val rankings: List<GoalRanking>
-) : HasInfoString {
+data class Rankings<T>(
+    val rankings: List<Ranking<T>>
+) : HasInfoString where T : Named, T : Described {
 
     override fun infoString(verbose: Boolean?): String =
         rankings.joinToString("\n") { ranking ->
-            "${ranking.goal.name}: ${ranking.confidence}"
+            "${ranking.ranked.name}: ${ranking.confidence}"
         }
 }
 
 /**
- * Goal choice returned by the goal chooser
- * @param goal The goal chosen by the goal chooser
- * @param confidence The confidence score of the goal choice, between 0 and 1
+ * Ranking choice returned by the ranker
+ * @param ranked The ranked item
+ * @param confidence The confidence score of the ranker in this choice,
+ * between 0 and 1
  */
-data class GoalRanking(
-    val goal: Goal,
+data class Ranking<T>(
+    val ranked: T,
     val confidence: Double,
-)
+) where T : Named, T : Described

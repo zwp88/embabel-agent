@@ -79,6 +79,30 @@ Goals, actions and plans are independent of GOAP. Future planning options includ
 
 - Plans created by a reasoning model such as OpenAI o1 or DeepSeek R1.
 
+The framework executes via `AgentPlatform` implementation.
+
+An agent platform supports three modes of execution:
+
+- **Focused**, where user code requests particular functionality: User code calls a method to run a particular agent,
+  passing in input.
+- **Closed**, where user intent is classified to choose an agent: The user expresses an intent and the platform tries to
+  find a
+  suitable agent among all the agent it knows about. It will run the agent.
+  Thus agent choice is dynamic, but only the actions within the particular agent
+  can be run.
+- **Open**, where the user's goal is determined and the platform uses all its resources to try to achieve it: The user
+  expresses an intent and the platform tries to find a
+  suitable goal among all the goals it knows about.
+
+Open mode is the most powerful, but also less deterministic.
+> In open mode, the platform is capable of finding novel paths that were not envisioned by developers, and even
+> combining functionality from multiple providers.
+
+Even in open mode, the platform will only perform individual steps
+that have been specified. (Of course, steps may themselves be LLM
+transforms, in which case the prompts are controlled by user code but the
+results are still non-deterministic.)
+
 ## Show Me The Code
 
 ```kotlin

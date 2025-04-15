@@ -16,6 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.Named
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 interface Conditions {
@@ -31,9 +32,7 @@ interface GoalsContributor {
 /**
  * Metadata of an agent, along with ability to instantiate an agent.
  */
-interface AgentMetadata : GoalsContributor, Conditions, DataDictionary, HasInfoString {
-
-    val name: String
+interface AgentMetadata : Named, GoalsContributor, Conditions, DataDictionary, HasInfoString {
 
     val actions: List<Action>
 
