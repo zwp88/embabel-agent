@@ -17,6 +17,7 @@ package com.embabel.examples.simple.movie
 
 import com.embabel.agent.annotation.AchievesGoal
 import com.embabel.agent.annotation.Action
+import com.embabel.agent.annotation.Agent
 import com.embabel.agent.annotation.Condition
 import com.embabel.agent.annotation.support.PromptRunner
 import com.embabel.agent.core.ProcessContext
@@ -27,6 +28,7 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.dsl.TransformationPayload
+import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.CrudRepository
 
 
@@ -93,11 +95,10 @@ data class SuggestionWriteup(
 interface MovieBuffRepository : CrudRepository<MovieBuff, String>
 
 
-//@Profile("!test")
-//@ConditionalOnProperty("OMDB_API_KEY")
-//@Agent(
-//    description = "Find movies a person hasn't seen and may find interesting"
-//)
+@Profile("!test")
+@Agent(
+    description = "Find movies a person hasn't seen and may find interesting"
+)
 class MovieFinder(
     private val omdbClient: OmdbClient,
     private val streamingAvailabilityClient: StreamingAvailabilityClient,

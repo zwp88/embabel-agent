@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Primary
+import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertNotNull
 
 @TestConfiguration
@@ -62,10 +63,13 @@ class FakeConfig {
  * Integration tests
  */
 @SpringBootTest
-@Import(value=[
-    FakeConfig::class,
-    FakeAiConfiguration::class,
-])
+@ActiveProfiles("test")
+@Import(
+    value = [
+        FakeConfig::class,
+        FakeAiConfiguration::class,
+    ]
+)
 class AgentPlatformIntegrationTest(
     @Autowired
     private val agentPlatform: AgentPlatform,
