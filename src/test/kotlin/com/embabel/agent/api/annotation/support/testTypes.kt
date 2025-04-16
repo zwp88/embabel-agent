@@ -16,7 +16,9 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.common.PromptRunner
 import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.primitive.LlmOptions
@@ -230,7 +232,7 @@ class OnePromptActionWithToolOnly(
 
     @Action(cost = 500.0)
     fun toPersonWithPrompt(userInput: UserInput): Person {
-        return Prompt.createObject("Generated prompt for ${userInput.content}")
+        return PromptRunner().createObject("Generated prompt for ${userInput.content}")
     }
 
     @Tool
@@ -247,7 +249,7 @@ class FromPersonUsesDomainObjectTools {
     fun fromPerson(
         person: Person
     ): UserInput {
-        return Prompt.createObject("Create a UserInput")
+        return PromptRunner().createObject("Create a UserInput")
     }
 }
 

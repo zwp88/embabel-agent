@@ -18,8 +18,10 @@ package com.embabel.examples.simple.horoscope
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.support.PromptRunner
+import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
@@ -93,7 +95,7 @@ class StarNewsFinder(
         horoscope: Horoscope,
     ): Writeup =
         // Customize LLM call
-        PromptRunner().withTemperature(1.2).createObject(
+        PromptRunner(LlmOptions().withTemperature(1.2)).createObject(
             """
             Take the following news stories and write up something
             amusing for the target person.

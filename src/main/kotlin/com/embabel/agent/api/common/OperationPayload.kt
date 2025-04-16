@@ -32,21 +32,41 @@ interface OperationPayload : Blackboard {
     val processContext: ProcessContext
     val action: Action?
 
-    fun <O> OperationPayload.createObject(
-        llm: LlmOptions = LlmOptions.Companion(),
-        prompt: String,
-        outputClass: Class<O>,
-    ): O {
-        return processContext.transform<Unit, O>(
+    // TODO default LLM options to action
+    fun promptRunner(llm: LlmOptions): PromptRunner =
+        OperationPayloadPromptRunner(this, llm)
+
+}
+
+private class OperationPayloadPromptRunner(
+    private val payload: OperationPayload,
+    private val llm: LlmOptions,
+) : PromptRunner {
+
+    override fun <T> createObject(prompt: String, outputClass: Class<T>): T {
+        return payload.processContext.transform<Unit, T>(
             Unit,
             { prompt },
             // TODO fix callbacks
             llmOptions = llm,
 //        toolCallbacks,
             outputClass = outputClass,
-            agentProcess = processContext.agentProcess,
-            action = this.action,
+            agentProcess = payload.processContext.agentProcess,
+            action = payload.action,
         )
+    }
+
+    override fun <T> createObjectIfPossible(prompt: String, outputClass: Class<T>): T? {
+        return payload.processContext.transformIfPossible<Unit, T>(
+            Unit,
+            { prompt },
+            // TODO fix callbacks
+            llmOptions = llm,
+//        toolCallbacks,
+            outputClass = outputClass,
+            agentProcess = payload.processContext.agentProcess,
+            action = payload.action,
+        ).getOrNull()
     }
 }
 
@@ -55,17 +75,6 @@ interface InputPayload<I> : OperationPayload {
 
     fun agentPlatform() = processContext.platformServices.agentPlatform
 
-}
-
-inline fun <reified O> OperationPayload.createObject(
-    llm: LlmOptions = LlmOptions.Companion(),
-    prompt: String,
-): O {
-    return createObject(
-        prompt = prompt,
-        outputClass = O::class.java,
-        llm = llm,
-    )
 }
 
 

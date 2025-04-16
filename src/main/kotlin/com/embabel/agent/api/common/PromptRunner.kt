@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.annotation.support
+package com.embabel.agent.api.common
 
-import com.embabel.agent.core.primitive.BuildableLlmOptions
 import com.embabel.agent.core.primitive.LlmOptions
+
 
 /**
  * Interface for executing prompts
+ * A PromptRunner interface allows more control over prompt execution
+ * and reuse between different execution
  */
 interface PromptRunner {
 
@@ -30,7 +32,7 @@ interface PromptRunner {
      * @Action method that provides access to
      * domain object instances, offering type safety.
      */
-    fun <T> createObject(prompt: String): T
+    fun <T> createObject(prompt: String, outputClass: Class<T>): T
 
     /**
      * Try to create an object of the given type using the given prompt and LLM options from context
@@ -39,64 +41,40 @@ interface PromptRunner {
      * @Action method that provides access to
      * domain object instances, offering type safety.
      */
-    fun <T> createObjectIfPossible(prompt: String): T?
+    fun <T> createObjectIfPossible(prompt: String, outputClass: Class<T>): T?
 
     companion object {
 
-        operator fun invoke(llm: LlmOptions? = null): BuildablePromptRunner {
-            return BuildablePromptRunner(llm)
+        /**
+         * Return an ambient prompt runner
+         */
+        operator fun invoke(llm: LlmOptions? = null): PromptRunner {
+            return ActionReturnPromptRunner(llm)
         }
     }
 
 }
 
-/**
- * Run a prompt.
- */
-object Prompt : PromptRunner {
+inline fun <reified T> PromptRunner.createObject(prompt: String): T =
+    createObject(prompt, T::class.java)
 
-    override fun <T> createObject(prompt: String): T {
-        throw ExecutePromptException(prompt = prompt, requireResult = true)
-    }
+inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
+    createObjectIfPossible(prompt, T::class.java)
 
-    override fun <T> createObjectIfPossible(prompt: String): T? {
-        throw ExecutePromptException(prompt = prompt, requireResult = true)
-    }
-
-    /**
-     * Run a prompt with the given LLM and hyperparameters.
-     * Typesafe.
-     */
-    @JvmStatic
-    fun <T> run(prompt: String, llm: LlmOptions): T {
-        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
-    }
-
-}
 
 /**
- * Allow more control over prompt execution
- * and reuse between different execution
- * With methods make it easier to use from Java in a builder style
+ * PromptRunner implementation that can be used to return a value
  */
-class BuildablePromptRunner(
+private class ActionReturnPromptRunner(
     val llm: LlmOptions? = null,
 ) : PromptRunner {
 
-    override fun <T> createObject(prompt: String): T {
+    override fun <T> createObject(prompt: String, outputClass: Class<T>): T {
         throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
     }
 
-    override fun <T> createObjectIfPossible(prompt: String): T? {
+    override fun <T> createObjectIfPossible(prompt: String, outClass: Class<T>): T? {
         throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
-    }
-
-    fun withTemperature(temperature: Double): PromptRunner {
-        return BuildablePromptRunner(BuildableLlmOptions(llm ?: LlmOptions()).copy(temperature = temperature))
-    }
-
-    fun withModel(model: String): PromptRunner {
-        return BuildablePromptRunner(BuildableLlmOptions(llm ?: LlmOptions()).copy(model = model))
     }
 
 }

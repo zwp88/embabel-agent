@@ -16,6 +16,7 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.common.ExecutePromptException
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope

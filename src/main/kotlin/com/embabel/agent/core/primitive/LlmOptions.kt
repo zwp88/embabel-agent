@@ -27,6 +27,7 @@ interface LlmOptions : HasInfoString {
     val temperature: Double
 
     companion object {
+
         operator fun invoke(
             model: String = DEFAULT_MODEL,
             temperature: Double = DEFAULT_TEMPERATURE,
@@ -50,11 +51,6 @@ data class BuildableLlmOptions(
     override val model: String,
     override val temperature: Double,
 ) : LlmOptions {
-
-    constructor (llm: LlmOptions) : this(
-        model = llm.model,
-        temperature = llm.temperature,
-    )
 
     fun withTemperature(temperature: Double): BuildableLlmOptions {
         return copy(temperature = temperature)

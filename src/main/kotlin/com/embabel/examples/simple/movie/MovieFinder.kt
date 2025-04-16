@@ -19,7 +19,7 @@ import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.Condition
-import com.embabel.agent.api.annotation.support.PromptRunner
+import com.embabel.agent.api.common.PromptRunner
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.ProcessContext
@@ -156,7 +156,7 @@ class MovieFinder(
     fun analyzeTasteProfile(
         movieBuff: MovieBuff
     ): TasteProfile =
-        PromptRunner().withModel("gpt-4o").createObject(
+        PromptRunner(LlmOptions("gpt-4o")).createObject(
             """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
@@ -204,8 +204,9 @@ class MovieFinder(
             "make it entertaining!"
         )
             .random()
-        val suggestedMovieTitles = payload.createObject<SuggestedMovieTitles>(
+        val suggestedMovieTitles = payload.promptRunner(
             LlmOptions(model = "gpt-4o"),
+        ).createObject<SuggestedMovieTitles>(
             """
             Suggest ${config.suggestionCount} movies titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
@@ -311,7 +312,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         streamableMovies: StreamableMovies,
     ): SuggestionWriteup =
-        PromptRunner().withModel("gpt-4o").createObject(
+        PromptRunner(LlmOptions("gpt-4o")).createObject(
             """
             Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount}
             for ${dmb.movieBuff.name}
