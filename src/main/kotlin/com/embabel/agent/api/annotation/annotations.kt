@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.annotation
+package com.embabel.agent.api.annotation
 
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ZeroToOne

@@ -187,6 +187,7 @@
                         <exclude>com/embabel/agent/toolgroups/**</exclude>
                         <exclude>com/embabel/agent/shell/**</exclude>
                         <exclude>com/embabel/agent/testing/**</exclude>
+                        <exclude>com/embabel/agent/experimental/**</exclude>
                         <exclude>com/embabel/agent/event/logging/personality/**</exclude>
                     </excludes>
                 </configuration>

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.dsl
+package com.embabel.agent.experimental
 
 import com.embabel.agent.core.ProcessContext
 

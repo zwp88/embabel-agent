@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.annotation.support
+package com.embabel.agent.api.annotation.support
 
-import com.embabel.agent.annotation.Agent
+import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.core.*
 import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.core.support.InMemoryBlackboard

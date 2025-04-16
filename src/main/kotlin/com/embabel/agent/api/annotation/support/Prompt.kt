@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.annotation.support
+package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.core.primitive.BuildableLlmOptions
 import com.embabel.agent.core.primitive.LlmOptions

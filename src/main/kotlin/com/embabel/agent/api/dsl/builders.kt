@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.dsl
+package com.embabel.agent.api.dsl
 
+import com.embabel.agent.api.common.InputPayload
+import com.embabel.agent.api.common.OperationPayload
+import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import com.embabel.plan.goap.ConditionDetermination

@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentPlatformProperties
-import com.embabel.agent.annotation.support.AgentMetadataReader
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order

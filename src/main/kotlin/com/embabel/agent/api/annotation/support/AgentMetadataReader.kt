@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.annotation.support
+package com.embabel.agent.api.annotation.support
 
-import com.embabel.agent.annotation.*
+import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.primitive.LlmOptions
-import com.embabel.agent.dsl.TransformationPayload
-import com.embabel.agent.dsl.expandInputBindings
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
@@ -54,12 +54,12 @@ class AgentMetadataReader {
     fun createAgentMetadata(instance: Any): AgentScope? {
         val type = instance.javaClass
         val agenticAnnotation = type.getAnnotation(Agentic::class.java)
-        val agentAnnotation = type.getAnnotation(com.embabel.agent.annotation.Agent::class.java)
+        val agentAnnotation = type.getAnnotation(Agent::class.java)
         if (agenticAnnotation == null && agentAnnotation == null) {
             logger.debug(
                 "No @{} or @{} annotation found on {}",
                 Agentic::class.simpleName,
-                com.embabel.agent.annotation.Agent::class.simpleName,
+                Agent::class.simpleName,
                 type.name,
             )
             return null
@@ -68,7 +68,7 @@ class AgentMetadataReader {
             logger.debug(
                 "Both @{} and @{} annotations found on {}. Treating class as Agent, but both should not be used",
                 Agentic::class.simpleName,
-                com.embabel.agent.annotation.Agent::class.simpleName,
+                Agent::class.simpleName,
                 type.name,
             )
             return null
@@ -236,7 +236,7 @@ class AgentMetadataReader {
         payload: TransformationPayload<List<Any>, O>,
         toolCallbacks: List<ToolCallback>,
     ): O {
-        logger.info("Invoking action method {} with payload {}", method.name, payload.input)
+        logger.debug("Invoking action method {} with payload {}", method.name, payload.input)
         val toolCallbacksOnDomainObjects = ToolCallbacks.from(*payload.input.toTypedArray())
         var args = payload.input.toTypedArray()
         if (method.parameters.any { it.type == TransformationPayload::class.java }) {
@@ -277,7 +277,7 @@ class AgentMetadataReader {
             )
             throw t
         }
-        logger.info(
+        logger.debug(
             "Result of invoking action method {} was {}: payload {}",
             method.name,
             result,

@@ -15,11 +15,13 @@
  */
 package com.embabel.examples.simple.movie
 
-import com.embabel.agent.annotation.AchievesGoal
-import com.embabel.agent.annotation.Action
-import com.embabel.agent.annotation.Agent
-import com.embabel.agent.annotation.Condition
-import com.embabel.agent.annotation.support.PromptRunner
+import com.embabel.agent.api.annotation.AchievesGoal
+import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.Condition
+import com.embabel.agent.api.annotation.support.PromptRunner
+import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
@@ -28,8 +30,6 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.dsl.TransformationPayload
-import com.embabel.agent.dsl.createObject
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.CrudRepository

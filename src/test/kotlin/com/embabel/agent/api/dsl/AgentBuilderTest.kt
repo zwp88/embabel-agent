@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.dsl
+package com.embabel.agent.api.dsl
 
-import com.embabel.agent.annotation.support.Person
+import com.embabel.agent.api.annotation.support.Person
 import com.embabel.agent.support.Dog
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.annotation.support
+package com.embabel.agent.api.annotation.support
 
+import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.dsl.Transformation
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
-import com.embabel.agent.dsl.Transformation
-import com.embabel.agent.dsl.TransformationPayload
 import org.springframework.ai.tool.ToolCallback
 
 /**

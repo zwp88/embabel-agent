@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.annotation.support
+package com.embabel.agent.api.annotation.support
 
-import com.embabel.agent.annotation.*
+import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.dsl.TransformationPayload
 import org.springframework.ai.tool.annotation.Tool
 
 data class Person(val name: String) {
@@ -137,7 +137,7 @@ data class Task(
 )
 
 
-@com.embabel.agent.annotation.Agent(
+@Agent(
     description = "one transformer action only",
 )
 class AgentWithOneTransformerActionWith2ArgsOnly {

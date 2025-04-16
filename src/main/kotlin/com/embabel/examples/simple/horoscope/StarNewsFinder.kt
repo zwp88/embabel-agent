@@ -15,10 +15,10 @@
  */
 package com.embabel.examples.simple.horoscope
 
-import com.embabel.agent.annotation.AchievesGoal
-import com.embabel.agent.annotation.Action
-import com.embabel.agent.annotation.Agent
-import com.embabel.agent.annotation.support.PromptRunner
+import com.embabel.agent.api.annotation.AchievesGoal
+import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.support.PromptRunner
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person

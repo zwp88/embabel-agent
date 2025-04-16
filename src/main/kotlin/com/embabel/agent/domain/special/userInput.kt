@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.domain.special
 
-import com.embabel.agent.dsl.Transformer
+import com.embabel.agent.api.dsl.Transformer
 import com.embabel.agent.core.primitive.LlmOptions
 
 /**
