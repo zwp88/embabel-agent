@@ -20,10 +20,12 @@ package com.embabel.agent.core
  */
 data class ProcessContext(
     val processOptions: ProcessOptions = ProcessOptions(),
-    val blackboard: Blackboard,
     val platformServices: PlatformServices,
     val agentProcess: AgentProcess,
 ) : LlmTransformer by platformServices.llmTransformer {
+
+    val blackboard: Blackboard
+        get() = agentProcess
 
     /**
      * Get a variable value. Handles "it" default type specially,

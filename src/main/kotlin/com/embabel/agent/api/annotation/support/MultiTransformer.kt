@@ -81,9 +81,9 @@ internal class MultiTransformer<O : Any>(
             )
         )
         if (outputVarName != null) {
-            processContext.blackboard[outputVarName] = output
+            processContext.agentProcess[outputVarName] = output
         } else {
-            processContext.blackboard += output
+            processContext.agentProcess += output
         }
     }
 

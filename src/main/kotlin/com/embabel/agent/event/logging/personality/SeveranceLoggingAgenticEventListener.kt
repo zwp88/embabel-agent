@@ -59,7 +59,7 @@ val CompletionMessages = listOf(
 class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     logger = LoggerFactory.getLogger("MDR"),
     welcomeMessage = """
-        
+
         Kier, chosen one, Kier.
         Kier, brilliant one, Kier.
         Brings the bounty to the plain through the torment, through the rains,
@@ -94,10 +94,11 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ${CompletionMessages.random()}
 
         ${"The Board has concluded the call.".color(LumonColors.Membrane)}
-        
+
         """.trimIndent(),
     processFailureMessage = "WOE: Process {} failed",
-    objectAddedMessage = "PROBITY: Object added: {} to process {}",
+    objectAddedMessage = "Perpetuity wing: object added: {} to process {}",
+    objectBoundMessage = "Perpetuity wing: object bound: {} to {} in process {}",
     functionCallRequestEventMessage = "VERVE: Process {} calling function {} with payload {}",
     functionCallResponseEventMessage = "VISION: Process {} function {} response {} in {}ms with payload {}",
     transformRequestEventMessage = "🖥️ MACRODATA REFINEMENT: Process {} requesting LLM transform from {} -> {} using {}",

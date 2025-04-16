@@ -33,9 +33,7 @@ interface Bindable {
     /**
      * Bind a value to a name
      */
-    operator fun set(key: String, value: Any) {
-        bind(key, value)
-    }
+    operator fun set(key: String, value: Any) // don't implement here as it can upset delegation
 
     fun bind(key: String, value: Any): Bindable
 
@@ -44,15 +42,11 @@ interface Bindable {
      * Implementations must respect the order in which
      * entities were added.
      */
-    fun addEntry(value: Any): Bindable
+    fun addObject(value: Any): Bindable
 
-    operator fun plusAssign(value: Any) {
-        addEntry(value)
-    }
+    operator fun plusAssign(value: Any)
 
-    operator fun plusAssign(pair: Pair<String, Any>) {
-        bind(pair.first, pair.second)
-    }
+    operator fun plusAssign(pair: Pair<String, Any>)
 
     fun bindAll(bindings: Map<String, Any>) =
         bindings.entries.forEach { entry ->
@@ -118,14 +112,14 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
             // Must be precisely bound
             return null
         }
-        return entries.lastOrNull { satisfiesType(boundInstance = it, type) }
+        return objects.lastOrNull { satisfiesType(boundInstance = it, type) }
     }
 
     /**
      * Entries in the order they were added.
      * The default instance of any type is the last one
      */
-    val entries: List<Any>
+    val objects: List<Any>
 
     /**
      * Spawn an independent child blackboard based on the content of this
@@ -141,7 +135,7 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
     fun getCondition(key: String): Boolean?
 
     override fun finalResult(): Any? {
-        return entries.lastOrNull()
+        return objects.lastOrNull()
     }
 
     /**
@@ -169,28 +163,28 @@ fun satisfiesType(boundInstance: Any, type: String): Boolean {
  * Return all entries of a specific type
  */
 inline fun <reified T> Blackboard.all(): List<T> {
-    return entries.filterIsInstance<T>()
+    return objects.filterIsInstance<T>()
 }
 
 /**
  * Count entries of the given type
  */
 inline fun <reified T> Blackboard.count(): Int {
-    return entries.filterIsInstance<T>().size
+    return objects.filterIsInstance<T>().size
 }
 
 /**
  * Last entry of the given type, if there is one
  */
 inline fun <reified T> Blackboard.last(): T? {
-    return entries.filterIsInstance<T>().lastOrNull()
+    return objects.filterIsInstance<T>().lastOrNull()
 }
 
 /**
  * Last entry of the given type, if there is one
  */
 fun <T> Blackboard.last(clazz: Class<T>): T? {
-    return entries.filterIsInstance<T>(clazz).lastOrNull()
+    return objects.filterIsInstance<T>(clazz).lastOrNull()
 }
 
 /**

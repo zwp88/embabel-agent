@@ -158,15 +158,13 @@ class LlmTransformResponseEvent<I, O> internal constructor(
 /**
  * Binding to context
  */
-data class ObjectAddedEvent(
-    override val processId: String,
+class ObjectAddedEvent(
+    agentProcess: AgentProcess,
     val value: Any,
-    override val timestamp: Instant = Instant.now(),
-) : AgentProcessEvent
+) : AbstractAgentProcessEvent(agentProcess)
 
-data class ObjectBoundEvent(
-    override val processId: String,
+class ObjectBoundEvent(
+    agentProcess: AgentProcess,
     val name: String,
     val value: Any,
-    override val timestamp: Instant = Instant.now(),
-) : AgentProcessEvent
+) : AbstractAgentProcessEvent(agentProcess)

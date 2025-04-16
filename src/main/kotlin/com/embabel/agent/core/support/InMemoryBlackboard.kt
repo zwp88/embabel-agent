@@ -32,7 +32,7 @@ class InMemoryBlackboard : Blackboard {
         }
     }
 
-    override val entries: List<Any> get() = _entries
+    override val objects: List<Any> get() = _entries
 
     override fun get(name: String): Any? = _map[name]
 
@@ -40,6 +40,18 @@ class InMemoryBlackboard : Blackboard {
         _map[key] = value
         _entries.add(value)
         return this
+    }
+
+    override operator fun plusAssign(value: Any) {
+        addObject(value)
+    }
+
+    override fun plusAssign(pair: Pair<String, Any>) {
+        bind(pair.first, pair.second)
+    }
+
+    override operator fun set(key: String, value: Any) {
+        bind(key, value)
     }
 
     override fun setCondition(key: String, value: Boolean): Blackboard {
@@ -51,7 +63,7 @@ class InMemoryBlackboard : Blackboard {
     override fun getCondition(key: String): Boolean? =
         _map[key] as? Boolean
 
-    override fun addEntry(value: Any): Blackboard {
+    override fun addObject(value: Any): Blackboard {
         _entries.add(value)
         return this
     }
@@ -63,7 +75,7 @@ class InMemoryBlackboard : Blackboard {
     override fun infoString(verbose: Boolean?): String {
         val joiner = if (verbose == true) "\n" else ", "
         val entriesString =
-            if (verbose == true) "\n" + entries.joinToString(joiner) else entries.map { "${it::class.simpleName}" }
+            if (verbose == true) "\n" + objects.joinToString(joiner) else objects.map { "${it::class.simpleName}" }
         val mapString =
             if (verbose == true) "\n" + _map.entries.joinToString(joiner) else _map.entries.joinToString(joiner) { "${it.key}=${it.value::class.simpleName}" }
         return "${javaClass.simpleName}(map:$mapString, ${joiner}entries:$entriesString)"

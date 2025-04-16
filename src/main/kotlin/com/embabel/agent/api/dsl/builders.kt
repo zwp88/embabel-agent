@@ -340,7 +340,7 @@ class Aggregator<I, O>(
         outputTypes: Map<String, SchemaType>,
         action: Action
     ): ActionStatus = ActionRunner.execute {
-        val input = processContext.blackboard.entries.filterIsInstance(inputClass)
+        val input = processContext.blackboard.objects.filterIsInstance(inputClass)
         val output = block(
             AggregationPayload(
                 input = input,

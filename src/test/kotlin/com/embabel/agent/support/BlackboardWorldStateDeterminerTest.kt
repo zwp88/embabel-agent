@@ -18,10 +18,7 @@ package com.embabel.agent.support
 import com.embabel.agent.api.annotation.support.Person
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.transformer
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.PlatformServices
-import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.*
 import com.embabel.agent.core.support.BlackboardWorldStateDeterminer
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.Aggregation
@@ -85,22 +82,33 @@ class BlackboardWorldStateDeterminerTest {
         every { mockPlatformServices.llmTransformer } returns mockk()
     }
 
+    private fun blackboardWorldStateDeterminer(blackboard: Blackboard): BlackboardWorldStateDeterminer {
+        val mockAgentProcess = mockk<AgentProcess>()
+        every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+            blackboard.getValue(
+                firstArg(),
+                secondArg(),
+                thirdArg(),
+            )
+        }
+        every { mockAgentProcess.agent } returns SimpleTestAgent
+        val bsb = BlackboardWorldStateDeterminer(
+            processContext = ProcessContext(
+                platformServices = mockPlatformServices,
+                agentProcess = mockAgentProcess,
+                processOptions = ProcessOptions()
+            )
+        )
+        return bsb
+    }
+
     @Nested
     inner class Worlds {
 
         @Test
         fun `negative world`() {
-            val mockAgentProcess = mockk<AgentProcess>()
-            every { mockAgentProcess.agent } returns SimpleTestAgent
-            assertEquals(2, SimpleTestAgent.actions.size)
-            val bsb = BlackboardWorldStateDeterminer(
-                processContext = ProcessContext(
-                    blackboard = InMemoryBlackboard(),
-                    platformServices = mockPlatformServices,
-                    agentProcess = mockAgentProcess,
-                    processOptions = ProcessOptions()
-                )
-            )
+            val blackboard = InMemoryBlackboard()
+            val bsb = blackboardWorldStateDeterminer(blackboard)
             val worldState = bsb.determineWorldState().state
             assertEquals(
                 mapOf(
@@ -117,17 +125,8 @@ class BlackboardWorldStateDeterminerTest {
         fun `one element world`() {
             val blackboard = InMemoryBlackboard()
 
-            val mockAgentProcess = mockk<AgentProcess>()
-            every { mockAgentProcess.agent } returns SimpleTestAgent
-            val bsb = BlackboardWorldStateDeterminer(
-                processContext = ProcessContext(
-                    blackboard = blackboard,
-                    platformServices = mockPlatformServices,
-                    agentProcess = mockAgentProcess,
-                    processOptions = ProcessOptions()
+            val bsb = blackboardWorldStateDeterminer(blackboard)
 
-                )
-            )
             blackboard["it"] = UserInput("xyz")
             val worldState = bsb.determineWorldState().state
             assertEquals(
@@ -144,16 +143,8 @@ class BlackboardWorldStateDeterminerTest {
         fun `activated megazord`() {
             val blackboard = InMemoryBlackboard()
 
-            val mockAgentProcess = mockk<AgentProcess>()
-            every { mockAgentProcess.agent } returns SimpleTestAgent
-            val bsb = BlackboardWorldStateDeterminer(
-                processContext = ProcessContext(
-                    blackboard = blackboard,
-                    platformServices = mockPlatformServices,
-                    agentProcess = mockAgentProcess,
-                    processOptions = ProcessOptions(),
-                )
-            )
+            val bsb = blackboardWorldStateDeterminer(blackboard)
+
             blackboard["input"] = UserInput("xyz")
             blackboard["person"] = Person("Rod")
             val worldState = bsb.determineWorldState()
@@ -178,16 +169,7 @@ class BlackboardWorldStateDeterminerTest {
         @Test
         fun `exact type match with simple name`() {
             val blackboard = InMemoryBlackboard()
-            val mockAgentProcess = mockk<AgentProcess>()
-            every { mockAgentProcess.agent } returns SimpleTestAgent
-            val bsb = BlackboardWorldStateDeterminer(
-                processContext = ProcessContext(
-                    blackboard = blackboard,
-                    platformServices = mockPlatformServices,
-                    agentProcess = mockAgentProcess,
-                    processOptions = ProcessOptions(),
-                )
-            )
+            val bsb = blackboardWorldStateDeterminer(blackboard)
 
             blackboard["input"] = UserInput("xyz")
             blackboard["person"] = Person("Rod")
@@ -198,16 +180,8 @@ class BlackboardWorldStateDeterminerTest {
         @Test
         fun `subclass match`() {
             val blackboard = InMemoryBlackboard()
-            val mockAgentProcess = mockk<AgentProcess>()
-            every { mockAgentProcess.agent } returns InterfaceTestAgent
-            val bsb = BlackboardWorldStateDeterminer(
-                processContext = ProcessContext(
-                    blackboard = blackboard,
-                    platformServices = mockPlatformServices,
-                    agentProcess = mockAgentProcess,
-                    processOptions = ProcessOptions(),
-                )
-            )
+            val bsb = blackboardWorldStateDeterminer(blackboard)
+
 
             blackboard["input"] = UserInput("xyz")
             blackboard["person"] = FancyPerson("Rod")
@@ -225,16 +199,7 @@ class BlackboardWorldStateDeterminerTest {
     @Test
     fun `exact type match with fqn`() {
         val blackboard = InMemoryBlackboard()
-        val mockAgentProcess = mockk<AgentProcess>()
-        every { mockAgentProcess.agent } returns SimpleTestAgent
-        val bsb = BlackboardWorldStateDeterminer(
-            processContext = ProcessContext(
-                blackboard = blackboard,
-                platformServices = mockPlatformServices,
-                agentProcess = mockAgentProcess,
-                processOptions = ProcessOptions(),
-            )
-        )
+        val bsb = blackboardWorldStateDeterminer(blackboard)
 
         blackboard["input"] = UserInput("xyz")
         blackboard["person"] = Person("Rod")

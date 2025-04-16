@@ -22,7 +22,7 @@ import java.time.Instant
 /**
  * Run of an agent
  */
-interface AgentProcess : Bindable, Timed {
+interface AgentProcess : Blackboard, Timed {
 
     /**
      * Unique id of this process

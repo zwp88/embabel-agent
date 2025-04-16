@@ -16,8 +16,8 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.core.*
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.core.*
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
@@ -246,9 +246,23 @@ class AgentMetadataReaderTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.llmTransformer } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
+            val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+            every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                blackboard.getValue(
+                    firstArg(),
+                    secondArg(),
+                    thirdArg(),
+                )
+            }
+            every { mockAgentProcess.set(any(), any()) } answers {
+                blackboard.set(
+                    firstArg(),
+                    secondArg(),
+                )
+            }
+            every { mockAgentProcess.finalResult() } returns Person("John Doe")
 
             val pc = ProcessContext(
-                blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe")),
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
@@ -276,9 +290,24 @@ class AgentMetadataReaderTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.llmTransformer } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
+            val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+            every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                blackboard.getValue(
+                    firstArg(),
+                    secondArg(),
+                    thirdArg(),
+                )
+            }
+            every { mockAgentProcess.set(any(), any()) } answers {
+                blackboard.set(
+                    firstArg(),
+                    secondArg(),
+                )
+            }
+            every { mockAgentProcess.finalResult() } returns Person("John Doe")
 
             val pc = ProcessContext(
-                blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe")),
+
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
@@ -305,9 +334,22 @@ class AgentMetadataReaderTest {
             val blackboard = InMemoryBlackboard()
             blackboard += UserInput("John Doe")
             blackboard += ("task" to Task("task"))
+            every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                blackboard.getValue(
+                    firstArg(),
+                    secondArg(),
+                    thirdArg(),
+                )
+            }
+            every { mockAgentProcess.set(any(), any()) } answers {
+                blackboard.set(
+                    firstArg(),
+                    secondArg(),
+                )
+            }
+            every { mockAgentProcess.finalResult() } returns Person("John Doe")
 
             val pc = ProcessContext(
-                blackboard = blackboard,
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
@@ -416,9 +458,23 @@ class AgentMetadataReaderTest {
                 val mockPlatformServices = mockk<PlatformServices>()
                 every { mockPlatformServices.llmTransformer } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
+                val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+                every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                    blackboard.getValue(
+                        firstArg(),
+                        secondArg(),
+                        thirdArg(),
+                    )
+                }
+                every { mockAgentProcess.set(any(), any()) } answers {
+                    blackboard.set(
+                        firstArg(),
+                        secondArg(),
+                    )
+                }
+                every { mockAgentProcess.finalResult() } returns Person("John Doe")
 
                 val pc = ProcessContext(
-                    blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe")),
                     platformServices = mockPlatformServices,
                     agentProcess = mockAgentProcess,
                 )
@@ -458,9 +514,23 @@ class AgentMetadataReaderTest {
                 val mockPlatformServices = mockk<PlatformServices>()
                 every { mockPlatformServices.llmTransformer } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
+                val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+                every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                    blackboard.getValue(
+                        firstArg(),
+                        secondArg(),
+                        thirdArg(),
+                    )
+                }
+                every { mockAgentProcess.set(any(), any()) } answers {
+                    blackboard.set(
+                        firstArg(),
+                        secondArg(),
+                    )
+                }
+                every { mockAgentProcess.finalResult() } returns Person("John Doe")
 
                 val pc = ProcessContext(
-                    blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe")),
                     platformServices = mockPlatformServices,
                     agentProcess = mockAgentProcess,
                 )
@@ -501,15 +571,30 @@ class AgentMetadataReaderTest {
                 val mockPlatformServices = mockk<PlatformServices>()
                 every { mockPlatformServices.llmTransformer } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
+                val blackboard = InMemoryBlackboard().bind("it", Person("John Doe"))
+                every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                    blackboard.getValue(
+                        firstArg(),
+                        secondArg(),
+                        thirdArg(),
+                    )
+                }
+                every { mockAgentProcess.set(any(), any()) } answers {
+                    blackboard.set(
+                        firstArg(),
+                        secondArg(),
+                    )
+                }
+                every { mockAgentProcess.finalResult() } returns UserInput("John Doe")
 
                 val pc = ProcessContext(
-                    blackboard = InMemoryBlackboard().bind("it", Person("John Doe")),
                     platformServices = mockPlatformServices,
                     agentProcess = mockAgentProcess,
                 )
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.COMPLETED, result.status)
-                assertEquals(UserInput("John Doe"), pc.blackboard.finalResult())
+                assertTrue(pc.blackboard.finalResult() is UserInput)
+                assertEquals("John Doe", (pc.blackboard.finalResult() as UserInput).content)
                 assertEquals(1, toolCallbacks.captured.size)
                 assertEquals("reverse", toolCallbacks.captured.single().toolDefinition.name())
                 assertEquals(LlmOptions.DEFAULT_MODEL, llmo.captured.model)

@@ -40,6 +40,7 @@ open class LoggingAgenticEventListener(
     private val processCompletionMessage: String = "Process {} completed in {}",
     private val processFailureMessage: String = "Process {} failed",
     private val objectAddedMessage: String = "Object added: {} to process {}",
+    private val objectBoundMessage: String = "Object bound: {} to {} in process {}",
     private val functionCallRequestEventMessage: String = "Process {} calling function {} with payload {}",
     private val functionCallResponseEventMessage: String = "Process {} function {} response {} in {}ms with payload {}",
     private val transformRequestEventMessage: String = "Process {} requesting LLM transform from {} -> {} using {}",
@@ -165,6 +166,10 @@ open class LoggingAgenticEventListener(
 
             is ObjectAddedEvent -> {
                 logger.info(objectAddedMessage, event.value, event.processId)
+            }
+
+            is ObjectBoundEvent -> {
+                logger.info(objectBoundMessage, event.name, event.value, event.processId)
             }
 
             is LlmTransformRequestEvent<*, *> -> {

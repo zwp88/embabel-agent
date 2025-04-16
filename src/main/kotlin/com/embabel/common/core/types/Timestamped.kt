@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.event
+package com.embabel.common.core.types
 
-import com.embabel.common.core.types.Timestamped
+import java.time.Instant
 
-/**
- * Root of event hierarchy
- * Any event relating to an agent platform
- */
-sealed interface AgenticEvent : Timestamped
+interface Timestamped {
+
+    val timestamp: Instant
+}

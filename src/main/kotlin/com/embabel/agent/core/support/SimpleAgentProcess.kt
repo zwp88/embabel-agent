@@ -32,14 +32,13 @@ internal class SimpleAgentProcess(
     @get:JsonIgnore
     val platformServices: PlatformServices,
     override val startedDate: Instant = Instant.now(),
-) : AgentProcess {
+) : AgentProcess, Blackboard by blackboard {
 
     private val logger = LoggerFactory.getLogger(SimpleAgentProcess::class.java)
 
     private var goalName: String? = null
 
     override val processContext = ProcessContext(
-        blackboard = blackboard,
         platformServices = platformServices,
         agentProcess = this,
         processOptions = processOptions,
@@ -51,12 +50,38 @@ internal class SimpleAgentProcess(
 
     override fun bind(name: String, value: Any): Bindable {
         blackboard[name] = value
+        processContext.platformServices.eventListener.onProcessEvent(
+            ObjectBoundEvent(
+                agentProcess = this,
+                name = name,
+                value = value,
+            )
+        )
         return this
     }
 
-    override fun addEntry(value: Any): Bindable {
-        blackboard.addEntry(value)
+    override fun plusAssign(pair: Pair<String, Any>) {
+        bind(pair.first, pair.second)
+    }
+
+    // Override set to bind so that delegation works
+    override operator fun set(key: String, value: Any) {
+        bind(key, value)
+    }
+
+    override fun addObject(value: Any): Bindable {
+        blackboard.addObject(value)
+        processContext.platformServices.eventListener.onProcessEvent(
+            ObjectAddedEvent(
+                agentProcess = this,
+                value = value,
+            )
+        )
         return this
+    }
+
+    override operator fun plusAssign(value: Any) {
+        addObject(value)
     }
 
     override fun run(): AgentProcessStatus {

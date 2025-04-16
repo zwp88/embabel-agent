@@ -15,15 +15,18 @@
  */
 package com.embabel.agent.domain.special
 
-import com.embabel.agent.api.dsl.Transformer
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.dsl.Transformer
+import com.embabel.common.core.types.Timestamped
+import java.time.Instant
 
 /**
  * Special class that represents a single user input
  */
 data class UserInput(
     val content: String,
-)
+    override val timestamp: Instant = Instant.now(),
+) : Timestamped
 
 /**
  * Interface implemented by objects that can be extracted from text using an LLM.

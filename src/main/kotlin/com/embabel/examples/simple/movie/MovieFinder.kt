@@ -66,7 +66,7 @@ data class DecoratedMovieBuff(
 )
 
 data class SuggestedMovieTitles(
-    val movies: List<String>,
+    val titles: List<String>,
 )
 
 /**
@@ -80,6 +80,9 @@ data class StreamableMovies(
     val movies: List<StreamableMovie>,
 )
 
+/**
+ * A movie that's available to our movie buff
+ */
 data class StreamableMovie(
     val movie: MovieResponse,
     val availableStreamingOptions: List<StreamingOption>,
@@ -128,26 +131,6 @@ class MovieFinder(
         return buff
     }
 
-    @Action(toolGroups = [ToolGroup.WEB])
-    fun findNewsStories(
-        dmb: DecoratedMovieBuff,
-        userInput: UserInput
-    ): RelevantNewsStories =
-        using(LlmOptions("gpt-4o")).createObject(
-            """
-            ${dmb.movieBuff.name} is a movie buff.
-            Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
-            Their movie taste profile is ${dmb.tasteProfile}
-            About them: "${dmb.movieBuff.about}"
-
-            Consider the following specific request: '${userInput.content}'
-
-            Given this, use web tools and generate search queries
-            to find 5 relevant news stories that might inspire
-            movie choice for them tonight.
-        """.trimIndent()
-        )
-
     @Action
     fun analyzeTasteProfile(
         movieBuff: MovieBuff
@@ -170,6 +153,26 @@ class MovieFinder(
             tasteProfile = tasteProfile,
         )
     }
+
+    @Action(toolGroups = [ToolGroup.WEB])
+    fun findNewsStories(
+        dmb: DecoratedMovieBuff,
+        userInput: UserInput
+    ): RelevantNewsStories =
+        using(LlmOptions("gpt-4o")) createObject
+                """
+            ${dmb.movieBuff.name} is a movie buff.
+            Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
+            Their movie taste profile is ${dmb.tasteProfile}
+            About them: "${dmb.movieBuff.about}"
+
+            Consider the following specific request: '${userInput.content}'
+
+            Given this, use web tools and generate search queries
+            to find 5 relevant news stories that might inspire
+            movie choice for them tonight.
+        """.trimIndent()
+
 
     @Action(
         post = ["haveEnoughMovies"],
@@ -216,13 +219,15 @@ class MovieFinder(
                     }
             }
             Don't include these movies we've already suggested:
-            ${allStreamableMovies(payload.processContext).joinToString("\n") { it.movie.Title }}
+            ${excludedTitles(payload.processContext).joinToString("\n")}
 
             Consider also the following news stories for topical inspiration:
             ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
             $randomPart
             """
         )
+        // Be sure to bind the suggested movie titles to the blackboard
+        payload += suggestedMovieTitles
         val suggestedMovies = lookUpMovies(suggestedMovieTitles)
         return streamableMovies(
             movieBuff = dmb.movieBuff,
@@ -233,9 +238,9 @@ class MovieFinder(
     private fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
         logger.info(
             "Resolving suggestedMovieTitles {}",
-            suggestedMovieTitles.movies.joinToString(", ")
+            suggestedMovieTitles.titles.joinToString(", ")
         )
-        val movies = suggestedMovieTitles.movies.mapNotNull { title ->
+        val movies = suggestedMovieTitles.titles.mapNotNull { title ->
             try {
                 omdbClient.getMovieByTitle(title)
             } catch (e: Exception) {
@@ -265,14 +270,25 @@ class MovieFinder(
                     val availableToUser = allStreamingOptions.filter {
                         it.service.name.lowercase() in movieBuff.streamingServices.map { it.lowercase() }
                     }
-                    if (allStreamingOptions.isNotEmpty()) {
+                    logger.info(
+                        "Movie {} available in [{}] on {}",
+                        movie.Title,
+                        movieBuff.countryCode,
+                        allStreamingOptions.map { it.service.name }.sorted().joinToString(", ")
+                    )
+                    if (availableToUser.isNotEmpty()) {
                         StreamableMovie(
                             movie = movie,
                             allStreamingOptions = allStreamingOptions,
-                            availableStreamingOptions = availableToUser
+                            availableStreamingOptions = availableToUser,
                         )
                     } else {
-                        logger.info("Movie {} not available on any streaming service: filtering it out", movie.Title)
+                        logger.info(
+                            "Movie {} not available to {} on any of their streaming services: {} - filtering it out",
+                            movie.Title,
+                            movieBuff.name,
+                            movieBuff.streamingServices.sorted().joinToString(", ")
+                        )
                         null
                     }
                 } catch (e: Exception) {
@@ -284,7 +300,7 @@ class MovieFinder(
 
     @Condition
     fun haveEnoughMovies(processContext: ProcessContext): Boolean =
-        allStreamableMovies(processContext).size > 4
+        allStreamableMovies(processContext).size >= config.suggestionCount
 
     private fun allStreamableMovies(
         processContext: ProcessContext,
@@ -300,14 +316,29 @@ class MovieFinder(
         return streamableMovies
     }
 
+    /**
+     * Movies we've already accepted or even suggested
+     */
+    private fun excludedTitles(
+        processContext: ProcessContext,
+    ): List<String> {
+        val excludes = (processContext.blackboard
+            .all<SuggestedMovieTitles>()
+            .flatMap { it.titles } + allStreamableMovies(processContext).map { it.movie.Title })
+            .distinct()
+            .sorted()
+        logger.info("Excludes: {}", excludes.joinToString(", "))
+        return excludes
+    }
+
     @Action(pre = ["haveEnoughMovies"])
     @AchievesGoal(description = "Recommend movies for a movie buff using what we know about them")
     fun writeUpSuggestions(
         dmb: DecoratedMovieBuff,
         streamableMovies: StreamableMovies,
-    ): SuggestionWriteup =
-        using(LlmOptions("gpt-4o")).createObject(
-            """
+    ): SuggestionWriteup {
+        val text = using(LlmOptions("gpt-4o-mini")) generateText
+                """
             Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount}
             for ${dmb.movieBuff.name}
             based on the following information:
@@ -317,8 +348,8 @@ class MovieFinder(
 
             The movie recommendations are:
             ${
-                streamableMovies.movies.joinToString("\n\n") {
-                    """
+                    streamableMovies.movies.joinToString("\n\n") {
+                        """
                     ${it.movie.Title} (${it.movie.Year}): ${it.movie.imdbID}
                     Director: ${it.movie.Director}
                     Actors: ${it.movie.Actors}
@@ -327,11 +358,14 @@ class MovieFinder(
                     Also available on ${it.unavailableStreamingOptions.joinToString(", ") { it.service.name }}
                     but ${dmb.movieBuff.name} doesn't have a subscription
                     """.trimIndent()
+                    }
                 }
-            }
             Focus on streamable movies.
 
             Format in Markdown and include links to the movies on IMDB and the streaming services.
             """
+        return SuggestionWriteup(
+            text = text,
         )
+    }
 }

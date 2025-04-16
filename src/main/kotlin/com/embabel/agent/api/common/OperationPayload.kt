@@ -83,7 +83,7 @@ data class TransformationPayload<I, O>(
     override val action: Action?,
     val inputClass: Class<I>,
     val outputClass: Class<O>,
-) : InputPayload<I>, Blackboard by processContext.blackboard,
+) : InputPayload<I>, Blackboard by processContext.agentProcess,
     AgenticEventListener by processContext.platformServices.eventListener {
 
     /**
