@@ -40,8 +40,8 @@ open class LoggingAgenticEventListener(
     private val processCompletionMessage: String = "Process {} completed in {}",
     private val processFailureMessage: String = "Process {} failed",
     private val objectAddedMessage: String = "Object added: {} to process {}",
-    private val functionCallRequestEventMessage: String = "Process {} calling function {} with arguments {}",
-    private val functionCallResponseEventMessage: String = "Process {} response in {}ms {} from function {} with arguments {}",
+    private val functionCallRequestEventMessage: String = "Process {} calling function {} with payload {}",
+    private val functionCallResponseEventMessage: String = "Process {} function {} response {} in {}ms with payload {}",
     private val transformRequestEventMessage: String = "Process {} requesting LLM transform from {} -> {} using {}",
     private val transformResponseEventMessage: () -> String = { "Process {} received LLM response of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "Process {} executing action {}",
@@ -124,7 +124,7 @@ open class LoggingAgenticEventListener(
                     functionCallRequestEventMessage,
                     event.processId,
                     event.function,
-                    event.arguments,
+                    event.toolInput,
                 )
             }
 
@@ -132,10 +132,10 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     functionCallResponseEventMessage,
                     event.processId,
+                    event.function,
                     event.response,
                     event.runningTime.toMillis(),
-                    event.function,
-                    event.arguments,
+                    event.toolInput,
                 )
             }
 

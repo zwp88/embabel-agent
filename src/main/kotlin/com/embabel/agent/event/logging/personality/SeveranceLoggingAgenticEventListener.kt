@@ -22,16 +22,34 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
-val Files = listOf(
+val MdrFiles = listOf(
     "Allentown", "Dranesville", "Wellington",
     "Tumwater", "Lucknow", "Sopchoppy", "Astoria",
-    "Loveland", "St Pierre", "Zurich",
+    "Loveland", "St Pierre", "Zurich", "Cairns",
 )
 
-val TransformSuccessResponses = Files.map {
+val TransformSuccessResponses = MdrFiles.map {
     "$it 100% Complete"
 } +
         kier("I knew you could do it. Even in your darkest moments I could see you arriving here")
+
+val CompletionMessages = listOf(
+    """
+        🧔🏼‍♂️ PRAISE KIER: Cold Harbor 100% complete.
+        In refining your macrodata file, you have brought glory to this company, and to me, Kier Eagan.
+    """.trimIndent(),
+    "May I introduce choreography and merriment",
+    "The Founder wished to witness the historic completion of your 25th file.",
+    "Goodly splendors await upon your victory. Love, Mr. Milchick",
+    "It's truly special to host a man so illustrious, so sapient, so magnanimous...",
+    "See you at the Equator",
+    "The barrier is holding. She feels nothing. It's beautiful.",
+    "Mammalians Nurturable brings an offering.",
+    """
+        In completing your 25th Macrodata file, you have drawn my grand agendum nearer to fulfillment,
+        thus making you one of the most important people in history.
+    """.trimIndent()
+)
 
 /**
  * Thanks to Kier
@@ -41,7 +59,7 @@ val TransformSuccessResponses = Files.map {
 class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     logger = LoggerFactory.getLogger("MDR"),
     welcomeMessage = """
-        ----------------------------------------------------------------------
+        
         Kier, chosen one, Kier.
         Kier, brilliant one, Kier.
         Brings the bounty to the plain through the torment, through the rains,
@@ -72,16 +90,16 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     agentProcessReadyToPlanEventMessage = "WIT: Process {} ready to plan from {}",
     agentProcessPlanFormulatedEventMessage = "WILES: Process {} formulated plan <{}> from {}",
     processCompletionMessage = """
-        🧔🏼‍♂️ PRAISE KIER: Cold Harbor 100% complete.
         Process {} completed in {}
-        In refining your macrodata file, you have brought glory to this company, and to me, Kier Eagan.
+        ${CompletionMessages.random()}
 
-        The Board has concluded the call.
+        ${"The Board has concluded the call.".color(LumonColors.Membrane)}
+        
         """.trimIndent(),
     processFailureMessage = "WOE: Process {} failed",
     objectAddedMessage = "PROBITY: Object added: {} to process {}",
-    functionCallRequestEventMessage = "VERVE: Process {} calling function {} with arguments {}",
-    functionCallResponseEventMessage = "VISION: Process {} response in {}ms {} from function {} with arguments {}",
+    functionCallRequestEventMessage = "VERVE: Process {} calling function {} with payload {}",
+    functionCallResponseEventMessage = "VISION: Process {} function {} response {} in {}ms with payload {}",
     transformRequestEventMessage = "🖥️ MACRODATA REFINEMENT: Process {} requesting LLM transform from {} -> {} using {}",
     transformResponseEventMessage = {
         """
@@ -90,5 +108,5 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         """.trimIndent()
     },
     actionExecutionStartMessage = "VERVE: Process {} executing action {}",
-    actionExecutionResultMessage = "CHEER: Process {} executed action {} in {}",
+    actionExecutionResultMessage = "CHEER: Process {} completed action {} in {}",
 )

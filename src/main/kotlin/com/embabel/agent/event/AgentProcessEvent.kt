@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.event
 
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.AgentProcessStatus
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.common.core.types.Timed
 import com.embabel.plan.Plan
 import com.embabel.plan.goap.WorldState
@@ -77,7 +77,7 @@ class ActionExecutionResultEvent(
 class AgentProcessFunctionCallRequestEvent(
     agentProcess: AgentProcess,
     val function: String,
-    val arguments: Map<String, Any>,
+    val toolInput: String,
     val llmOptions: LlmOptions,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
@@ -85,7 +85,7 @@ class AgentProcessFunctionCallRequestEvent(
         return AgentProcessFunctionCallResponseEvent(
             agentProcess = agentProcess,
             function = function,
-            arguments = arguments,
+            toolInput = toolInput,
             llmOptions = llmOptions,
             response = response,
             runningTime = runningTime
@@ -96,7 +96,7 @@ class AgentProcessFunctionCallRequestEvent(
 class AgentProcessFunctionCallResponseEvent internal constructor(
     agentProcess: AgentProcess,
     val function: String,
-    val arguments: Map<String, Any>,
+    val toolInput: String,
     val llmOptions: LlmOptions,
     val response: String,
     override val runningTime: Duration,
