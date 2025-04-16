@@ -46,7 +46,8 @@ fun populateMovieBuffRepository(
                 has a career as a software engineer, author and tech entrepreneur.
                 He is widely traveled and has lived in California and the UK
                 before returning to Sydney.
-            """.trimIndent()
+            """.trimIndent(),
+            streamingServices = listOf("Netflix", "Stan", "Disney+")
         )
     )
 

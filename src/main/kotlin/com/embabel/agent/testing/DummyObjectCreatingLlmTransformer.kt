@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.testing
 
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.LlmTransformer
-import com.embabel.agent.api.common.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.ParameterizedType
@@ -36,6 +36,16 @@ class DummyObjectCreatingLlmTransformer(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     private val random = Random()
+
+    override fun generate(
+        prompt: String,
+        llmOptions: LlmOptions,
+        toolCallbacks: List<ToolCallback>,
+        agentProcess: AgentProcess,
+        action: Action?
+    ): String {
+        return stringsToUse.random()
+    }
 
     override fun <I, O> doTransform(
         input: I,

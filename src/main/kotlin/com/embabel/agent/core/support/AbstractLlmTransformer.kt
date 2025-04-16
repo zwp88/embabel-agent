@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.LlmTransformer
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.event.LlmTransformRequestEvent
 import com.embabel.agent.spi.support.forProcess
 import com.embabel.common.util.time
@@ -37,6 +37,22 @@ import java.time.Duration
 abstract class AbstractLlmTransformer : LlmTransformer {
 
     protected val logger: Logger = LoggerFactory.getLogger(javaClass)
+
+    override fun generate(
+        prompt: String,
+        llmOptions: LlmOptions,
+        toolCallbacks: List<ToolCallback>,
+        agentProcess: AgentProcess,
+        action: Action?
+    ): String = transform(
+        input = Unit,
+        prompt = { prompt },
+        llmOptions = llmOptions,
+        toolCallbacks = toolCallbacks,
+        outputClass = String::class.java,
+        agentProcess = agentProcess,
+        action = action,
+    )
 
     final override fun <I, O> transform(
         input: I,
@@ -73,36 +89,6 @@ abstract class AbstractLlmTransformer : LlmTransformer {
             ),
         )
         return response
-    }
-
-    private fun <I, O> setup(
-        agentProcess: AgentProcess,
-        toolCallbacks: List<ToolCallback>,
-        action: Action?,
-        prompt: (I) -> String,
-        input: I,
-        outputClass: Class<O>,
-        llmOptions: LlmOptions
-    ): Triple<List<ToolCallback>, String, LlmTransformRequestEvent<I, O>> {
-        val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
-        val allToolCallbacks =
-            (toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
-                toolGroupResolver,
-            ) + (action?.resolveToolCallbacks(toolGroupResolver)
-                ?: emptySet())).distinctBy { it.toolDefinition.name() }
-        val literalPrompt = prompt(input)
-        val transformRequestEvent = LlmTransformRequestEvent(
-            agentProcess = agentProcess,
-            input = input,
-            outputClass = outputClass,
-            llmOptions = llmOptions,
-            prompt = literalPrompt,
-            tools = allToolCallbacks,
-        )
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
-            transformRequestEvent
-        )
-        return Triple(allToolCallbacks, literalPrompt, transformRequestEvent)
     }
 
     final override fun <I, O> transformIfPossible(
@@ -149,4 +135,34 @@ abstract class AbstractLlmTransformer : LlmTransformer {
         allToolCallbacks: List<ToolCallback> = emptyList(),
         outputClass: Class<O>,
     ): Result<O>
+
+    private fun <I, O> setup(
+        agentProcess: AgentProcess,
+        toolCallbacks: List<ToolCallback>,
+        action: Action?,
+        prompt: (I) -> String,
+        input: I,
+        outputClass: Class<O>,
+        llmOptions: LlmOptions
+    ): Triple<List<ToolCallback>, String, LlmTransformRequestEvent<I, O>> {
+        val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
+        val allToolCallbacks =
+            (toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
+                toolGroupResolver,
+            ) + (action?.resolveToolCallbacks(toolGroupResolver)
+                ?: emptySet())).distinctBy { it.toolDefinition.name() }
+        val literalPrompt = prompt(input)
+        val transformRequestEvent = LlmTransformRequestEvent(
+            agentProcess = agentProcess,
+            input = input,
+            outputClass = outputClass,
+            llmOptions = llmOptions,
+            prompt = literalPrompt,
+            tools = allToolCallbacks,
+        )
+        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
+            transformRequestEvent
+        )
+        return Triple(allToolCallbacks, literalPrompt, transformRequestEvent)
+    }
 }

@@ -22,6 +22,17 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
+val Files = listOf(
+    "Allentown", "Dranesville", "Wellington",
+    "Tumwater", "Lucknow", "Sopchoppy", "Astoria",
+    "Loveland", "St Pierre", "Zurich",
+)
+
+val TransformSuccessResponses = Files.map {
+    "$it 100% Complete"
+} +
+        kier("I knew you could do it. Even in your darkest moments I could see you arriving here")
+
 /**
  * Thanks to Kier
  */
@@ -72,10 +83,12 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     functionCallRequestEventMessage = "VERVE: Process {} calling function {} with arguments {}",
     functionCallResponseEventMessage = "VISION: Process {} response in {}ms {} from function {} with arguments {}",
     transformRequestEventMessage = "🖥️ MACRODATA REFINEMENT: Process {} requesting LLM transform from {} -> {} using {}",
-    transformResponseEventMessage = """
+    transformResponseEventMessage = {
+        """
         Process {} received LLM response of type {} from {} in {} seconds
-        ${kier("I knew you could do it, ${System.getProperty("user.name")}. Even in your darkest moments I could see you arriving here")}
-        """.trimIndent(),
+        ${TransformSuccessResponses.random()}
+        """.trimIndent()
+    },
     actionExecutionStartMessage = "VERVE: Process {} executing action {}",
     actionExecutionResultMessage = "CHEER: Process {} executed action {} in {}",
 )

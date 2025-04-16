@@ -23,6 +23,9 @@ package com.embabel.agent.api.common
  */
 interface PromptRunner {
 
+    infix fun generateText(prompt: String): String =
+        createObject(prompt, String::class.java)
+
     /**
      * Create an object of the given type using the given prompt and LLM options from context
      * (process context or implementing class).

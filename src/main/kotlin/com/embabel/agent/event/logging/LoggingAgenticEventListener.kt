@@ -43,7 +43,7 @@ open class LoggingAgenticEventListener(
     private val functionCallRequestEventMessage: String = "Process {} calling function {} with arguments {}",
     private val functionCallResponseEventMessage: String = "Process {} response in {}ms {} from function {} with arguments {}",
     private val transformRequestEventMessage: String = "Process {} requesting LLM transform from {} -> {} using {}",
-    private val transformResponseEventMessage: String = "Process {} received LLM response of type {} from {} in {} seconds",
+    private val transformResponseEventMessage: () -> String = { "Process {} received LLM response of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "Process {} executing action {}",
     private val actionExecutionResultMessage: String = "Process {} executed action {} in {}",
     val logger: Logger = LoggerFactory.getLogger("Events"),
@@ -184,7 +184,7 @@ open class LoggingAgenticEventListener(
             }
 
             is LlmTransformResponseEvent<*, *> -> {
-                var message = transformResponseEventMessage
+                var message = transformResponseEventMessage()
                 if (event.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
                     message += "\nResponse: ${
                         ("" + event.response).color(

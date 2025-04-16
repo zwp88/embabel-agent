@@ -35,7 +35,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.CrudRepository
 
-
 typealias OneThroughTen = Int
 
 data class MovieBuff(
@@ -44,7 +43,7 @@ data class MovieBuff(
     val countryCode: String,
     val hobbies: List<String>,
     val about: String,
-    val streamingServices: List<String> = listOf("Netflix", "Stan", "Disney+")
+    val streamingServices: List<String>,
 ) : Person {
 
     /**
@@ -59,11 +58,6 @@ data class MovieBuff(
 data class MovieRating(
     val rating: OneThroughTen,
     val title: String,
-)
-
-
-data class TasteProfile(
-    val tasteProfile: String,
 )
 
 data class DecoratedMovieBuff(
@@ -157,31 +151,25 @@ class MovieFinder(
     @Action
     fun analyzeTasteProfile(
         movieBuff: MovieBuff
-    ): TasteProfile =
-        using(LlmOptions("gpt-4o")).createObject(
-            """
+    ): DecoratedMovieBuff {
+        val tasteProfile = using(LlmOptions("gpt-4o-mini")) generateText
+                """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
             ${
-                movieBuff.randomRatings(50).joinToString("\n") {
-                    "${it.title}: ${it.rating}"
+                    movieBuff.randomRatings(50).joinToString("\n") {
+                        "${it.title}: ${it.rating}"
+                    }
                 }
-            }
 
             Return a summary of their taste profile as you understand it,
             in ${config.tasteProfileWordCount} words or less. Cover what they like and don't like.
             """
-        )
-
-    @Action
-    fun decorateMovieBuff(
-        movieBuff: MovieBuff,
-        tasteProfile: TasteProfile,
-    ): DecoratedMovieBuff =
-        DecoratedMovieBuff(
+        return DecoratedMovieBuff(
             movieBuff = movieBuff,
-            tasteProfile = tasteProfile.tasteProfile
+            tasteProfile = tasteProfile,
         )
+    }
 
     @Action(
         post = ["haveEnoughMovies"],
@@ -243,6 +231,10 @@ class MovieFinder(
     }
 
     private fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
+        logger.info(
+            "Resolving suggestedMovieTitles {}",
+            suggestedMovieTitles.movies.joinToString(", ")
+        )
         val movies = suggestedMovieTitles.movies.mapNotNull { title ->
             try {
                 omdbClient.getMovieByTitle(title)
@@ -280,6 +272,7 @@ class MovieFinder(
                             availableStreamingOptions = availableToUser
                         )
                     } else {
+                        logger.info("Movie {} not available on any streaming service: filtering it out", movie.Title)
                         null
                     }
                 } catch (e: Exception) {
@@ -289,23 +282,22 @@ class MovieFinder(
         return StreamableMovies(streamables)
     }
 
-    // TODO simplify signature
-    // Should have same signature as actions
     @Condition
-    fun haveEnoughMovies(processContext: ProcessContext): Boolean {
-        val count = allStreamableMovies(processContext).size
-        println("Condition count=$count")
-        return count > 4
-    }
+    fun haveEnoughMovies(processContext: ProcessContext): Boolean =
+        allStreamableMovies(processContext).size > 4
 
     private fun allStreamableMovies(
         processContext: ProcessContext,
     ): List<StreamableMovie> {
-        println("StreamableMovies count=${processContext.blackboard.all<StreamableMovies>().size}")
-        return processContext.blackboard
+        val streamableMovies = processContext.blackboard
             .all<StreamableMovies>()
             .flatMap { it.movies }
             .distinctBy { it.movie.imdbID }
+        logger.info(
+            "Found {} streamable movies so far",
+            streamableMovies.size
+        )
+        return streamableMovies
     }
 
     @Action(pre = ["haveEnoughMovies"])

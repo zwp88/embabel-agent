@@ -29,6 +29,17 @@ import org.springframework.ai.tool.ToolCallback
 interface LlmTransformer {
 
     /**
+     * Generate text
+     */
+    fun generate(
+        prompt: String,
+        llmOptions: LlmOptions = LlmOptions(),
+        toolCallbacks: List<ToolCallback> = emptyList(),
+        agentProcess: AgentProcess,
+        action: Action?,
+    ): String
+
+    /**
      * Perform a transformation from the given input object
      * to the output object.
      * @param input Input object

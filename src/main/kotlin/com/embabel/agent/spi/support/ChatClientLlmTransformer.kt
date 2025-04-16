@@ -61,12 +61,15 @@ class ChatClientLlmTransformer(
 
         val springAiPrompt = Prompt(literalPrompt)
 
-        val output = chatClient
+        val callResponse = chatClient
             .prompt(springAiPrompt)
             .tools(allToolCallbacks)
             .call()
-            .entity<O>(outputClass)!!
-        return output
+        if (outputClass == String::class.java) {
+            return callResponse.content() as O
+        } else {
+            return callResponse.entity<O>(outputClass)!!
+        }
     }
 
     override fun <I, O> doTransformIfPossible(
