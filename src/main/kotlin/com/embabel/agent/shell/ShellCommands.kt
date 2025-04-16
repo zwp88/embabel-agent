@@ -102,13 +102,9 @@ class ShellCommands(
                 postfix = "\n",
             )
     }
-
-    /**
-     * Example
-     * execute "lynda is a scorpio. find news for her" -p -r
-     */
+    
     @ShellMethod(
-        "Execute a task",
+        "Execute a task. Put the task in double quotes. For example:\n\tx \"Lynda is a scorpio. Find news for her\" -p",
         key = ["execute", "x"],
     )
     fun execute(
