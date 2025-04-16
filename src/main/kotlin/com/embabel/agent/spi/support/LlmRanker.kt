@@ -18,7 +18,7 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.LlmTransformer
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.Ranking

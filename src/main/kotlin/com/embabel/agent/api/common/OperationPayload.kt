@@ -18,7 +18,6 @@ package com.embabel.agent.api.common
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.primitive.LlmOptions
 import com.embabel.agent.event.AgenticEventListener
 import org.springframework.ai.tool.ToolCallback
 

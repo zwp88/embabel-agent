@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.core.primitive
+package com.embabel.agent.api.common
 
 import com.embabel.common.core.types.HasInfoString
 
@@ -28,6 +28,9 @@ interface LlmOptions : HasInfoString {
 
     companion object {
 
+        /**
+         * Create an LlmOptions instance we can build.
+         */
         operator fun invoke(
             model: String = DEFAULT_MODEL,
             temperature: Double = DEFAULT_TEMPERATURE,

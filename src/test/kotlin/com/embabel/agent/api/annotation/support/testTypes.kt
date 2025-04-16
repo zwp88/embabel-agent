@@ -21,7 +21,7 @@ import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.domain.special.UserInput
 import org.springframework.ai.tool.annotation.Tool
 

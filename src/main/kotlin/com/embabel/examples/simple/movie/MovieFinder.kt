@@ -25,7 +25,7 @@ import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories

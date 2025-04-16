@@ -15,8 +15,6 @@
  */
 package com.embabel.agent.api.common
 
-import com.embabel.agent.core.primitive.LlmOptions
-
 
 /**
  * Interface for executing prompts

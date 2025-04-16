@@ -18,7 +18,7 @@ package com.embabel.agent.testing
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.LlmTransformer
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.ParameterizedType

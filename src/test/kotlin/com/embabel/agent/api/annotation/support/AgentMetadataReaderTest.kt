@@ -17,7 +17,7 @@ package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.core.*
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull

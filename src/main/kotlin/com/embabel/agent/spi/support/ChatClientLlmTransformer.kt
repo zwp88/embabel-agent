@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.support.AbstractLlmTransformer
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider

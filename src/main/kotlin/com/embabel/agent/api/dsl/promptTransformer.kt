@@ -17,7 +17,7 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.core.*
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
 

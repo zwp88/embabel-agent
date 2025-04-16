@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.agent.core.primitive.LlmOptions
+import com.embabel.agent.api.common.LlmOptions
 import org.springframework.ai.tool.ToolCallback
 
 /**

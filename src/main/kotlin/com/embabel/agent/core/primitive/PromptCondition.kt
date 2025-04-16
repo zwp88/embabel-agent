@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core.primitive
 
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ZeroToOne
