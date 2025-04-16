@@ -57,19 +57,15 @@ class InMemoryBlackboard : Blackboard {
     }
 
     override fun expressionEvaluationModel(): Map<String, Any> {
-        return _map.mapValues { entry ->
-            when (val v = entry.value) {
-                // TODO used to have entity data branch
-
-                else -> entry.value
-            }
-        }
+        return _map
     }
 
     override fun infoString(verbose: Boolean?): String {
-        val entriesString = if (verbose == true) entries else entries.map { "${it::class.simpleName}" }
+        val joiner = if (verbose == true) "\n" else ", "
+        val entriesString =
+            if (verbose == true) "\n" + entries.joinToString(joiner) else entries.map { "${it::class.simpleName}" }
         val mapString =
-            if (verbose == true) _map else _map.entries.joinToString(", ") { "${it.key}=${it.value::class.simpleName}" }
-        return "${javaClass.simpleName}(map=$mapString, entries=$entriesString)"
+            if (verbose == true) "\n" + _map.entries.joinToString(joiner) else _map.entries.joinToString(joiner) { "${it.key}=${it.value::class.simpleName}" }
+        return "${javaClass.simpleName}(map:$mapString, ${joiner}entries:$entriesString)"
     }
 }

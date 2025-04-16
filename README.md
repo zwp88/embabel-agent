@@ -82,7 +82,7 @@ Goals, actions and plans are independent of GOAP. Future planning options includ
 
 The framework executes via `AgentPlatform` implementation.
 
-An agent platform supports three modes of execution:
+An agent platform supports the following modes of execution:
 
 - **Focused**, where user code requests particular functionality: User code calls a method to run a particular agent,
   passing in input.
@@ -103,6 +103,12 @@ Even in open mode, the platform will only perform individual steps
 that have been specified. (Of course, steps may themselves be LLM
 transforms, in which case the prompts are controlled by user code but the
 results are still non-deterministic.)
+
+A further mode is planned in future:
+
+- **Evolving** mode: Where the platform can work with multiple goals in the same process and modify a running process to
+  add further goals and agents.
+  For example, an action can realize that it has become important to achieve additional goals.
 
 ## Show Me The Code
 

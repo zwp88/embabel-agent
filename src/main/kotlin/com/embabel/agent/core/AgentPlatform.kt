@@ -64,7 +64,7 @@ sealed interface DynamicExecutionResult {
     data class Success(
         override val basis: Any,
         val output: Any,
-        val processStatus: AgentProcessStatus,
+        val agentProcessStatus: AgentProcessStatus,
     ) : DynamicExecutionResult
 
     data class NoGoalFound(
@@ -250,7 +250,7 @@ interface AgentPlatform : AgentScope {
         return DynamicExecutionResult.Success(
             basis = userInput,
             output = processStatus.finalResult()!!,
-            processStatus = processStatus,
+            agentProcessStatus = processStatus,
         )
     }
 
@@ -328,7 +328,7 @@ interface AgentPlatform : AgentScope {
         return DynamicExecutionResult.Success(
             basis = userInput,
             output = processStatus.finalResult()!!,
-            processStatus = processStatus,
+            agentProcessStatus = processStatus,
         )
     }
 }

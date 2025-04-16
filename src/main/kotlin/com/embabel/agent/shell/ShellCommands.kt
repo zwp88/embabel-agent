@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.shell
 
-import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.DynamicExecutionResult
-import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.core.Verbosity
+import com.embabel.agent.core.*
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.LumonColors
 import com.embabel.common.util.color
@@ -34,6 +31,9 @@ import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
 
 
+/**
+ * Vanilla prompt provider
+ */
 class DefaultPromptProvider : PromptProvider {
     override fun getPrompt() = AttributedString(
         "embabel> ",
@@ -47,6 +47,8 @@ class ShellCommands(
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
+
+    private val agentProcessStatuses = mutableListOf<AgentProcessStatus>()
 
     @ShellMethod("List agents")
     fun agents(): String {
@@ -71,6 +73,18 @@ class ShellCommands(
         return output
     }
 
+    @ShellMethod(
+        "Show last blackboard: The final state of a previous operation",
+        key = ["blackboard", "bb"],
+    )
+    fun blackboard(): String {
+        if (agentProcessStatuses.isEmpty()) {
+            return "No blackboard available, as no agent process has run. Please run a command first."
+        }
+        val ap = agentProcessStatuses.last().agentProcess
+        return ap.processContext.blackboard.infoString(verbose = true)
+    }
+
     @ShellMethod("List available tool groups")
     fun tools(): String {
         return agentPlatform.toolGroupResolver.availableToolGroups()
@@ -93,7 +107,10 @@ class ShellCommands(
      * Example
      * execute "lynda is a scorpio. find news for her" -p -r
      */
-    @ShellMethod("Execute a task")
+    @ShellMethod(
+        "Execute a task",
+        key = ["execute", "x"],
+    )
     fun execute(
         @ShellOption(help = "what the agent system should do") intent: String,
         @ShellOption(
@@ -145,8 +162,11 @@ class ShellCommands(
             )
         }
 
-        logger.debug("Result: {}\n", result)
+        if (result is DynamicExecutionResult.Success) {
+            agentProcessStatuses.add(result.agentProcessStatus)
+        }
 
+        logger.debug("Result: {}\n", result)
         when (result) {
             is DynamicExecutionResult.NoGoalFound -> {
                 if (debug) {
