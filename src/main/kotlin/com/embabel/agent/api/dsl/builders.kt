@@ -17,6 +17,7 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.InputPayload
 import com.embabel.agent.api.common.OperationPayload
+import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
@@ -25,25 +26,6 @@ import com.embabel.plan.goap.EffectSpec
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.Modifier
 
-/**
- * Creates a transformation action from an agent
- */
-inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformation<I, O> {
-    val childAgentProcess = it.agentPlatform().createChildProcess(
-        agent = this,
-        parentAgentProcess = it.processContext.agentProcess,
-    )
-    val childProcessResult = childAgentProcess.run()
-    childProcessResult.resultOfType()
-}
-
-
-/**
- * Transformation function signature
- */
-fun interface Transformation<I, O> {
-    fun transform(payload: TransformationPayload<I, O>): O
-}
 
 data class AggregationPayload<I, O>(
     val input: List<I>,

@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.api.annotation.support
 
+import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationPayload
-import com.embabel.agent.api.dsl.Transformation
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import org.springframework.ai.tool.ToolCallback

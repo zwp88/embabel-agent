@@ -19,10 +19,10 @@ import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.Condition
+import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
-import com.embabel.agent.api.common.using
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all

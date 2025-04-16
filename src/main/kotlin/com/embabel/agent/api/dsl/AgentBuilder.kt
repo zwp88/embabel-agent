@@ -15,8 +15,9 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.core.*
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.common.asTransformation
+import com.embabel.agent.core.*
 import com.embabel.agent.core.primitive.PromptCondition
 import com.embabel.plan.goap.ConditionDetermination
 import kotlin.reflect.KClass
@@ -30,6 +31,9 @@ typealias ConditionPredicate = (
     payload: ConditionPayload,
 ) -> Boolean?
 
+/**
+ * DSL for creating an agent.
+ */
 fun agent(
     name: String,
     version: String = "0.1.0-SNAPSHOT",

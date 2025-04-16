@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common
+package com.embabel.agent.api.annotation.support
+
+import com.embabel.agent.api.common.ExecutePromptException
+import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.common.PromptRunner
 
 /**
  * Return an ambient prompt runner

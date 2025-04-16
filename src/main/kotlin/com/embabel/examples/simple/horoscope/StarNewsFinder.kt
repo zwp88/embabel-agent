@@ -18,10 +18,10 @@ package com.embabel.examples.simple.horoscope
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.support.using
+import com.embabel.agent.api.annotation.support.usingDefaultLlm
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.createObject
-import com.embabel.agent.api.common.using
-import com.embabel.agent.api.common.usingDefaultLlm
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person

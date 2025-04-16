@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.api.dsl
 
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.core.*
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
@@ -96,7 +96,6 @@ inline fun <I, reified O : Any> promptTransform(
     llmOptions: LlmOptions = LlmOptions(),
     toolCallbacks: List<ToolCallback> = emptyList(),
 ): O {
-
     val literalPrompt = prompt(it)
     loggerFor<Transformer<I, O>>().debug("Using LLM to transform input of type ${it.inputClass.simpleName} to ${it.outputClass.simpleName}")
 
