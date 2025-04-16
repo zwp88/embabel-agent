@@ -84,30 +84,30 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     agentProcessCreationEventMessage = kier(
         """
         May my gaze be singularly placed upon the path, may the words of virtue guide me in the daily labor of my great undertaking.
-            Process {} created
+            [{}] created
                     """.trimIndent()
     ),
-    agentProcessReadyToPlanEventMessage = "WIT: Process {} ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "WILES: Process {} formulated plan <{}> from {}",
+    agentProcessReadyToPlanEventMessage = "[{}] WIT  ready to plan from {}",
+    agentProcessPlanFormulatedEventMessage = "[{}] WILES: formulated plan <{}> from {}",
     processCompletionMessage = """
-        Process {} completed in {}
+        [{}] completed in {}
         ${CompletionMessages.random()}
 
         ${"The Board has concluded the call.".color(LumonColors.Membrane)}
 
         """.trimIndent(),
-    processFailureMessage = "WOE: Process {} failed",
-    objectAddedMessage = "Perpetuity wing: object added: {} to process {}",
-    objectBoundMessage = "Perpetuity wing: object bound: {} to {} in process {}",
-    functionCallRequestEventMessage = "VERVE: Process {} calling function {} with payload {}",
-    functionCallResponseEventMessage = "VISION: Process {} function {} response {} in {}ms with payload {}",
-    transformRequestEventMessage = "🖥️ MACRODATA REFINEMENT: Process {} requesting LLM transform from {} -> {} using {}",
+    processFailureMessage = "[{}] WOE: failed",
+    objectAddedMessage = "[{}] Perpetuity wing: object added: {} to [{}]",
+    objectBoundMessage = "[{}] Perpetuity wing: object bound: {} to {} in [{}]",
+    functionCallRequestEventMessage = "[{}] VERVE: calling function {} with payload {}",
+    functionCallResponseEventMessage = "[{}] VISION: function {} response {} in {}ms with payload {}",
+    transformRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM transform from {} -> {} using {}",
     transformResponseEventMessage = {
         """
-        Process {} received LLM response of type {} from {} in {} seconds
+        [{}] received LLM response of type {} from {} in {} seconds
         ${TransformSuccessResponses.random()}
         """.trimIndent()
     },
-    actionExecutionStartMessage = "VERVE: Process {} executing action {}",
-    actionExecutionResultMessage = "CHEER: Process {} completed action {} in {}",
+    actionExecutionStartMessage = "[{}] VERVE: executing action {}",
+    actionExecutionResultMessage = "[{}] CHEER: completed action {} in {}",
 )

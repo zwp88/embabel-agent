@@ -34,19 +34,19 @@ open class LoggingAgenticEventListener(
     private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}",
     private val rankingChoiceNotMadeEventMessage: String = "Failed to choose {} based on {}: {}. Confidence cutoff: {}",
     private val dymamicAgentCreationMessage: String = "Created agent {}",
-    private val agentProcessCreationEventMessage: String = "Process {} created",
-    private val agentProcessReadyToPlanEventMessage: String = "Process {} ready to plan from {}",
-    private val agentProcessPlanFormulatedEventMessage: String = "Process {} formulated plan <{}> from {}",
-    private val processCompletionMessage: String = "Process {} completed in {}",
-    private val processFailureMessage: String = "Process {} failed",
-    private val objectAddedMessage: String = "Object added: {} to process {}",
-    private val objectBoundMessage: String = "Object bound: {} to {} in process {}",
-    private val functionCallRequestEventMessage: String = "Process {} calling function {} with payload {}",
-    private val functionCallResponseEventMessage: String = "Process {} function {} response {} in {}ms with payload {}",
-    private val transformRequestEventMessage: String = "Process {} requesting LLM transform from {} -> {} using {}",
-    private val transformResponseEventMessage: () -> String = { "Process {} received LLM response of type {} from {} in {} seconds" },
-    private val actionExecutionStartMessage: String = "Process {} executing action {}",
-    private val actionExecutionResultMessage: String = "Process {} executed action {} in {}",
+    private val agentProcessCreationEventMessage: String = "[{}] created",
+    private val agentProcessReadyToPlanEventMessage: String = "[{}] ready to plan from {}",
+    private val agentProcessPlanFormulatedEventMessage: String = "[{}] formulated plan <{}> from {}",
+    private val processCompletionMessage: String = "[{}] completed in {}",
+    private val processFailureMessage: String = "[{}] failed",
+    private val objectAddedMessage: String = "{} Object added: {} to [{}]",
+    private val objectBoundMessage: String = "{} Object bound: {} to {} in [{}]",
+    private val functionCallRequestEventMessage: String = "[{}] calling function {} with payload {}",
+    private val functionCallResponseEventMessage: String = "[{}] function {} response {} in {}ms with payload {}",
+    private val transformRequestEventMessage: String = "[{}] requesting LLM transform from {} -> {} using {}",
+    private val transformResponseEventMessage: () -> String = { "[{}] received LLM response of type {} from {} in {} seconds" },
+    private val actionExecutionStartMessage: String = "[{}] executing action {}",
+    private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
     val logger: Logger = LoggerFactory.getLogger("Events"),
 ) : AgenticEventListener {
 
@@ -155,7 +155,7 @@ open class LoggingAgenticEventListener(
                     }
 
                     is AgentProcessStatus.InvalidAgent -> {
-                        logger.info("Process {} has invalid agent", event.processId)
+                        logger.info("[{}] has invalid agent", event.processId)
                     }
 
                     else -> {
@@ -165,11 +165,11 @@ open class LoggingAgenticEventListener(
             }
 
             is ObjectAddedEvent -> {
-                logger.info(objectAddedMessage, event.value, event.processId)
+                logger.info(objectAddedMessage, event.agentProcess.id, event.value, event.processId)
             }
 
             is ObjectBoundEvent -> {
-                logger.info(objectBoundMessage, event.name, event.value, event.processId)
+                logger.info(objectBoundMessage, event.agentProcess.id, event.name, event.value, event.processId)
             }
 
             is LlmTransformRequestEvent<*, *> -> {
