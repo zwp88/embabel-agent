@@ -16,12 +16,9 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.PromptRunner
-import com.embabel.agent.api.common.TransformationPayload
-import com.embabel.agent.api.common.createObject
+import com.embabel.agent.api.common.*
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.domain.special.UserInput
 import org.springframework.ai.tool.annotation.Tool
 
@@ -178,7 +175,7 @@ class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 class OnePromptActionOnly(
 ) {
 
-    val promptRunner = PromptRunner(
+    val promptRunner = using(
         // Java style usage
         llm = LlmOptions.DEFAULT.withTemperature(1.7).withModel("magical"),
     )
@@ -199,7 +196,7 @@ class Combined {
     ).withValue(30.0)
 
     // Can reuse this or inject
-    val magicalLlm = PromptRunner(
+    val magicalLlm = using(
         // Java style usage
         llm = LlmOptions.DEFAULT.withTemperature(1.7).withModel("magical"),
     )
@@ -232,7 +229,8 @@ class OnePromptActionWithToolOnly(
 
     @Action(cost = 500.0)
     fun toPersonWithPrompt(userInput: UserInput): Person {
-        return PromptRunner().createObject("Generated prompt for ${userInput.content}")
+        return usingDefaultLlm createObject
+                "Generated prompt for ${userInput.content}"
     }
 
     @Tool
@@ -249,7 +247,7 @@ class FromPersonUsesDomainObjectTools {
     fun fromPerson(
         person: Person
     ): UserInput {
-        return PromptRunner().createObject("Create a UserInput")
+        return using().createObject("Create a UserInput")
     }
 }
 

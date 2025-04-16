@@ -41,41 +41,14 @@ interface PromptRunner {
      */
     fun <T> createObjectIfPossible(prompt: String, outputClass: Class<T>): T?
 
-    companion object {
-
-        /**
-         * Return an ambient prompt runner
-         */
-        operator fun invoke(llm: LlmOptions? = null): PromptRunner {
-            return ActionReturnPromptRunner(llm)
-        }
-    }
-
 }
 
-inline fun <reified T> PromptRunner.createObject(prompt: String): T =
+inline infix fun <reified T> PromptRunner.createObject(prompt: String): T =
     createObject(prompt, T::class.java)
 
 inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
     createObjectIfPossible(prompt, T::class.java)
 
-
-/**
- * PromptRunner implementation that can be used to return a value
- */
-private class ActionReturnPromptRunner(
-    val llm: LlmOptions? = null,
-) : PromptRunner {
-
-    override fun <T> createObject(prompt: String, outputClass: Class<T>): T {
-        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
-    }
-
-    override fun <T> createObjectIfPossible(prompt: String, outClass: Class<T>): T? {
-        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
-    }
-
-}
 
 /**
  * Exception thrown to indicate that a prompt should be executed.

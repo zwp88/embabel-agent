@@ -18,10 +18,11 @@ package com.embabel.examples.simple.horoscope
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.common.PromptRunner
-import com.embabel.agent.api.common.createObject
-import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.common.createObject
+import com.embabel.agent.api.common.using
+import com.embabel.agent.api.common.usingDefaultLlm
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
@@ -54,7 +55,7 @@ class StarNewsFinder(
     @Action
     fun extractPerson(userInput: UserInput): StarPerson =
         // All prompts are typesafe
-        PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
+        usingDefaultLlm.createObject("Create a person from this user input, extracting their name and star sign: $userInput")
 
     @Action
     fun retrieveHoroscope(starPerson: StarPerson) =
@@ -63,7 +64,7 @@ class StarNewsFinder(
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
     fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
-        PromptRunner().createObject(
+        usingDefaultLlm.createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -95,7 +96,7 @@ class StarNewsFinder(
         horoscope: Horoscope,
     ): Writeup =
         // Customize LLM call
-        PromptRunner(LlmOptions().withTemperature(1.2)).createObject(
+        using(LlmOptions().withTemperature(1.2)).createObject(
             """
             Take the following news stories and write up something
             amusing for the target person.

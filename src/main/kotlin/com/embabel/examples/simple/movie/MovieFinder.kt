@@ -19,17 +19,18 @@ import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.Condition
-import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.api.common.using
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.CrudRepository
@@ -108,7 +109,6 @@ data class MovieFinderConfig(
     val writeupWordCount: Int = 200,
 )
 
-
 @Profile("!test")
 @Agent(
     description = "Find movies a person hasn't seen and may find interesting"
@@ -119,6 +119,9 @@ class MovieFinder(
     private val movieBuffRepository: MovieBuffRepository,
     private val config: MovieFinderConfig,
 ) {
+
+    private val logger = LoggerFactory.getLogger(MovieFinder::class.java)
+
     init {
         // TODO this is only for example purposes
         populateMovieBuffRepository(movieBuffRepository)
@@ -136,7 +139,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        PromptRunner(LlmOptions("gpt-4o")).createObject(
+        using(LlmOptions("gpt-4o")).createObject(
             """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
@@ -151,12 +154,11 @@ class MovieFinder(
         """.trimIndent()
         )
 
-
     @Action
     fun analyzeTasteProfile(
         movieBuff: MovieBuff
     ): TasteProfile =
-        PromptRunner(LlmOptions("gpt-4o")).createObject(
+        using(LlmOptions("gpt-4o")).createObject(
             """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
@@ -180,7 +182,6 @@ class MovieFinder(
             movieBuff = movieBuff,
             tasteProfile = tasteProfile.tasteProfile
         )
-
 
     @Action(
         post = ["haveEnoughMovies"],
@@ -235,12 +236,11 @@ class MovieFinder(
             """
         )
         val suggestedMovies = lookUpMovies(suggestedMovieTitles)
-        return streamable(
+        return streamableMovies(
             movieBuff = dmb.movieBuff,
             suggestedMovies = suggestedMovies
         )
     }
-
 
     private fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
         val movies = suggestedMovieTitles.movies.mapNotNull { title ->
@@ -253,14 +253,16 @@ class MovieFinder(
         return SuggestedMovies(movies)
     }
 
-    private fun streamable(
+    private fun streamableMovies(
         movieBuff: MovieBuff,
         suggestedMovies: SuggestedMovies,
     ): StreamableMovies {
         val streamables = suggestedMovies.movies
             // Sometimes the LLM ignores being told not to
             // include movies the user has seen
-            .filterNot { it.Title in movieBuff.movieRatings.map { it.title } }
+            .filterNot {
+                it.Title in movieBuff.movieRatings.map { it.title }
+            }
             .mapNotNull { movie ->
                 try {
                     val allStreamingOptions =
@@ -312,7 +314,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         streamableMovies: StreamableMovies,
     ): SuggestionWriteup =
-        PromptRunner(LlmOptions("gpt-4o")).createObject(
+        using(LlmOptions("gpt-4o")).createObject(
             """
             Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount}
             for ${dmb.movieBuff.name}
