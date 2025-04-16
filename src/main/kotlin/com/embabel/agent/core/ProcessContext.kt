@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.event.AgenticEventListener
+
 /**
  * Process state and services
  */
@@ -22,7 +24,7 @@ data class ProcessContext(
     val processOptions: ProcessOptions = ProcessOptions(),
     val platformServices: PlatformServices,
     val agentProcess: AgentProcess,
-) : LlmTransformer by platformServices.llmTransformer {
+) : LlmTransformer by platformServices.llmTransformer, AgenticEventListener by platformServices.eventListener {
 
     val blackboard: Blackboard
         get() = agentProcess

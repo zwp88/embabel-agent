@@ -30,6 +30,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.event.ProgressUpdateEvent
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
@@ -312,6 +313,14 @@ class MovieFinder(
         logger.info(
             "Found {} streamable movies so far",
             streamableMovies.size
+        )
+        processContext.onProcessEvent(
+            ProgressUpdateEvent(
+                agentProcess = processContext.agentProcess,
+                name = "Streamable movies",
+                current = streamableMovies.size,
+                total = config.suggestionCount,
+            )
         )
         return streamableMovies
     }

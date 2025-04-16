@@ -110,4 +110,5 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     },
     actionExecutionStartMessage = "[{}] VERVE: executing action {}",
     actionExecutionResultMessage = "[{}] CHEER: completed action {} in {}",
+    progressUpdateEventMessage = "[{}] Industry: {}",
 )

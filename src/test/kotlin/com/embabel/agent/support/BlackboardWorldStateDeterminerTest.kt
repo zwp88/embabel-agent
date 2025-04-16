@@ -23,6 +23,7 @@ import com.embabel.agent.core.support.BlackboardWorldStateDeterminer
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.Aggregation
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
 import io.mockk.mockk
@@ -76,7 +77,12 @@ val InterfaceTestAgent = agent("SimpleTest", description = "Simple test agent") 
 
 class BlackboardWorldStateDeterminerTest {
 
+    val eventListener = EventSavingAgenticEventListener()
     val mockPlatformServices = mockk<PlatformServices>()
+
+    init {
+        every { mockPlatformServices.eventListener } returns eventListener
+    }
 
     init {
         every { mockPlatformServices.llmTransformer } returns mockk()

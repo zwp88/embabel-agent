@@ -21,6 +21,7 @@ import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.AgentProcessStatus
 import com.embabel.common.core.types.Timed
+import com.embabel.common.util.VisualizableTask
 import com.embabel.plan.Plan
 import com.embabel.plan.goap.WorldState
 import org.springframework.ai.tool.ToolCallback
@@ -168,3 +169,13 @@ class ObjectBoundEvent(
     val name: String,
     val value: Any,
 ) : AbstractAgentProcessEvent(agentProcess)
+
+/**
+ * Progress update
+ */
+class ProgressUpdateEvent(
+    agentProcess: AgentProcess,
+    override val name: String,
+    override val current: Int,
+    override val total: Int,
+) : AbstractAgentProcessEvent(agentProcess), VisualizableTask

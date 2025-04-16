@@ -17,6 +17,7 @@ package com.embabel.agent.event.logging
 
 import com.embabel.agent.core.AgentProcessStatus
 import com.embabel.agent.event.*
+import com.embabel.agent.event.logging.personality.LumonColors
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
 import org.slf4j.Logger
@@ -47,6 +48,7 @@ open class LoggingAgenticEventListener(
     private val transformResponseEventMessage: () -> String = { "[{}] received LLM response of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
     private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
+    private val progressUpdateEventMessage: String = "[{}] progress: {}",
     val logger: Logger = LoggerFactory.getLogger("Events"),
 ) : AgenticEventListener {
 
@@ -62,7 +64,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     rankingChoiceRequestEventMessage,
                     event.type.simpleName,
-                    event.basis.javaClass.simpleName,
+                    event.basis,
                 )
             }
 
@@ -72,7 +74,7 @@ open class LoggingAgenticEventListener(
                     event.type.simpleName,
                     event.choice.ranked.name,
                     event.choice.confidence,
-                    event.basis.javaClass.simpleName,
+                    event.basis,
                     event.rankings.infoString(),
                 )
             }
@@ -217,6 +219,18 @@ open class LoggingAgenticEventListener(
                     event.action.name,
                     event.actionStatus.runningTime,
                 )
+            }
+
+            is ProgressUpdateEvent -> {
+                logger.info(
+                    progressUpdateEventMessage,
+                    event.processId,
+                    event.createProgressBar(length = 50).color(LumonColors.Membrane),
+                )
+            }
+
+            else -> {
+                // Do nothing
             }
         }
     }
