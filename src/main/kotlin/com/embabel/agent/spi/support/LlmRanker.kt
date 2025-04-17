@@ -28,8 +28,11 @@ import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import org.springframework.stereotype.Service
 
+/**
+ * Use an LLM to rank things
+ */
 @Service
-class LlmRanker(
+internal class LlmRanker(
     private val llmOperations: LlmOperations,
 ) : Ranker {
 

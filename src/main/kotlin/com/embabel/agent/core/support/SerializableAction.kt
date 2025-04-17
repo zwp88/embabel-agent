@@ -34,7 +34,7 @@ import org.springframework.ai.tool.ToolCallback
  * @param runner runner for the action
  * @param qos quality of service
  */
-class SerializableAction(
+internal class SerializableAction(
     name: String,
     description: String = name,
     pre: List<String> = emptyList(),

@@ -32,7 +32,7 @@ interface AutoRegisteringAgentPlatformProperties : AgentPlatformProperties {
  */
 @Service
 @Order(Ordered.LOWEST_PRECEDENCE)
-class AutoRegisteringBeanPostProcessor(
+internal class AutoRegisteringBeanPostProcessor(
     private val agentMetadataReader: AgentMetadataReader,
     private val agentPlatform: AgentPlatform,
     private val properties: AutoRegisteringAgentPlatformProperties,

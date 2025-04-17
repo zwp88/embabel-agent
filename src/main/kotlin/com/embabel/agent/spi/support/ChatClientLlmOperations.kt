@@ -41,7 +41,7 @@ val DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION = """
  * LlmTransformer implementation that uses the Spring AI ChatClient
  */
 @Service
-class ChatClientLlmOperations(
+internal class ChatClientLlmOperations(
     private val modelProvider: ModelProvider,
     private val maybeReturnPromptContribution: String = DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION,
 ) : AbstractLlmOperations() {

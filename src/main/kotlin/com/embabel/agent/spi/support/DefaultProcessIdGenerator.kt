@@ -29,7 +29,7 @@ data class DefaultProcessIdGeneratorProperties(
 )
 
 @Service
-class DefaultProcessIdGenerator(
+internal class DefaultProcessIdGenerator(
     private val nameGenerator: NameGenerator,
     private val properties: DefaultProcessIdGeneratorProperties,
 ) : ProcessIdGenerator {

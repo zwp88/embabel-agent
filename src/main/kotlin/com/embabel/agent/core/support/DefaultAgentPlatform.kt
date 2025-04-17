@@ -51,7 +51,7 @@ data class DefaultAgentPlatformProperties(
 ) : AutoRegisteringAgentPlatformProperties
 
 @Service
-class DefaultAgentPlatform(
+internal class DefaultAgentPlatform(
     private val templateRenderer: TemplateRenderer,
 //    private val scriptEvaluationService: ScriptEvaluationService,
     private val llmOperations: LlmOperations,
