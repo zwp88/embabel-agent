@@ -76,6 +76,7 @@ internal class ExecutePromptException(
     val prompt: String,
     val requireResult: Boolean,
     val llm: LlmOptions? = null,
+    val outputClass: Class<*>,
 ) : RuntimeException(
     "Not a real failure but meant to be intercepted by infrastructure: Generated prompt=[$prompt]"
 )

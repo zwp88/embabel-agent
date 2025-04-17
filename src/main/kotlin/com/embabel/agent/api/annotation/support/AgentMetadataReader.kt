@@ -256,7 +256,7 @@ class AgentMetadataReader {
                 promptRunner.createObject(
                     prompt = e.prompt,
                     toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
-                    outputClass = payload.outputClass as Class<Any>,
+                    outputClass = e.outputClass,
                 )
             } else {
                 promptRunner.createObjectIfPossible(

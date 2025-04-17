@@ -25,11 +25,15 @@ import org.springframework.ai.tool.ToolCallback
  * This allows LLM interactions to be optimized by an AgentPlatform
  */
 @JvmInline
-value class InteractionId(val value: String)
+value class InteractionId(val value: String) {
+
+    override fun toString(): String = value
+}
 
 /**
  * Encapsulates an interaction with an LLM.
- * @param id Unique identifier for the interaction
+ * @param id Unique identifier for the interaction.
+ * This is per action, not per process.
  * @param llm LLM options to use, specifying model and hyperparameters
  * @param toolCallbacks Tool callbacks to use for this interaction
  */

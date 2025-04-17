@@ -177,7 +177,7 @@ open class LoggingAgenticEventListener(
             is LlmRequestEvent<*, *> -> {
                 var message = llmRequestEventMessage
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
-                    message += "\nPrompt: ${
+                    message += "\nPrompt ${event.interaction.id}:\n${
                         event.prompt.color(AnsiColor.GREEN)
                     }\ntools: ${event.interaction.toolCallbacks.map { it.toolDefinition.name() }}"
                 }
@@ -193,7 +193,7 @@ open class LoggingAgenticEventListener(
             is LlmResponseEvent<*, *> -> {
                 var message = llmResponseEventMessage()
                 if (event.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
-                    message += "\nResponse: ${
+                    message += "\nResponse from prompt ${event.interaction.id}:\n${
                         ("" + event.response).color(
                             color = AnsiColor.YELLOW
                         )

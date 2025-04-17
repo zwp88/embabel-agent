@@ -41,10 +41,18 @@ interface OperationPayload : Blackboard {
 
 }
 
+/**
+ * Uses the platform's LlmOperations to execute the prompt
+ * Merely a convenience.
+ */
 private class OperationPayloadPromptRunner(
     private val payload: OperationPayload,
     private val llm: LlmOptions,
 ) : PromptRunner {
+
+    private fun idForPrompt(prompt: String, outputClass: Class<*>): InteractionId {
+        return InteractionId("${payload.action?.name}-${outputClass.name}")
+    }
 
     override fun <T> createObject(
         prompt: String,
@@ -52,13 +60,12 @@ private class OperationPayloadPromptRunner(
         toolCallbacks: List<ToolCallback>,
     ): T {
         return payload.processContext.transform<Unit, T>(
-            Unit,
-            { prompt },
-            LlmInteraction(
+            input = Unit,
+            prompt = { prompt },
+            interaction = LlmInteraction(
                 llm = llm,
                 toolCallbacks = toolCallbacks,
-                // tODO this wrong
-                id = InteractionId(prompt),
+                id = idForPrompt(prompt, outputClass),
             ),
             outputClass = outputClass,
             agentProcess = payload.processContext.agentProcess,
@@ -72,13 +79,12 @@ private class OperationPayloadPromptRunner(
         toolCallbacks: List<ToolCallback>,
     ): T? {
         return payload.processContext.transformIfPossible<Unit, T>(
-            Unit,
-            { prompt },
-            LlmInteraction(
+            input = Unit,
+            prompt = { prompt },
+            interaction = LlmInteraction(
                 llm = llm,
                 toolCallbacks = toolCallbacks,
-                // TODO this is wrong
-                id = InteractionId(prompt),
+                id = idForPrompt(prompt, outputClass),
             ),
             outputClass = outputClass,
             agentProcess = payload.processContext.agentProcess,
@@ -91,7 +97,6 @@ interface InputPayload<I> : OperationPayload {
     val input: I
 
 }
-
 
 data class TransformationPayload<I, O>(
     override val input: I,

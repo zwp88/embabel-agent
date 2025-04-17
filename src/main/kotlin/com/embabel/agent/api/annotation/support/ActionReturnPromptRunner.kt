@@ -21,11 +21,11 @@ import com.embabel.agent.api.common.PromptRunner
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Return an ambient prompt runner
+ * Return an ambient prompt runner for use to return in an @Action method.
  */
-fun using(llm: LlmOptions? = null): PromptRunner {
-    return ActionReturnPromptRunner(llm)
-}
+fun using(llm: LlmOptions? = null): PromptRunner =
+    ActionReturnPromptRunner(llm)
+
 
 val usingDefaultLlm: PromptRunner = ActionReturnPromptRunner(llm = null)
 
@@ -41,15 +41,25 @@ private class ActionReturnPromptRunner(
         outputClass: Class<T>,
         toolCallbacks: List<ToolCallback>,
     ): T {
-        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
+        throw ExecutePromptException(
+            prompt = prompt,
+            llm = llm,
+            requireResult = true,
+            outputClass = outputClass,
+        )
     }
 
     override fun <T> createObjectIfPossible(
         prompt: String,
-        outClass: Class<T>,
+        outputClass: Class<T>,
         toolCallbacks: List<ToolCallback>,
     ): T? {
-        throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
+        throw ExecutePromptException(
+            prompt = prompt,
+            llm = llm,
+            requireResult = true,
+            outputClass = outputClass,
+        )
     }
 
 }
