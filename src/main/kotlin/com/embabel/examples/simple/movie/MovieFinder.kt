@@ -350,7 +350,7 @@ class MovieFinder(
     ): SuggestionWriteup {
         val text = payload.promptRunner(LlmOptions("gpt-4o")) generateText
                 """
-                Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount}
+                Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount} words
                 for ${dmb.movieBuff.name}
                 based on the following information:
                 Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
@@ -359,7 +359,7 @@ class MovieFinder(
     
                 The streamable movie recommendations are:
                 ${
-                    streamableMovies.movies.joinToString("\n\n") {
+                    allStreamableMovies(payload.processContext).joinToString("\n\n") {
                         """
                         ${it.movie.Title} (${it.movie.Year}): ${it.movie.imdbID}
                         Director: ${it.movie.Director}

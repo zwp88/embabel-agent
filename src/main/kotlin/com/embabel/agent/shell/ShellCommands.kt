@@ -202,6 +202,11 @@ class ShellCommands(
 
             is DynamicExecutionResult.Success -> {
                 if (result.output is HasContent) {
+                    // TODO naive Markdown test
+                    if (result.output.text.contains("#")) {
+                        return "\n" + markdownToConsole(result.output.text)
+                            .color(LumonColors.Green) + "\n"
+                    }
                     return WordUtils.wrap(result.output.text, 140).color(
                         LumonColors.Green,
                     ) + "\n"
