@@ -16,7 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.Goal
-import com.embabel.agent.core.LlmTransformer
+import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.domain.special.UserInput
 import io.mockk.every
 import io.mockk.mockk
@@ -38,7 +38,7 @@ class LlmGoalRankerTest {
 
         @Test
         fun `no goals`() {
-            val llmt = mockk<LlmTransformer>()
+            val llmt = mockk<LlmOperations>()
             val ranker = LlmRanker(llmt)
             val result = ranker.rankGoals(
                 UserInput("whatever"), emptySet(),
@@ -51,7 +51,7 @@ class LlmGoalRankerTest {
     inner class HappyPath {
         @Test
         fun `successful choice`() {
-            val llmt = mockk<LlmTransformer>()
+            val llmt = mockk<LlmOperations>()
             val llmr = RankingsResponse(
                 rankings = listOf(
                     RankedChoiceResponse("horoscope", .2),

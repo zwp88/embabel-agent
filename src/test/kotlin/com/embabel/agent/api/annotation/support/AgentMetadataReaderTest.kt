@@ -244,7 +244,7 @@ class AgentMetadataReaderTest {
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
             val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.llmOperations } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
             val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
             every { mockAgentProcess.getValue(any(), any(), any()) } answers {
@@ -288,7 +288,7 @@ class AgentMetadataReaderTest {
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
             val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.llmOperations } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
             val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
             every { mockAgentProcess.getValue(any(), any(), any()) } answers {
@@ -328,7 +328,7 @@ class AgentMetadataReaderTest {
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
             val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.llmOperations } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
 
             val blackboard = InMemoryBlackboard()
@@ -443,7 +443,7 @@ class AgentMetadataReaderTest {
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
                 val llmo = slot<LlmOptions>()
-                val llmt = mockk<LlmTransformer>()
+                val llmt = mockk<LlmOperations>()
                 every {
                     llmt.transform<Any, Any>(
                         any(),
@@ -456,7 +456,7 @@ class AgentMetadataReaderTest {
                     )
                 } returns Person("John Doe")
                 val mockPlatformServices = mockk<PlatformServices>()
-                every { mockPlatformServices.llmTransformer } returns llmt
+                every { mockPlatformServices.llmOperations } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
                 val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
                 every { mockAgentProcess.getValue(any(), any(), any()) } answers {
@@ -498,7 +498,7 @@ class AgentMetadataReaderTest {
                 every { mockAgentProcess.agent } returns agent
                 val llmo = slot<LlmOptions>()
 
-                val llmt = mockk<LlmTransformer>()
+                val llmt = mockk<LlmOperations>()
                 val toolCallbacks = slot<List<ToolCallback>>()
                 every {
                     llmt.transform<Any, Any>(
@@ -512,7 +512,7 @@ class AgentMetadataReaderTest {
                     )
                 } returns Person("John Doe")
                 val mockPlatformServices = mockk<PlatformServices>()
-                every { mockPlatformServices.llmTransformer } returns llmt
+                every { mockPlatformServices.llmOperations } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
                 val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
                 every { mockAgentProcess.getValue(any(), any(), any()) } answers {
@@ -555,7 +555,7 @@ class AgentMetadataReaderTest {
                 every { mockAgentProcess.agent } returns agent
                 val llmo = slot<LlmOptions>()
 
-                val llmt = mockk<LlmTransformer>()
+                val llmt = mockk<LlmOperations>()
                 val toolCallbacks = slot<List<ToolCallback>>()
                 every {
                     llmt.transform<Any, Any>(
@@ -569,7 +569,7 @@ class AgentMetadataReaderTest {
                     )
                 } returns UserInput("John Doe")
                 val mockPlatformServices = mockk<PlatformServices>()
-                every { mockPlatformServices.llmTransformer } returns llmt
+                every { mockPlatformServices.llmOperations } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
                 val blackboard = InMemoryBlackboard().bind("it", Person("John Doe"))
                 every { mockAgentProcess.getValue(any(), any(), any()) } answers {

@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.core.*
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.core.*
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
@@ -127,7 +127,7 @@ class ChatClientLlmTransformerTest {
             )
             every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
 
-            val transformer = ChatClientLlmTransformer(mockModelProvider)
+            val transformer = ChatClientLlmOperations(mockModelProvider)
             return transformer.transform(
                 input = "Hello, world!",
                 prompt = { "Say hello" },
@@ -266,7 +266,7 @@ class ChatClientLlmTransformerTest {
             )
             every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
 
-            val transformer = ChatClientLlmTransformer(mockModelProvider)
+            val transformer = ChatClientLlmOperations(mockModelProvider)
             val result = transformer.transformIfPossible(
                 input = "Hello, world!",
                 prompt = { "Say hello" },

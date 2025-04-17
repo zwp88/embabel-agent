@@ -18,7 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.LlmTransformer
+import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.event.LlmTransformRequestEvent
 import com.embabel.agent.spi.support.forProcess
 import com.embabel.common.util.time
@@ -34,7 +34,7 @@ import java.time.Duration
  * All LlmTransformers should extend this.
  * Also emits events.
  */
-abstract class AbstractLlmTransformer : LlmTransformer {
+abstract class AbstractLlmOperations : LlmOperations {
 
     protected val logger: Logger = LoggerFactory.getLogger(javaClass)
 

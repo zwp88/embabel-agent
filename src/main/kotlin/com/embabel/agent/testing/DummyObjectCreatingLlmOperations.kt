@@ -18,7 +18,7 @@ package com.embabel.agent.testing
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.LlmTransformer
+import com.embabel.agent.core.LlmOperations
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.ParameterizedType
@@ -29,9 +29,9 @@ import java.util.*
 /**
  * Fake LLM transformer that generates valid classes with random strings.
  */
-class DummyObjectCreatingLlmTransformer(
+class DummyObjectCreatingLlmOperations(
     private val stringsToUse: List<String>,
-) : LlmTransformer {
+) : LlmOperations {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -184,7 +184,7 @@ class DummyObjectCreatingLlmTransformer(
          * A fake LLM transformer that generates Lorem Ipsum
          * style fake test
          */
-        val LoremIpsum: LlmTransformer = DummyObjectCreatingLlmTransformer(
+        val LoremIpsum: LlmOperations = DummyObjectCreatingLlmOperations(
             listOf(
                 "Lorem ipsum dolor sit amet", "consectetur adipiscing elit", "sed do eiusmod tempor",
                 "incididunt ut labore", "et dolore magna aliqua", "Ut enim ad minim veniam",

@@ -19,14 +19,14 @@ import com.embabel.agent.api.common.LlmOptions
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Uses an LLM to transform an input into an output.
+ * Wraps LLM operations.
  * All LLM operations go through this,
  * allowing the AgentPlatform to mediate them.
  * An LlmTransformer is responsible for resolving all relevant
  * tool callbacks for the current AgentProcess, and emitting
  * events.
  */
-interface LlmTransformer {
+interface LlmOperations {
 
     /**
      * Generate text

@@ -24,7 +24,7 @@ data class ProcessContext(
     val processOptions: ProcessOptions = ProcessOptions(),
     val platformServices: PlatformServices,
     val agentProcess: AgentProcess,
-) : LlmTransformer by platformServices.llmTransformer, AgenticEventListener by platformServices.eventListener {
+) : LlmOperations by platformServices.llmOperations, AgenticEventListener by platformServices.eventListener {
 
     val blackboard: Blackboard
         get() = agentProcess

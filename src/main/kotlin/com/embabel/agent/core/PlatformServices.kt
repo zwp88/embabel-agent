@@ -29,6 +29,6 @@ data class PlatformServices(
     val modelProvider: ModelProvider,
 //    val scriptEvaluationService: ScriptEvaluationService,
     val agentPlatform: AgentPlatform,
-    val llmTransformer: LlmTransformer,
+    val llmOperations: LlmOperations,
     val eventListener: AgenticEventListener,
 )

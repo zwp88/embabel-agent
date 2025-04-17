@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
-import com.embabel.agent.core.LlmTransformer
-import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.Ranking
@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class LlmRanker(
-    private val llmTransformer: LlmTransformer,
+    private val llmOperations: LlmOperations,
 ) : Ranker {
 
     override fun rankAgents(
@@ -62,7 +62,7 @@ class LlmRanker(
 
             Return the name of the chosen $wordForThing and the confidence score (0-1).
         """.trimIndent()
-        val grr = llmTransformer.doTransform<UserInput, RankingsResponse>(
+        val grr = llmOperations.doTransform<UserInput, RankingsResponse>(
             input = userInput,
             literalPrompt = prompt,
             llmOptions = LlmOptions(model = "gpt-4o-mini"),

@@ -42,7 +42,7 @@ class SimpleAgentProcessTest {
             val ese = EventSavingAgenticEventListener()
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.llmOperations } returns mockk()
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 "test", agent = SimpleTestAgent,
@@ -61,7 +61,7 @@ class SimpleAgentProcessTest {
             val ese = EventSavingAgenticEventListener()
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.llmOperations } returns mockk()
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 "test", agent = SimpleTestAgent,
@@ -81,7 +81,7 @@ class SimpleAgentProcessTest {
             val ese = EventSavingAgenticEventListener()
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.llmOperations } returns mockk()
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 "test", agent = SimpleTestAgent,
@@ -101,7 +101,7 @@ class SimpleAgentProcessTest {
             val ese = EventSavingAgenticEventListener()
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmTransformer } returns mockk()
+            every { mockPlatformServices.llmOperations } returns mockk()
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 "test", agent = SimpleTestAgent,

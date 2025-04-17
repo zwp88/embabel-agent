@@ -16,8 +16,8 @@
 package com.embabel.agent.core.support
 
 //import com.embabel.ScriptEvaluationService
-import com.embabel.agent.core.*
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.Extractable
 import com.embabel.agent.domain.special.ExtractableCompanion
 import com.embabel.agent.event.AgentProcessCreationEvent
@@ -26,7 +26,7 @@ import com.embabel.agent.spi.ProcessIdGenerator
 import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
-import com.embabel.agent.testing.DummyObjectCreatingLlmTransformer
+import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -55,7 +55,7 @@ data class DefaultAgentPlatformProperties(
 class DefaultAgentPlatform(
     private val templateRenderer: TemplateRenderer,
 //    private val scriptEvaluationService: ScriptEvaluationService,
-    private val llmTransformer: LlmTransformer,
+    private val llmOperations: LlmOperations,
     override val ranker: Ranker,
     override val toolGroupResolver: ToolGroupResolver,
     private val modelProvider: ModelProvider,
@@ -79,7 +79,7 @@ class DefaultAgentPlatform(
     private val platformServices = PlatformServices(
         templateRenderer = templateRenderer,
 //        scriptEvaluationService = scriptEvaluationService,
-        llmTransformer = llmTransformer,
+        llmOperations = llmOperations,
         agentPlatform = this,
         modelProvider = modelProvider,
         eventListener = eventListener,
@@ -191,7 +191,7 @@ class DefaultAgentPlatform(
         blackboard: Blackboard,
     ): AgentProcess {
         val platformServicesToUse = if (processOptions.test) {
-            platformServices.copy(llmTransformer = DummyObjectCreatingLlmTransformer.LoremIpsum)
+            platformServices.copy(llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum)
         } else {
             platformServices
         }

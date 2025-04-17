@@ -43,7 +43,7 @@ data class SupplyPayload<O>(
     override val processContext: ProcessContext,
     override val action: Action?,
     val outputClass: Class<O>,
-) : OperationPayload, Blackboard by processContext.blackboard, LlmTransformer by processContext
+) : OperationPayload, Blackboard by processContext.blackboard, LlmOperations by processContext
 
 typealias Supply<O> = (
     payload: SupplyPayload<O>,
@@ -53,7 +53,7 @@ data class ConsumerPayload<I>(
     override val input: I,
     override val action: Action?,
     override val processContext: ProcessContext,
-) : InputPayload<I>, Blackboard by processContext.blackboard, LlmTransformer by processContext
+) : InputPayload<I>, Blackboard by processContext.blackboard, LlmOperations by processContext
 
 typealias ConsumerFunction<I> = (
     payload: ConsumerPayload<I>,

@@ -85,7 +85,7 @@ class BlackboardWorldStateDeterminerTest {
     }
 
     init {
-        every { mockPlatformServices.llmTransformer } returns mockk()
+        every { mockPlatformServices.llmOperations } returns mockk()
     }
 
     private fun blackboardWorldStateDeterminer(blackboard: Blackboard): BlackboardWorldStateDeterminer {

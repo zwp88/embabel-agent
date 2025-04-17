@@ -16,7 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.common.LlmOptions
-import com.embabel.agent.core.support.AbstractLlmTransformer
+import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
@@ -40,10 +40,10 @@ val DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION = """
  * LlmTransformer implementation that uses the Spring AI ChatClient
  */
 @Service
-class ChatClientLlmTransformer(
+class ChatClientLlmOperations(
     private val modelProvider: ModelProvider,
     private val maybeReturnPromptContribution: String = DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION,
-) : AbstractLlmTransformer() {
+) : AbstractLlmOperations() {
 
     override fun <I, O> doTransform(
         input: I,
