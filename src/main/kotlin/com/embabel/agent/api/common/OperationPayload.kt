@@ -17,9 +17,9 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Blackboard
-import com.embabel.agent.core.InteractionId
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.spi.InteractionId
 import org.springframework.ai.tool.ToolCallback
 
 /**

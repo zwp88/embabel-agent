@@ -18,12 +18,8 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
-import com.embabel.agent.core.InteractionId
-import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.spi.Ranker
-import com.embabel.agent.spi.Ranking
-import com.embabel.agent.spi.Rankings
+import com.embabel.agent.spi.*
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import org.springframework.stereotype.Service

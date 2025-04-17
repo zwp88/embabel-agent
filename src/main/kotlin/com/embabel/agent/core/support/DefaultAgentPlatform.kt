@@ -22,9 +22,7 @@ import com.embabel.agent.domain.special.Extractable
 import com.embabel.agent.domain.special.ExtractableCompanion
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.spi.ProcessIdGenerator
-import com.embabel.agent.spi.Ranker
-import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
 import com.embabel.common.textio.template.TemplateRenderer

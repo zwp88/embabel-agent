@@ -13,4 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.core
+package com.embabel.agent.spi
+
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.event.AgenticEventListener
+import com.embabel.common.textio.template.TemplateRenderer
+
+/**
+ * Services used by the platform and available to user-authored code.
+ * @param agentPlatform agent platform executing this agent
+ */
+data class PlatformServices(
+    val templateRenderer: TemplateRenderer,
+    val agentPlatform: AgentPlatform,
+    val llmOperations: LlmOperations,
+    val eventListener: AgenticEventListener,
+)

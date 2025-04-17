@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.core
+package com.embabel.agent.spi
 
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.core.Action
+import com.embabel.agent.core.AgentProcess
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -29,9 +31,9 @@ value class InteractionId(val value: String)
  * Wraps LLM operations.
  * All LLM operations go through this,
  * allowing the AgentPlatform to mediate them.
- * An LlmTransformer is responsible for resolving all relevant
- * tool callbacks for the current AgentProcess, and emitting
- * events.
+ * An LlmOperations implementation is responsible for resolving all relevant
+ * tool callbacks for the current AgentProcess (in addition to those passed in directly),
+ * and emitting events.
  */
 interface LlmOperations {
 

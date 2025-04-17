@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.core
+package com.embabel.agent.api.common
 
+import com.embabel.agent.core.AgentScope
+import com.embabel.agent.core.NoSuchAgentException
+import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.special.UserInput
 import java.util.function.Function
 

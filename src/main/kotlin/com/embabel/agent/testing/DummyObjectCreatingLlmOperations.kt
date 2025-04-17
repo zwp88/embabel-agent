@@ -18,8 +18,8 @@ package com.embabel.agent.testing
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.InteractionId
-import com.embabel.agent.core.LlmOperations
+import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmOperations
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.ParameterizedType

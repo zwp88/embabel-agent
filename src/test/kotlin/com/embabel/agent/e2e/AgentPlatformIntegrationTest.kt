@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.e2e
 
+import com.embabel.agent.api.common.AgentPlatformTypedOps
+import com.embabel.agent.api.common.TypedOps
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranking

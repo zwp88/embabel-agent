@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.core.support
 
-import com.embabel.agent.core.PlatformServices
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
+import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.agent.support.SimpleTestAgent
 import io.mockk.every

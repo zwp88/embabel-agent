@@ -16,6 +16,8 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.spi.LlmOperations
+import com.embabel.agent.spi.PlatformServices
 
 /**
  * Process state and services

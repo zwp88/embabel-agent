@@ -17,6 +17,7 @@ package com.embabel.agent.core.support
 
 import com.embabel.agent.core.*
 import com.embabel.agent.event.*
+import com.embabel.agent.spi.PlatformServices
 import com.embabel.plan.goap.AStarGoapPlanner
 import com.embabel.plan.goap.WorldStateDeterminer
 import com.fasterxml.jackson.annotation.JsonIgnore

@@ -21,6 +21,7 @@ import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
+import com.embabel.agent.spi.LlmOperations
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
 import org.springframework.ai.tool.ToolCallback

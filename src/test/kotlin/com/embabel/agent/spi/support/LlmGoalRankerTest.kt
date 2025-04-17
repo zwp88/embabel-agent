@@ -16,8 +16,8 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.Goal
-import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.spi.LlmOperations
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue

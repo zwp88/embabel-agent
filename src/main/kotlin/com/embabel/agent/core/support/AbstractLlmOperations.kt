@@ -18,9 +18,9 @@ package com.embabel.agent.core.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.InteractionId
-import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.event.LlmTransformRequestEvent
+import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.support.forProcess
 import com.embabel.common.util.time
 import org.slf4j.Logger
@@ -29,10 +29,9 @@ import org.springframework.ai.tool.ToolCallback
 import java.time.Duration
 
 /**
- * Convenient superclass for LlmTransformer implementations,
+ * Convenient superclass for LlmOperations implementations,
  * which should normally extend this
  * Find all tool callbacks and decorate them to be aware of the platform
- * All LlmTransformers should extend this.
  * Also emits events.
  */
 abstract class AbstractLlmOperations : LlmOperations {

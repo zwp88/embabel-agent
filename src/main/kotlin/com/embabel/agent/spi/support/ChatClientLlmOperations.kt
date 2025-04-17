@@ -16,8 +16,8 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.common.LlmOptions
-import com.embabel.agent.core.InteractionId
 import com.embabel.agent.core.support.AbstractLlmOperations
+import com.embabel.agent.spi.InteractionId
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
@@ -38,7 +38,7 @@ val DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION = """
 """.trimIndent()
 
 /**
- * LlmTransformer implementation that uses the Spring AI ChatClient
+ * LlmOperations implementation that uses the Spring AI ChatClient
  */
 @Service
 internal class ChatClientLlmOperations(
