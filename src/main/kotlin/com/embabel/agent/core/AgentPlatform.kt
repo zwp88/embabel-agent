@@ -196,6 +196,7 @@ interface AgentPlatform : AgentScope {
             agentPlatform = this,
             type = Goal::class.java,
             basis = userInput,
+            choices = this.goals,
         )
         eventListener.onPlatformEvent(goalChoiceEvent)
         val goalRankings = rankerToUse
@@ -278,6 +279,7 @@ interface AgentPlatform : AgentScope {
             agentPlatform = this,
             type = Agent::class.java,
             basis = userInput,
+            choices = this.agents(),
         )
         eventListener.onPlatformEvent(agentChoiceEvent)
         val agentRankings = rankerToUse

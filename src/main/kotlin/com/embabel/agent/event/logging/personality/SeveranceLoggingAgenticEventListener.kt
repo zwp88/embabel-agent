@@ -75,11 +75,11 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     rankingChoiceRequestEventMessage = kier("Choosing {} based on {}"),
     rankingChoiceMadeEventMessage = kier(
         """
-        Chose {} '{}' with confidence {} based on {}: {}
+        Chose {} '{}' with confidence {} based on {}. Choices: {}
             May my cunning acument slice through the fog of small minds, guiding them to their great purpose in labor.
         """.trimIndent()
     ),
-    rankingChoiceNotMadeEventMessage = "WOE: Failed to choose {} based on {}: {}. Confidence cutoff: {}",
+    rankingChoiceNotMadeEventMessage = "WOE: Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
     dymamicAgentCreationMessage = "WILES: Created agent {}",
     agentProcessCreationEventMessage = kier(
         """

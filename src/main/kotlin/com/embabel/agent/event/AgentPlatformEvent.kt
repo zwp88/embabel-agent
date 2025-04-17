@@ -32,12 +32,22 @@ interface AgentPlatformEvent : AgenticEvent {
     val agentPlatform: AgentPlatform
 }
 
-data class RankingChoiceRequestEvent<T>(
+abstract class RankingEvent<T>(
     override val agentPlatform: AgentPlatform,
     val type: Class<T>,
     val basis: Any,
-    override val timestamp: Instant = Instant.now(),
+    val choices: Collection<T>
 ) : AgentPlatformEvent where T : Named, T : Described {
+
+    override val timestamp: Instant = Instant.now()
+}
+
+class RankingChoiceRequestEvent<T>(
+    agentPlatform: AgentPlatform,
+    type: Class<T>,
+    basis: Any,
+    choices: Collection<T>,
+) : RankingEvent<T>(agentPlatform, type, basis, choices) where T : Named, T : Described {
 
     fun determinationEvent(choice: Ranking<T>, rankings: Rankings<T>): RankingChoiceMadeEvent<T> {
         return RankingChoiceMadeEvent(
@@ -46,7 +56,7 @@ data class RankingChoiceRequestEvent<T>(
             choice = choice,
             rankings = rankings,
             basis = basis,
-            timestamp = timestamp,
+            choices = choices,
         )
     }
 
@@ -60,7 +70,7 @@ data class RankingChoiceRequestEvent<T>(
             rankings = rankings,
             confidenceCutOff = confidenceCutoff,
             basis = basis,
-            timestamp = timestamp,
+            choices = choices,
         )
     }
 }
@@ -68,23 +78,24 @@ data class RankingChoiceRequestEvent<T>(
 /**
  * @param basis why we chose this ranked
  */
-data class RankingChoiceMadeEvent<T>(
-    override val agentPlatform: AgentPlatform,
-    val type: Class<T>,
+class RankingChoiceMadeEvent<T>(
+    agentPlatform: AgentPlatform,
+    type: Class<T>,
     val choice: Ranking<T>,
     val rankings: Rankings<T>,
-    val basis: Any,
-    override val timestamp: Instant = Instant.now(),
-) : AgentPlatformEvent where T : Named, T : Described
+    basis: Any,
+    choices: Collection<T>,
+) : RankingEvent<T>(agentPlatform, type, basis, choices) where T : Named, T : Described
 
-data class RankingChoiceCouldNotBeMadeEvent<T>(
-    override val agentPlatform: AgentPlatform,
-    val type: Class<T>,
+class RankingChoiceCouldNotBeMadeEvent<T>(
+    agentPlatform: AgentPlatform,
+    type: Class<T>,
     val rankings: Rankings<T>,
     val confidenceCutOff: ZeroToOne,
-    val basis: Any,
+    basis: Any,
+    choices: Collection<T>,
     override val timestamp: Instant = Instant.now(),
-) : AgentPlatformEvent where T : Named, T : Described
+) : RankingEvent<T>(agentPlatform, type, basis, choices) where T : Named, T : Described
 
 /**
  * Emitted when we've created an agent for a specific task

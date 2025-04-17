@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory
 open class LoggingAgenticEventListener(
     welcomeMessage: String? = null,
     private val rankingChoiceRequestEventMessage: String = "Choosing {} based on {}",
-    private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}",
-    private val rankingChoiceNotMadeEventMessage: String = "Failed to choose {} based on {}: {}. Confidence cutoff: {}",
+    private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}. Choices: {}",
+    private val rankingChoiceNotMadeEventMessage: String = "Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
     private val dymamicAgentCreationMessage: String = "Created agent {}",
     private val agentProcessCreationEventMessage: String = "[{}] created",
     private val agentProcessReadyToPlanEventMessage: String = "[{}] ready to plan from {}",
