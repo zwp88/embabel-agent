@@ -95,4 +95,4 @@ data class TransformationPayload<I, O>(
     val inputClass: Class<I>,
     val outputClass: Class<O>,
 ) : InputPayload<I>, Blackboard by processContext.agentProcess,
-    AgenticEventListener by processContext.platformServices.eventListener
+    AgenticEventListener by processContext

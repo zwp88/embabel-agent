@@ -27,7 +27,6 @@ import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
-import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -58,7 +57,6 @@ class DefaultAgentPlatform(
     private val llmOperations: LlmOperations,
     override val ranker: Ranker,
     override val toolGroupResolver: ToolGroupResolver,
-    private val modelProvider: ModelProvider,
     eventListeners: List<AgenticEventListener>,
     private val processIdGenerator: ProcessIdGenerator,
     override val properties: DefaultAgentPlatformProperties,
@@ -81,7 +79,6 @@ class DefaultAgentPlatform(
 //        scriptEvaluationService = scriptEvaluationService,
         llmOperations = llmOperations,
         agentPlatform = this,
-        modelProvider = modelProvider,
         eventListener = eventListener,
     )
 

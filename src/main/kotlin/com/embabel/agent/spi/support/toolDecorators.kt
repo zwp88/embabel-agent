@@ -47,11 +47,11 @@ private class AgentProcessAwareToolCallback(
             function = delegate.toolDefinition.name(),
             toolInput = toolInput,
         )
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(functionCallRequestEvent)
+        agentProcess.processContext.onProcessEvent(functionCallRequestEvent)
         val (response, millis) = time {
             delegate.call(toolInput)
         }
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
+        agentProcess.processContext.onProcessEvent(
             functionCallRequestEvent.responseEvent(
                 response = response,
                 runningTime = Duration.ofMillis(millis),

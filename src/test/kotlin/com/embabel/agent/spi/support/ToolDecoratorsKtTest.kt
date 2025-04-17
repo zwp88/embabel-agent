@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.PlatformServices
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
 import com.embabel.agent.event.AgentProcessFunctionCallResponseEvent
-import com.embabel.agent.api.common.LlmOptions
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -55,6 +55,9 @@ class ToolDecoratorsKtTest {
         every { mockPlatformServices.eventListener } returns EventSavingAgenticEventListener()
         val agentProcess = mockk<AgentProcess>()
         every { agentProcess.processContext.platformServices } returns mockPlatformServices
+        every { agentProcess.processContext.onProcessEvent(any()) } answers {
+            // Do nothing
+        }
         val llm = LlmOptions()
         val decorated = tool.forProcess(agentProcess, llm)
         val rawResult = tool.call("{}")
@@ -69,7 +72,9 @@ class ToolDecoratorsKtTest {
         val mockPlatformServices = mockk<PlatformServices>()
         every { mockPlatformServices.eventListener } returns ese
         val agentProcess = mockk<AgentProcess>()
-        every { agentProcess.processContext.platformServices } returns mockPlatformServices
+        every { agentProcess.processContext.onProcessEvent(any()) } answers {
+            ese.processEvents.add(firstArg())
+        }
         val llm = LlmOptions()
         val decorated = tool.forProcess(agentProcess, llm)
         decorated.call("{}")

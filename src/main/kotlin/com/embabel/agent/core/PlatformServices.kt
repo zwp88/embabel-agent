@@ -16,7 +16,6 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.event.AgenticEventListener
-import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
 
 /**
@@ -25,9 +24,6 @@ import com.embabel.common.textio.template.TemplateRenderer
  */
 data class PlatformServices(
     val templateRenderer: TemplateRenderer,
-    // TODO this should be removed
-    val modelProvider: ModelProvider,
-//    val scriptEvaluationService: ScriptEvaluationService,
     val agentPlatform: AgentPlatform,
     val llmOperations: LlmOperations,
     val eventListener: AgenticEventListener,

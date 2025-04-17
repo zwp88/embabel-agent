@@ -50,7 +50,7 @@ internal class SimpleAgentProcess(
 
     override fun bind(name: String, value: Any): Bindable {
         blackboard[name] = value
-        processContext.platformServices.eventListener.onProcessEvent(
+        processContext.onProcessEvent(
             ObjectBoundEvent(
                 agentProcess = this,
                 name = name,

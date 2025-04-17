@@ -87,7 +87,7 @@ abstract class AbstractLlmOperations : LlmOperations {
             )
         }
         logger.debug("LLM response={}", response)
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
+        agentProcess.processContext.onProcessEvent(
             transformRequestEvent.responseEvent(
                 response = response,
                 runningTime = Duration.ofMillis(ms),
@@ -125,7 +125,7 @@ abstract class AbstractLlmOperations : LlmOperations {
             )
         }
         logger.debug("LLM response={}", response)
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
+        agentProcess.processContext.onProcessEvent(
             transformRequestEvent.maybeResponseEvent(
                 response = response,
                 runningTime = Duration.ofMillis(ms),

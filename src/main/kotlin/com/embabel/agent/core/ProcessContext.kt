@@ -22,7 +22,7 @@ import com.embabel.agent.event.AgenticEventListener
  */
 data class ProcessContext(
     val processOptions: ProcessOptions = ProcessOptions(),
-    val platformServices: PlatformServices,
+    internal val platformServices: PlatformServices,
     val agentProcess: AgentProcess,
 ) : LlmOperations by platformServices.llmOperations, AgenticEventListener by platformServices.eventListener {
 

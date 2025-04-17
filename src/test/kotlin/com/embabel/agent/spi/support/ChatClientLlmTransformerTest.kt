@@ -113,6 +113,7 @@ class ChatClientLlmTransformerTest {
             every { mockAgent.resolveToolCallbacks(any()) } returns emptySet()
             every { mockAgentProcess.agent } returns mockAgent
             val mockProcessContext = mockk<ProcessContext>()
+            every { mockProcessContext.onProcessEvent(any()) } answers { eventListener.onProcessEvent(firstArg()) }
             every { mockProcessContext.platformServices } returns mockPlatformServices
             every { mockProcessContext.agentProcess } returns mockAgentProcess
             every { mockAgentProcess.processContext } returns mockProcessContext
@@ -253,6 +254,7 @@ class ChatClientLlmTransformerTest {
             every { mockAgent.resolveToolCallbacks(any()) } returns emptySet()
             every { mockAgentProcess.agent } returns mockAgent
             val mockProcessContext = mockk<ProcessContext>()
+            every { mockProcessContext.onProcessEvent(any()) } answers { eventListener.onProcessEvent(firstArg()) }
             every { mockProcessContext.platformServices } returns mockPlatformServices
             every { mockProcessContext.agentProcess } returns mockAgentProcess
             every { mockAgentProcess.processContext } returns mockProcessContext
