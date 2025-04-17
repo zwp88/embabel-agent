@@ -44,8 +44,8 @@ open class LoggingAgenticEventListener(
     private val objectBoundMessage: String = "{} Object bound: {} to {} in [{}]",
     private val functionCallRequestEventMessage: String = "[{}] calling function {} with payload {}",
     private val functionCallResponseEventMessage: String = "[{}] function {} response {} in {}ms with payload {}",
-    private val transformRequestEventMessage: String = "[{}] requesting LLM transform from {} -> {} using {}",
-    private val transformResponseEventMessage: () -> String = { "[{}] received LLM response of type {} from {} in {} seconds" },
+    private val llmRequestEventMessage: String = "[{}] requesting LLM transform from {} -> {} using {}",
+    private val llmResponseEventMessage: () -> String = { "[{}] received LLM response of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
     private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
     private val progressUpdateEventMessage: String = "[{}] progress: {}",
@@ -174,8 +174,8 @@ open class LoggingAgenticEventListener(
                 logger.info(objectBoundMessage, event.agentProcess.id, event.name, event.value, event.processId)
             }
 
-            is LlmTransformRequestEvent<*, *> -> {
-                var message = transformRequestEventMessage
+            is LlmRequestEvent<*, *> -> {
+                var message = llmRequestEventMessage
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
                     message += "\nPrompt: ${
                         event.prompt.color(AnsiColor.GREEN)
@@ -190,8 +190,8 @@ open class LoggingAgenticEventListener(
                 )
             }
 
-            is LlmTransformResponseEvent<*, *> -> {
-                var message = transformResponseEventMessage()
+            is LlmResponseEvent<*, *> -> {
+                var message = llmResponseEventMessage()
                 if (event.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
                     message += "\nResponse: ${
                         ("" + event.response).color(

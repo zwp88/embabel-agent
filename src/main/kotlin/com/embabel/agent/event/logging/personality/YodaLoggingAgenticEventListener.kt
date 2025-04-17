@@ -39,7 +39,7 @@ class YodaLoggingAgenticEventListener : LoggingAgenticEventListener(
     processCompletionMessage = "Feel the force: Process {} completed in {}",
     processFailureMessage = "Powerful the dark side is: Process {} failed",
     objectAddedMessage = "A little more knowledge lights our way: Object added: {} to process {}",
-    transformRequestEventMessage = "Ask LLM we will: Process {} requesting LLM transform from {} -> {}",
+    llmRequestEventMessage = "Ask LLM we will: Process {} requesting LLM transform from {} -> {}",
     actionExecutionStartMessage = "Do or do not. There is no try: Process {} executing action {}",
     actionExecutionResultMessage = "Powerful you have become: Process {} executed action {} in {}",
 )

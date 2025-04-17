@@ -18,7 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.event.LlmTransformRequestEvent
+import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.support.forProcess
@@ -149,7 +149,7 @@ abstract class AbstractLlmOperations : LlmOperations {
         input: I,
         outputClass: Class<O>,
         llmOptions: LlmOptions
-    ): Triple<List<ToolCallback>, String, LlmTransformRequestEvent<I, O>> {
+    ): Triple<List<ToolCallback>, String, LlmRequestEvent<I, O>> {
         val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
         val allToolCallbacks =
             (toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
@@ -157,7 +157,7 @@ abstract class AbstractLlmOperations : LlmOperations {
             ) + (action?.resolveToolCallbacks(toolGroupResolver)
                 ?: emptySet())).distinctBy { it.toolDefinition.name() }
         val literalPrompt = prompt(input)
-        val transformRequestEvent = LlmTransformRequestEvent(
+        val transformRequestEvent = LlmRequestEvent(
             agentProcess = agentProcess,
             input = input,
             outputClass = outputClass,

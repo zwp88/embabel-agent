@@ -101,8 +101,8 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     objectBoundMessage = "[{}] Perpetuity wing: object bound: {} to {} in [{}]",
     functionCallRequestEventMessage = "[{}] VERVE: calling function {} with payload {}",
     functionCallResponseEventMessage = "[{}] VISION: function {} response {} in {}ms with payload {}",
-    transformRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM transform from {} -> {} using {}",
-    transformResponseEventMessage = {
+    llmRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM transform from {} -> {} using {}",
+    llmResponseEventMessage = {
         """
         [{}] received LLM response of type {} from {} in {} seconds
         ${TransformSuccessResponses.random()}

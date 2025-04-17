@@ -107,7 +107,7 @@ class AgentProcessTerminationEvent(
     val agentProcessStatus: AgentProcessStatus,
 ) : AbstractAgentProcessEvent(agentProcessStatus.agentProcess)
 
-class LlmTransformRequestEvent<I, O>(
+class LlmRequestEvent<I, O>(
     agentProcess: AgentProcess,
     val input: I,
     val outputClass: Class<O>,
@@ -116,8 +116,8 @@ class LlmTransformRequestEvent<I, O>(
     val prompt: String,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
-    fun responseEvent(response: O, runningTime: Duration): LlmTransformResponseEvent<I, O> {
-        return LlmTransformResponseEvent(
+    fun responseEvent(response: O, runningTime: Duration): LlmResponseEvent<I, O> {
+        return LlmResponseEvent(
             agentProcess = agentProcess,
             input = input,
             outputClass = outputClass,
@@ -128,8 +128,8 @@ class LlmTransformRequestEvent<I, O>(
         )
     }
 
-    fun maybeResponseEvent(response: Result<O>, runningTime: Duration): LlmTransformResponseEvent<I, Result<O>> {
-        return LlmTransformResponseEvent<I, Result<O>>(
+    fun maybeResponseEvent(response: Result<O>, runningTime: Duration): LlmResponseEvent<I, Result<O>> {
+        return LlmResponseEvent<I, Result<O>>(
             agentProcess = agentProcess,
             input = input,
             outputClass = outputClass,
@@ -146,7 +146,7 @@ class LlmTransformRequestEvent<I, O>(
  * @param outputClass normally O, except if this is a maybe response
  * in which case it will be Result<O>
  */
-class LlmTransformResponseEvent<I, O> internal constructor(
+class LlmResponseEvent<I, O> internal constructor(
     agentProcess: AgentProcess,
     val input: I,
     val outputClass: Class<*>,
