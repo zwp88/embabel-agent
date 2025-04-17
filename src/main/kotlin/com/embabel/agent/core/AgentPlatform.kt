@@ -33,7 +33,10 @@ data class Verbosity(
     val showPrompts: Boolean = false,
     val showLlmResponses: Boolean = false,
     val debug: Boolean = false,
-)
+    val showPlanning: Boolean = false,
+) {
+    val showLongPlans: Boolean get() = showPlanning || debug || showLlmResponses || showPrompts
+}
 
 /**
  * How to run an AgentProcess

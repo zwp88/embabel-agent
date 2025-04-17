@@ -37,7 +37,7 @@ open class LoggingAgenticEventListener(
     private val dymamicAgentCreationMessage: String = "Created agent {}",
     private val agentProcessCreationEventMessage: String = "[{}] created",
     private val agentProcessReadyToPlanEventMessage: String = "[{}] ready to plan from {}",
-    private val agentProcessPlanFormulatedEventMessage: String = "[{}] formulated plan <{}> from {}",
+    private val agentProcessPlanFormulatedEventMessage: String = "[{}] formulated plan {} from {}",
     private val processCompletionMessage: String = "[{}] completed in {}",
     private val processFailureMessage: String = "[{}] failed",
     private val objectAddedMessage: String = "{} Object added: {} to [{}]",
@@ -117,7 +117,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     agentProcessPlanFormulatedEventMessage,
                     event.processId,
-                    event.plan.infoString(),
+                    event.plan.infoString(verbose = event.agentProcess.processContext.processOptions.verbosity.showLongPlans),
                     event.worldState.state,
                 )
             }

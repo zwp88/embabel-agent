@@ -64,8 +64,18 @@ open class Plan(
 
     val netValue: Double get() = goal.value + actionsValue - cost
 
-    override fun infoString(verbose: Boolean?): String =
-        actions.joinToString(" -> ") { it.name } +
-                "; netValue=$netValue"
+    override fun infoString(verbose: Boolean?): String {
+        return if (verbose == true) {
+            "\n${
+                actions.mapIndexed { index, action ->
+                    "\t".repeat(index + 1) + action.name
+                }.joinToString(" ->\n")
+            }\n\tcost=$cost; netValue=$netValue"
+
+        } else {
+            actions.joinToString(" -> ") { it.name } +
+                    "; netValue=$netValue"
+        }
+    }
 
 }

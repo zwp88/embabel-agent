@@ -229,7 +229,7 @@ Optional external services:
 ## Running via Spring Shell
 
 The easiest way to run the application using using one of the scripts in the
-`scripts` directory. You can start the shell with:
+`scripts` directory. You can start the shell in interactive mode with:
 
 ```bash
 cd scripts
@@ -239,9 +239,7 @@ cd scripts
 This script will also warn of any missing environment variables.
 
 You can also run the shell under your IDE or from the command line
-using Maven directly.
-
-This will run the application in interactive shell mode:
+using Maven directly:
 
 ```bash
 export SPRING_PROFILES_ACTIVE=shell,severance
@@ -261,6 +259,9 @@ execute "Lynda is a Scorpio, find news for her" -p -r
 This will look for a goal, find the star finder goal and
 run the flow. `-p` will log prompts `-r` will log LLM responses.
 Omit these for less verbose logging.
+
+> Spring Shell supports history. Type `!!` to repeat the last command.
+> This will survive restarts, so is handy when iterating on an agent.
 
 ## Running Tests
 

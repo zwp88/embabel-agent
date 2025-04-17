@@ -134,9 +134,10 @@ class MovieFinder(
 
     @Action
     fun analyzeTasteProfile(
-        movieBuff: MovieBuff
+        movieBuff: MovieBuff,
+        payload: TransformationPayload<*, DecoratedMovieBuff>,
     ): DecoratedMovieBuff {
-        val tasteProfile = using(LlmOptions("gpt-4o-mini")) generateText
+        val tasteProfile = payload.promptRunner(LlmOptions("gpt-4o-mini")) generateText
                 """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
@@ -148,7 +149,7 @@ class MovieFinder(
 
             Return a summary of their taste profile as you understand it,
             in ${config.tasteProfileWordCount} words or less. Cover what they like and don't like.
-            """
+            """.trimIndent()
         return DecoratedMovieBuff(
             movieBuff = movieBuff,
             tasteProfile = tasteProfile,
@@ -167,11 +168,15 @@ class MovieFinder(
             Their movie taste profile is ${dmb.tasteProfile}
             About them: "${dmb.movieBuff.about}"
 
-            Consider the following specific request: '${userInput.content}'
+            Consider the following specific request that may govern today's choice: '${userInput.content}'
 
             Given this, use web tools and generate search queries
             to find 5 relevant news stories that might inspire
-            movie choice for them tonight.
+            a movie choice for them tonight.
+            Don't look for movie news but general news that might interest them.
+            If possible, look for news specific to the specific request.
+            Country: ${dmb.movieBuff.countryCode}
+            Current date: ${userInput.timestamp.toString()}
         """.trimIndent()
 
 
@@ -201,7 +206,7 @@ class MovieFinder(
             LlmOptions(model = "gpt-4o"),
         ).createObject<SuggestedMovieTitles>(
             """
-            Suggest ${config.suggestionCount} movies titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
+            Suggest ${config.suggestionCount} movie titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
             Consider the specific request: "${userInput.content}"
 
@@ -225,7 +230,7 @@ class MovieFinder(
             Consider also the following news stories for topical inspiration:
             ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
             $randomPart
-            """
+            """.trimIndent(),
         )
         // Be sure to bind the suggested movie titles to the blackboard
         payload += suggestedMovieTitles
@@ -271,7 +276,7 @@ class MovieFinder(
                     val availableToUser = allStreamingOptions.filter {
                         it.service.name.lowercase() in movieBuff.streamingServices.map { it.lowercase() }
                     }
-                    logger.info(
+                    logger.debug(
                         "Movie {} available in [{}] on {}",
                         movie.Title,
                         movieBuff.countryCode,
@@ -341,34 +346,32 @@ class MovieFinder(
     fun writeUpSuggestions(
         dmb: DecoratedMovieBuff,
         streamableMovies: StreamableMovies,
+        payload: TransformationPayload<*, SuggestionWriteup>,
     ): SuggestionWriteup {
-        val text = using(LlmOptions("gpt-4o-mini")) generateText
+        val text = payload.promptRunner(LlmOptions("gpt-4o")) generateText
                 """
-            Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount}
-            for ${dmb.movieBuff.name}
-            based on the following information:
-            Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
-            Their movie taste profile is ${dmb.tasteProfile}
-            A bit about them: "${dmb.movieBuff.about}"
-
-            The movie recommendations are:
-            ${
+                Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount}
+                for ${dmb.movieBuff.name}
+                based on the following information:
+                Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
+                Their movie taste profile is ${dmb.tasteProfile}
+                A bit about them: "${dmb.movieBuff.about}"
+    
+                The streamable movie recommendations are:
+                ${
                     streamableMovies.movies.joinToString("\n\n") {
                         """
-                    ${it.movie.Title} (${it.movie.Year}): ${it.movie.imdbID}
-                    Director: ${it.movie.Director}
-                    Actors: ${it.movie.Actors}
-                    ${it.movie.Plot}
-                    Streaming available to ${dmb.movieBuff.name} on ${it.availableStreamingOptions.joinToString(", ") { it.service.name }}
-                    Also available on ${it.unavailableStreamingOptions.joinToString(", ") { it.service.name }}
-                    but ${dmb.movieBuff.name} doesn't have a subscription
-                    """.trimIndent()
+                        ${it.movie.Title} (${it.movie.Year}): ${it.movie.imdbID}
+                        Director: ${it.movie.Director}
+                        Actors: ${it.movie.Actors}
+                        ${it.movie.Plot}
+                        Streaming available to ${dmb.movieBuff.name} on ${it.availableStreamingOptions.joinToString(", ") { "${it.service.name} at ${it.link}" }}
+                        """.trimIndent()
                     }
                 }
-            Focus on streamable movies.
-
-            Format in Markdown and include links to the movies on IMDB and the streaming services.
-            """
+    
+                Format in Markdown and include links to the movies on IMDB and the streaming service link for each.
+                """.trimIndent()
         return SuggestionWriteup(
             text = text,
         )

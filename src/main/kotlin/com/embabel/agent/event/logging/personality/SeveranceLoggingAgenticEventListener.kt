@@ -88,7 +88,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
                     """.trimIndent()
     ),
     agentProcessReadyToPlanEventMessage = "[{}] WIT  ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "[{}] WILES: formulated plan <{}> from {}",
+    agentProcessPlanFormulatedEventMessage = "[{}] WILES: formulated plan {} from {}",
     processCompletionMessage = """
         [{}] completed in {}
         ${CompletionMessages.random()}

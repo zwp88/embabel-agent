@@ -67,7 +67,15 @@ class ShellCommands(
     fun demo(): String {
         val intent = "Lynda is a scorpio. Find news for her"
         logger.info("Demo executing intent: '$intent'")
-        val output = executeIntent(intent = intent, open = false)
+        val output = executeIntent(
+            intent = intent, open = false,
+            verbosity = Verbosity(
+                debug = false,
+                showPrompts = true,
+                showLlmResponses = false,
+                showPlanning = true,
+            )
+        )
         logger.info("Execute your own intent via the 'execute' command. Enclose the intent in quotes. For example:")
         logger.info("execute \"$intent\"".color(LumonColors.Green))
         return output
@@ -117,31 +125,33 @@ class ShellCommands(
         @ShellOption(value = ["-p", "--showPrompts"], help = "show prompts to LLMs") showPrompts: Boolean,
         @ShellOption(value = ["-r", "--showResponses"], help = "show LLM responses") showLlmResponses: Boolean = false,
         @ShellOption(value = ["-d", "--debug"], help = "show debug info") debug: Boolean = false,
+        @ShellOption(
+            value = ["-s", "--showPlanning"],
+            help = "show detailed planning info",
+        ) showPlanning: Boolean = true,
     ): String {
         return executeIntent(
             open = open,
             test = test,
-            debug = debug,
-            showPrompts = showPrompts,
-            showLlmResponses = showLlmResponses,
             intent = intent,
+            verbosity = Verbosity(
+                debug = debug,
+                showPrompts = showPrompts,
+                showLlmResponses = showLlmResponses,
+                showPlanning = showPlanning,
+            ),
         )
     }
 
     private fun executeIntent(
         open: Boolean,
         test: Boolean = false,
-        debug: Boolean = false,
-        showPrompts: Boolean = true,
-        showLlmResponses: Boolean = false,
+        verbosity: Verbosity,
         intent: String,
     ): String {
         val processOptions = ProcessOptions(
             test = test,
-            verbosity = Verbosity(
-                showPrompts = showPrompts,
-                showLlmResponses = showLlmResponses,
-            )
+            verbosity = verbosity,
         )
         logger.info("Created process options: $processOptions".color(LumonColors.Membrane))
         val result = if (open) {
@@ -165,7 +175,7 @@ class ShellCommands(
         logger.debug("Result: {}\n", result)
         when (result) {
             is DynamicExecutionResult.NoGoalFound -> {
-                if (debug) {
+                if (verbosity.debug) {
                     logger.info(
                         """
                     Failed to choose goal:
@@ -178,7 +188,7 @@ class ShellCommands(
             }
 
             is DynamicExecutionResult.NoAgentFound -> {
-                if (debug) {
+                if (verbosity.debug) {
                     logger.info(
                         """
                     Failed to choose agent:
