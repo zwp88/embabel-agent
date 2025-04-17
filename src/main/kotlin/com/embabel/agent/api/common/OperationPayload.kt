@@ -17,6 +17,7 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Blackboard
+import com.embabel.agent.core.InteractionId
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.event.AgenticEventListener
 import org.springframework.ai.tool.ToolCallback
@@ -31,9 +32,11 @@ interface OperationPayload : Blackboard {
     val processContext: ProcessContext
     val action: Action?
 
-    // TODO default LLM options to action
+    // TODO default LLM options from action
     fun promptRunner(llm: LlmOptions): PromptRunner =
         OperationPayloadPromptRunner(this, llm)
+
+    fun agentPlatform() = processContext.platformServices.agentPlatform
 
 }
 
@@ -42,37 +45,45 @@ private class OperationPayloadPromptRunner(
     private val llm: LlmOptions,
 ) : PromptRunner {
 
-    override fun <T> createObject(prompt: String, outputClass: Class<T>): T {
+    override fun <T> createObject(
+        prompt: String,
+        outputClass: Class<T>,
+        toolCallbacks: List<ToolCallback>,
+    ): T {
         return payload.processContext.transform<Unit, T>(
             Unit,
             { prompt },
-            // TODO fix callbacks
             llmOptions = llm,
-//        toolCallbacks,
+            toolCallbacks = toolCallbacks,
             outputClass = outputClass,
             agentProcess = payload.processContext.agentProcess,
             action = payload.action,
+            // tODO this wrong
+            interactionId = InteractionId(prompt),
         )
     }
 
-    override fun <T> createObjectIfPossible(prompt: String, outputClass: Class<T>): T? {
+    override fun <T> createObjectIfPossible(
+        prompt: String,
+        outputClass: Class<T>,
+        toolCallbacks: List<ToolCallback>,
+    ): T? {
         return payload.processContext.transformIfPossible<Unit, T>(
             Unit,
             { prompt },
-            // TODO fix callbacks
             llmOptions = llm,
-//        toolCallbacks,
+            toolCallbacks = toolCallbacks,
             outputClass = outputClass,
             agentProcess = payload.processContext.agentProcess,
             action = payload.action,
+            // TODO this is wrong
+            interactionId = InteractionId(prompt),
         ).getOrNull()
     }
 }
 
 interface InputPayload<I> : OperationPayload {
     val input: I
-
-    fun agentPlatform() = processContext.platformServices.agentPlatform
 
 }
 
@@ -84,32 +95,4 @@ data class TransformationPayload<I, O>(
     val inputClass: Class<I>,
     val outputClass: Class<O>,
 ) : InputPayload<I>, Blackboard by processContext.agentProcess,
-    AgenticEventListener by processContext.platformServices.eventListener {
-
-    /**
-     * Simple prompt transformation
-     */
-    fun <I, O> transform(
-        input: I,
-        prompt: (input: I) -> String,
-        llmOptions: LlmOptions = LlmOptions.Companion(),
-        toolCallbacks: List<ToolCallback> = emptyList(),
-        outputClass: Class<O>,
-    ): O = processContext.transform(
-        input, prompt, llmOptions, toolCallbacks, outputClass,
-        agentProcess = processContext.agentProcess,
-        action = this.action,
-    )
-
-    fun <I, O> maybeTransform(
-        input: I,
-        prompt: (input: I) -> String,
-        llmOptions: LlmOptions = LlmOptions.Companion(),
-        toolCallbacks: List<ToolCallback> = emptyList(),
-        outputClass: Class<O>,
-    ): Result<O> = processContext.transformIfPossible(
-        input, prompt, llmOptions, toolCallbacks, outputClass,
-        agentProcess = processContext.agentProcess,
-        action = this.action,
-    )
-}
+    AgenticEventListener by processContext.platformServices.eventListener

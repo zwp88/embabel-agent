@@ -18,6 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.InteractionId
 import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.event.LlmTransformRequestEvent
 import com.embabel.agent.spi.support.forProcess
@@ -40,6 +41,7 @@ abstract class AbstractLlmOperations : LlmOperations {
 
     override fun generate(
         prompt: String,
+        interactionId: InteractionId,
         llmOptions: LlmOptions,
         toolCallbacks: List<ToolCallback>,
         agentProcess: AgentProcess,
@@ -47,6 +49,7 @@ abstract class AbstractLlmOperations : LlmOperations {
     ): String = transform(
         input = Unit,
         prompt = { prompt },
+        interactionId = interactionId,
         llmOptions = llmOptions,
         toolCallbacks = toolCallbacks,
         outputClass = String::class.java,
@@ -57,6 +60,7 @@ abstract class AbstractLlmOperations : LlmOperations {
     final override fun <I, O> transform(
         input: I,
         prompt: (I) -> String,
+        interactionId: InteractionId,
         llmOptions: LlmOptions,
         toolCallbacks: List<ToolCallback>,
         outputClass: Class<O>,
@@ -76,6 +80,7 @@ abstract class AbstractLlmOperations : LlmOperations {
             doTransform(
                 input = input,
                 literalPrompt = literalPrompt,
+                interactionId = interactionId,
                 llmOptions = llmOptions,
                 allToolCallbacks = allToolCallbacks.map { it.forProcess(agentProcess, llmOptions) },
                 outputClass = outputClass,
@@ -94,6 +99,7 @@ abstract class AbstractLlmOperations : LlmOperations {
     final override fun <I, O> transformIfPossible(
         input: I,
         prompt: (I) -> String,
+        interactionId: InteractionId,
         llmOptions: LlmOptions,
         toolCallbacks: List<ToolCallback>,
         outputClass: Class<O>,

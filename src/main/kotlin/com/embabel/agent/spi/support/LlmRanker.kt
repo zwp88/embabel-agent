@@ -18,6 +18,7 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
+import com.embabel.agent.core.InteractionId
 import com.embabel.agent.core.LlmOperations
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranker
@@ -65,6 +66,7 @@ class LlmRanker(
         val grr = llmOperations.doTransform<UserInput, RankingsResponse>(
             input = userInput,
             literalPrompt = prompt,
+            interactionId = InteractionId("rank-${wordForThing}s"),
             llmOptions = LlmOptions(model = "gpt-4o-mini"),
             outputClass = RankingsResponse::class.java,
         )

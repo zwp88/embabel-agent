@@ -17,12 +17,12 @@ package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ExecutePromptException
+import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.api.common.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
@@ -249,25 +249,21 @@ class AgentMetadataReader {
         } catch (e: ExecutePromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
+
+            // TODO or default options
+            val promptRunner = payload.promptRunner(llm = e.llm ?: LlmOptions())
             if (e.requireResult) {
-                payload.transform(
-                    input = payload.input,
-                    prompt = { e.prompt },
-                    // TODO or default options
-                    llmOptions = e.llm ?: LlmOptions(),
+                promptRunner.createObject(
+                    prompt = e.prompt,
                     toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
                     outputClass = payload.outputClass as Class<Any>,
                 )
             } else {
-                val result = payload.maybeTransform(
-                    input = payload.input,
-                    prompt = { e.prompt },
-                    // TODO or default options
-                    llmOptions = e.llm ?: LlmOptions(),
+                promptRunner.createObjectIfPossible(
+                    prompt = e.prompt,
                     toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
                     outputClass = payload.outputClass as Class<Any>,
                 )
-                result.getOrThrow()
             }
         } catch (t: Throwable) {
             logger.error(

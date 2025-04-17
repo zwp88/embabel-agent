@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.common.ExecutePromptException
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.PromptRunner
+import org.springframework.ai.tool.ToolCallback
 
 /**
  * Return an ambient prompt runner
@@ -35,11 +36,19 @@ private class ActionReturnPromptRunner(
     val llm: LlmOptions?,
 ) : PromptRunner {
 
-    override fun <T> createObject(prompt: String, outputClass: Class<T>): T {
+    override fun <T> createObject(
+        prompt: String,
+        outputClass: Class<T>,
+        toolCallbacks: List<ToolCallback>,
+    ): T {
         throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
     }
 
-    override fun <T> createObjectIfPossible(prompt: String, outClass: Class<T>): T? {
+    override fun <T> createObjectIfPossible(
+        prompt: String,
+        outClass: Class<T>,
+        toolCallbacks: List<ToolCallback>,
+    ): T? {
         throw ExecutePromptException(prompt = prompt, llm = llm, requireResult = true)
     }
 

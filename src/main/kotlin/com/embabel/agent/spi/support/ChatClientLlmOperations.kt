@@ -16,6 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.core.InteractionId
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
@@ -48,6 +49,7 @@ class ChatClientLlmOperations(
     override fun <I, O> doTransform(
         input: I,
         literalPrompt: String,
+        interactionId: InteractionId,
         llmOptions: LlmOptions,
         allToolCallbacks: List<ToolCallback>,
         outputClass: Class<O>,

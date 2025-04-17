@@ -136,6 +136,7 @@ class ChatClientLlmTransformerTest {
                 agentProcess = mockAgentProcess,
                 action = null,
                 outputClass = Person::class.java,
+                interactionId = InteractionId("test"),
             )
         }
     }
@@ -275,6 +276,7 @@ class ChatClientLlmTransformerTest {
                 agentProcess = mockAgentProcess,
                 action = null,
                 outputClass = outputClass,
+                interactionId = InteractionId("test"),
             )
             return Return(
                 result = result,

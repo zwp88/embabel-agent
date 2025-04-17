@@ -64,7 +64,7 @@ inline fun <reified I, reified O : Any> promptTransformer(
         promptTransform(
             it = it,
             prompt = prompt,
-            llmOptions = llmOptions,
+            llm = llmOptions,
             toolCallbacks = toolCallbacks,
         )
     }
@@ -86,23 +86,21 @@ inline fun <reified I, reified O : Any> llmTransform(
         action = action,
     ),
     prompt = prompt,
-    llmOptions = llmOptions,
+    llm = llmOptions,
     toolCallbacks = toolCallbacks,
 )
 
 inline fun <I, reified O : Any> promptTransform(
     it: TransformationPayload<I, O>,
     noinline prompt: (TransformationPayload<I, O>) -> String,
-    llmOptions: LlmOptions = LlmOptions(),
+    llm: LlmOptions = LlmOptions(),
     toolCallbacks: List<ToolCallback> = emptyList(),
 ): O {
     val literalPrompt = prompt(it)
     loggerFor<Transformer<I, O>>().debug("Using LLM to transform input of type ${it.inputClass.simpleName} to ${it.outputClass.simpleName}")
 
-    return it.transform(
-        input = it.input,
-        prompt = { literalPrompt },
-        llmOptions = llmOptions,
+    return it.promptRunner(llm).createObject(
+        prompt = literalPrompt,
         toolCallbacks = toolCallbacks,
         outputClass = O::class.java,
     )

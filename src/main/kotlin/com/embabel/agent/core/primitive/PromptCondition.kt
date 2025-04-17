@@ -17,6 +17,7 @@ package com.embabel.agent.core.primitive
 
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Condition
+import com.embabel.agent.core.InteractionId
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
@@ -59,6 +60,7 @@ data class PromptCondition(
             outputClass = Determination::class.java,
             agentProcess = processContext.agentProcess,
             action = null,
+            interactionId = InteractionId("condition-$name"),
         )
         logger.info("Condition {}: determination from {} was {}", name, llm.model, determination)
         return ConditionDetermination(determination.result)

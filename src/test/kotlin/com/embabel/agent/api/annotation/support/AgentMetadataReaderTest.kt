@@ -448,6 +448,7 @@ class AgentMetadataReaderTest {
                     llmt.transform<Any, Any>(
                         any(),
                         any(),
+                        any(),
                         capture(llmo),
                         any(),
                         any(),
@@ -502,6 +503,7 @@ class AgentMetadataReaderTest {
                 val toolCallbacks = slot<List<ToolCallback>>()
                 every {
                     llmt.transform<Any, Any>(
+                        any(),
                         any(),
                         any(),
                         capture(llmo),
@@ -559,6 +561,7 @@ class AgentMetadataReaderTest {
                 val toolCallbacks = slot<List<ToolCallback>>()
                 every {
                     llmt.transform<Any, Any>(
+                        any(),
                         any(),
                         any(),
                         capture(llmo),

@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.api.common
 
+import org.springframework.ai.tool.ToolCallback
+
 
 /**
  * Interface for executing prompts
@@ -24,7 +26,7 @@ package com.embabel.agent.api.common
 interface PromptRunner {
 
     infix fun generateText(prompt: String): String =
-        createObject(prompt, String::class.java)
+        createObject(prompt = prompt, outputClass = String::class.java)
 
     /**
      * Create an object of the given type using the given prompt and LLM options from context
@@ -33,7 +35,11 @@ interface PromptRunner {
      * @Action method that provides access to
      * domain object instances, offering type safety.
      */
-    fun <T> createObject(prompt: String, outputClass: Class<T>): T
+    fun <T> createObject(
+        prompt: String,
+        outputClass: Class<T>,
+        toolCallbacks: List<ToolCallback> = emptyList(),
+    ): T
 
     /**
      * Try to create an object of the given type using the given prompt and LLM options from context
@@ -42,7 +48,11 @@ interface PromptRunner {
      * @Action method that provides access to
      * domain object instances, offering type safety.
      */
-    fun <T> createObjectIfPossible(prompt: String, outputClass: Class<T>): T?
+    fun <T> createObjectIfPossible(
+        prompt: String,
+        outputClass: Class<T>,
+        toolCallbacks: List<ToolCallback> = emptyList(),
+    ): T?
 
 }
 
