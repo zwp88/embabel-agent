@@ -24,13 +24,12 @@ import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
 
 /**
- * Decorate a ToolCallback to be aware of the AgentProcess
- * and time the call and emit events.
+ * HOF to decorate a ToolCallback to time the call and emit events.
  */
-fun ToolCallback.forProcess(agentProcess: AgentProcess, llmOptions: LlmOptions): ToolCallback =
-    this as? AgentProcessAwareToolCallback ?: AgentProcessAwareToolCallback(this, agentProcess, llmOptions)
+fun ToolCallback.withEventPublication(agentProcess: AgentProcess, llmOptions: LlmOptions): ToolCallback =
+    this as? EventPublishingToolCallback ?: EventPublishingToolCallback(this, agentProcess, llmOptions)
 
-private class AgentProcessAwareToolCallback(
+class EventPublishingToolCallback(
     private val delegate: ToolCallback,
     private val agentProcess: AgentProcess,
     private val llmOptions: LlmOptions,
@@ -39,8 +38,6 @@ private class AgentProcessAwareToolCallback(
     override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
 
     override fun call(toolInput: String): String {
-        val arguments = mapOf("json" to toolInput)
-
         val functionCallRequestEvent = AgentProcessFunctionCallRequestEvent(
             agentProcess = agentProcess,
             llmOptions = llmOptions,

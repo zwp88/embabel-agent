@@ -20,7 +20,7 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
-import com.embabel.agent.spi.support.forProcess
+import com.embabel.agent.spi.support.withEventPublication
 import com.embabel.common.util.time
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -72,7 +72,7 @@ abstract class AbstractLlmOperations : LlmOperations {
                 input = input,
                 literalPrompt = literalPrompt,
                 interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
-                    it.forProcess(
+                    it.withEventPublication(
                         agentProcess,
                         interaction.llm
                     )
@@ -111,7 +111,7 @@ abstract class AbstractLlmOperations : LlmOperations {
                 input = input,
                 literalPrompt = literalPrompt,
                 interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
-                    it.forProcess(
+                    it.withEventPublication(
                         agentProcess,
                         interaction.llm
                     )

@@ -43,7 +43,7 @@ class ToolDecoratorsKtTest {
         val tool = ToolCallbacks.from(SimpleTools()).single()
         val agentProcess = mockk<AgentProcess>()
         val llm = LlmOptions()
-        val decorated = tool.forProcess(agentProcess, llm)
+        val decorated = tool.withEventPublication(agentProcess, llm)
         assertEquals(tool.toolDefinition.name(), decorated.toolDefinition.name())
         assertEquals(tool.toolDefinition.inputSchema(), decorated.toolDefinition.inputSchema())
     }
@@ -59,7 +59,7 @@ class ToolDecoratorsKtTest {
             // Do nothing
         }
         val llm = LlmOptions()
-        val decorated = tool.forProcess(agentProcess, llm)
+        val decorated = tool.withEventPublication(agentProcess, llm)
         val rawResult = tool.call("{}")
         val decoratedRest = decorated.call("{}")
         assertEquals(rawResult, decoratedRest)
@@ -76,7 +76,7 @@ class ToolDecoratorsKtTest {
             ese.processEvents.add(firstArg())
         }
         val llm = LlmOptions()
-        val decorated = tool.forProcess(agentProcess, llm)
+        val decorated = tool.withEventPublication(agentProcess, llm)
         decorated.call("{}")
         assertEquals(2, ese.processEvents.size)
         assertEquals(0, ese.platformEvents.size)
