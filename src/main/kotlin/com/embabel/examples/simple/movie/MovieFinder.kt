@@ -310,10 +310,6 @@ class MovieFinder(
             .all<StreamableMovies>()
             .flatMap { it.movies }
             .distinctBy { it.movie.imdbID }
-        logger.info(
-            "Found {} streamable movies so far",
-            streamableMovies.size
-        )
         processContext.onProcessEvent(
             ProgressUpdateEvent(
                 agentProcess = processContext.agentProcess,
