@@ -25,6 +25,7 @@ import org.jline.utils.AttributedString
 import org.jline.utils.AttributedStyle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
@@ -44,11 +45,18 @@ class DefaultPromptProvider : PromptProvider {
 @ShellComponent
 class ShellCommands(
     private val agentPlatform: AgentPlatform,
+    private val environment: ConfigurableEnvironment,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
 
     private val agentProcessStatuses = mutableListOf<AgentProcessStatus>()
+
+    @ShellMethod(value = "List all active Spring profiles")
+    fun profiles(): String {
+        val profiles = environment.activeProfiles
+        return "Active profiles: ${profiles.joinToString()}"
+    }
 
     @ShellMethod("List agents")
     fun agents(): String {

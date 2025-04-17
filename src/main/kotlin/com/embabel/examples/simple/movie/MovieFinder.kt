@@ -356,7 +356,7 @@ class MovieFinder(
                 Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
                 Their movie taste profile is ${dmb.tasteProfile}
                 A bit about them: "${dmb.movieBuff.about}"
-    
+
                 The streamable movie recommendations are:
                 ${
                     allStreamableMovies(payload.processContext).joinToString("\n\n") {
@@ -369,7 +369,7 @@ class MovieFinder(
                         """.trimIndent()
                     }
                 }
-    
+
                 Format in Markdown and include links to the movies on IMDB and the streaming service link for each.
                 """.trimIndent()
         return SuggestionWriteup(
