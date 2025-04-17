@@ -20,6 +20,7 @@ import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmInteraction
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -53,13 +54,15 @@ private class OperationPayloadPromptRunner(
         return payload.processContext.transform<Unit, T>(
             Unit,
             { prompt },
-            llmOptions = llm,
-            toolCallbacks = toolCallbacks,
+            LlmInteraction(
+                llm = llm,
+                toolCallbacks = toolCallbacks,
+                // tODO this wrong
+                id = InteractionId(prompt),
+            ),
             outputClass = outputClass,
             agentProcess = payload.processContext.agentProcess,
             action = payload.action,
-            // tODO this wrong
-            interactionId = InteractionId(prompt),
         )
     }
 
@@ -71,13 +74,15 @@ private class OperationPayloadPromptRunner(
         return payload.processContext.transformIfPossible<Unit, T>(
             Unit,
             { prompt },
-            llmOptions = llm,
-            toolCallbacks = toolCallbacks,
+            LlmInteraction(
+                llm = llm,
+                toolCallbacks = toolCallbacks,
+                // TODO this is wrong
+                id = InteractionId(prompt),
+            ),
             outputClass = outputClass,
             agentProcess = payload.processContext.agentProcess,
             action = payload.action,
-            // TODO this is wrong
-            interactionId = InteractionId(prompt),
         ).getOrNull()
     }
 }

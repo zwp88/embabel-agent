@@ -20,6 +20,7 @@ import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ZeroToOne
 import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmInteraction
 import com.embabel.plan.goap.ConditionDetermination
 import org.slf4j.LoggerFactory
 
@@ -55,12 +56,14 @@ data class PromptCondition(
         val determination = processContext.transform<Any, Determination>(
             input = Unit,
             prompt = { prompt },
-            llmOptions = llm,
-            toolCallbacks = emptyList(),
+            interaction = LlmInteraction(
+                id = InteractionId("condition-$name"),
+                llm = llm,
+                toolCallbacks = emptyList(),
+            ),
             outputClass = Determination::class.java,
             agentProcess = processContext.agentProcess,
             action = null,
-            interactionId = InteractionId("condition-$name"),
         )
         logger.info("Condition {}: determination from {} was {}", name, llm.model, determination)
         return ConditionDetermination(determination.result)

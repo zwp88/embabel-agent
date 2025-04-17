@@ -15,13 +15,13 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
@@ -137,12 +137,10 @@ class ChatClientLlmTransformerTest {
             return transformer.transform(
                 input = "Hello, world!",
                 prompt = { "Say hello" },
-                llmOptions = LlmOptions(),
-                toolCallbacks = emptyList(),
+                interaction = LlmInteraction(id = InteractionId("test")),
                 agentProcess = mockAgentProcess,
                 action = null,
                 outputClass = Person::class.java,
-                interactionId = InteractionId("test"),
             )
         }
     }
@@ -278,12 +276,10 @@ class ChatClientLlmTransformerTest {
             val result = transformer.transformIfPossible(
                 input = "Hello, world!",
                 prompt = { "Say hello" },
-                llmOptions = LlmOptions(),
-                toolCallbacks = emptyList(),
+                interaction = LlmInteraction(id = InteractionId("test")),
                 agentProcess = mockAgentProcess,
                 action = null,
                 outputClass = outputClass,
-                interactionId = InteractionId("test"),
             )
             return Return(
                 result = result,

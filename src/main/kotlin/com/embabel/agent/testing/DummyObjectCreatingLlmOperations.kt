@@ -15,13 +15,11 @@
  */
 package com.embabel.agent.testing
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import org.slf4j.LoggerFactory
-import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.ParameterizedType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -40,9 +38,7 @@ class DummyObjectCreatingLlmOperations(
 
     override fun generate(
         prompt: String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        toolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         agentProcess: AgentProcess,
         action: Action?
     ): String {
@@ -52,9 +48,7 @@ class DummyObjectCreatingLlmOperations(
     override fun <I, O> doTransform(
         input: I,
         literalPrompt: String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        allToolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         outputClass: Class<O>,
     ): O {
         logger.debug("Creating fake response for class: ${outputClass.name}")
@@ -67,9 +61,7 @@ class DummyObjectCreatingLlmOperations(
     override fun <I, O> transformIfPossible(
         input: I,
         prompt: (I) -> String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        toolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?
@@ -87,18 +79,14 @@ class DummyObjectCreatingLlmOperations(
     override fun <I, O> transform(
         input: I,
         prompt: (I) -> String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        toolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?
     ): O = doTransform(
         input = input,
         literalPrompt = prompt(input),
-        interactionId = interactionId,
-        llmOptions = llmOptions,
-        allToolCallbacks = toolCallbacks,
+        interaction = interaction,
         outputClass = outputClass,
     )
 

@@ -20,11 +20,11 @@ import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.AgentProcessStatus
+import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.core.types.Timed
 import com.embabel.common.util.VisualizableTask
 import com.embabel.plan.Plan
 import com.embabel.plan.goap.WorldState
-import org.springframework.ai.tool.ToolCallback
 import java.time.Duration
 import java.time.Instant
 
@@ -111,8 +111,7 @@ class LlmRequestEvent<I, O>(
     agentProcess: AgentProcess,
     val input: I,
     val outputClass: Class<O>,
-    val llmOptions: LlmOptions,
-    val tools: Collection<ToolCallback>,
+    val interaction: LlmInteraction,
     val prompt: String,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
@@ -120,8 +119,8 @@ class LlmRequestEvent<I, O>(
         return LlmResponseEvent(
             agentProcess = agentProcess,
             input = input,
+            interaction = interaction,
             outputClass = outputClass,
-            llmOptions = llmOptions,
             prompt = prompt,
             response = response,
             runningTime = runningTime
@@ -133,7 +132,7 @@ class LlmRequestEvent<I, O>(
             agentProcess = agentProcess,
             input = input,
             outputClass = outputClass,
-            llmOptions = llmOptions,
+            interaction = interaction,
             prompt = prompt,
             response = response,
             runningTime = runningTime
@@ -150,7 +149,7 @@ class LlmResponseEvent<I, O> internal constructor(
     agentProcess: AgentProcess,
     val input: I,
     val outputClass: Class<*>,
-    val llmOptions: LlmOptions,
+    val interaction: LlmInteraction,
     val prompt: String,
     val response: O,
     override val runningTime: Duration,

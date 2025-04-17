@@ -62,8 +62,7 @@ class LlmGoalRankerTest {
                 llmt.doTransform<UserInput, RankingsResponse>(
                     input = any(),
                     literalPrompt = any(),
-                    interactionId = any(),
-                    llmOptions = any(),
+                    interaction = any(),
                     outputClass = RankingsResponse::class.java,
                 )
             } returns llmr

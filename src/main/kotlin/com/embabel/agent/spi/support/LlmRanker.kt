@@ -65,8 +65,10 @@ internal class LlmRanker(
         val grr = llmOperations.doTransform<UserInput, RankingsResponse>(
             input = userInput,
             literalPrompt = prompt,
-            interactionId = InteractionId("rank-${wordForThing}s"),
-            llmOptions = LlmOptions(model = "gpt-4o-mini"),
+            interaction = LlmInteraction(
+                id = InteractionId("rank-${wordForThing}s"),
+                llm = LlmOptions(model = "gpt-4o-mini"),
+            ),
             outputClass = RankingsResponse::class.java,
         )
         return Rankings(

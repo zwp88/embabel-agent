@@ -179,14 +179,14 @@ open class LoggingAgenticEventListener(
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
                     message += "\nPrompt: ${
                         event.prompt.color(AnsiColor.GREEN)
-                    }\ntools: ${event.tools.map { it.toolDefinition.name() }}"
+                    }\ntools: ${event.interaction.toolCallbacks.map { it.toolDefinition.name() }}"
                 }
                 logger.info(
                     message,
                     event.processId,
                     event.input!!.javaClass.simpleName,
                     event.outputClass.simpleName,
-                    event.llmOptions,
+                    event.interaction.llm,
                 )
             }
 
@@ -203,7 +203,7 @@ open class LoggingAgenticEventListener(
                     message,
                     event.processId,
                     event.response::class.java.simpleName,
-                    event.llmOptions.model,
+                    event.interaction.llm.model,
                     event.runningTime.seconds,
                 )
             }

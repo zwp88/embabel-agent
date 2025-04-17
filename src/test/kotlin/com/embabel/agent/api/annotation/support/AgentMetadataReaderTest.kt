@@ -24,6 +24,7 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
+import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.plan.goap.ConditionDetermination
@@ -34,7 +35,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.ai.tool.ToolCallback
 import com.embabel.agent.core.Agent as IAgent
 
 
@@ -447,15 +447,13 @@ class AgentMetadataReaderTest {
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
-                val llmo = slot<LlmOptions>()
+                val llmo = slot<LlmInteraction>()
                 val llmt = mockk<LlmOperations>()
                 every {
                     llmt.transform<Any, Any>(
                         any(),
                         any(),
-                        any(),
                         capture(llmo),
-                        any(),
                         any(),
                         any(),
                         any(),
@@ -487,8 +485,8 @@ class AgentMetadataReaderTest {
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.COMPLETED, result.status)
                 assertEquals(Person("John Doe"), pc.blackboard.finalResult())
-                assertEquals("magical", llmo.captured.model)
-                assertEquals(1.7, llmo.captured.temperature)
+                assertEquals("magical", llmo.captured.llm.model)
+                assertEquals(1.7, llmo.captured.llm.temperature)
             }
 
             @Test
@@ -502,17 +500,13 @@ class AgentMetadataReaderTest {
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
-                val llmo = slot<LlmOptions>()
-
+                val llmi = slot<LlmInteraction>()
                 val llmt = mockk<LlmOperations>()
-                val toolCallbacks = slot<List<ToolCallback>>()
                 every {
                     llmt.transform<Any, Any>(
                         any(),
                         any(),
-                        any(),
-                        capture(llmo),
-                        capture(toolCallbacks),
+                        capture(llmi),
                         any(),
                         any(),
                         any(),
@@ -544,9 +538,9 @@ class AgentMetadataReaderTest {
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.COMPLETED, result.status)
                 assertEquals(Person("John Doe"), pc.blackboard.finalResult())
-                assertEquals(1, toolCallbacks.captured.size)
-                assertEquals("thing", toolCallbacks.captured.single().toolDefinition.name())
-                assertEquals(LlmOptions.DEFAULT_MODEL, llmo.captured.model)
+                assertEquals(1, llmi.captured.toolCallbacks.size)
+                assertEquals("thing", llmi.captured.toolCallbacks.single().toolDefinition.name())
+                assertEquals(LlmOptions.DEFAULT_MODEL, llmi.captured.llm.model)
             }
 
             @Test
@@ -560,17 +554,13 @@ class AgentMetadataReaderTest {
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
-                val llmo = slot<LlmOptions>()
-
+                val llmo = slot<LlmInteraction>()
                 val llmt = mockk<LlmOperations>()
-                val toolCallbacks = slot<List<ToolCallback>>()
                 every {
                     llmt.transform<Any, Any>(
                         any(),
                         any(),
-                        any(),
                         capture(llmo),
-                        capture(toolCallbacks),
                         any(),
                         any(),
                         any(),
@@ -603,9 +593,9 @@ class AgentMetadataReaderTest {
                 assertEquals(ActionStatusCode.COMPLETED, result.status)
                 assertTrue(pc.blackboard.finalResult() is UserInput)
                 assertEquals("John Doe", (pc.blackboard.finalResult() as UserInput).content)
-                assertEquals(1, toolCallbacks.captured.size)
-                assertEquals("reverse", toolCallbacks.captured.single().toolDefinition.name())
-                assertEquals(LlmOptions.DEFAULT_MODEL, llmo.captured.model)
+                assertEquals(1, llmo.captured.toolCallbacks.size)
+                assertEquals("reverse", llmo.captured.toolCallbacks.single().toolDefinition.name())
+                assertEquals(LlmOptions.DEFAULT_MODEL, llmo.captured.llm.model)
             }
 
         }

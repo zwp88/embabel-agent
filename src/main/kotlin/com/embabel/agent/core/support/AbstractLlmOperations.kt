@@ -15,11 +15,10 @@
  */
 package com.embabel.agent.core.support
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.LlmRequestEvent
-import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.support.forProcess
 import com.embabel.common.util.time
@@ -40,17 +39,13 @@ abstract class AbstractLlmOperations : LlmOperations {
 
     override fun generate(
         prompt: String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        toolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         agentProcess: AgentProcess,
         action: Action?
     ): String = transform(
         input = Unit,
         prompt = { prompt },
-        interactionId = interactionId,
-        llmOptions = llmOptions,
-        toolCallbacks = toolCallbacks,
+        interaction = interaction,
         outputClass = String::class.java,
         agentProcess = agentProcess,
         action = action,
@@ -59,29 +54,29 @@ abstract class AbstractLlmOperations : LlmOperations {
     final override fun <I, O> transform(
         input: I,
         prompt: (I) -> String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        toolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?,
     ): O {
         val (allToolCallbacks, literalPrompt, transformRequestEvent) = setup<I, O>(
-            agentProcess,
-            toolCallbacks,
-            action,
-            prompt,
-            input,
-            outputClass,
-            llmOptions
+            agentProcess = agentProcess,
+            interaction = interaction,
+            action = action,
+            prompt = prompt,
+            input = input,
+            outputClass = outputClass,
         )
         val (response, ms) = time {
             doTransform(
                 input = input,
                 literalPrompt = literalPrompt,
-                interactionId = interactionId,
-                llmOptions = llmOptions,
-                allToolCallbacks = allToolCallbacks.map { it.forProcess(agentProcess, llmOptions) },
+                interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
+                    it.forProcess(
+                        agentProcess,
+                        interaction.llm
+                    )
+                }),
                 outputClass = outputClass,
             )
         }
@@ -98,28 +93,29 @@ abstract class AbstractLlmOperations : LlmOperations {
     final override fun <I, O> transformIfPossible(
         input: I,
         prompt: (I) -> String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        toolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?
     ): Result<O> {
         val (allToolCallbacks, literalPrompt, transformRequestEvent) = setup<I, O>(
-            agentProcess,
-            toolCallbacks,
-            action,
-            prompt,
-            input,
-            outputClass,
-            llmOptions
+            agentProcess = agentProcess,
+            interaction = interaction,
+            action = action,
+            prompt = prompt,
+            input = input,
+            outputClass = outputClass,
         )
         val (response, ms) = time {
             doTransformIfPossible(
                 input = input,
                 literalPrompt = literalPrompt,
-                llmOptions = llmOptions,
-                allToolCallbacks = allToolCallbacks.map { it.forProcess(agentProcess, llmOptions) },
+                interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
+                    it.forProcess(
+                        agentProcess,
+                        interaction.llm
+                    )
+                }),
                 outputClass = outputClass,
             )
         }
@@ -136,23 +132,21 @@ abstract class AbstractLlmOperations : LlmOperations {
     protected abstract fun <I, O> doTransformIfPossible(
         input: I,
         literalPrompt: String,
-        llmOptions: LlmOptions,
-        allToolCallbacks: List<ToolCallback> = emptyList(),
+        interaction: LlmInteraction,
         outputClass: Class<O>,
     ): Result<O>
 
     private fun <I, O> setup(
         agentProcess: AgentProcess,
-        toolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         action: Action?,
         prompt: (I) -> String,
         input: I,
         outputClass: Class<O>,
-        llmOptions: LlmOptions
     ): Triple<List<ToolCallback>, String, LlmRequestEvent<I, O>> {
         val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
         val allToolCallbacks =
-            (toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
+            (interaction.toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
                 toolGroupResolver,
             ) + (action?.resolveToolCallbacks(toolGroupResolver)
                 ?: emptySet())).distinctBy { it.toolDefinition.name() }
@@ -161,9 +155,8 @@ abstract class AbstractLlmOperations : LlmOperations {
             agentProcess = agentProcess,
             input = input,
             outputClass = outputClass,
-            llmOptions = llmOptions,
+            interaction = interaction.copy(toolCallbacks = allToolCallbacks),
             prompt = literalPrompt,
-            tools = allToolCallbacks,
         )
         agentProcess.processContext.platformServices.eventListener.onProcessEvent(
             transformRequestEvent

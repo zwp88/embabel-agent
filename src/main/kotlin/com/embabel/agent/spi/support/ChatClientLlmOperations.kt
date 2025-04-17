@@ -17,13 +17,12 @@ package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.support.AbstractLlmOperations
-import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.openai.OpenAiChatOptions
-import org.springframework.ai.tool.ToolCallback
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
@@ -49,9 +48,7 @@ internal class ChatClientLlmOperations(
     override fun <I, O> doTransform(
         input: I,
         literalPrompt: String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        allToolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         outputClass: Class<O>,
     ): O {
         // TODO would be good to identify this ahead of time
@@ -59,13 +56,13 @@ internal class ChatClientLlmOperations(
             error("Output class must not be a List")
         }
 
-        val chatClient = createChatClient(llmOptions)
+        val chatClient = createChatClient(interaction.llm)
 
         val springAiPrompt = Prompt(literalPrompt)
 
         val callResponse = chatClient
             .prompt(springAiPrompt)
-            .tools(allToolCallbacks)
+            .tools(interaction.toolCallbacks)
             .call()
         if (outputClass == String::class.java) {
             return callResponse.content() as O
@@ -77,11 +74,10 @@ internal class ChatClientLlmOperations(
     override fun <I, O> doTransformIfPossible(
         input: I,
         literalPrompt: String,
-        llmOptions: LlmOptions,
-        allToolCallbacks: List<ToolCallback>,
+        interaction: LlmInteraction,
         outputClass: Class<O>
     ): Result<O> {
-        val chatClient = createChatClient(llmOptions)
+        val chatClient = createChatClient(interaction.llm)
         val springAiPrompt = Prompt("$literalPrompt\n$maybeReturnPromptContribution")
 
         val typeReference = createParameterizedTypeReference<MaybeReturn<*>>(
@@ -90,7 +86,7 @@ internal class ChatClientLlmOperations(
         )
         val output = chatClient
             .prompt(springAiPrompt)
-            .tools(allToolCallbacks)
+            .tools(interaction.toolCallbacks)
             .call()
             .entity(typeReference)!! as MaybeReturn<O>
         return output.toResult()

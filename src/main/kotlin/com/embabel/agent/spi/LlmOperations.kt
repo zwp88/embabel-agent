@@ -28,6 +28,18 @@ import org.springframework.ai.tool.ToolCallback
 value class InteractionId(val value: String)
 
 /**
+ * Encapsulates an interaction with an LLM.
+ * @param id Unique identifier for the interaction
+ * @param llm LLM options to use, specifying model and hyperparameters
+ * @param toolCallbacks Tool callbacks to use for this interaction
+ */
+data class LlmInteraction(
+    val id: InteractionId,
+    val llm: LlmOptions = LlmOptions(),
+    val toolCallbacks: List<ToolCallback> = emptyList(),
+)
+
+/**
  * Wraps LLM operations.
  * All LLM operations go through this,
  * allowing the AgentPlatform to mediate them.
@@ -40,17 +52,13 @@ interface LlmOperations {
     /**
      * Generate text
      * @param prompt Prompt to generate text from
-     * @param interactionId Unique id for this interaction
-     * @param llmOptions Options for the LLM. Controls model and hyperparameters. Default LLM will be used if not provided.
-     * @param toolCallbacks Tool callbacks to use for this generation.
+     * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
      */
     fun generate(
         prompt: String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions = LlmOptions(),
-        toolCallbacks: List<ToolCallback> = emptyList(),
+        interaction: LlmInteraction,
         agentProcess: AgentProcess,
         action: Action?,
     ): String
@@ -60,9 +68,7 @@ interface LlmOperations {
      * to the output object.
      * @param input Input object
      * @param prompt Function to generate the prompt from the input object
-     * @param interactionId Unique id for this interaction
-     * @param llmOptions Options for the LLM. Controls model and hyperparameters
-     * @param toolCallbacks Tool callbacks to use for this transformation.
+     * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param outputClass Class of the output object
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
@@ -70,9 +76,7 @@ interface LlmOperations {
     fun <I, O> transform(
         input: I,
         prompt: (input: I) -> String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions = LlmOptions(),
-        toolCallbacks: List<ToolCallback> = emptyList(),
+        interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?,
@@ -83,9 +87,7 @@ interface LlmOperations {
      * to the output object which might not succeed.
      * @param input Input object
      * @param prompt Function to generate the prompt from the input object
-     * @param interactionId Unique id for this interaction
-     * @param llmOptions Options for the LLM. Controls model and hyperparameters
-     * @param toolCallbacks Tool callbacks to use for this transformation.
+     * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param outputClass Class of the output object
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
@@ -93,9 +95,7 @@ interface LlmOperations {
     fun <I, O> transformIfPossible(
         input: I,
         prompt: (input: I) -> String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions = LlmOptions(),
-        toolCallbacks: List<ToolCallback> = emptyList(),
+        interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?,
@@ -108,9 +108,7 @@ interface LlmOperations {
     fun <I, O> doTransform(
         input: I,
         literalPrompt: String,
-        interactionId: InteractionId,
-        llmOptions: LlmOptions,
-        allToolCallbacks: List<ToolCallback> = emptyList(),
+        interaction: LlmInteraction,
         outputClass: Class<O>,
     ): O
 
