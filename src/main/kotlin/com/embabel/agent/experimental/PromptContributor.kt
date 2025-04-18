@@ -28,4 +28,6 @@ data class PromptContribution(
 interface PromptContributor {
 
     fun promptContribution(): PromptContribution
+
+    fun contribution(): String = promptContribution().content
 }

@@ -201,14 +201,13 @@ class MovieFinder(
     fun suggestMovies(
         userInput: UserInput,
         dmb: DecoratedMovieBuff,
-        relevantNewsStories: RelevantNewsStories,
         payload: TransformationPayload<*, SuggestedMovieTitles>,
     ): StreamableMovies {
         val suggestedMovieTitles = payload.promptRunner(
             LlmOptions(model = "gpt-4o"),
         ).createObject<SuggestedMovieTitles>(
             """
-            ${config.suggesterPersona.promptContribution().content}
+            ${config.suggesterPersona.contribution()}
 
             Suggest ${config.suggestionCount} movie titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
@@ -232,7 +231,6 @@ class MovieFinder(
             ${excludedTitles(payload.processContext).joinToString("\n")}
 
             Consider also the following news stories for topical inspiration:
-            ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
             """.trimIndent(),
         )
         // Be sure to bind the suggested movie titles to the blackboard
@@ -353,7 +351,7 @@ class MovieFinder(
     ): SuggestionWriteup {
         val text = payload.promptRunner(LlmOptions("gpt-4o")) generateText
                 """
-                ${config.suggesterPersona.promptContribution().content}
+                ${config.suggesterPersona.contribution()}
 
                 Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount} words
                 for ${dmb.movieBuff.name}
