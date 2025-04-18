@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.shell
 
-import com.embabel.agent.event.logging.personality.LumonColors
 import com.embabel.agent.event.logging.personality.character
 import com.embabel.common.util.MessageGenerator
 import com.embabel.common.util.color
@@ -26,6 +25,7 @@ import org.springframework.shell.jline.PromptProvider
  * Draw prompts from random messages from the given file
  */
 open class MessageGeneratorPromptProvider(
+    private val prompt: String,
     private val color: Int,
     private val messageGenerator: MessageGenerator,
 ) : PromptProvider {
@@ -38,7 +38,7 @@ open class MessageGeneratorPromptProvider(
             listOf("", msg.trim())
         }
         return AttributedString(
-            character(character, text).color(color) + "\nLumon> ".color(LumonColors.Membrane),
+            character(character, text, color).color(color) + "\n$prompt> ".color(color),
         )
     }
 

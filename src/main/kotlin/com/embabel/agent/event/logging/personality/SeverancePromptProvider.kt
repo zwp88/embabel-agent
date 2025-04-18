@@ -25,26 +25,31 @@ import org.springframework.stereotype.Component
 
 fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColors.Membrane)}"
 
-fun character(name: String, text: String): String {
-    val namePart = if (name.isNotBlank()) {
-        "${name.bold()}: "
-    } else {
-        ""
-    }
-    return "$namePart${text.italic().color(LumonColors.Membrane)}"
-}
-
 object LumonColors {
     const val Membrane: Int = 0xbeb780
     const val Green: Int = 0x7da17e
 
 }
 
+val LumonDepartments = listOf(
+    "MDR",
+    "Lumon",
+    "Choreography and Merriment",
+    "Mammalians Nurturable",
+    "Optics And Design",
+    "Perpetuity Wing",
+    "Macrodata Refinement",
+    "The Board",
+    "Wellness",
+    "Testing Floor",
+)
+
 @Component
 @Profile("severance")
 class SeverancePromptProvider : MessageGeneratorPromptProvider(
     color = LumonColors.Membrane,
+    prompt = LumonDepartments.random(),
     messageGenerator = RandomFromFileMessageGenerator(
-        url = "logging/severance.txt",
-    )
+        url = "logging/severance.txt"
+    ),
 )
