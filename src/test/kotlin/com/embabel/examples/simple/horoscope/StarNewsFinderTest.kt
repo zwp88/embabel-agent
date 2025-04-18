@@ -41,7 +41,7 @@ class StarNewsFinderTest {
 
         @Test
         fun `writeup must contain movies`() {
-            val starNewsFinder = StarNewsFinder(horoscopeService)
+            val starNewsFinder = StarNewsFinder(horoscopeService = horoscopeService, storyCount = 5)
             var starPerson = StarPerson(name = "Rod", sign = "Cancer")
             val relevantNewsStories = RelevantNewsStories(emptyList())
             val llmCall = captureLlmCall {

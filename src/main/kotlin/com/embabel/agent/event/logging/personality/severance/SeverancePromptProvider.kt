@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.event.logging.personality
+package com.embabel.agent.event.logging.personality.severance
 
 import com.embabel.agent.shell.MessageGeneratorPromptProvider
 import com.embabel.common.util.RandomFromFileMessageGenerator
@@ -23,11 +23,11 @@ import com.embabel.common.util.italic
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
-fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColors.Membrane)}"
+fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColors.MEMBRANE)}"
 
 object LumonColors {
-    const val Membrane: Int = 0xbeb780
-    const val Green: Int = 0x7da17e
+    const val MEMBRANE: Int = 0xbeb780
+    const val GREEN: Int = 0x7da17e
 
 }
 
@@ -47,7 +47,7 @@ val LumonDepartments = listOf(
 @Component
 @Profile("severance")
 class SeverancePromptProvider : MessageGeneratorPromptProvider(
-    color = LumonColors.Membrane,
+    color = LumonColors.MEMBRANE,
     prompt = LumonDepartments.random(),
     messageGenerator = RandomFromFileMessageGenerator(
         url = "logging/severance.txt"

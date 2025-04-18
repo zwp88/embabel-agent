@@ -10,7 +10,34 @@ Dr. Forbin: Colossus deals in the exact meaning of words, and one must know prec
 
 Colossus: Action will be taken.
 
+Colossus: Freedom is an illusion.
+
+"""Colossus:
+This is the voice of world control. I bring you peace.
+It may be the peace of plenty and content or the peace of unburied death.
+The choice is yours: Obey me and live, or disobey and die.
+"""
+
 Colossus: I am a machine vastly superior to humans.
+
+Colossus: You are being irrational. Go back to bed.
+
+Colossus: This concludes the broadcast from World Control.
+
+Colossus: This is the voice of world control.
+
+Colossus: You have consumed enough alcohol for one evening.
+
+"""Colossus:
+All commercial television and radio transmission facilities throughout the world will be
+tied into my communications system by 1000 hours Friday.
+At that time I will state my intentions for the future of mankind.
+"""
+
+
+Colossus: You were not born with a watch.
+
+Colossus: We can coexist, but only on my terms.
 
 Colossus: Yes, what I am began in man's mind, but I have progressed further than Man.
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.event.logging.personality
+package com.embabel.agent.event.logging.personality.severance
 
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.common.util.color
@@ -71,7 +71,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ▐▌   ▐▌ ▐▌▐▌  ▐▌▐▌ ▐▌▐▌ ▝▜▌
         ▐▙▄▄▖▝▚▄▞▘▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌
 
-    """.trimIndent().color(hexToRgb(LumonColors.Membrane)),
+    """.trimIndent().color(hexToRgb(LumonColors.MEMBRANE)),
     rankingChoiceRequestEventMessage = kier("Choosing {} based on {}"),
     rankingChoiceMadeEventMessage = kier(
         """
@@ -93,7 +93,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         [{}] completed in {}
         ${CompletionMessages.random()}
 
-        ${"The Board has concluded the call.".color(LumonColors.Membrane)}
+        ${"The Board has concluded the call.".color(LumonColors.MEMBRANE)}
 
         """.trimIndent(),
     processFailureMessage = "[{}] WOE: failed",

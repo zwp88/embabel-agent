@@ -17,7 +17,7 @@ package com.embabel.agent.shell
 
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.library.HasContent
-import com.embabel.agent.event.logging.personality.LumonColors
+import com.embabel.agent.event.logging.personality.severance.LumonColors
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -105,7 +105,7 @@ class ShellCommands(
             )
         )
         logger.info("Execute your own intent via the 'execute' command. Enclose the intent in quotes. For example:")
-        logger.info("execute \"$intent\"".color(LumonColors.Green))
+        logger.info("execute \"$intent\"".color(LumonColors.GREEN))
         return output
     }
 
@@ -181,7 +181,7 @@ class ShellCommands(
             test = test,
             verbosity = verbosity,
         )
-        logger.info("Created process options: $processOptions".color(LumonColors.Membrane))
+        logger.info("Created process options: $processOptions".color(LumonColors.MEMBRANE))
         val result = if (open) {
             logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
             agentPlatform.chooseAndAccomplishGoal(
@@ -233,17 +233,17 @@ class ShellCommands(
                     // TODO naive Markdown test
                     if (result.output.text.contains("#")) {
                         return "\n" + markdownToConsole(result.output.text)
-                            .color(LumonColors.Green) + "\n"
+                            .color(LumonColors.GREEN) + "\n"
                     }
                     return WordUtils.wrap(result.output.text, 140).color(
-                        LumonColors.Green,
+                        LumonColors.GREEN,
                     ) + "\n"
                 }
 
                 return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(
                     result.output
                 ).color(
-                    LumonColors.Green
+                    LumonColors.GREEN
                 )
             }
         }

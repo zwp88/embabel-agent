@@ -17,7 +17,7 @@ package com.embabel.agent.event.logging
 
 import com.embabel.agent.core.AgentProcessStatus
 import com.embabel.agent.event.*
-import com.embabel.agent.event.logging.personality.LumonColors
+import com.embabel.agent.event.logging.personality.severance.LumonColors
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
 import org.slf4j.Logger
@@ -49,7 +49,7 @@ open class LoggingAgenticEventListener(
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
     private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
     private val progressUpdateEventMessage: String = "[{}] progress: {}",
-    val logger: Logger = LoggerFactory.getLogger("Events"),
+    val logger: Logger = LoggerFactory.getLogger("Embabel"),
 ) : AgenticEventListener {
 
     init {
@@ -225,7 +225,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     progressUpdateEventMessage,
                     event.processId,
-                    event.createProgressBar(length = 50).color(LumonColors.Membrane),
+                    event.createProgressBar(length = 50).color(LumonColors.MEMBRANE),
                 )
             }
 
