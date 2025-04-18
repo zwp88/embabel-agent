@@ -30,6 +30,10 @@ Models agentic flows in terms of:
 - **Conditions**: Conditions to assess before executing an action or determining that a goal has been achieved
 - **Domain model**: Objects underpinning the flow and informing Actions, Goals and Conditions.
 - **Plan**: A sequence of actions to achieve a goal. Plans are dynamically formulated by the system, not the programmer.
+  The
+  system replans after the completion of each action, allowing it to adapt to new information as well as observe the
+  effects of the previous action.
+  This is effectively an [OODA loop](https://en.wikipedia.org/wiki/OODA_loop).
 
 These concepts deliver the following differentiators versus other agentic systems:
 

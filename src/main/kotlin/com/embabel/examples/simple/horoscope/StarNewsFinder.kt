@@ -27,6 +27,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import org.springframework.beans.factory.annotation.Value
 
 
 data class StarPerson(
@@ -49,7 +50,8 @@ data class Writeup(
 class StarNewsFinder(
     // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
-    private val storyCount: Int = 5,
+    @Value("\${star-news-finder.story.count:5}")
+    private val storyCount: Int,
 ) {
 
     @Action
