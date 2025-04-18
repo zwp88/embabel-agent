@@ -44,8 +44,8 @@ open class LoggingAgenticEventListener(
     private val objectBoundMessage: String = "{} Object bound: {} to {} in [{}]",
     private val functionCallRequestEventMessage: String = "[{}] calling function {} with payload {}",
     private val functionCallResponseEventMessage: String = "[{}] function {} response {} in {}ms with payload {}",
-    private val llmRequestEventMessage: String = "[{}] requesting LLM transform from {} -> {} using {}",
-    private val llmResponseEventMessage: () -> String = { "[{}] received LLM response of type {} from {} in {} seconds" },
+    private val llmRequestEventMessage: String = "[{}] requesting LLM transform {} from {} -> {} using {}",
+    private val llmResponseEventMessage: () -> String = { "[{}] received LLM response {} of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
     private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
     private val progressUpdateEventMessage: String = "[{}] progress: {}",
@@ -184,6 +184,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     message,
                     event.processId,
+                    event.interaction.id.value,
                     event.input!!.javaClass.simpleName,
                     event.outputClass.simpleName,
                     event.interaction.llm,
@@ -202,6 +203,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     message,
                     event.processId,
+                    event.interaction.id.value,
                     event.response::class.java.simpleName,
                     event.interaction.llm.model,
                     event.runningTime.seconds,

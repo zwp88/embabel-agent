@@ -24,6 +24,7 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.agent.testing.RandomRanker
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.kotlin.loggerFor
 
 /**

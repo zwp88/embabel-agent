@@ -25,19 +25,27 @@ import java.util.*
 inline fun <reified T, ID> CrudRepository<T, ID>.naturalLanguageRepository(
     payload: OperationPayload,
 ): NaturalLanguageRepository<T> =
-    SpringDataRepositoryNaturalLanguageRepository(repository = this, payload = payload)
+    SpringDataRepositoryNaturalLanguageRepository(
+        repository = this,
+        entityType = T::class.java,
+        payload = payload,
+    )
 
+/**
+ * Implementation of [NaturalLanguageRepository] for Spring Data repositories.
+ * Discovers methods on the repository that can be used to find entities.
+ */
 class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     val repository: CrudRepository<T, ID>,
+    val entityType: Class<T>,
     val payload: OperationPayload,
 ) : NaturalLanguageRepository<T> {
 
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
-    override fun findFromDescription(
-        description: String,
-        entityType: Class<T>,
-    ): T? {
+    override fun find(
+        findEntitiesRequest: FindEntitiesRequest,
+    ): FindEntitiesResponse<T> {
         val llm = LlmOptions().withModel("gpt-4o")
 
         // Find the finder methods on the repository
@@ -57,8 +65,9 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
             Given the following description, what finder methods could help resolve an entity of type ${entityType.simpleName}
             You can choose from the following finders:
             ${finderMethodsOnRepositoryTakingOneArg.joinToString("\n") { "- $it" }}
+            For each finder method, return its name and the value you would use to call it.
 
-            <description>${description}</description>
+            <description>${findEntitiesRequest.description}</description>
             """.trimIndent()
         )
         logger.info(
@@ -66,39 +75,68 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
             entityType.simpleName,
             referencedFinderInvocations.fields.sortedBy { it.name }
         )
-        for (field in referencedFinderInvocations.fields) {
+
+        val matches = mutableListOf<EntityMatch<T>>()
+
+        for (finder in referencedFinderInvocations.fields) {
             // Find the method on the repository
             val repositoryMethod = repository.javaClass.methods
-                .firstOrNull { it.name == field.name }
+                .firstOrNull { it.name == finder.name }
                 ?: continue
 
             logger.info(
                 "Invoking repository method {} with value {}",
                 repositoryMethod,
-                field.value,
+                finder.value,
             )
-            val result = repositoryMethod.invoke(repository, field.value)
-            logger.info("Found result for {}: {}", field.name, result)
-            if (result != null) {
-                // Check if the result is of the expected type
-                when {
-                    entityType.isAssignableFrom(result.javaClass) -> {
-                        return result as T
-                    }
-
-                    Optional::class.java.isAssignableFrom(result.javaClass) ->
-                        return (result as Optional<*>).orElse(null) as T
-                }
+            val result = repositoryMethod.invoke(repository, finder.value)
+            val maybeEntity = extractResultIfPossible(result)
+            logger.info("Found result for {}: {}", finder.name, maybeEntity)
+            if (maybeEntity != null) {
+                matches.add(
+                    EntityMatch(
+                        entity = maybeEntity,
+                        confidence = 1.0,
+                        source = "${entityType.name}.${finder.name}",
+                    )
+                )
             }
 
         }
+        if (matches.isEmpty()) {
+            logger.warn(
+                "No matching entities found for description: {}",
+                findEntitiesRequest.description
+            )
+        } else {
+            logger.info(
+                "Found {} matches for description: {}",
+                matches.size,
+                findEntitiesRequest.description
+            )
+        }
         logger.warn(
-            "No matching entity found for description: {}",
-            description
+            "No matching entities found for description: {}",
+            findEntitiesRequest.description
         )
-        return null
+        return FindEntitiesResponse(
+            request = findEntitiesRequest,
+            matches = matches,
+        )
+    }
+
+    private fun extractResultIfPossible(result: Any?): T? {
+        return when {
+            result == null -> null
+            entityType.isAssignableFrom(result.javaClass) -> result as T
+            Optional::class.java.isAssignableFrom(result.javaClass) ->
+                (result as Optional<*>).orElse(null) as T
+
+            else -> null
+        }
     }
 }
+
 
 internal data class FinderInvocations(
     val fields: List<FinderInvocation>,

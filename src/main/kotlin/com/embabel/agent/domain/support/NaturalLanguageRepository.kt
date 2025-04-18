@@ -15,14 +15,52 @@
  */
 package com.embabel.agent.domain.support
 
-interface NaturalLanguageRepository<T> {
+import com.embabel.common.core.types.ZeroToOne
 
-    fun findFromDescription(
-        description: String,
-        entityType: Class<T>,
-    ): T?
+enum class Cardinality {
+    ONE,
+    MANY,
 }
 
-inline fun <reified T> NaturalLanguageRepository<T>.findFromDescription(
-    description: String,
-): T? = findFromDescription(description, T::class.java)
+data class FindEntitiesRequest(
+    val description: String,
+    val cardinality: Cardinality = Cardinality.ONE,
+)
+
+data class EntityMatch<T>(
+    val entity: T,
+    val confidence: ZeroToOne,
+    val source: String,
+)
+
+data class FindEntitiesResponse<T>(
+    val request: FindEntitiesRequest,
+    val matches: List<EntityMatch<T>>,
+)
+
+/**
+ * Allows querying using natural language.
+ * Querying using natural language is subjective, thus
+ * results have a confidence score.
+ */
+interface NaturalLanguageRepository<T> {
+
+    fun find(
+        findEntitiesRequest: FindEntitiesRequest,
+    ): FindEntitiesResponse<T>
+
+    fun findOne(
+        description: String,
+        confidenceCutOff: ZeroToOne = 1.0,
+    ): T? {
+        val matches = find(
+            findEntitiesRequest = FindEntitiesRequest(
+                description = description,
+                cardinality = Cardinality.ONE,
+            )
+        )
+        return matches.matches
+            .firstOrNull { it.confidence >= confidenceCutOff }
+            ?.entity
+    }
+}

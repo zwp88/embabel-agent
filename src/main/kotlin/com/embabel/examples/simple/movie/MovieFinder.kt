@@ -31,6 +31,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.Persona
 import org.slf4j.LoggerFactory
@@ -141,10 +142,10 @@ class MovieFinder(
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? =
-//        movieBuffRepository.naturalLanguageRepository(payload).findFromDescription(
-//            description = userInput.content,
-//        )
-        movieBuffRepository.findAll().first()
+        movieBuffRepository.naturalLanguageRepository(payload).findOne(
+            description = userInput.content,
+        )
+//        movieBuffRepository.findAll().first()
 
     @Action
     fun analyzeTasteProfile(

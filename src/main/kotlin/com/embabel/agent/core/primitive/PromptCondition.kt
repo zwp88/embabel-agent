@@ -18,9 +18,9 @@ package com.embabel.agent.core.primitive
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.ZeroToOne
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import org.slf4j.LoggerFactory
 

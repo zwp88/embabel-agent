@@ -59,7 +59,7 @@ abstract class AbstractLlmOperations : LlmOperations {
         agentProcess: AgentProcess,
         action: Action?,
     ): O {
-        val (allToolCallbacks, literalPrompt, transformRequestEvent) = setup<I, O>(
+        val (allToolCallbacks, literalPrompt, llmRequestEvent) = setup<I, O>(
             agentProcess = agentProcess,
             interaction = interaction,
             action = action,
@@ -82,7 +82,7 @@ abstract class AbstractLlmOperations : LlmOperations {
         }
         logger.debug("LLM response={}", response)
         agentProcess.processContext.onProcessEvent(
-            transformRequestEvent.responseEvent(
+            llmRequestEvent.responseEvent(
                 response = response,
                 runningTime = Duration.ofMillis(ms),
             ),
@@ -98,7 +98,7 @@ abstract class AbstractLlmOperations : LlmOperations {
         agentProcess: AgentProcess,
         action: Action?
     ): Result<O> {
-        val (allToolCallbacks, literalPrompt, transformRequestEvent) = setup<I, O>(
+        val (allToolCallbacks, literalPrompt, llmRequestEvent) = setup<I, O>(
             agentProcess = agentProcess,
             interaction = interaction,
             action = action,
@@ -121,7 +121,7 @@ abstract class AbstractLlmOperations : LlmOperations {
         }
         logger.debug("LLM response={}", response)
         agentProcess.processContext.onProcessEvent(
-            transformRequestEvent.maybeResponseEvent(
+            llmRequestEvent.maybeResponseEvent(
                 response = response,
                 runningTime = Duration.ofMillis(ms),
             ),
@@ -151,7 +151,7 @@ abstract class AbstractLlmOperations : LlmOperations {
             ) + (action?.resolveToolCallbacks(toolGroupResolver)
                 ?: emptySet())).distinctBy { it.toolDefinition.name() }
         val literalPrompt = prompt(input)
-        val transformRequestEvent = LlmRequestEvent(
+        val llmRequestEvent = LlmRequestEvent(
             agentProcess = agentProcess,
             input = input,
             outputClass = outputClass,
@@ -159,8 +159,8 @@ abstract class AbstractLlmOperations : LlmOperations {
             prompt = literalPrompt,
         )
         agentProcess.processContext.platformServices.eventListener.onProcessEvent(
-            transformRequestEvent
+            llmRequestEvent
         )
-        return Triple(allToolCallbacks, literalPrompt, transformRequestEvent)
+        return Triple(allToolCallbacks, literalPrompt, llmRequestEvent)
     }
 }

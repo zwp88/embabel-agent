@@ -25,6 +25,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory

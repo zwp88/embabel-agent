@@ -16,11 +16,10 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.core.primitive.PromptCondition
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-
-typealias ZeroToOne = Double
 
 /**
  * A Condition is a named, well known predicate that can be evaluated

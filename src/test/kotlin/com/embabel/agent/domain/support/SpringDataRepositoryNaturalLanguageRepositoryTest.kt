@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.data.repository.CrudRepository
 import java.util.*
-import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 data class Thing(val name: String)
 
@@ -57,8 +57,8 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             payload = mockPayload,
         )
-        val found = nlr.findFromDescription("Description")
-        assertNull(found, "Should not find anything")
+        val found = nlr.find(FindEntitiesRequest("Description"))
+        assertTrue(found.matches.isEmpty(), "Should not find anything")
     }
 
     @Test
@@ -84,8 +84,8 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             payload = mockPayload,
         )
-        val found = nlr.findFromDescription("Description")
-        assertNull(found, "Should not find anything")
+        val found = nlr.find(FindEntitiesRequest("Description"))
+        assertTrue(found.matches.isEmpty(), "Should not find anything")
 //        verify(exactly = 1) {
 //            tr.findByName(result.fields[0].name)
 //        }
@@ -114,8 +114,8 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             payload = mockPayload,
         )
-        val found = nlr.findFromDescription("Description")
-        assertNull(found, "Should not find anything")
+        val found = nlr.find(FindEntitiesRequest("Description"))
+        assertTrue(found.matches.isEmpty(), "Should not find anything")
 //        verify(exactly = 1) {
 //            tr.findByName(result.fields[0].name)
 //        }
@@ -145,8 +145,9 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             payload = mockPayload,
         )
-        val found = nlr.findFromDescription("Description")
-        assertEquals(theThing, found, "Should find the thing")
+        val matches = nlr.find(FindEntitiesRequest("Description"))
+        val found = matches.matches.single()
+        assertEquals(theThing, found.entity, "Should find the thing")
 //        verify(exactly = 1) {
 //            tr.findByName(result.fields[0].name)
 //        }

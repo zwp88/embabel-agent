@@ -17,11 +17,11 @@ package com.embabel.agent.event
 
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.ZeroToOne
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.ZeroToOne
 import java.time.Instant
 
 /**
