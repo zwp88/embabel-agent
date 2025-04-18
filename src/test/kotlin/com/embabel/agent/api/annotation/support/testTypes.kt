@@ -16,7 +16,10 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.*
+import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.common.OperationPayload
+import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.domain.special.UserInput
@@ -105,6 +108,19 @@ class OneTransformerActionTakingPayloadOnly {
     fun toPerson(
         userInput: UserInput,
         payload: TransformationPayload<UserInput, Person>,
+    ): Person {
+        return Person(userInput.content)
+    }
+
+}
+
+@Agentic
+class OneTransformerActionTakingOperationPayload {
+
+    @Action(cost = 500.0)
+    fun toPerson(
+        userInput: UserInput,
+        payload: OperationPayload,
     ): Person {
         return Person(userInput.content)
     }

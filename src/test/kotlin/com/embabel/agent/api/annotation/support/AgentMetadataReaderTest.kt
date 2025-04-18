@@ -284,6 +284,61 @@ class AgentMetadataReaderTest {
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.first()
             assertEquals(
+                1,
+                action.inputs.size,
+                "Should not consider payload as input: ${action.inputs}",
+            )
+            assertEquals(
+                UserInput::class.java.name,
+                action.inputs.single().type,
+                "Should not consider payload as input: ${action.inputs}",
+            )
+            val agent = mockk<IAgent>()
+            every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
+            val mockAgentProcess = mockk<AgentProcess>()
+            every { mockAgentProcess.agent } returns agent
+            val mockPlatformServices = mockk<PlatformServices>()
+            every { mockPlatformServices.llmOperations } returns mockk()
+            every { mockPlatformServices.eventListener } returns DevNull
+            val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+            every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                blackboard.getValue(
+                    firstArg(),
+                    secondArg(),
+                    thirdArg(),
+                )
+            }
+            every { mockAgentProcess.set(any(), any()) } answers {
+                blackboard.set(
+                    firstArg(),
+                    secondArg(),
+                )
+            }
+            every { mockAgentProcess.finalResult() } returns Person("John Doe")
+
+            val pc = ProcessContext(
+
+                platformServices = mockPlatformServices,
+                agentProcess = mockAgentProcess,
+            )
+            val result = action.execute(pc, mockk(), action)
+            assertEquals(ActionStatusCode.COMPLETED, result.status)
+            assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+        }
+
+        @Test
+        fun `action invocation with OperationPayload`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(OneTransformerActionTakingOperationPayload())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.actions.size)
+            val action = metadata.actions.first()
+            assertEquals(
+                1,
+                action.inputs.size,
+                "Should not consider payload as input: ${action.inputs}",
+            )
+            assertEquals(
                 UserInput::class.java.name,
                 action.inputs.single().type,
                 "Should not consider payload as input",

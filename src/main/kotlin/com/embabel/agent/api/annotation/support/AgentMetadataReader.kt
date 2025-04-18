@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ExecutePromptException
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
@@ -202,7 +203,9 @@ class AgentMetadataReader {
         val inputClasses = method.parameters
             .map { it.type }
         val inputs = method.parameters
-            .filterNot { it.type == TransformationPayload::class.java }
+            .filterNot {
+                OperationPayload::class.java.isAssignableFrom(it.type)
+            }
             .map {
                 val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
                 expandInputBindings(if (nameMatchAnnotation != null) it.name else IoBinding.DEFAULT_BINDING, it.type)
@@ -240,7 +243,7 @@ class AgentMetadataReader {
         logger.debug("Invoking action method {} with payload {}", method.name, payload.input)
         val toolCallbacksOnDomainObjects = ToolCallbacks.from(*payload.input.toTypedArray())
         var args = payload.input.toTypedArray()
-        if (method.parameters.any { it.type == TransformationPayload::class.java }) {
+        if (method.parameters.any { OperationPayload::class.java.isAssignableFrom(it.type) }) {
             // We need to add the payload as the last argument
             args += payload
         }
