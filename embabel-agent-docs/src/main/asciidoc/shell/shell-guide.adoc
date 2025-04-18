@@ -1,0 +1,9 @@
+[[shell.guide]]
+== Agent Shell
+:sectids:
+:sectanchors:
+
+The following chapters are dedicated to _Agent API_ and _Embabel Agent Framework_.
+
+include::commands.adoc[]
+include::how-to.adoc[]

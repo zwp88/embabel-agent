@@ -3,58 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.embabel.build</groupId>
-        <artifactId>embabel-build-parent</artifactId>
+        <groupId>com.embabel.agent</groupId>
+        <artifactId>embabel-agent-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <groupId>com.embabel.agent</groupId>
-    <artifactId>embabel-agent-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>Embabel Agent Parent</name>
-    <description>Parent POM for Embabel Agent Modules</description>
-    <properties>
-        <embabel-common.version>1.0.0-SNAPSHOT</embabel-common.version>
-    </properties>
-
-    <modules>
-        <module>embabel-agent-api</module>
-        <module>embabel-agent-docs</module>
-        <module>embabel-agent-shell</module>
-        <module>embabel-agent-starter</module>
-        <module>embabel-agent-autoconfigure</module>
-        <module>embabel-agent-examples</module>
-        <module>embabel-agent-eval</module>
-        <module>embabel-agent-dependencies</module>
-        <module>embabel-agent-test</module>
-    </modules>
-
-
-    <!-- Embabel Common BOM -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.embabel.common</groupId>
-                <artifactId>embabel-common-dependencies</artifactId>
-                <version>${embabel-common.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-
+    <artifactId>embabel-agent-eval</artifactId>
+    <packaging>jar</packaging>
+    <name>Embabel Agent Eval</name>
+    <description>Assess of how Agent is doing on various tasks</description>
+    
     <dependencies>
-
-        <!--
-        We want to be able to work with Repository conventions
-        but don't want heavyweight dependencies here like JPA
-        -->
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-commons</artifactId>
-            <version>${spring-boot.version}</version> <!-- Use your preferred version -->
-        </dependency>
 
         <!-- Embabel Common Dependencies are imported one-by-one on purpose-->
         <dependency>
@@ -111,11 +69,6 @@
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.shell</groupId>
-            <artifactId>spring-shell-starter</artifactId>
-        </dependency>
-
         <!-- Spring AI -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
@@ -127,27 +80,11 @@
             <artifactId>jackson-module-kotlin</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>info.schnatterer.moby-names-generator</groupId>
-            <artifactId>moby-names-generator</artifactId>
-        </dependency>
-
+        
         <!-- Unit and Integration Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.vaadin.external.google</groupId>
-                    <artifactId>android-json</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -196,9 +133,7 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>com/embabel/examples/**</exclude>
                         <exclude>com/embabel/agent/toolgroups/**</exclude>
-                        <exclude>com/embabel/agent/shell/**</exclude>
                         <exclude>com/embabel/agent/testing/**</exclude>
                         <exclude>com/embabel/agent/event/logging/personality/**</exclude>
                     </excludes>
@@ -215,7 +150,7 @@
                 <artifactId>git-commit-id-plugin</artifactId>
             </plugin>
 
-            <!--<plugin>
+            <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
                 <inherited>true</inherited>
@@ -226,7 +161,7 @@
                         </licenseHeader>
                     </kotlin>
                 </configuration>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 

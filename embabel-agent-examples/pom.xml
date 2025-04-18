@@ -15,7 +15,7 @@
 
     <modules>
         <module>movie</module>
-        <module>horoscope</module>
+        <module>haroscope</module>
     </modules>
     
 
