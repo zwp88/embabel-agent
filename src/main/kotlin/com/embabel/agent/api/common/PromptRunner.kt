@@ -62,6 +62,12 @@ inline infix fun <reified T> PromptRunner.createObject(prompt: String): T =
 inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
     createObjectIfPossible(prompt, T::class.java)
 
+interface LlmCallRequest {
+    val prompt: String
+    val requireResult: Boolean
+    val llm: LlmOptions?
+    val outputClass: Class<*>
+}
 
 /**
  * Exception thrown to indicate that a prompt should be executed.
@@ -72,11 +78,11 @@ inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
  * say that it cannot produce a result
  * @param llm llm to use. Contextual LLM will be used if not set
  */
-internal class ExecutePromptException(
-    val prompt: String,
-    val requireResult: Boolean,
-    val llm: LlmOptions? = null,
-    val outputClass: Class<*>,
-) : RuntimeException(
+class ExecutePromptException(
+    override val prompt: String,
+    override val requireResult: Boolean,
+    override val llm: LlmOptions? = null,
+    override val outputClass: Class<*>,
+) : LlmCallRequest, RuntimeException(
     "Not a real failure but meant to be intercepted by infrastructure: Generated prompt=[$prompt]"
 )
