@@ -134,6 +134,10 @@ interface GoapAction : GoapStep, Action {
      */
     val effects: EffectSpec
 
+    override fun infoString(verbose: Boolean?): String =
+        "$name - pre=${preconditions} cost=$cost value=${value}"
+
+
     companion object {
 
         operator fun invoke(
@@ -169,6 +173,9 @@ private data class SimpleGoapAction(
  * Goal in a GOAP system.
  */
 interface GoapGoal : GoapStep, Goal {
+
+    override fun infoString(verbose: Boolean?): String =
+        "$name - pre=${preconditions} value=${value}"
 
     companion object {
 

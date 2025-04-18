@@ -18,6 +18,7 @@ package com.embabel.agent.shell
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.LumonColors
+import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.apache.commons.lang3.text.WordUtils
@@ -60,7 +61,26 @@ class ShellCommands(
 
     @ShellMethod("List agents")
     fun agents(): String {
-        return agentPlatform.infoString(verbose = true)
+        return "${"Agents:".bold()}\n${
+            agentPlatform.agents()
+                .joinToString(separator = "\n${"-".repeat(120)}\n") { "\t" + it.infoString(verbose = true) }
+        }"
+    }
+
+    @ShellMethod("List actions")
+    fun actions(): String {
+        return "${"Actions:".bold()}\n${
+            agentPlatform.actions
+                .joinToString(separator = "\n") { "\t" + it.infoString(verbose = true) }
+        }"
+    }
+
+    @ShellMethod("List goals")
+    fun goals(): String {
+        return "${"Goals:".bold()}\n${
+            agentPlatform.goals
+                .joinToString(separator = "\n") { "\t" + it.infoString(verbose = true) }
+        }"
     }
 
     @ShellMethod("Information about the AgentPlatform")

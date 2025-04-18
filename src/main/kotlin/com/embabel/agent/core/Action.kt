@@ -95,6 +95,9 @@ data class Goal(
             conditions
         }
 
+    override fun infoString(verbose: Boolean?) =
+        "$name - pre=${preconditions} value=${value}: $description"
+
     companion object {
 
         // Methods for Java
@@ -196,4 +199,8 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
 
         return type
     }
+
+    override fun infoString(verbose: Boolean?): String =
+        "$name - pre=${preconditions} post=${effects}"
+
 }

@@ -21,7 +21,7 @@ import com.embabel.common.core.types.Named
 /**
  * A step in a plan. Can be an action or a goal
  */
-interface Step : Named {
+interface Step : Named, HasInfoString {
 
     /**
      * Unique name of the step

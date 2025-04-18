@@ -48,9 +48,9 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
         "%s:\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdata types: %s".format(
             name,
             goals.sortedBy { it.name }
-                .joinToString("\n\t\t") { "${it.name} - pre=${it.preconditions} value=${it.value}" },
+                .joinToString("\n\t\t") { it.infoString(verbose = verbose) },
             actions.sortedBy { it.name }
-                .joinToString("\n\t\t") { "${it.name} - pre=${it.preconditions} post=${it.effects}" },
+                .joinToString("\n\t\t") { it.infoString(verbose = verbose) },
             conditions.map { it.name }.sorted(),
             domainTypes.map { it.simpleName }.distinct().sorted(),
         )
