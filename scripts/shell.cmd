@@ -22,6 +22,6 @@ if "%BRAVE_API_KEY%"=="" (
 pushd .
 cd ..
 set SPRING_PROFILES_ACTIVE=shell,severance
-start cmd /c mvn spring-boot:run
+start cmd /k mvn spring-boot:run
 set SPRING_PROFILES_ACTIVE=
 popd
