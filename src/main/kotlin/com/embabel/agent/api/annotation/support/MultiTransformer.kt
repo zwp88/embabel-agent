@@ -80,7 +80,7 @@ internal class MultiTransformer<O : Any>(
                 action = this,
             )
         )
-        if (!outputClass.isInstance(output)) {
+        if (output != null && !outputClass.isInstance(output)) {
             throw IllegalArgumentException(
                 """
                 Output of action $name is not of type ${outputClass.name}.

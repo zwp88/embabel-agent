@@ -130,7 +130,7 @@ class MovieFinder(
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? =
-        movieBuffRepository.naturalLanguageRepository(payload.processContext).findFromDescription(
+        movieBuffRepository.naturalLanguageRepository(payload).findFromDescription(
             description = userInput.content,
         )
 

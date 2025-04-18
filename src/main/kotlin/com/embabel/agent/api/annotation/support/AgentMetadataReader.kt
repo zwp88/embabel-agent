@@ -248,7 +248,7 @@ class AgentMetadataReader {
             args += payload
         }
         val result = try {
-            ReflectionUtils.invokeMethod(method, instance, *args) as Any
+            ReflectionUtils.invokeMethod(method, instance, *args)
         } catch (e: ExecutePromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
