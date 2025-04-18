@@ -52,21 +52,21 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
             finderMethodsOnRepositoryTakingOneArg.sorted()
         )
 
-        val referencedEntityFieldValues = payload.promptRunner(llm).createObject<EntityFieldValues>(
+        val referencedFinderInvocations = payload.promptRunner(llm).createObject<FinderInvocations>(
             """
-            Given the following description, what fields could help resolve an entity of type ${entityType.simpleName}
-            You can choose from the following fields:
+            Given the following description, what finder methods could help resolve an entity of type ${entityType.simpleName}
+            You can choose from the following finders:
             ${finderMethodsOnRepositoryTakingOneArg.joinToString("\n") { "- $it" }}
-            
+
             <description>${description}</description>
             """.trimIndent()
         )
         logger.info(
             "Found fields for {}: {}",
             entityType.simpleName,
-            referencedEntityFieldValues.fields.sortedBy { it.name }
+            referencedFinderInvocations.fields.sortedBy { it.name }
         )
-        for (field in referencedEntityFieldValues.fields) {
+        for (field in referencedFinderInvocations.fields) {
             // Find the method on the repository
             val repositoryMethod = repository.javaClass.methods
                 .firstOrNull { it.name == field.name }
@@ -100,11 +100,11 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     }
 }
 
-private data class EntityFieldValues(
-    val fields: List<EntityFieldValue>,
+internal data class FinderInvocations(
+    val fields: List<FinderInvocation>,
 )
 
-private data class EntityFieldValue(
+internal data class FinderInvocation(
     val name: String,
     val value: String,
 )

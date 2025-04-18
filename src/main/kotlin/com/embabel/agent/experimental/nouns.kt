@@ -15,31 +15,17 @@
  */
 package com.embabel.agent.experimental
 
-import com.embabel.agent.core.ProcessContext
-
-
-interface PromptMaker {
-
-    fun makePrompt(processContext: ProcessContext): String
+enum class Location {
+    BEGINNING,
+    END,
 }
 
-/**
- * Inspired by crew.ai. Not that we think this is necessarily
- * the best way to structure team members, but it's helpful to
- * show
- */
-data class Role(
-    val role: String,
-    val goal: String,
-    val backstory: String,
-) : PromptMaker {
+data class PromptContribution(
+    val content: String,
+    val location: Location,
+)
 
-    override fun makePrompt(processContext: ProcessContext): String {
-        return """
-            You are a $role.
-            Your goal is to $goal.
-            Your backstory is:
-            $backstory
-        """.trimIndent()
-    }
+interface PromptContributor {
+
+    fun promptContribution(): PromptContribution
 }

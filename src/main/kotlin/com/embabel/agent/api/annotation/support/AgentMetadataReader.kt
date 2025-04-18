@@ -151,7 +151,7 @@ class AgentMetadataReader {
                         type.declaredMethods.contains(method)
             })
         if (actionMethods.isEmpty()) {
-            logger.info("No methods annotated with @{} found in {}", Action::class.simpleName, type)
+            logger.debug("No methods annotated with @{} found in {}", Action::class.simpleName, type)
         }
         return actionMethods
     }
@@ -178,8 +178,8 @@ class AgentMetadataReader {
         instance: Any,
     ): IGoal {
         // We need to change the name to be the property name
-        val rawg = ReflectionUtils.invokeMethod(method, instance) as IGoal
-        return rawg.copy(name = generateName(instance, getterToPropertyName(method.name)))
+        val rawGoal = ReflectionUtils.invokeMethod(method, instance) as IGoal
+        return rawGoal.copy(name = generateName(instance, getterToPropertyName(method.name)))
     }
 
     private fun createCondition(

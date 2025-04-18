@@ -31,9 +31,8 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.domain.support.findFromDescription
-import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
+import com.embabel.agent.experimental.Persona
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
@@ -103,11 +102,23 @@ data class SuggestionWriteup(
 
 interface MovieBuffRepository : CrudRepository<MovieBuff, String>
 
+val Roger = Persona(
+    name = "Roger",
+    persona = "A creative movie critic who channels the famous movie critic Roger Ebert",
+    voice = "You write like Roger Ebert",
+    objective = """
+            Suggest movies that will extend as well as entertain the user.
+            Share the love of cinema and inspire the user to watch, learn and think.
+            """.trimIndent(),
+)
+
 @ConfigurationProperties(prefix = "moviefinder")
 data class MovieFinderConfig(
     val suggestionCount: Int = 5,
     val tasteProfileWordCount: Int = 40,
     val writeupWordCount: Int = 200,
+    val suggesterPersona: Persona = Roger,
+    val writerPersona: Persona = Roger,
 )
 
 @Profile("!test")
@@ -130,9 +141,10 @@ class MovieFinder(
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? =
-        movieBuffRepository.naturalLanguageRepository(payload).findFromDescription(
-            description = userInput.content,
-        )
+//        movieBuffRepository.naturalLanguageRepository(payload).findFromDescription(
+//            description = userInput.content,
+//        )
+        movieBuffRepository.findAll().first()
 
     @Action
     fun analyzeTasteProfile(
@@ -192,22 +204,12 @@ class MovieFinder(
         relevantNewsStories: RelevantNewsStories,
         payload: TransformationPayload<*, SuggestedMovieTitles>,
     ): StreamableMovies {
-        // We do this to break any potential LLM caching
-        // as this will be run many times
-        val randomPart = listOf(
-            "be creative",
-            "be inventive",
-            "think different",
-            "think like Roger Ebert",
-            "think like an auteur",
-            "think of things that are fun",
-            "make it entertaining!"
-        )
-            .random()
         val suggestedMovieTitles = payload.promptRunner(
             LlmOptions(model = "gpt-4o"),
         ).createObject<SuggestedMovieTitles>(
             """
+            ${config.suggesterPersona.promptContribution().content}
+
             Suggest ${config.suggestionCount} movie titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
             Consider the specific request: "${userInput.content}"
@@ -231,7 +233,6 @@ class MovieFinder(
 
             Consider also the following news stories for topical inspiration:
             ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
-            $randomPart
             """.trimIndent(),
         )
         // Be sure to bind the suggested movie titles to the blackboard
@@ -352,6 +353,8 @@ class MovieFinder(
     ): SuggestionWriteup {
         val text = payload.promptRunner(LlmOptions("gpt-4o")) generateText
                 """
+                ${config.suggesterPersona.promptContribution().content}
+
                 Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount} words
                 for ${dmb.movieBuff.name}
                 based on the following information:
