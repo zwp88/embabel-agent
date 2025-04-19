@@ -21,6 +21,9 @@ import com.embabel.agent.core.*
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
+/**
+ * Use in DSL to transform prompt.
+ */
 inline fun <reified I, reified O : Any> promptTransformer(
     name: String,
     description: String = name,
@@ -33,11 +36,11 @@ inline fun <reified I, reified O : Any> promptTransformer(
     toolGroups: Collection<String> = emptyList(),
     qos: Qos = Qos(),
     referencedInputProperties: Set<String>? = null,
-    noinline prompt: (payload: TransformationPayload<I, O>) -> String,
     llmOptions: LlmOptions = LlmOptions(),
     expectation: Condition? = null,
     canRerun: Boolean = false,
     toolCallbacks: List<ToolCallback> = emptyList(),
+    noinline prompt: (payload: TransformationPayload<I, O>) -> String,
 ): Transformer<I, O> {
     val expectationTransition = expectation?.let {
         Transition(
