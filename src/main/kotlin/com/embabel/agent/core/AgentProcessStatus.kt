@@ -26,7 +26,7 @@ enum class AgentStatusCode {
 }
 
 enum class ActionStatusCode {
-    SUCCEEDED, FAILED
+    SUCCEEDED, FAILED, WAITING,
 }
 
 /**

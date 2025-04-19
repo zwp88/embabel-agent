@@ -91,11 +91,7 @@ data class StreamableMovie(
     val movie: MovieResponse,
     val availableStreamingOptions: List<StreamingOption>,
     val allStreamingOptions: List<StreamingOption>,
-) {
-
-    val unavailableStreamingOptions: List<StreamingOption> =
-        allStreamingOptions.filter { it !in availableStreamingOptions }
-}
+)
 
 data class SuggestionWriteup(
     override val text: String,
@@ -142,10 +138,10 @@ class MovieFinder(
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? =
+        // TODO Standard action helper that can bind
         movieBuffRepository.naturalLanguageRepository(payload).findOne(
             description = userInput.content,
         )
-//        movieBuffRepository.findAll().first()
 
     @Action
     fun analyzeTasteProfile(
