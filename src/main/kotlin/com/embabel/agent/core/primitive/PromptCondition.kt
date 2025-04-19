@@ -53,9 +53,8 @@ data class PromptCondition(
         )
         logger.info("Condition {}: making LLM call to evaluate using {}...", name, llm)
 
-        val determination = processContext.transform<Any, Determination>(
-            input = Unit,
-            prompt = { prompt },
+        val determination = processContext.createObject<Determination>(
+            prompt = prompt,
             interaction = LlmInteraction(
                 id = InteractionId("condition-$name"),
                 llm = llm,

@@ -45,9 +45,8 @@ internal class ChatClientLlmOperations(
     private val maybeReturnPromptContribution: String = DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION,
 ) : AbstractLlmOperations() {
 
-    override fun <I, O> doTransform(
-        input: I,
-        literalPrompt: String,
+    override fun <O> doTransform(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
     ): O {
@@ -58,7 +57,7 @@ internal class ChatClientLlmOperations(
 
         val chatClient = createChatClient(interaction.llm)
 
-        val springAiPrompt = Prompt(literalPrompt)
+        val springAiPrompt = Prompt(prompt)
 
         val callResponse = chatClient
             .prompt(springAiPrompt)
@@ -71,14 +70,13 @@ internal class ChatClientLlmOperations(
         }
     }
 
-    override fun <I, O> doTransformIfPossible(
-        input: I,
-        literalPrompt: String,
+    override fun <O> doTransformIfPossible(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>
     ): Result<O> {
         val chatClient = createChatClient(interaction.llm)
-        val springAiPrompt = Prompt("$literalPrompt\n$maybeReturnPromptContribution")
+        val springAiPrompt = Prompt("$prompt\n$maybeReturnPromptContribution")
 
         val typeReference = createParameterizedTypeReference<MaybeReturn<*>>(
             MaybeReturn::class.java,

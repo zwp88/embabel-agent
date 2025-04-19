@@ -134,9 +134,8 @@ class ChatClientLlmTransformerTest {
             every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
 
             val transformer = ChatClientLlmOperations(mockModelProvider)
-            return transformer.transform(
-                input = "Hello, world!",
-                prompt = { "Say hello" },
+            return transformer.createObject(
+                prompt = "Say hello",
                 interaction = LlmInteraction(id = InteractionId("test")),
                 agentProcess = mockAgentProcess,
                 action = null,
@@ -273,9 +272,8 @@ class ChatClientLlmTransformerTest {
             every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
 
             val transformer = ChatClientLlmOperations(mockModelProvider)
-            val result = transformer.transformIfPossible(
-                input = "Hello, world!",
-                prompt = { "Say hello" },
+            val result = transformer.createObjectIfPossible(
+                prompt = "Say hello",
                 interaction = LlmInteraction(id = InteractionId("test")),
                 agentProcess = mockAgentProcess,
                 action = null,

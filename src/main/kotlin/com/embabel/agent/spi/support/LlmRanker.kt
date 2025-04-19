@@ -62,9 +62,8 @@ internal class LlmRanker(
 
             Return the name of the chosen $wordForThing and the confidence score (0-1).
         """.trimIndent()
-        val grr = llmOperations.doTransform<UserInput, RankingsResponse>(
-            input = userInput,
-            literalPrompt = prompt,
+        val grr = llmOperations.doTransform<RankingsResponse>(
+            prompt = prompt,
             interaction = LlmInteraction(
                 id = InteractionId("rank-${wordForThing}s"),
                 llm = LlmOptions(model = "gpt-4o-mini"),

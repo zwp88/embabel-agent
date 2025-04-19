@@ -68,18 +68,15 @@ interface LlmOperations {
     ): String
 
     /**
-     * Perform a transformation from the given input object
-     * to the output object.
-     * @param input Input object
+     * Create an output object
      * @param prompt Function to generate the prompt from the input object
      * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param outputClass Class of the output object
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
      */
-    fun <I, O> transform(
-        input: I,
-        prompt: (input: I) -> String,
+    fun <O> createObject(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
@@ -87,18 +84,15 @@ interface LlmOperations {
     ): O
 
     /**
-     * Perform a transformation from the given input object
-     * to the output object which might not succeed.
-     * @param input Input object
+     * Try to create an output object.
      * @param prompt Function to generate the prompt from the input object
      * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param outputClass Class of the output object
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
      */
-    fun <I, O> transformIfPossible(
-        input: I,
-        prompt: (input: I) -> String,
+    fun <O> createObjectIfPossible(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
@@ -109,9 +103,8 @@ interface LlmOperations {
      * Low level transform, which can also be called
      * directly by user code.
      */
-    fun <I, O> doTransform(
-        input: I,
-        literalPrompt: String,
+    fun <O> doTransform(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
     ): O

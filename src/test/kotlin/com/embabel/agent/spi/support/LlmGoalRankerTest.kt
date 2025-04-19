@@ -59,9 +59,8 @@ class LlmGoalRankerTest {
                 )
             )
             every {
-                llmt.doTransform<UserInput, RankingsResponse>(
-                    input = any(),
-                    literalPrompt = any(),
+                llmt.doTransform<RankingsResponse>(
+                    prompt = any(),
                     interaction = any(),
                     outputClass = RankingsResponse::class.java,
                 )

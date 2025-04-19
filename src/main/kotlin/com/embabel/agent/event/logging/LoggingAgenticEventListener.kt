@@ -174,7 +174,7 @@ open class LoggingAgenticEventListener(
                 logger.info(objectBoundMessage, event.agentProcess.id, event.name, event.value, event.processId)
             }
 
-            is LlmRequestEvent<*, *> -> {
+            is LlmRequestEvent<*> -> {
                 var message = llmRequestEventMessage
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
                     message += "\nPrompt ${event.interaction.id}:\n${
@@ -185,13 +185,12 @@ open class LoggingAgenticEventListener(
                     message,
                     event.processId,
                     event.interaction.id.value,
-                    event.input!!.javaClass.simpleName,
                     event.outputClass.simpleName,
                     event.interaction.llm,
                 )
             }
 
-            is LlmResponseEvent<*, *> -> {
+            is LlmResponseEvent<*> -> {
                 var message = llmResponseEventMessage()
                 if (event.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
                     message += "\nResponse from prompt ${event.interaction.id}:\n${

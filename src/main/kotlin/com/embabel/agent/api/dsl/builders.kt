@@ -254,7 +254,7 @@ class Transformer<I, O>(
     override fun execute(
         processContext: ProcessContext,
         outputTypes: Map<String, SchemaType>,
-        action: Action
+        action: Action,
     ): ActionStatus = ActionRunner.execute {
         val input = processContext.getValue(inputVarName, inputClass.name) as I
         val output = block.transform(

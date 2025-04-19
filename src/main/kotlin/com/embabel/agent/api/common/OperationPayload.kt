@@ -59,9 +59,8 @@ private class OperationPayloadPromptRunner(
         outputClass: Class<T>,
         toolCallbacks: List<ToolCallback>,
     ): T {
-        return payload.processContext.transform<Unit, T>(
-            input = Unit,
-            prompt = { prompt },
+        return payload.processContext.createObject<T>(
+            prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
                 toolCallbacks = toolCallbacks,
@@ -78,9 +77,8 @@ private class OperationPayloadPromptRunner(
         outputClass: Class<T>,
         toolCallbacks: List<ToolCallback>,
     ): T? {
-        return payload.processContext.transformIfPossible<Unit, T>(
-            input = Unit,
-            prompt = { prompt },
+        return payload.processContext.createObjectIfPossible<T>(
+            prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
                 toolCallbacks = toolCallbacks,

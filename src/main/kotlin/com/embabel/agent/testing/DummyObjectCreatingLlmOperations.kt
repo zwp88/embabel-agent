@@ -45,9 +45,8 @@ class DummyObjectCreatingLlmOperations(
         return stringsToUse.random()
     }
 
-    override fun <I, O> doTransform(
-        input: I,
-        literalPrompt: String,
+    override fun <O> doTransform(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
     ): O {
@@ -58,9 +57,8 @@ class DummyObjectCreatingLlmOperations(
         return createMockInstance(outputClass) as O
     }
 
-    override fun <I, O> transformIfPossible(
-        input: I,
-        prompt: (I) -> String,
+    override fun <O> createObjectIfPossible(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
@@ -76,16 +74,14 @@ class DummyObjectCreatingLlmOperations(
         return Result.success(o)
     }
 
-    override fun <I, O> transform(
-        input: I,
-        prompt: (I) -> String,
+    override fun <O> createObject(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?
     ): O = doTransform(
-        input = input,
-        literalPrompt = prompt(input),
+        prompt = prompt,
         interaction = interaction,
         outputClass = outputClass,
     )

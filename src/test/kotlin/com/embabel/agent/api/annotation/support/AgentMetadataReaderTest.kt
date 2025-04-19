@@ -505,8 +505,7 @@ class AgentMetadataReaderTest {
                 val llmo = slot<LlmInteraction>()
                 val llmt = mockk<LlmOperations>()
                 every {
-                    llmt.transform<Any, Any>(
-                        any(),
+                    llmt.createObject<Any>(
                         any(),
                         capture(llmo),
                         any(),
@@ -558,8 +557,7 @@ class AgentMetadataReaderTest {
                 val llmi = slot<LlmInteraction>()
                 val llmt = mockk<LlmOperations>()
                 every {
-                    llmt.transform<Any, Any>(
-                        any(),
+                    llmt.createObject<Any>(
                         any(),
                         capture(llmi),
                         any(),
@@ -612,8 +610,7 @@ class AgentMetadataReaderTest {
                 val llmo = slot<LlmInteraction>()
                 val llmt = mockk<LlmOperations>()
                 every {
-                    llmt.transform<Any, Any>(
-                        any(),
+                    llmt.createObject<Any>(
                         any(),
                         capture(llmo),
                         any(),

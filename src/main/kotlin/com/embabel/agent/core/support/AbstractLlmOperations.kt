@@ -42,35 +42,31 @@ abstract class AbstractLlmOperations : LlmOperations {
         interaction: LlmInteraction,
         agentProcess: AgentProcess,
         action: Action?
-    ): String = transform(
-        input = Unit,
-        prompt = { prompt },
+    ): String = createObject(
+        prompt = prompt,
         interaction = interaction,
         outputClass = String::class.java,
         agentProcess = agentProcess,
         action = action,
     )
 
-    final override fun <I, O> transform(
-        input: I,
-        prompt: (I) -> String,
+    final override fun <O> createObject(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?,
     ): O {
-        val (allToolCallbacks, literalPrompt, llmRequestEvent) = setup<I, O>(
+        val (allToolCallbacks, literalPrompt, llmRequestEvent) = setup<O>(
             agentProcess = agentProcess,
             interaction = interaction,
             action = action,
             prompt = prompt,
-            input = input,
             outputClass = outputClass,
         )
         val (response, ms) = time {
             doTransform(
-                input = input,
-                literalPrompt = literalPrompt,
+                prompt = literalPrompt,
                 interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
                     it.withEventPublication(
                         agentProcess,
@@ -90,26 +86,23 @@ abstract class AbstractLlmOperations : LlmOperations {
         return response
     }
 
-    final override fun <I, O> transformIfPossible(
-        input: I,
-        prompt: (I) -> String,
+    final override fun <O> createObjectIfPossible(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
         action: Action?
     ): Result<O> {
-        val (allToolCallbacks, literalPrompt, llmRequestEvent) = setup<I, O>(
+        val (allToolCallbacks, prompt, llmRequestEvent) = setup<O>(
             agentProcess = agentProcess,
             interaction = interaction,
             action = action,
             prompt = prompt,
-            input = input,
             outputClass = outputClass,
         )
         val (response, ms) = time {
             doTransformIfPossible(
-                input = input,
-                literalPrompt = literalPrompt,
+                prompt = prompt,
                 interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
                     it.withEventPublication(
                         agentProcess,
@@ -129,38 +122,34 @@ abstract class AbstractLlmOperations : LlmOperations {
         return response
     }
 
-    protected abstract fun <I, O> doTransformIfPossible(
-        input: I,
-        literalPrompt: String,
+    protected abstract fun <O> doTransformIfPossible(
+        prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
     ): Result<O>
 
-    private fun <I, O> setup(
+    private fun <O> setup(
         agentProcess: AgentProcess,
         interaction: LlmInteraction,
         action: Action?,
-        prompt: (I) -> String,
-        input: I,
+        prompt: String,
         outputClass: Class<O>,
-    ): Triple<List<ToolCallback>, String, LlmRequestEvent<I, O>> {
+    ): Triple<List<ToolCallback>, String, LlmRequestEvent<O>> {
         val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
         val allToolCallbacks =
             (interaction.toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
                 toolGroupResolver,
             ) + (action?.resolveToolCallbacks(toolGroupResolver)
                 ?: emptySet())).distinctBy { it.toolDefinition.name() }
-        val literalPrompt = prompt(input)
         val llmRequestEvent = LlmRequestEvent(
             agentProcess = agentProcess,
-            input = input,
             outputClass = outputClass,
             interaction = interaction.copy(toolCallbacks = allToolCallbacks),
-            prompt = literalPrompt,
+            prompt = prompt,
         )
         agentProcess.processContext.platformServices.eventListener.onProcessEvent(
             llmRequestEvent
         )
-        return Triple(allToolCallbacks, literalPrompt, llmRequestEvent)
+        return Triple(allToolCallbacks, prompt, llmRequestEvent)
     }
 }
