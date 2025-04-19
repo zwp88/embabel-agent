@@ -17,6 +17,9 @@ package com.embabel.agent.e2e
 
 import com.embabel.agent.api.common.AgentPlatformTypedOps
 import com.embabel.agent.api.common.TypedOps
+import com.embabel.agent.api.common.asFunction
+import com.embabel.agent.api.dsl.EvilWizardAgent
+import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranking
@@ -99,7 +102,7 @@ class AgentPlatformIntegrationTest(
     inner class SmokeTest {
 
         @Test
-        fun `agent starts up`() {
+        fun `AgentPlatform starts up`() {
             // Nothing to test
         }
     }
@@ -141,6 +144,17 @@ class AgentPlatformIntegrationTest(
             )
             assertNotNull(writeup)
             assertNotNull(writeup.text)
+        }
+
+        @Test
+        fun `run dsl agent as transform`() {
+            agentPlatform.deploy(EvilWizardAgent)
+            val frog = typedOps.asFunction<UserInput, Frog>(
+                processOptions = ProcessOptions(test = true),
+            ).apply(
+                UserInput("Hamish a poor boy"),
+            )
+            assertNotNull(frog)
         }
     }
 

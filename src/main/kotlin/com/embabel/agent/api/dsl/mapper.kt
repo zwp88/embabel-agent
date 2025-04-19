@@ -15,12 +15,8 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.api.common.TransformationPayload
-import com.embabel.agent.core.Action
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.api.common.LlmOptions
 import kotlinx.coroutines.*
-import org.springframework.ai.tool.ToolCallback
 
 fun <T, R> Collection<T>.mapManaged(
     processContext: ProcessContext,
@@ -50,23 +46,3 @@ suspend fun <T, R> Collection<T>.mapAsync(
         }.awaitAll()
     }
 }
-
-inline fun <reified I, reified O : Any> ProcessContext.llmTransform(
-    input: I,
-    action: Action? = null,
-    noinline prompt: (TransformationPayload<I, O>) -> String,
-    llmOptions: LlmOptions = LlmOptions(),
-    tools: List<ToolCallback> = emptyList(),
-): O = llmTransform(input, this, action = action, prompt, llmOptions, tools)
-
-inline fun <reified I, reified O : Any> TransformationPayload<I, O>.llmTransform(
-    noinline prompt: (TransformationPayload<I, O>) -> String,
-    llmOptions: LlmOptions = LlmOptions(),
-    toolCallbacks: List<ToolCallback> = emptyList(),
-): O = llmTransform<I, O>(
-    input = this.input,
-    processContext = this.processContext,
-    prompt = prompt,
-    llmOptions = llmOptions,
-    toolCallbacks = toolCallbacks,
-)
