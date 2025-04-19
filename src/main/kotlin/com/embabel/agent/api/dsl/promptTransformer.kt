@@ -17,12 +17,13 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.TransformationPayload
-import com.embabel.agent.core.*
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.agent.core.Condition
+import com.embabel.agent.core.Qos
+import com.embabel.agent.core.Transition
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Use in DSL to transform prompt.
+ * Use in DSL to perform a transform
  */
 inline fun <reified I, reified O : Any> promptTransformer(
     name: String,
@@ -64,47 +65,10 @@ inline fun <reified I, reified O : Any> promptTransformer(
         referencedInputProperties = referencedInputProperties,
         toolGroups = toolGroups,
     ) {
-        promptTransform(
-            it = it,
-            prompt = prompt,
-            llm = llmOptions,
+        it.promptRunner(llmOptions).createObject(
+            prompt = prompt(it),
+            outputClass = O::class.java,
             toolCallbacks = toolCallbacks,
         )
     }
-}
-
-inline fun <reified I, reified O : Any> llmTransform(
-    input: I,
-    processContext: ProcessContext,
-    action: Action? = null,
-    noinline prompt: (TransformationPayload<I, O>) -> String,
-    llmOptions: LlmOptions = LlmOptions(),
-    toolCallbacks: List<ToolCallback> = emptyList(),
-): O = promptTransform(
-    it = TransformationPayload(
-        input = input,
-        processContext = processContext,
-        inputClass = I::class.java,
-        outputClass = O::class.java,
-        action = action,
-    ),
-    prompt = prompt,
-    llm = llmOptions,
-    toolCallbacks = toolCallbacks,
-)
-
-inline fun <I, reified O : Any> promptTransform(
-    it: TransformationPayload<I, O>,
-    noinline prompt: (TransformationPayload<I, O>) -> String,
-    llm: LlmOptions = LlmOptions(),
-    toolCallbacks: List<ToolCallback> = emptyList(),
-): O {
-    val literalPrompt = prompt(it)
-    loggerFor<Transformer<I, O>>().debug("Using LLM to transform input of type ${it.inputClass.simpleName} to ${it.outputClass.simpleName}")
-
-    return it.promptRunner(llm).createObject(
-        prompt = literalPrompt,
-        toolCallbacks = toolCallbacks,
-        outputClass = O::class.java,
-    )
 }
