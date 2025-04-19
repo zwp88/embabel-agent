@@ -17,48 +17,59 @@ package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.common.ExecutePromptException
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.common.PromptContributor
 import com.embabel.agent.api.common.PromptRunner
 import org.springframework.ai.tool.ToolCallback
 
 /**
  * Return an ambient prompt runner for use to return in an @Action method.
  */
-fun using(llm: LlmOptions? = null): PromptRunner =
-    ActionReturnPromptRunner(llm)
+fun using(
+    llm: LlmOptions? = null,
+    toolCallbacks: List<ToolCallback> = emptyList(),
+    promptContributors: List<PromptContributor> = emptyList(),
+): PromptRunner =
+    ActionReturnPromptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = promptContributors)
 
 
-val usingDefaultLlm: PromptRunner = ActionReturnPromptRunner(llm = null)
+val usingDefaultLlm: PromptRunner =
+    ActionReturnPromptRunner(llm = null, toolCallbacks = emptyList(), promptContributors = emptyList())
 
 /**
  * PromptRunner implementation that can be used to return a value
+ * from an Action.
  */
 private class ActionReturnPromptRunner(
-    val llm: LlmOptions?,
+    override val llm: LlmOptions?,
+    override val toolCallbacks: List<ToolCallback>,
+    override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
 
     override fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,
-        toolCallbacks: List<ToolCallback>,
     ): T {
         throw ExecutePromptException(
             prompt = prompt,
             llm = llm,
             requireResult = true,
             outputClass = outputClass,
+            toolCallbacks = toolCallbacks,
+            promptContributors = promptContributors,
         )
     }
 
     override fun <T> createObjectIfPossible(
         prompt: String,
         outputClass: Class<T>,
-        toolCallbacks: List<ToolCallback>,
     ): T? {
         throw ExecutePromptException(
             prompt = prompt,
             llm = llm,
             requireResult = true,
             outputClass = outputClass,
+            toolCallbacks = toolCallbacks,
+            promptContributors = promptContributors,
         )
     }
 

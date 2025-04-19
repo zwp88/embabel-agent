@@ -254,17 +254,24 @@ class AgentMetadataReader {
             // It is not a failure
 
             // TODO or default options
-            val promptRunner = payload.promptRunner(llm = e.llm ?: LlmOptions())
+            val toolCallbacks =
+                (toolCallbacks + toolCallbacksOnDomainObjects + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
+            val promptContributors = e.promptContributors
+
+            val promptRunner = payload.promptRunner(
+                llm = e.llm ?: LlmOptions(),
+                toolCallbacks = toolCallbacks,
+                promptContributors = promptContributors,
+            )
+
             if (e.requireResult) {
                 promptRunner.createObject(
                     prompt = e.prompt,
-                    toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
                     outputClass = e.outputClass,
                 )
             } else {
                 promptRunner.createObjectIfPossible(
                     prompt = e.prompt,
-                    toolCallbacks = toolCallbacks + toolCallbacksOnDomainObjects,
                     outputClass = payload.outputClass as Class<Any>,
                 )
             }

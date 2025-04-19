@@ -15,6 +15,10 @@
  */
 package com.embabel.agent.experimental
 
+import com.embabel.agent.api.common.Location
+import com.embabel.agent.api.common.PromptContribution
+import com.embabel.agent.api.common.PromptContributor
+
 /**
  * Inspired by crew.ai. Not that we think this is necessarily
  * the best way to structure team members, but it's helpful to

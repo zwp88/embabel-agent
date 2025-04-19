@@ -176,8 +176,8 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        using(LlmOptions("gpt-4o")) createObject
-                """
+        using(LlmOptions("gpt-4o")).createObject(
+            """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
             Their movie taste profile is ${dmb.tasteProfile}
@@ -193,6 +193,7 @@ class MovieFinder(
             Country: ${dmb.movieBuff.countryCode}
             Current date: ${userInput.timestamp.toString()}
         """.trimIndent()
+        )
 
 
     @Action(
@@ -205,11 +206,9 @@ class MovieFinder(
         payload: TransformationPayload<*, SuggestedMovieTitles>,
     ): StreamableMovies {
         val suggestedMovieTitles = payload.promptRunner(
-            LlmOptions(model = "gpt-4o"),
+            LlmOptions(model = "gpt-4o"), promptContributors = listOf(config.suggesterPersona),
         ).createObject<SuggestedMovieTitles>(
             """
-            ${config.suggesterPersona.contribution()}
-
             Suggest ${config.suggestionCount} movie titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
 
             Consider the specific request: "${userInput.content}"
@@ -350,10 +349,11 @@ class MovieFinder(
         streamableMovies: StreamableMovies,
         payload: TransformationPayload<*, SuggestionWriteup>,
     ): SuggestionWriteup {
-        val text = payload.promptRunner(LlmOptions("gpt-4o")) generateText
+        val text = payload.promptRunner(
+            llm = LlmOptions("gpt-4o"),
+            promptContributors = listOf(config.suggesterPersona)
+        ) generateText
                 """
-                ${config.suggesterPersona.contribution()}
-
                 Write up a recommendation of ${config.suggestionCount} movies in ${config.writeupWordCount} words
                 for ${dmb.movieBuff.name}
                 based on the following information:

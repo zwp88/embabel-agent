@@ -15,18 +15,24 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.spi.LlmCall
 import org.springframework.ai.tool.ToolCallback
 
 
 /**
  * Interface for executing prompts
- * A PromptRunner interface allows more control over prompt execution
- * and reuse between different execution
+ * A PromptRunner interface allows control over prompt execution
+ * and reuse between different execution.
+ * A contextual facade to LlmOperations.
+ * @see com.embabel.agent.spi.LlmOperations
  */
-interface PromptRunner {
+interface PromptRunner : LlmCall {
 
     infix fun generateText(prompt: String): String =
-        createObject(prompt = prompt, outputClass = String::class.java)
+        createObject(
+            prompt = prompt,
+            outputClass = String::class.java,
+        )
 
     /**
      * Create an object of the given type using the given prompt and LLM options from context
@@ -38,7 +44,6 @@ interface PromptRunner {
     fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,
-        toolCallbacks: List<ToolCallback> = emptyList(),
     ): T
 
     /**
@@ -51,7 +56,6 @@ interface PromptRunner {
     fun <T> createObjectIfPossible(
         prompt: String,
         outputClass: Class<T>,
-        toolCallbacks: List<ToolCallback> = emptyList(),
     ): T?
 
 }
@@ -62,10 +66,9 @@ inline infix fun <reified T> PromptRunner.createObject(prompt: String): T =
 inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
     createObjectIfPossible(prompt, T::class.java)
 
-interface LlmCallRequest {
+interface LlmCallRequest : LlmCall {
     val prompt: String
     val requireResult: Boolean
-    val llm: LlmOptions?
     val outputClass: Class<*>
 }
 
@@ -83,6 +86,8 @@ class ExecutePromptException(
     override val requireResult: Boolean,
     override val llm: LlmOptions? = null,
     override val outputClass: Class<*>,
+    override val toolCallbacks: List<ToolCallback>,
+    override val promptContributors: List<PromptContributor>
 ) : LlmCallRequest, RuntimeException(
     "Not a real failure but meant to be intercepted by infrastructure: Generated prompt=[$prompt]"
 )

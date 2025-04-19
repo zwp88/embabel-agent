@@ -15,6 +15,10 @@
  */
 package com.embabel.agent.experimental
 
+import com.embabel.agent.api.common.Location
+import com.embabel.agent.api.common.PromptContribution
+import com.embabel.agent.api.common.PromptContributor
+
 /**
  * CO-STAR prompt framework
  * See https://towardsdatascience.com/how-i-won-singapores-gpt-4-prompt-engineering-competition-34c195a93d41/

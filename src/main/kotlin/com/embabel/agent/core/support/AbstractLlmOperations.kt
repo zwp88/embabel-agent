@@ -74,6 +74,7 @@ abstract class AbstractLlmOperations : LlmOperations {
                     )
                 }),
                 outputClass = outputClass,
+                llmRequestEvent = llmRequestEvent,
             )
         }
         logger.debug("LLM response={}", response)
@@ -110,6 +111,7 @@ abstract class AbstractLlmOperations : LlmOperations {
                     )
                 }),
                 outputClass = outputClass,
+                llmRequestEvent = llmRequestEvent,
             )
         }
         logger.debug("LLM response={}", response)
@@ -126,6 +128,7 @@ abstract class AbstractLlmOperations : LlmOperations {
         prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
+        llmRequestEvent: LlmRequestEvent<O>,
     ): Result<O>
 
     private fun <O> setup(

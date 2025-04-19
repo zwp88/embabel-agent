@@ -74,9 +74,8 @@ class ChatClientLlmTransformerTest {
                     eventListener = ese,
                 )
                 assertEquals(person, result)
-                assertEquals(2, ese.processEvents.size)
+                assertEquals(3, ese.processEvents.size)
             }
-
 
         }
 
@@ -170,7 +169,7 @@ class ChatClientLlmTransformerTest {
                     outputClass = Person::class.java,
                 )
                 assertEquals(Result.success(person), result.result)
-                assertEquals(2, ese.processEvents.size)
+                assertEquals(3, ese.processEvents.size)
             }
 
             @Test

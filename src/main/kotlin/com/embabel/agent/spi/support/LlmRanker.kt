@@ -69,6 +69,7 @@ internal class LlmRanker(
                 llm = LlmOptions(model = "gpt-4o-mini"),
             ),
             outputClass = RankingsResponse::class.java,
+            llmRequestEvent = null,
         )
         return Rankings(
             rankings = grr.rankings.map {

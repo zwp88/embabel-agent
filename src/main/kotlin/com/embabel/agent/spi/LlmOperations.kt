@@ -16,8 +16,10 @@
 package com.embabel.agent.spi
 
 import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.api.common.PromptContributor
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.event.LlmRequestEvent
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -30,6 +32,12 @@ value class InteractionId(val value: String) {
     override fun toString(): String = value
 }
 
+interface LlmCall {
+    val llm: LlmOptions?
+    val toolCallbacks: List<ToolCallback>
+    val promptContributors: List<PromptContributor>
+}
+
 /**
  * Encapsulates an interaction with an LLM.
  * @param id Unique identifier for the interaction.
@@ -39,17 +47,20 @@ value class InteractionId(val value: String) {
  */
 data class LlmInteraction(
     val id: InteractionId,
-    val llm: LlmOptions = LlmOptions(),
-    val toolCallbacks: List<ToolCallback> = emptyList(),
-)
+    override val llm: LlmOptions = LlmOptions(),
+    override val toolCallbacks: List<ToolCallback> = emptyList(),
+    override val promptContributors: List<PromptContributor> = emptyList(),
+) : LlmCall
 
 /**
  * Wraps LLM operations.
  * All LLM operations go through this,
  * allowing the AgentPlatform to mediate them.
+ * Not directly for user code. Prefer PromptRunner
  * An LlmOperations implementation is responsible for resolving all relevant
  * tool callbacks for the current AgentProcess (in addition to those passed in directly),
  * and emitting events.
+ * @see com.embabel.agent.api.common.PromptRunner
  */
 interface LlmOperations {
 
@@ -100,13 +111,17 @@ interface LlmOperations {
     ): Result<O>
 
     /**
-     * Low level transform, which can also be called
-     * directly by user code.
+     * Low level transform
+     * @param prompt
+     * @param interaction The LLM call options
+     * @param outputClass Class of the output object
+     * @param llmRequestEvent Event already published for this request if one has been
      */
     fun <O> doTransform(
         prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
+        llmRequestEvent: LlmRequestEvent<O>?,
     ): O
 
 }

@@ -25,6 +25,7 @@ import com.embabel.common.core.types.Timed
 import com.embabel.common.util.VisualizableTask
 import com.embabel.plan.Plan
 import com.embabel.plan.goap.WorldState
+import org.springframework.ai.chat.prompt.Prompt
 import java.time.Duration
 import java.time.Instant
 
@@ -114,6 +115,16 @@ class LlmRequestEvent<O>(
     val prompt: String,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
+    fun callEvent(springAiPrompt: Prompt): ChatModelCallEvent<O> {
+        return ChatModelCallEvent(
+            agentProcess = agentProcess,
+            outputClass = outputClass,
+            interaction = interaction,
+            prompt = prompt,
+            springAiPrompt = springAiPrompt
+        )
+    }
+
     fun responseEvent(response: O, runningTime: Duration): LlmResponseEvent<O> {
         return LlmResponseEvent(
             agentProcess = agentProcess,
@@ -136,6 +147,18 @@ class LlmRequestEvent<O>(
         )
     }
 }
+
+
+/**
+ * Spring AI low level event
+ */
+class ChatModelCallEvent<O> internal constructor(
+    agentProcess: AgentProcess,
+    val outputClass: Class<O>,
+    val interaction: LlmInteraction,
+    val prompt: String,
+    val springAiPrompt: Prompt,
+) : AbstractAgentProcessEvent(agentProcess)
 
 /**
  * Response from an LLM

@@ -63,6 +63,7 @@ class LlmGoalRankerTest {
                     prompt = any(),
                     interaction = any(),
                     outputClass = RankingsResponse::class.java,
+                    llmRequestEvent = null,
                 )
             } returns llmr
             val ranker = LlmRanker(llmt)

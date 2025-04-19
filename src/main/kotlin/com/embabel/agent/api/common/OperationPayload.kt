@@ -34,8 +34,17 @@ interface OperationPayload : Blackboard {
     val action: Action?
 
     // TODO default LLM options from action
-    fun promptRunner(llm: LlmOptions): PromptRunner =
-        OperationPayloadPromptRunner(this, llm)
+    fun promptRunner(
+        llm: LlmOptions,
+        toolCallbacks: List<ToolCallback> = emptyList(),
+        promptContributors: List<PromptContributor> = emptyList(),
+    ): PromptRunner =
+        OperationPayloadPromptRunner(
+            this,
+            llm = llm,
+            toolCallbacks = toolCallbacks,
+            promptContributors = promptContributors,
+        )
 
     fun agentPlatform() = processContext.platformServices.agentPlatform
 
@@ -47,7 +56,9 @@ interface OperationPayload : Blackboard {
  */
 private class OperationPayloadPromptRunner(
     private val payload: OperationPayload,
-    private val llm: LlmOptions,
+    override val llm: LlmOptions,
+    override val toolCallbacks: List<ToolCallback>,
+    override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
 
     private fun idForPrompt(prompt: String, outputClass: Class<*>): InteractionId {
@@ -57,13 +68,13 @@ private class OperationPayloadPromptRunner(
     override fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,
-        toolCallbacks: List<ToolCallback>,
     ): T {
         return payload.processContext.createObject<T>(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
                 toolCallbacks = toolCallbacks,
+                promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
             ),
             outputClass = outputClass,
@@ -75,13 +86,13 @@ private class OperationPayloadPromptRunner(
     override fun <T> createObjectIfPossible(
         prompt: String,
         outputClass: Class<T>,
-        toolCallbacks: List<ToolCallback>,
     ): T? {
         return payload.processContext.createObjectIfPossible<T>(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
                 toolCallbacks = toolCallbacks,
+                promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
             ),
             outputClass = outputClass,

@@ -17,10 +17,13 @@ package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.support.AbstractLlmOperations
+import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
+import org.springframework.ai.chat.messages.SystemMessage
+import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.core.ParameterizedTypeReference
@@ -49,6 +52,7 @@ internal class ChatClientLlmOperations(
         prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
+        llmRequestEvent: LlmRequestEvent<O>?,
     ): O {
         // TODO would be good to identify this ahead of time
         if (List::class.java.isAssignableFrom(outputClass)) {
@@ -56,8 +60,21 @@ internal class ChatClientLlmOperations(
         }
 
         val chatClient = createChatClient(interaction.llm)
+        val promptContributions = interaction.promptContributors.joinToString("\n") { it.contribution() }
 
-        val springAiPrompt = Prompt(prompt)
+        val springAiPrompt = Prompt(
+            buildList {
+                if (promptContributions.isNotEmpty()) {
+                    add(SystemMessage(promptContributions))
+                }
+                add(UserMessage(prompt))
+            }
+        )
+        llmRequestEvent?.let {
+            it.agentProcess.processContext.onProcessEvent(
+                it.callEvent(springAiPrompt)
+            )
+        }
 
         val callResponse = chatClient
             .prompt(springAiPrompt)
@@ -73,10 +90,22 @@ internal class ChatClientLlmOperations(
     override fun <O> doTransformIfPossible(
         prompt: String,
         interaction: LlmInteraction,
-        outputClass: Class<O>
+        outputClass: Class<O>,
+        llmRequestEvent: LlmRequestEvent<O>,
     ): Result<O> {
         val chatClient = createChatClient(interaction.llm)
-        val springAiPrompt = Prompt("$prompt\n$maybeReturnPromptContribution")
+        val promptContributions = interaction.promptContributors.joinToString("\n") { it.contribution() }
+        val springAiPrompt = Prompt(
+            buildList {
+                if (promptContributions.isNotEmpty()) {
+                    add(SystemMessage(promptContributions))
+                }
+                add(UserMessage("$prompt\n$maybeReturnPromptContribution"))
+            }
+        )
+        llmRequestEvent.agentProcess.processContext.onProcessEvent(
+            llmRequestEvent.callEvent(springAiPrompt)
+        )
 
         val typeReference = createParameterizedTypeReference<MaybeReturn<*>>(
             MaybeReturn::class.java,

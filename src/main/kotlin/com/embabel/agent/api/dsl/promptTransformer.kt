@@ -37,7 +37,7 @@ inline fun <reified I, reified O : Any> promptTransformer(
     toolGroups: Collection<String> = emptyList(),
     qos: Qos = Qos(),
     referencedInputProperties: Set<String>? = null,
-    llmOptions: LlmOptions = LlmOptions(),
+    llm: LlmOptions = LlmOptions(),
     expectation: Condition? = null,
     canRerun: Boolean = false,
     toolCallbacks: List<ToolCallback> = emptyList(),
@@ -65,10 +65,9 @@ inline fun <reified I, reified O : Any> promptTransformer(
         referencedInputProperties = referencedInputProperties,
         toolGroups = toolGroups,
     ) {
-        it.promptRunner(llmOptions).createObject(
+        it.promptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = emptyList()).createObject(
             prompt = prompt(it),
             outputClass = O::class.java,
-            toolCallbacks = toolCallbacks,
         )
     }
 }

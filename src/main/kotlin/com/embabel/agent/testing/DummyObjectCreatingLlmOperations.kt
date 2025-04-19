@@ -17,6 +17,7 @@ package com.embabel.agent.testing
 
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import org.slf4j.LoggerFactory
@@ -49,6 +50,7 @@ class DummyObjectCreatingLlmOperations(
         prompt: String,
         interaction: LlmInteraction,
         outputClass: Class<O>,
+        llmRequestEvent: LlmRequestEvent<O>?,
     ): O {
         logger.debug("Creating fake response for class: ${outputClass.name}")
 
@@ -84,6 +86,7 @@ class DummyObjectCreatingLlmOperations(
         prompt = prompt,
         interaction = interaction,
         outputClass = outputClass,
+        llmRequestEvent = null,
     )
 
     @Suppress("UNCHECKED_CAST")

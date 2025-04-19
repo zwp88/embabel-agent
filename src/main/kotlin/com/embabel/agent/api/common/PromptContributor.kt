@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental
+package com.embabel.agent.api.common
 
 enum class Location {
     BEGINNING,
@@ -25,6 +25,9 @@ data class PromptContribution(
     val location: Location,
 )
 
+/**
+ * Contributor to a prompt.
+ */
 interface PromptContributor {
 
     fun promptContribution(): PromptContribution

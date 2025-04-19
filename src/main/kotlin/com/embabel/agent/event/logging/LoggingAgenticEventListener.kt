@@ -176,11 +176,11 @@ open class LoggingAgenticEventListener(
 
             is LlmRequestEvent<*> -> {
                 var message = llmRequestEventMessage
-                if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
-                    message += "\nPrompt ${event.interaction.id}:\n${
-                        event.prompt.color(AnsiColor.GREEN)
-                    }\ntools: ${event.interaction.toolCallbacks.map { it.toolDefinition.name() }}"
-                }
+//                if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
+//                    message += "\nPrompt ${event.interaction.id}:\n${
+//                        event.prompt.color(AnsiColor.GREEN)
+//                    }\ntools: ${event.interaction.toolCallbacks.map { it.toolDefinition.name() }}"
+//                }
                 logger.info(
                     message,
                     event.processId,
@@ -188,6 +188,24 @@ open class LoggingAgenticEventListener(
                     event.outputClass.simpleName,
                     event.interaction.llm,
                 )
+            }
+
+            is ChatModelCallEvent<*> -> {
+                if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
+                    val promptInfo = "\nPrompt ${event.interaction.id}:\n${
+                        event.springAiPrompt.toString().color(AnsiColor.GREEN)
+                    }\ntools: ${
+                        event.interaction.toolCallbacks.joinToString() { it.toolDefinition.name() }
+                            .color(AnsiColor.BRIGHT_MAGENTA)
+                    }"
+                    logger.info(
+                        "{} Spring ChatModel call {} with prompt {}",
+                        event.processId,
+                        event.interaction.id.value,
+                        promptInfo,
+                    )
+                }
+
             }
 
             is LlmResponseEvent<*> -> {

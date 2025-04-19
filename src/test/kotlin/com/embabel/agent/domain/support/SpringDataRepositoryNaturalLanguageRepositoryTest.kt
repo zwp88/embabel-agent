@@ -49,7 +49,6 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
             mockPromptRunner.createObject(
                 capture(promptSlot),
                 FinderInvocations::class.java,
-                any(),
             )
         } answers { result }
         val mockPayload = mockk<OperationPayload>()
@@ -76,7 +75,6 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
             mockPromptRunner.createObject(
                 capture(promptSlot),
                 FinderInvocations::class.java,
-                any(),
             )
         } answers { result }
         val mockPayload = mockk<OperationPayload>()
@@ -106,7 +104,6 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
             mockPromptRunner.createObject(
                 capture(promptSlot),
                 FinderInvocations::class.java,
-                any(),
             )
         } answers { result }
         val mockPayload = mockk<OperationPayload>()
@@ -137,7 +134,6 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
             mockPromptRunner.createObject(
                 capture(promptSlot),
                 FinderInvocations::class.java,
-                any(),
             )
         } answers { result }
         val mockPayload = mockk<OperationPayload>()
