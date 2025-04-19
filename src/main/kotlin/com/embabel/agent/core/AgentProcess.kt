@@ -41,13 +41,16 @@ interface AgentProcess : Blackboard, Timed {
     val agent: Agent
 
     /**
-     * Perform the next step only
+     * Perform the next step only.
+     * Return when an action has been completed and the process is ready to plan,
+     * regardless of the result of the action.
      * @return whether we're done
      */
     fun tick(): AgentProcessStatus
 
     /**
-     * Run the whole thing
+     * Run the process as far as we can.
+     * Might complete, fail, get stuck or hit a waiting state.
      */
     fun run(): AgentProcessStatus
 

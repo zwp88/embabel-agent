@@ -56,7 +56,7 @@ interface ActionRunner {
                 block()
             }
             return ActionStatus(
-                status = ActionStatusCode.COMPLETED,
+                status = ActionStatusCode.SUCCEEDED,
                 runningTime = Duration.ofMillis(ms),
             )
         }

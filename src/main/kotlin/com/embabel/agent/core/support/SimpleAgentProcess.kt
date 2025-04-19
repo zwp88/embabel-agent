@@ -96,11 +96,19 @@ internal class SimpleAgentProcess(
         while (processStatus is AgentProcessStatus.Running) {
             if (++actions > processOptions.maxActions) {
                 logger.info("Process {} exceeded max actions: {}", this.id, processOptions.maxActions)
-                return AgentProcessStatus.Failed(this)
+                return AgentProcessStatus.Failed(this, reason = "Exceeded max actions of ${processOptions.maxActions}")
             }
             processStatus = tick()
         }
-        platformServices.eventListener.onProcessEvent(AgentProcessTerminationEvent(processStatus))
+        when {
+            processStatus.isFinished() -> {
+                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(processStatus))
+            }
+
+            processStatus is AgentProcessStatus.Waiting -> {
+                platformServices.eventListener.onProcessEvent(AgentProcessWaitingEvent(processStatus))
+            }
+        }
         return processStatus
     }
 
@@ -121,13 +129,16 @@ internal class SimpleAgentProcess(
         val plan = planner.bestValuePlanToAnyGoal(system = agent.goapSystem)
         if (plan == null) {
             logger.info(
-                "❌ Process {} failure: No plan from {} in {}, context= {}",
+                "❌ Process {} failure: No plan from {} in {}, context={}",
                 id,
                 worldState,
                 agent.goapSystem.infoString(),
                 blackboard,
             )
-            return AgentProcessStatus.Failed(this)
+            return AgentProcessStatus.Failed(
+                agentProcess = this,
+                reason = "Process $id failed: No plan from $worldState",
+            )
         }
         platformServices.eventListener.onProcessEvent(
             AgentProcessPlanFormulatedEvent(
@@ -152,12 +163,12 @@ internal class SimpleAgentProcess(
                 this.runningTime.seconds,
             )
             logger.debug("Final blackboard: {}", blackboard.infoString())
-            return AgentProcessStatus.Completed(this)
+            return AgentProcessStatus.Completed(agentProcess = this)
         } else {
             logger.debug("▶️ Process {} running: {}\n\tPlan: {}", id, worldState, plan.infoString())
             val agent = agent.actions.single { it.name == plan.actions.first().name }
             executeAction(agent)
-            return AgentProcessStatus.Running(this)
+            return AgentProcessStatus.Running(agentProcess = this)
         }
 
     }

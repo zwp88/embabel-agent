@@ -272,7 +272,7 @@ class AgentMetadataReaderTest {
                 agentProcess = mockAgentProcess,
             )
             val result = action.execute(pc, mockk(), action)
-            assertEquals(ActionStatusCode.COMPLETED, result.status)
+            assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(Person("John Doe"), pc.blackboard.finalResult())
         }
 
@@ -322,7 +322,7 @@ class AgentMetadataReaderTest {
                 agentProcess = mockAgentProcess,
             )
             val result = action.execute(pc, mockk(), action)
-            assertEquals(ActionStatusCode.COMPLETED, result.status)
+            assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(Person("John Doe"), pc.blackboard.finalResult())
         }
 
@@ -372,7 +372,7 @@ class AgentMetadataReaderTest {
                 agentProcess = mockAgentProcess,
             )
             val result = action.execute(pc, mockk(), action)
-            assertEquals(ActionStatusCode.COMPLETED, result.status)
+            assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(Person("John Doe"), pc.blackboard.finalResult())
         }
 
@@ -414,7 +414,7 @@ class AgentMetadataReaderTest {
                 agentProcess = mockAgentProcess,
             )
             val result = action.execute(pc, mockk(), action)
-            assertEquals(ActionStatusCode.COMPLETED, result.status)
+            assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(Person("John Doe"), pc.blackboard.finalResult())
         }
 
@@ -537,7 +537,7 @@ class AgentMetadataReaderTest {
                     agentProcess = mockAgentProcess,
                 )
                 val result = action.execute(pc, mockk(), action)
-                assertEquals(ActionStatusCode.COMPLETED, result.status)
+                assertEquals(ActionStatusCode.SUCCEEDED, result.status)
                 assertEquals(Person("John Doe"), pc.blackboard.finalResult())
                 assertEquals("magical", llmo.captured.llm.model)
                 assertEquals(1.7, llmo.captured.llm.temperature)
@@ -589,7 +589,7 @@ class AgentMetadataReaderTest {
                     agentProcess = mockAgentProcess,
                 )
                 val result = action.execute(pc, mockk(), action)
-                assertEquals(ActionStatusCode.COMPLETED, result.status)
+                assertEquals(ActionStatusCode.SUCCEEDED, result.status)
                 assertEquals(Person("John Doe"), pc.blackboard.finalResult())
                 assertEquals(1, llmi.captured.toolCallbacks.size)
                 assertEquals("thing", llmi.captured.toolCallbacks.single().toolDefinition.name())
@@ -642,7 +642,7 @@ class AgentMetadataReaderTest {
                     agentProcess = mockAgentProcess,
                 )
                 val result = action.execute(pc, mockk(), action)
-                assertEquals(ActionStatusCode.COMPLETED, result.status)
+                assertEquals(ActionStatusCode.SUCCEEDED, result.status)
                 assertTrue(pc.blackboard.finalResult() is UserInput)
                 assertEquals("John Doe", (pc.blackboard.finalResult() as UserInput).content)
                 assertEquals(1, llmo.captured.toolCallbacks.size)

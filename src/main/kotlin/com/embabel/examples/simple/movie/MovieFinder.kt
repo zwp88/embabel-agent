@@ -338,7 +338,6 @@ class MovieFinder(
             .flatMap { it.titles } + allStreamableMovies(processContext).map { it.movie.Title })
             .distinct()
             .sorted()
-        logger.info("Excludes: {}", excludes.joinToString(", "))
         return excludes
     }
 

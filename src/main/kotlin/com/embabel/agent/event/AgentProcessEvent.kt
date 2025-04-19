@@ -104,8 +104,12 @@ class AgentProcessFunctionCallResponseEvent internal constructor(
     override val runningTime: Duration,
 ) : AbstractAgentProcessEvent(agentProcess), Timed
 
-class AgentProcessTerminationEvent(
+class AgentProcessFinishedEvent(
     val agentProcessStatus: AgentProcessStatus,
+) : AbstractAgentProcessEvent(agentProcessStatus.agentProcess)
+
+class AgentProcessWaitingEvent(
+    val agentProcessStatus: AgentProcessStatus.Waiting,
 ) : AbstractAgentProcessEvent(agentProcessStatus.agentProcess)
 
 class LlmRequestEvent<O>(

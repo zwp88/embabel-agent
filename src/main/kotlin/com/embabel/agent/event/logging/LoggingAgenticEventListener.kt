@@ -142,7 +142,7 @@ open class LoggingAgenticEventListener(
                 )
             }
 
-            is AgentProcessTerminationEvent -> {
+            is AgentProcessFinishedEvent -> {
                 when (event.agentProcessStatus) {
                     is AgentProcessStatus.Completed -> {
                         logger.info(
@@ -164,6 +164,13 @@ open class LoggingAgenticEventListener(
                         // Do nothing
                     }
                 }
+            }
+
+            is AgentProcessWaitingEvent -> {
+                logger.info(
+                    "[{}] waiting",
+                    event.processId,
+                )
             }
 
             is ObjectAddedEvent -> {

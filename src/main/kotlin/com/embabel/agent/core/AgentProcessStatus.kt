@@ -26,7 +26,7 @@ enum class AgentStatusCode {
 }
 
 enum class ActionStatusCode {
-    RUNNING, COMPLETED, FAILED
+    SUCCEEDED, FAILED
 }
 
 /**
@@ -37,6 +37,12 @@ interface OperationStatus<S> : Timed where S : Enum<S> {
     val status: S
 }
 
+/**
+ * Status of action execution.
+ * Concrete results of running the action will be side effects:
+ * typically, changes to the ProcessContext blackboard.
+ * This just indicates what happened.
+ */
 open class ActionStatus(
     override val runningTime: Duration,
     override val status: ActionStatusCode,
@@ -50,6 +56,11 @@ sealed class AgentProcessStatus(
     val agentProcess: AgentProcess,
     override val status: AgentStatusCode,
 ) : OperationStatus<AgentStatusCode>, MayHaveFinalResult {
+
+    fun isFinished(): Boolean = listOf(
+        AgentStatusCode.COMPLETED,
+        AgentStatusCode.FAILED,
+    ).contains(status)
 
     private fun <O> doOnCompletion(block: (agentProcess: AgentProcess) -> O?): O? {
         return when (this) {
@@ -81,7 +92,8 @@ sealed class AgentProcessStatus(
 
     open class Completed(agentProcess: AgentProcess) : AgentProcessStatus(agentProcess, AgentStatusCode.COMPLETED)
 
-    open class Failed(agentProcess: AgentProcess) : AgentProcessStatus(agentProcess, AgentStatusCode.FAILED)
+    open class Failed(agentProcess: AgentProcess, val reason: String) :
+        AgentProcessStatus(agentProcess, AgentStatusCode.FAILED)
 
     open class Running(agentProcess: AgentProcess) : AgentProcessStatus(agentProcess, AgentStatusCode.RUNNING)
 
