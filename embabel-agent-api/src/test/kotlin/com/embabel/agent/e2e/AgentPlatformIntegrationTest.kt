@@ -165,19 +165,13 @@ class AgentPlatformIntegrationTest(
                 "Lynda is a Scorpio, find some news for her",
                 ProcessOptions(test = true),
             )
-            when (dynamicExecutionResult) {
-                is DynamicExecutionResult.Success -> {
-                    assertNotNull(dynamicExecutionResult.output)
-                    assertTrue(
-                        dynamicExecutionResult.output is Writeup,
-                        "Expected FunnyWriteup, got ${dynamicExecutionResult.output?.javaClass?.name}"
-                    )
-                }
 
-                else -> {
-                    fail("Agent not found: $dynamicExecutionResult")
-                }
-            }
+            assertNotNull(dynamicExecutionResult.output)
+            assertTrue(
+                dynamicExecutionResult.output is Writeup,
+                "Expected FunnyWriteup, got ${dynamicExecutionResult.output.javaClass.name}"
+            )
+
         }
     }
 
@@ -190,8 +184,7 @@ class AgentPlatformIntegrationTest(
                 "Lynda is a Scorpio, find some news for her",
                 ProcessOptions(test = true),
             )
-            when (dynamicExecutionResult) {
-                is DynamicExecutionResult.Success -> {
+
                     assertNotNull(dynamicExecutionResult.output)
                     assertTrue(
                         dynamicExecutionResult.output is Writeup,
@@ -199,14 +192,5 @@ class AgentPlatformIntegrationTest(
                     )
                 }
 
-                is DynamicExecutionResult.NoGoalFound -> {
-                    fail("Goal not found: $dynamicExecutionResult")
-                }
-
-                is DynamicExecutionResult.NoAgentFound -> {
-                    fail("Agent not found: $dynamicExecutionResult")
-                }
-            }
-        }
     }
 }
