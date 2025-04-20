@@ -79,7 +79,7 @@ class LlmGoalRankerTest {
                     ),
                 ), userInput = UserInput("What is my horoscope for today?")
             )
-            assertEquals("weather", rankings.rankings[0].ranked.name)
+            assertEquals("weather", rankings.rankings[0].match.name)
         }
     }
 

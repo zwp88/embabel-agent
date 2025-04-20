@@ -74,10 +74,10 @@ internal class LlmRanker(
         return Rankings(
             rankings = grr.rankings.map {
                 Ranking(
-                    ranked = things.single { thing -> thing.name == it.name },
-                    confidence = it.confidence,
+                    match = things.single { thing -> thing.name == it.name },
+                    score = it.confidence,
                 )
-            }.sortedBy { it.confidence }.reversed()
+            }.sortedBy { it.score }.reversed()
         )
     }
 }

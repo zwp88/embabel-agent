@@ -21,6 +21,8 @@ import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.SimilarityResult
+import com.embabel.common.core.types.ZeroToOne
 
 /**
  * Rank available choices based on user input and agent metadata.
@@ -46,17 +48,17 @@ data class Rankings<T>(
 
     override fun infoString(verbose: Boolean?): String =
         rankings.joinToString("\n") { ranking ->
-            "${ranking.ranked.name}: ${ranking.confidence}"
+            "${ranking.match.name}: ${ranking.score}"
         }
 }
 
 /**
  * Ranking choice returned by the ranker
- * @param ranked The ranked item
- * @param confidence The confidence score of the ranker in this choice,
+ * @param match The ranked item
+ * @param score The confidence score of the ranker in this choice,
  * between 0 and 1
  */
 data class Ranking<T>(
-    val ranked: T,
-    val confidence: Double,
-) where T : Named, T : Described
+    override val match: T,
+    override val score: ZeroToOne,
+): SimilarityResult<T> where T : Named, T : Described

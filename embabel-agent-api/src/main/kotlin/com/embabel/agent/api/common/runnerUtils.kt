@@ -102,7 +102,7 @@ fun AgentPlatform.chooseAndAccomplishGoal(
         .rankGoals(userInput = userInput, goals = this.goals)
     val credibleGoals = goalRankings
         .rankings
-        .filter { it.confidence > properties.goalConfidenceCutOff }
+        .filter { it.score > properties.goalConfidenceCutOff }
     val goalChoice = credibleGoals.firstOrNull()
     if (goalChoice == null) {
         eventListener.onPlatformEvent(
@@ -116,8 +116,8 @@ fun AgentPlatform.chooseAndAccomplishGoal(
 
     loggerFor<AgentPlatform>().debug(
         "Goal choice {} with confidence {} for user intent {}: Choices were {}",
-        goalChoice.ranked.name,
-        goalChoice.confidence,
+        goalChoice.match.name,
+        goalChoice.score,
         intent,
         goals.joinToString("\n") { it.name },
     )
@@ -129,10 +129,10 @@ fun AgentPlatform.chooseAndAccomplishGoal(
     )
 
     val goalAgent = createAgent(
-        name = "goal-${goalChoice.ranked.name}",
-        description = goalChoice.ranked.description,
+        name = "goal-${goalChoice.match.name}",
+        description = goalChoice.match.description,
     )
-        .withSingleGoal(goalChoice.ranked)
+        .withSingleGoal(goalChoice.match)
     eventListener.onPlatformEvent(
         DynamicAgentCreationEvent(
             agent = goalAgent,
@@ -187,7 +187,7 @@ fun AgentPlatform.chooseAndRunAgent(
         .rankAgents(userInput = userInput, agents = this.agents())
     val credibleAgents = agentRankings
         .rankings
-        .filter { it.confidence > properties.agentConfidenceCutOff }
+        .filter { it.score > properties.agentConfidenceCutOff }
     val agentChoice = credibleAgents.firstOrNull()
     if (agentChoice == null) {
         eventListener.onPlatformEvent(
@@ -201,8 +201,8 @@ fun AgentPlatform.chooseAndRunAgent(
 
     loggerFor<AgentPlatform>().debug(
         "Agent choice {} with confidence {} for user intent {}: Choices were {}",
-        agentChoice.ranked.name,
-        agentChoice.confidence,
+        agentChoice.match.name,
+        agentChoice.score,
         intent,
         agents().joinToString("\n") { it.name },
     )
@@ -213,10 +213,10 @@ fun AgentPlatform.chooseAndRunAgent(
         )
     )
 
-    val agent = agentChoice.ranked
+    val agent = agentChoice.match
     eventListener.onPlatformEvent(
         DynamicAgentCreationEvent(
-            agent = agentChoice.ranked,
+            agent = agentChoice.match,
             agentPlatform = this,
             basis = userInput,
         )

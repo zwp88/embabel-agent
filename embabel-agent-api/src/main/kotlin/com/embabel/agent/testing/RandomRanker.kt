@@ -37,8 +37,8 @@ class RandomRanker : FakeRanker {
     ): Rankings<Agent> {
         return Rankings(agents.map {
             Ranking(
-                ranked = it,
-                confidence = random.nextDouble(),
+                match = it,
+                score = random.nextDouble(),
             )
         })
     }
@@ -49,8 +49,8 @@ class RandomRanker : FakeRanker {
     ): Rankings<Goal> {
         return Rankings(goals.map {
             Ranking(
-                ranked = it,
-                confidence = random.nextDouble(),
+                match = it,
+                score = random.nextDouble(),
             )
         })
     }

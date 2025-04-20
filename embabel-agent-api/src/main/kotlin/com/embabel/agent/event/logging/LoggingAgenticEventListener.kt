@@ -72,8 +72,8 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     rankingChoiceMadeEventMessage,
                     event.type.simpleName,
-                    event.choice.ranked.name,
-                    event.choice.confidence,
+                    event.choice.match.name,
+                    event.choice.score,
                     event.basis,
                     event.rankings.infoString(),
                 )
