@@ -85,9 +85,6 @@ interface AgentPlatform : AgentScope {
 
     val toolGroupResolver: ToolGroupResolver
 
-    fun agentByName(agentName: String): Agent = agents().firstOrNull { it.name == agentName }
-        ?: throw IllegalArgumentException("Unknown agent: $agentName")
-
     /**
      * Find an agent process by id. Implementations are only obliged to
      * resolve running processes, although they may choose to return older processes.
@@ -114,11 +111,6 @@ interface AgentPlatform : AgentScope {
         )
         return this
     }
-
-    fun deploy(vararg agents: Agent): AgentPlatform =
-        agents.fold(this) { acc, agent ->
-            acc.deploy(agent)
-        }
 
     fun deploy(action: Action): AgentPlatform
 

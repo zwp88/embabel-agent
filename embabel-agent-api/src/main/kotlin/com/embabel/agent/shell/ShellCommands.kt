@@ -163,6 +163,7 @@ class ShellCommands(
         @ShellOption(
             value = ["-s", "--showPlanning"],
             help = "show detailed planning info",
+            defaultValue = "true",
         ) showPlanning: Boolean = true,
     ): String {
         return executeIntent(
