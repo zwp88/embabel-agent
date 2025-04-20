@@ -28,6 +28,9 @@ import org.slf4j.LoggerFactory
  * Prompt an LLM to evaluate a condition.
  * Evaluating prompt conditions is expensive,
  * so we need to consider efficiency here.
+ * @param name name of the condition
+ * @param prompt the prompt to evaluate.
+ * Typically created from Blackboard state from the ProcessContext.
  */
 data class PromptCondition(
     override val name: String,
@@ -43,14 +46,12 @@ data class PromptCondition(
     override val cost: ZeroToOne = 1.0
 
     override fun evaluate(processContext: ProcessContext): ConditionDetermination {
-        val prompt = processContext.platformServices.templateRenderer.renderLiteralTemplate(
-            template = """
-                Evaluate this condition: ${prompt(processContext)}
-                Return "result": whether you think it is true, your confidence level from 0-1,
-                and an explanation of what you base this on.
-            """.trimIndent(),
-            model = processContext.blackboard.expressionEvaluationModel(),
-        )
+        val prompt =
+            """
+            Evaluate this condition: ${prompt(processContext)}
+            Return "result": whether you think it is true, your confidence level from 0-1,
+            and an explanation of what you base this on.
+            """.trimIndent()
         logger.info("Condition {}: making LLM call to evaluate using {}...", name, llm)
 
         val determination = processContext.createObject<Determination>(

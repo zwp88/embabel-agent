@@ -275,14 +275,6 @@ class AgentMetadataReader {
                     outputClass = payload.outputClass as Class<Any>,
                 )
             }
-        } catch (t: Throwable) {
-            logger.error(
-                "Error invoking action method {} with payload {}",
-                method.name,
-                payload.input,
-                t,
-            )
-            throw t
         }
         logger.debug(
             "Result of invoking action method {} was {}: payload {}",

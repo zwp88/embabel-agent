@@ -19,7 +19,9 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider
+import com.embabel.agent.spi.AgentProcessRepository
 import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
 import com.embabel.common.ai.model.*
 import com.embabel.common.core.MobyNameGenerator
@@ -56,6 +58,9 @@ class AgentPlatformConfiguration(
 
     @Bean
     fun restTemplate() = RestTemplate()
+
+    @Bean
+    fun agentProcessRepository(): AgentProcessRepository = InMemoryAgentProcessRepository()
 
     @Bean
     fun toolGroupResolver(toolGroups: List<ToolGroup>): ToolGroupResolver = RegistryToolGroupResolver(

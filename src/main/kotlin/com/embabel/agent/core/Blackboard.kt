@@ -118,6 +118,7 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
     /**
      * Entries in the order they were added.
      * The default instance of any type is the last one
+     * Objects are immutable and may not be removed.
      */
     val objects: List<Any>
 

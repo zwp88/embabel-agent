@@ -15,7 +15,13 @@
  */
 package com.embabel.agent.shell
 
-import com.embabel.agent.core.*
+import com.embabel.agent.api.common.DynamicExecutionResult
+import com.embabel.agent.api.common.chooseAndAccomplishGoal
+import com.embabel.agent.api.common.chooseAndRunAgent
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.AgentProcessStatus
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.severance.LumonColors
 import com.embabel.common.util.bold

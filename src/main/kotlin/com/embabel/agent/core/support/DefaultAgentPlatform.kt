@@ -59,6 +59,7 @@ internal class DefaultAgentPlatform(
     eventListeners: List<AgenticEventListener>,
     private val processIdGenerator: ProcessIdGenerator,
     override val properties: DefaultAgentPlatformProperties,
+    private val agentProcessRepository: AgentProcessRepository,
 ) : AgentPlatform {
 
     private val logger = LoggerFactory.getLogger(DefaultAgentPlatform::class.java)
@@ -83,6 +84,10 @@ internal class DefaultAgentPlatform(
 
     init {
         logger.debug("{}: event listener: {}", name, eventListener)
+    }
+
+    override fun getAgentProcess(id: String): AgentProcess? {
+        return agentProcessRepository.findById(id)
     }
 
     override fun agents(): Set<Agent> =

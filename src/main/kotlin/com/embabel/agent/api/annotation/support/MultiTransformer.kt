@@ -65,7 +65,7 @@ internal class MultiTransformer<O : Any>(
         processContext: ProcessContext,
         outputTypes: Map<String, SchemaType>,
         action: Action
-    ): ActionStatus = ActionRunner.execute {
+    ): ActionStatus = ActionRunner.execute(processContext) {
         val inputValues: List<Any> = inputs.map {
             processContext.getValue(variable = it.name, type = it.type)
                 ?: throw IllegalArgumentException("Input ${it.name} of type ${it.type} not found in process context")
@@ -80,11 +80,11 @@ internal class MultiTransformer<O : Any>(
                 action = this,
             )
         )
-        if (output != null && !outputClass.isInstance(output)) {
+        if (!outputClass.isInstance(output)) {
             throw IllegalArgumentException(
                 """
                 Output of action $name is not of type ${outputClass.name}.
-                Did you incorrectly obtain a PromptRunner via 'using' before the end of the action method?
+                Did you incorrectly obtain a PromptRunner via 'using' before the end of an action method?
                 Take a payload object as the last signature of your method signature.
                 """.trimIndent()
             )
