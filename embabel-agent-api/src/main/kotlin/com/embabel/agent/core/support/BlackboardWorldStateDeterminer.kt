@@ -1,0 +1,122 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.embabel.agent.core.support
+
+import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.satisfiesType
+import com.embabel.plan.goap.ConditionDetermination
+import com.embabel.plan.goap.WorldState
+import com.embabel.plan.goap.WorldStateDeterminer
+import org.slf4j.LoggerFactory
+
+/**
+ * Determine world state for the given ProcessContext,
+ * using the blackboard.
+ */
+class BlackboardWorldStateDeterminer(
+    private val processContext: ProcessContext,
+) : WorldStateDeterminer {
+
+    private val logger = LoggerFactory.getLogger(BlackboardWorldStateDeterminer::class.java)
+
+    private val knownConditions = processContext.agentProcess.agent.goapSystem.knownConditions()
+
+    override fun determineWorldState(): WorldState {
+        val map = mutableMapOf<String, ConditionDetermination>()
+        knownConditions.forEach { condition ->
+            // TODO shouldn't evaluate expensive conditions, just
+            // return unknown
+            map[condition] = determineCondition(condition)
+        }
+        return WorldState(map)
+    }
+
+    override fun determineCondition(condition: String): ConditionDetermination {
+        val conditionDetermination = when {
+            // Data binding condition
+            condition.contains(":") -> {
+                val (variable, type) = condition.split(":")
+                val value = processContext.getValue(variable, type)
+
+                val determination = when {
+                    type == "List" ->
+                        value != null && (value is List<*>)
+
+                    variable == "all" -> true // TODO fix this
+                    else -> {
+                        val determination =
+                            value != null && satisfiesType(value, type)
+                        logger.debug(
+                            "Determined binding condition {}={}: variable={}, type={}, value={}",
+                            condition,
+                            determination,
+                            variable,
+                            type,
+                            value,
+                        )
+                        determination
+                    }
+                }
+                ConditionDetermination(determination)
+            }
+
+            // Well known conditions, defined for reuse, with their own evaluation function
+            knownConditions.any { knownCondition -> knownCondition == condition } -> {
+                // Match FQN condition
+                val condition = processContext.agentProcess.agent.conditions.find {
+                    it.name == condition || it.name.endsWith(
+                        ".$condition"
+                    )
+                }
+                    ?: throw IllegalArgumentException(
+                        "Condition $condition not found in agent ${processContext.agentProcess.agent.name}: Agent known conditions are ${
+                            processContext.agentProcess.agent.conditions.map { it.name }.sorted()
+                        }"
+                    )
+                val determination = condition.evaluate(processContext)
+                logger.debug(
+                    "Determined known condition {}={}, bindings={}",
+                    condition,
+                    determination,
+                    processContext.blackboard.infoString(),
+                )
+                determination
+            }
+
+            // Maybe the condition was explicitly set
+            else -> {
+                val determination = ConditionDetermination(processContext.blackboard.getCondition(condition))
+                logger.info(
+                    "Looked for explicitly set condition: determined condition {}={}: known conditions={}, bindings={}",
+                    condition,
+                    determination,
+                    knownConditions.sorted(),
+                    processContext.blackboard.infoString(),
+                )
+                determination
+            }
+        }
+        if (conditionDetermination == ConditionDetermination.UNKNOWN) {
+            logger.warn(
+                "Determined condition {} to be unknown: knownConditions={}, bindings={}",
+                condition,
+                knownConditions.sorted(),
+                processContext.blackboard.infoString(),
+            )
+        }
+        return conditionDetermination
+    }
+}

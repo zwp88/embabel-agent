@@ -1,0 +1,92 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.embabel.agent.core
+
+import com.embabel.agent.api.annotation.AwaitableResponseException
+import com.embabel.common.util.time
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import org.slf4j.LoggerFactory
+import java.time.Duration
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type",
+)
+@JsonSubTypes(
+)
+interface ActionRunner {
+
+    /**
+     * Execute an action
+     * @param processContext process moment
+     * @param action action we're executing under
+     */
+    fun execute(
+        processContext: ProcessContext,
+        outputTypes: Map<String, SchemaType>,
+        action: Action,
+    ): ActionStatus
+
+    /**
+     * Properties referenced from input variable
+     * Say "person" is passed. Return "name" and other references
+     */
+    fun referencedInputProperties(variable: String): Set<String>
+
+    companion object {
+
+        private val logger = LoggerFactory.getLogger(ActionRunner::class.java)
+
+        /**
+         * Execute this operation with timings and error handling
+         */
+        fun execute(
+            processContext: ProcessContext,
+            block: () -> Unit,
+        ): ActionStatus {
+            val (status, ms) = time {
+                try {
+                    block()
+                    ActionStatusCode.SUCCEEDED
+                } catch (are: AwaitableResponseException) {
+                    // Not an error condition
+                    // Bind the awaitable to the blackboard
+                    logger.info(
+                        "{} adding awaitable to blackboard: {}",
+                        processContext.agentProcess.id,
+                        are.awaitable.infoString(verbose = false),
+                    )
+
+                    processContext.blackboard.addObject(are.awaitable)
+                    ActionStatusCode.WAITING
+                } catch (t: Throwable) {
+                    logger.error(
+                        "Unexpected error invoking action",
+                        t,
+                    )
+                    throw t
+                }
+            }
+            return ActionStatus(
+                status = status,
+                runningTime = Duration.ofMillis(ms),
+            )
+        }
+    }
+
+}
