@@ -57,6 +57,7 @@ val CompletionMessages = listOf(
 @Service
 @Profile("severance")
 class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
+    url="https://www.imdb.com/title/tt11280740/",
     logger = LoggerFactory.getLogger("MDR"),
     welcomeMessage = """
 

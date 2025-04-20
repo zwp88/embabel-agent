@@ -28,8 +28,10 @@ import org.slf4j.LoggerFactory
  * with vanilla messages.
  * Subclasses can pass in format Strings for messages they wish to override
  * Messages must respect format variables
+ * @param url url explaining this particular logger if appropriate
  */
 open class LoggingAgenticEventListener(
+    url: String? = null,
     welcomeMessage: String? = null,
     private val rankingChoiceRequestEventMessage: String = "Choosing {} based on {}",
     private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}. Choices: {}",
@@ -55,6 +57,9 @@ open class LoggingAgenticEventListener(
     init {
         welcomeMessage?.let {
             logger.info(it)
+        }
+        url?.let {
+            logger.info("${url.color(AnsiColor.BLUE)}\n")
         }
     }
 

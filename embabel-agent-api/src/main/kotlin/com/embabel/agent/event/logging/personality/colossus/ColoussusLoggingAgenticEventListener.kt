@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("colossus")
 class ColossusLoggingAgenticEventListener : LoggingAgenticEventListener(
+    url = "https://www.imdb.com/title/tt0064177/",
     logger = LoggerFactory.getLogger("Colossus"),
     welcomeMessage = """
 
