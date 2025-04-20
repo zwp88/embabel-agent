@@ -1,6 +1,6 @@
 # Embabel Agent Framework
 
-![Build](https://github.com/embabel/embabel-agent/embabel-agent-api/actions/workflows/maven.yml/badge.svg)
+![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
 
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
