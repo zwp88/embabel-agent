@@ -15,10 +15,7 @@
  */
 package com.embabel.examples.simple.movie
 
-import com.embabel.agent.api.annotation.AchievesGoal
-import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.Condition
+import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.OperationPayload
@@ -27,10 +24,12 @@ import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
+import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.support.FindEntitiesRequest
 import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.Persona
@@ -137,11 +136,28 @@ class MovieFinder(
     }
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
-    fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? =
+    fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? {
         // TODO Standard action helper that can bind
-        movieBuffRepository.naturalLanguageRepository(payload).findOne(
-            description = userInput.content,
+        val fer = movieBuffRepository.naturalLanguageRepository(payload).find(
+            FindEntitiesRequest(description = userInput.content),
         )
+        return when {
+            fer.matches.size == 1 -> {
+                waitFor(
+                    ConfirmationRequest(
+                        fer.matches.single().entity,
+                        "Please confirm whether this is the movie buff you meant: ${fer.matches.single().entity.name}",
+                    )
+                )
+            }
+
+            else -> {
+                logger.info("Found {} movie buffs", fer.matches.size)
+                null
+            }
+        }
+
+    }
 
     @Action
     fun analyzeTasteProfile(

@@ -119,6 +119,12 @@ interface AgentPlatform : AgentScope {
     fun agentByName(agentName: String): Agent = agents().firstOrNull { it.name == agentName }
         ?: throw IllegalArgumentException("Unknown agent: $agentName")
 
+    /**
+     * Find an agent process by id. Implementations are only obliged to
+     * resolve running processes, although they may choose to return older processes.
+     */
+    fun getAgentProcess(id: String): AgentProcess?
+
     fun agents(): Set<Agent>
 
     fun deploy(agent: Agent): AgentPlatform
