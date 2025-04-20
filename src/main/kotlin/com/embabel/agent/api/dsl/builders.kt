@@ -124,7 +124,7 @@ class Transformer<I, O>(
         processContext: ProcessContext,
         outputTypes: Map<String, SchemaType>,
         action: Action,
-    ): ActionStatus = ActionRunner.execute {
+    ): ActionStatus = ActionRunner.execute(processContext) {
         val input = processContext.getValue(inputVarName, inputClass.name) as I
         val output = block.transform(
             TransformationPayload(

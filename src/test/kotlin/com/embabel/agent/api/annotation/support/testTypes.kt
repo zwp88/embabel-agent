@@ -22,6 +22,7 @@ import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.special.UserInput
 import org.springframework.ai.tool.annotation.Tool
 
@@ -199,6 +200,22 @@ class OnePromptActionOnly(
     @Action(cost = 500.0)
     fun toPersonWithPrompt(userInput: UserInput): Person {
         return promptRunner.createObject("Generated prompt for ${userInput.content}")
+    }
+
+}
+
+@Agentic
+class AwaitableOne(
+) {
+
+    @Action(cost = 500.0)
+    fun waitForPersonConfirmation(userInput: UserInput): Person {
+        return waitFor(
+            ConfirmationRequest(
+                payload = Person(userInput.content),
+                message = "Is this dude the right person?",
+            )
+        )
     }
 
 }

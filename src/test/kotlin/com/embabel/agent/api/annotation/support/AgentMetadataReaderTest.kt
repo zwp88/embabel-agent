@@ -21,6 +21,7 @@ import com.embabel.agent.core.ActionStatusCode
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
@@ -652,7 +653,63 @@ class AgentMetadataReaderTest {
 
         }
 
+        @Nested
+        inner class AwaitableTest {
+
+            @Test
+            fun `awaitable action invocation`() {
+                val reader = AgentMetadataReader()
+                val metadata = reader.createAgentMetadata(AwaitableOne())
+                assertNotNull(metadata)
+                assertEquals(1, metadata!!.actions.size)
+                val action = metadata.actions.first()
+                val agent = mockk<IAgent>()
+                every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
+                val mockAgentProcess = mockk<AgentProcess>()
+                every { mockAgentProcess.agent } returns agent
+                every { mockAgentProcess.id } returns "mythical_beast"
+
+                val mockPlatformServices = mockk<PlatformServices>()
+                val llmt = mockk<LlmOperations>()
+                every { mockPlatformServices.llmOperations } returns llmt
+                every { mockPlatformServices.eventListener } returns DevNull
+                val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+                every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                    blackboard.getValue(
+                        firstArg(),
+                        secondArg(),
+                        thirdArg(),
+                    )
+                }
+                every { mockAgentProcess.addObject(any()) } answers {
+                    blackboard.addObject(
+                        firstArg(),
+                    )
+                }
+                every {
+                    mockAgentProcess.finalResult()
+                } answers {
+                    blackboard.finalResult()
+                }
+
+                val pc = ProcessContext(
+                    platformServices = mockPlatformServices,
+                    agentProcess = mockAgentProcess,
+                )
+                val result = action.execute(pc, mockk(), action)
+                assertEquals(ActionStatusCode.WAITING, result.status)
+                val fr = pc.blackboard.finalResult()
+                assertTrue(
+                    fr is ConfirmationRequest<*>,
+                    "Last result should be an ConfirmationRequest: had ${blackboard.infoString(true)}",
+                )
+                val awaitable = fr as ConfirmationRequest<*>
+                assertEquals(Person("John Doe"), awaitable.payload)
+            }
+        }
+
     }
+
 
     @Nested
     inner class Agents {

@@ -15,9 +15,11 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.api.annotation.AwaitableResponseException
 import com.embabel.common.util.time
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import org.slf4j.LoggerFactory
 import java.time.Duration
 
 @JsonTypeInfo(
@@ -48,15 +50,40 @@ interface ActionRunner {
 
     companion object {
 
+        private val logger = LoggerFactory.getLogger(ActionRunner::class.java)
+
         /**
          * Execute this operation with timings and error handling
          */
-        fun execute(block: () -> Unit): ActionStatus {
-            val (_, ms) = time {
-                block()
+        fun execute(
+            processContext: ProcessContext,
+            block: () -> Unit,
+        ): ActionStatus {
+            val (status, ms) = time {
+                try {
+                    block()
+                    ActionStatusCode.SUCCEEDED
+                } catch (are: AwaitableResponseException) {
+                    // Not an error condition
+                    // Bind the awaitable to the blackboard
+                    logger.info(
+                        "{} adding awaitable to blackboard: {}",
+                        processContext.agentProcess.id,
+                        are.awaitable.infoString(verbose = false),
+                    )
+
+                    processContext.blackboard.addObject(are.awaitable)
+                    ActionStatusCode.WAITING
+                } catch (t: Throwable) {
+                    logger.error(
+                        "Unexpected error invoking action",
+                        t,
+                    )
+                    throw t
+                }
             }
             return ActionStatus(
-                status = ActionStatusCode.SUCCEEDED,
+                status = status,
                 runningTime = Duration.ofMillis(ms),
             )
         }
