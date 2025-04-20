@@ -16,6 +16,7 @@
 package com.embabel.agent.api.common
 
 import com.embabel.agent.core.*
+import com.embabel.agent.core.hitl.Awaitable
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.RankingChoiceRequestEvent
@@ -23,30 +24,51 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.agent.testing.RandomRanker
 import com.embabel.common.util.kotlin.loggerFor
+import kotlin.Throws
 
 /**
  * Result of directly trying to execute a goal
  * Forcing client to discriminate
  */
-sealed interface DynamicExecutionResult {
-    val basis: Any
+data class DynamicExecutionResult(
 
-    data class Success(
-        override val basis: Any,
-        val output: Any,
-        val agentProcessStatus: AgentProcessStatus,
-    ) : DynamicExecutionResult
+    /**
+     * What triggered this result. Process input.
+     */
+    val basis: Any,
 
-    data class NoGoalFound(
-        override val basis: Any,
-        val goalRankings: Rankings<Goal>,
-    ) : DynamicExecutionResult
+    val output: Any,
+    val agentProcessStatus: AgentProcessStatus,
+)
 
-    data class NoAgentFound(
-        override val basis: Any,
-        val agentRankings: Rankings<Agent>,
-    ) : DynamicExecutionResult
-}
+/**
+ * Used for control flow
+ */
+sealed class ProcessExecutionException(
+    val agentProcess: AgentProcess?,
+    message: String,
+) : Exception(message)
+
+class NoGoalFound(
+    val basis: Any,
+    val goalRankings: Rankings<Goal>,
+) : ProcessExecutionException(null, "Goal not found: ${goalRankings.rankings.joinToString(",")}")
+
+class NoAgentFound(
+    val basis: Any,
+    val agentRankings: Rankings<Agent>,
+) : ProcessExecutionException(null, "Agent not found: ${agentRankings.rankings.joinToString(",")}")
+
+class ProcessExecutionFailedException(
+    agentProcess: AgentProcess,
+    val detail: String,
+) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} failed: $detail")
+
+
+class ProcessWaitingException(
+    agentProcess: AgentProcess,
+    val awaitable: Awaitable<*, *>,
+) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} is waiting for $awaitable")
 
 /**
  * Choose a goal based on the user input and try to achieve it.
@@ -54,6 +76,7 @@ sealed interface DynamicExecutionResult {
  * May bring in actions and conditions from multiple agents to help achieve the goal.
  * Doesn't need reified types because we don't know the type yet.
  */
+@Throws(ProcessExecutionException::class)
 fun AgentPlatform.chooseAndAccomplishGoal(
     intent: String,
     processOptions: ProcessOptions = ProcessOptions(),
@@ -88,7 +111,7 @@ fun AgentPlatform.chooseAndAccomplishGoal(
                 confidenceCutoff = properties.goalConfidenceCutOff
             )
         )
-        return DynamicExecutionResult.NoGoalFound(goalRankings = goalRankings, basis = userInput)
+        throw NoGoalFound(goalRankings = goalRankings, basis = userInput)
     }
 
     loggerFor<AgentPlatform>().debug(
@@ -124,12 +147,13 @@ fun AgentPlatform.chooseAndAccomplishGoal(
             "it" to userInput
         )
     )
-    return DynamicExecutionResult.Success(
+    return DynamicExecutionResult(
         basis = userInput,
         output = processStatus.finalResult()!!,
         agentProcessStatus = processStatus,
     )
 }
+
 
 /**
  * Choose an agent based on the user input and run it.
@@ -137,6 +161,7 @@ fun AgentPlatform.chooseAndAccomplishGoal(
  * Will never mix actions and goals from different agents.
  * Doesn't need reified types because we don't know the type yet.
  */
+@Throws(ProcessExecutionException::class)
 fun AgentPlatform.chooseAndRunAgent(
     intent: String,
     processOptions: ProcessOptions = ProcessOptions(),
@@ -171,7 +196,7 @@ fun AgentPlatform.chooseAndRunAgent(
                 confidenceCutoff = properties.agentConfidenceCutOff
             )
         )
-        return DynamicExecutionResult.NoAgentFound(agentRankings = agentRankings, basis = userInput)
+        throw NoAgentFound(agentRankings = agentRankings, basis = userInput)
     }
 
     loggerFor<AgentPlatform>().debug(
@@ -203,7 +228,7 @@ fun AgentPlatform.chooseAndRunAgent(
             "it" to userInput
         )
     )
-    return DynamicExecutionResult.Success(
+    return DynamicExecutionResult(
         basis = userInput,
         output = processStatus.finalResult()!!,
         agentProcessStatus = processStatus,

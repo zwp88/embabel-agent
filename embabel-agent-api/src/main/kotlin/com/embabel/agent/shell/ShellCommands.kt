@@ -15,7 +15,8 @@
  */
 package com.embabel.agent.shell
 
-import com.embabel.agent.api.common.DynamicExecutionResult
+import com.embabel.agent.api.common.NoAgentFound
+import com.embabel.agent.api.common.NoGoalFound
 import com.embabel.agent.api.common.chooseAndAccomplishGoal
 import com.embabel.agent.api.common.chooseAndRunAgent
 import com.embabel.agent.core.AgentPlatform
@@ -188,70 +189,61 @@ class ShellCommands(
             verbosity = verbosity,
         )
         logger.info("Created process options: $processOptions".color(LumonColors.MEMBRANE))
-        val result = if (open) {
-            logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
-            agentPlatform.chooseAndAccomplishGoal(
-                intent = intent,
-                processOptions = processOptions
-            )
-        } else {
-            logger.info("Executing in closed mode: Trying to find appropriate agent")
-            agentPlatform.chooseAndRunAgent(
-                intent = intent,
-                processOptions = processOptions
-            )
-        }
-
-        if (result is DynamicExecutionResult.Success) {
-            agentProcessStatuses.add(result.agentProcessStatus)
-        }
-
-        logger.debug("Result: {}\n", result)
-        when (result) {
-            is DynamicExecutionResult.NoGoalFound -> {
-                if (verbosity.debug) {
-                    logger.info(
-                        """
-                    Failed to choose goal:
-                        Rankings were: [${result.goalRankings.infoString()}]
-                        Cutoff was ${agentPlatform.properties.goalConfidenceCutOff}
-                    """.trimIndent().color(0xbfb8b8)
-                    )
-                }
-                return "I'm sorry. I don't know how to do that.\n"
-            }
-
-            is DynamicExecutionResult.NoAgentFound -> {
-                if (verbosity.debug) {
-                    logger.info(
-                        """
-                    Failed to choose agent:
-                        Rankings were: [${result.agentRankings.infoString()}]
-                        Cutoff was ${agentPlatform.properties.agentConfidenceCutOff}
-                    """.trimIndent().color(0xbfb8b8)
-                    )
-                }
-                return "I'm sorry. I don't know how to do that.\n"
-            }
-
-            is DynamicExecutionResult.Success -> {
-                if (result.output is HasContent) {
-                    // TODO naive Markdown test
-                    if (result.output.text.contains("#")) {
-                        return "\n" + markdownToConsole(result.output.text)
-                            .color(LumonColors.GREEN) + "\n"
-                    }
-                    return WordUtils.wrap(result.output.text, 140).color(
-                        LumonColors.GREEN,
-                    ) + "\n"
-                }
-
-                return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(
-                    result.output
-                ).color(
-                    LumonColors.GREEN
+        try {
+            val result = if (open) {
+                logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
+                agentPlatform.chooseAndAccomplishGoal(
+                    intent = intent,
+                    processOptions = processOptions
+                )
+            } else {
+                logger.info("Executing in closed mode: Trying to find appropriate agent")
+                agentPlatform.chooseAndRunAgent(
+                    intent = intent,
+                    processOptions = processOptions
                 )
             }
+            logger.debug("Result: {}\n", result)
+            agentProcessStatuses.add(result.agentProcessStatus)
+            if (result.output is HasContent) {
+                // TODO naive Markdown test
+                if (result.output.text.contains("#")) {
+                    return "\n" + markdownToConsole(result.output.text)
+                        .color(LumonColors.GREEN) + "\n"
+                }
+                return WordUtils.wrap(result.output.text, 140).color(
+                    LumonColors.GREEN,
+                ) + "\n"
+            }
+
+            return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(
+                result.output
+            ).color(
+                LumonColors.GREEN
+            )
+        } catch (ngf: NoGoalFound) {
+            if (verbosity.debug) {
+                logger.info(
+                    """
+                    Failed to choose goal:
+                        Rankings were: [${ngf.goalRankings.infoString()}]
+                        Cutoff was ${agentPlatform.properties.goalConfidenceCutOff}
+                    """.trimIndent().color(0xbfb8b8)
+                )
+            }
+            return "I'm sorry. I don't know how to do that.\n"
+        } catch (naf: NoAgentFound) {
+            if (verbosity.debug) {
+                logger.info(
+                    """
+                    Failed to choose agent:
+                        Rankings were: [${naf.agentRankings.infoString()}]
+                        Cutoff was ${agentPlatform.properties.agentConfidenceCutOff}
+                    """.trimIndent().color(0xbfb8b8)
+                )
+            }
+            return "I'm sorry. I don't know how to do that.\n"
         }
+
     }
 }
