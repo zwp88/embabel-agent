@@ -95,8 +95,8 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
             if (maybeEntity != null) {
                 matches.add(
                     EntityMatch(
-                        entity = maybeEntity,
-                        confidence = 1.0,
+                        match = maybeEntity,
+                        score = 1.0,
                         source = "${entityType.name}.${finder.name}",
                     )
                 )

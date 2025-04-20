@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.domain.support
 
+import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.ZeroToOne
 
 enum class Cardinality {
@@ -28,14 +29,14 @@ data class FindEntitiesRequest(
 )
 
 data class EntityMatch<T>(
-    val entity: T,
-    val confidence: ZeroToOne,
+    override val match: T,
+    override val score: ZeroToOne,
     val source: String,
-)
+): SimilarityResult<T>
 
 data class FindEntitiesResponse<T>(
     val request: FindEntitiesRequest,
-    val matches: List<EntityMatch<T>>,
+    val matches: List<SimilarityResult<T>>
 )
 
 /**
@@ -60,7 +61,7 @@ interface NaturalLanguageRepository<T> {
             )
         )
         return matches.matches
-            .firstOrNull { it.confidence >= confidenceCutOff }
-            ?.entity
+            .firstOrNull { it.score >= confidenceCutOff }
+            ?.match
     }
 }

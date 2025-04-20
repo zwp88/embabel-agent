@@ -143,7 +143,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         )
         val matches = nlr.find(FindEntitiesRequest("Description"))
         val found = matches.matches.single()
-        assertEquals(theThing, found.entity, "Should find the thing")
+        assertEquals(theThing, found.match, "Should find the thing")
 //        verify(exactly = 1) {
 //            tr.findByName(result.fields[0].name)
 //        }

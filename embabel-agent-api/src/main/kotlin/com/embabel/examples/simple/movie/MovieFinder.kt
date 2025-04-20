@@ -145,8 +145,8 @@ class MovieFinder(
             fer.matches.size == 1 -> {
                 waitFor(
                     ConfirmationRequest(
-                        fer.matches.single().entity,
-                        "Please confirm whether this is the movie buff you meant: ${fer.matches.single().entity.name}",
+                        fer.matches.single().match,
+                        "Please confirm whether this is the movie buff you meant: ${fer.matches.single().match.name}",
                     )
                 )
             }
