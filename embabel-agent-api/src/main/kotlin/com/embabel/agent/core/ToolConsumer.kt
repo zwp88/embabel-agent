@@ -33,25 +33,33 @@ data class ToolGroupMetadata(
     val version: String = "0.1.0-SNAPSHOT",
 )
 
+interface ToolCallbackConsumer {
+
+    /**
+     * Tool callbacks exposed. This will include directly registered tools
+     * and tools resolved from ToolGroups.
+     */
+    val toolCallbacks: Collection<ToolCallback>
+
+}
+
+interface ToolGroupConsumer {
+
+    /**
+     * Tool groups exposed. This will include directly registered tool groups
+     * and tool groups resolved from ToolGroups.
+     */
+    val toolGroups: Collection<String>
+}
+
 /**
  * Allows consuming tools and exposing them to LLMs.
  * Interface allowing abstraction between tool concept
  * and specific tools.
  */
-interface ToolConsumer {
+interface ToolConsumer: ToolCallbackConsumer, ToolGroupConsumer {
 
     val name: String
-
-    /**
-     * ToolCallbacks exposed. This will include directly registered tools
-     * and tools resolved from ToolGroups.
-     */
-    val toolCallbacks: Collection<ToolCallback>
-
-    /**
-     * List of ToolGroup roles this consumer needs
-     */
-    val toolGroups: Collection<String>
 
     fun resolveToolCallbacks(toolGroupResolver: ToolGroupResolver): Collection<ToolCallback> {
         val tools = mutableListOf<ToolCallback>()

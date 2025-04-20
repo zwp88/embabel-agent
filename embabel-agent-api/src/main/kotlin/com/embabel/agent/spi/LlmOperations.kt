@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.PromptContributor
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.support.PromptContributorConsumer
 import com.embabel.agent.event.LlmRequestEvent
 import org.springframework.ai.tool.ToolCallback
 
@@ -32,10 +33,10 @@ value class InteractionId(val value: String) {
     override fun toString(): String = value
 }
 
-interface LlmCall {
+interface LlmCall: PromptContributorConsumer {
     val llm: LlmOptions?
     val toolCallbacks: List<ToolCallback>
-    val promptContributors: List<PromptContributor>
+    override val promptContributors: List<PromptContributor>
 }
 
 /**
