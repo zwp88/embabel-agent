@@ -174,6 +174,13 @@ open class LoggingAgenticEventListener(
                 )
             }
 
+            is AgentProcessStuckEvent -> {
+                logger.info(
+                    "[{}] stuck",
+                    event.processId,
+                )
+            }
+
             is ObjectAddedEvent -> {
                 logger.info(objectAddedMessage, event.processId, event.value)
             }

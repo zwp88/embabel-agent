@@ -261,6 +261,8 @@ class ShellCommands(
                 )
             }
             return "I'm sorry. I don't know how to do that.\n"
+        } catch (pese: ProcessExecutionStuckException) {
+            return "I'm sorry. I don't know how to proceed.\n"
         } catch (pwe: ProcessWaitingException) {
             val awaitableResponse = when (pwe.awaitable) {
                 is ConfirmationRequest<*> ->

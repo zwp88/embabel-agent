@@ -39,6 +39,8 @@ internal class SimpleAgentProcess(
 
     private var goalName: String? = null
 
+    private val _history: MutableList<ActionInvocation> = mutableListOf()
+
     private var _status: AgentProcessStatusCode = AgentProcessStatusCode.RUNNING
 
     override val processContext = ProcessContext(
@@ -53,6 +55,9 @@ internal class SimpleAgentProcess(
 
     override val status: AgentProcessStatusCode
         get() = _status
+
+    override val history: List<ActionInvocation>
+        get() = _history.toList()
 
     override fun bind(name: String, value: Any): Bindable {
         blackboard[name] = value
@@ -120,7 +125,7 @@ internal class SimpleAgentProcess(
             }
 
             else -> {
-                TODO("handle status $status")
+                platformServices.eventListener.onProcessEvent(AgentProcessStuckEvent(this))
             }
         }
         return this
@@ -143,13 +148,13 @@ internal class SimpleAgentProcess(
         val plan = planner.bestValuePlanToAnyGoal(system = agent.goapSystem)
         if (plan == null) {
             logger.info(
-                "❌ Process {} failure: No plan from {} in {}, context={}",
+                "❌ Process {} stuck: No plan from {} in {}, context={}",
                 id,
                 worldState,
                 agent.goapSystem.infoString(),
                 blackboard,
             )
-            _status = AgentProcessStatusCode.FAILED
+            _status = AgentProcessStatusCode.STUCK
             return this
         }
         platformServices.eventListener.onProcessEvent(
@@ -206,6 +211,9 @@ internal class SimpleAgentProcess(
                 processContext = processContext,
                 outputTypes = outputTypes,
                 action = action,
+            )
+            _history += ActionInvocation(
+                actionName = action.name,
             )
             platformServices.eventListener.onProcessEvent(
                 ActionExecutionResultEvent(

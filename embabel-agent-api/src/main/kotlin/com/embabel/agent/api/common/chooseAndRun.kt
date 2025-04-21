@@ -71,6 +71,13 @@ class DynamicExecutionResult private constructor(
                     )
                 }
 
+                AgentProcessStatusCode.STUCK -> {
+                    throw ProcessExecutionStuckException(
+                        agentProcess = agentProcess,
+                        detail = "Process ${agentProcess.id} stuck"
+                    )
+                }
+
                 else -> {
                     TODO("Handle other statuses: ${agentProcess.status}")
                 }
@@ -100,6 +107,11 @@ class ProcessExecutionFailedException(
     agentProcess: AgentProcess,
     val detail: String,
 ) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} failed: $detail")
+
+class ProcessExecutionStuckException(
+    agentProcess: AgentProcess,
+    val detail: String,
+) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} stuck: $detail")
 
 
 class ProcessWaitingException(

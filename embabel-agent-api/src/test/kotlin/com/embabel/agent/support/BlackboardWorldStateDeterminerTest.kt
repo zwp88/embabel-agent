@@ -94,6 +94,8 @@ class BlackboardWorldStateDeterminerTest {
 
     private fun blackboardWorldStateDeterminer(blackboard: Blackboard): BlackboardWorldStateDeterminer {
         val mockAgentProcess = mockk<AgentProcess>()
+        every { mockAgentProcess.history } returns emptyList()
+        every { mockAgentProcess.infoString(any()) } returns ""
         every { mockAgentProcess.getValue(any(), any(), any()) } answers {
             blackboard.getValue(
                 firstArg(),
@@ -120,12 +122,13 @@ class BlackboardWorldStateDeterminerTest {
             val blackboard = InMemoryBlackboard()
             val bsb = blackboardWorldStateDeterminer(blackboard)
             val worldState = bsb.determineWorldState().state
-            assertEquals(
-                mapOf(
-                    "it:${UserInput::class.qualifiedName}" to ConditionDetermination.FALSE,
-                    "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
+            assertTrue(
+                worldState.containsAll(
+                    mapOf(
+                        "it:${UserInput::class.qualifiedName}" to ConditionDetermination.FALSE,
+                        "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
+                    )
                 ),
-                worldState,
                 "World state must use qualified names",
             )
 
@@ -139,12 +142,13 @@ class BlackboardWorldStateDeterminerTest {
 
             blackboard["it"] = UserInput("xyz")
             val worldState = bsb.determineWorldState().state
-            assertEquals(
-                mapOf(
-                    "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
-                    "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
+            assertTrue(
+                worldState.containsAll(
+                    mapOf(
+                        "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
+                        "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
+                    )
                 ),
-                worldState,
                 "World state must use qualified names"
             )
         }
@@ -158,11 +162,12 @@ class BlackboardWorldStateDeterminerTest {
             blackboard["input"] = UserInput("xyz")
             blackboard["person"] = Person("Rod")
             val worldState = bsb.determineWorldState()
-            assertEquals(
-                worldState.state,
-                mapOf(
-                    "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
-                    "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+            assertTrue(
+                worldState.state.containsAll(
+                    mapOf(
+                        "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
+                        "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                    )
                 ),
                 "World state must use qualified names",
             )
@@ -192,7 +197,6 @@ class BlackboardWorldStateDeterminerTest {
             val blackboard = InMemoryBlackboard()
             val bsb = blackboardWorldStateDeterminer(blackboard)
 
-
             blackboard["input"] = UserInput("xyz")
             blackboard["person"] = FancyPerson("Rod")
             val pc = bsb.determineCondition("it:FancyPerson")
@@ -220,4 +224,10 @@ class BlackboardWorldStateDeterminerTest {
         )
     }
 
+}
+
+fun <K, V> Map<K, V>.containsAll(other: Map<K, V>): Boolean {
+    return other.all { (key, value) ->
+        this.containsKey(key) && this[key] == value
+    }
 }

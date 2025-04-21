@@ -73,6 +73,22 @@ class BlackboardWorldStateDeterminer(
                 ConditionDetermination(determination)
             }
 
+            condition.startsWith(HAS_RUN_CONDITION_PREFIX) -> {
+                // Special case for hasRun- conditions
+                val actionName = condition.substringAfter(HAS_RUN_CONDITION_PREFIX)
+                val determination = ConditionDetermination(processContext.agentProcess.history.any {
+                    it.actionName == actionName
+                })
+                logger.debug(
+                    "Determined hasRun condition {}={}: known conditions={}, bindings={}",
+                    condition,
+                    determination,
+                    knownConditions.sorted(),
+                    processContext.blackboard.infoString(),
+                )
+                determination
+            }
+
             // Well known conditions, defined for reuse, with their own evaluation function
             knownConditions.any { knownCondition -> knownCondition == condition } -> {
                 // Match FQN condition

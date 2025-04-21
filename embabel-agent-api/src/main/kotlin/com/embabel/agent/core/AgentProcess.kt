@@ -16,8 +16,14 @@
 package com.embabel.agent.core
 
 import com.embabel.common.core.types.Timed
+import com.embabel.common.core.types.Timestamped
 import java.time.Duration
 import java.time.Instant
+
+data class ActionInvocation(
+    val actionName: String,
+    override val timestamp: Instant = Instant.now(),
+) : Timestamped
 
 /**
  * Run of an agent
@@ -30,6 +36,8 @@ interface AgentProcess : Blackboard, Timed, OperationStatus<AgentProcessStatusCo
     val id: String
 
     val parentId: String?
+
+    val history: List<ActionInvocation>
 
     val processContext: ProcessContext
 

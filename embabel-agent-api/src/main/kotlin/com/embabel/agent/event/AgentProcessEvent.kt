@@ -111,6 +111,11 @@ class AgentProcessWaitingEvent(
     agentProcess: AgentProcess,
 ) : AbstractAgentProcessEvent(agentProcess)
 
+class AgentProcessStuckEvent(
+    agentProcess: AgentProcess,
+) : AbstractAgentProcessEvent(agentProcess)
+
+
 class LlmRequestEvent<O>(
     agentProcess: AgentProcess,
     val outputClass: Class<O>,

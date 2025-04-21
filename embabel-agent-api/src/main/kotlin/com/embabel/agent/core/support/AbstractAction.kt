@@ -26,6 +26,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 
+const val HAS_RUN_CONDITION_PREFIX = "hasRun_"
+
 /**
  * Abstract action implementation
  * @param name the name of the action
@@ -35,6 +37,7 @@ import org.springframework.ai.tool.ToolCallback
  * @param cost the cost of the action
  * @param inputs the input bindings
  * @param outputs the output bindings
+ * @param canRerun can we rerun this action with the same inputs?
  * @param transitions any transitions
  * @param qos quality of service requirements
  */
@@ -69,6 +72,7 @@ abstract class AbstractAction(
                 }.forEach { output ->
                     conditions[output.value] = ConditionDetermination(false)
                 }
+                conditions["$HAS_RUN_CONDITION_PREFIX$name"] = ConditionDetermination(false)
             }
             conditions
         }
