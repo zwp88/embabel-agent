@@ -20,7 +20,9 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider
 import com.embabel.agent.spi.AgentProcessRepository
+import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.agent.spi.support.DefaultToolDecorator
 import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
 import com.embabel.common.ai.model.*
@@ -44,6 +46,9 @@ class AgentPlatformConfiguration(
      */
     @Bean
     fun nameGenerator(): NameGenerator = MobyNameGenerator
+
+    @Bean
+    fun toolDecorator(): ToolDecorator = DefaultToolDecorator()
 
     @Bean
     fun templateRenderer(): TemplateRenderer = JinjavaTemplateRenderer()

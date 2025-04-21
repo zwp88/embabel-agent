@@ -132,7 +132,7 @@ class ChatClientLlmTransformerTest {
             )
             every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
 
-            val transformer = ChatClientLlmOperations(mockModelProvider)
+            val transformer = ChatClientLlmOperations(mockModelProvider, DefaultToolDecorator())
             return transformer.createObject(
                 prompt = "Say hello",
                 interaction = LlmInteraction(id = InteractionId("test")),
@@ -270,7 +270,7 @@ class ChatClientLlmTransformerTest {
             )
             every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
 
-            val transformer = ChatClientLlmOperations(mockModelProvider)
+            val transformer = ChatClientLlmOperations(mockModelProvider, DefaultToolDecorator())
             val result = transformer.createObjectIfPossible(
                 prompt = "Say hello",
                 interaction = LlmInteraction(id = InteractionId("test")),

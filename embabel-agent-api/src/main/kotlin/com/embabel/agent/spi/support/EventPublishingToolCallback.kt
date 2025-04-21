@@ -18,10 +18,22 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
+import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.util.time
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
+
+class DefaultToolDecorator : ToolDecorator {
+
+    override fun decorate(
+        tool: ToolCallback,
+        agentProcess: AgentProcess,
+        llmOptions: LlmOptions,
+    ): ToolCallback {
+        return tool.withEventPublication(agentProcess, llmOptions)
+    }
+}
 
 /**
  * HOF to decorate a ToolCallback to time the call and emit events.

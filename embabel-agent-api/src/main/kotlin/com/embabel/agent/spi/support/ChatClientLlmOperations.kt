@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
@@ -45,8 +46,9 @@ val DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION = """
 @Service
 internal class ChatClientLlmOperations(
     private val modelProvider: ModelProvider,
+    toolDecorator: ToolDecorator,
     private val maybeReturnPromptContribution: String = DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION,
-) : AbstractLlmOperations() {
+) : AbstractLlmOperations(toolDecorator) {
 
     override fun <O> doTransform(
         prompt: String,

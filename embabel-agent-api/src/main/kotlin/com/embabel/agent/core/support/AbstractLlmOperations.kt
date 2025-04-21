@@ -20,7 +20,7 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
-import com.embabel.agent.spi.support.withEventPublication
+import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.util.time
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,7 +33,9 @@ import java.time.Duration
  * Find all tool callbacks and decorate them to be aware of the platform
  * Also emits events.
  */
-abstract class AbstractLlmOperations : LlmOperations {
+abstract class AbstractLlmOperations(
+    private val toolDecorator: ToolDecorator,
+) : LlmOperations {
 
     protected val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -68,7 +70,8 @@ abstract class AbstractLlmOperations : LlmOperations {
             doTransform(
                 prompt = literalPrompt,
                 interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
-                    it.withEventPublication(
+                    toolDecorator.decorate(
+                        it,
                         agentProcess,
                         interaction.llm
                     )
@@ -105,9 +108,10 @@ abstract class AbstractLlmOperations : LlmOperations {
             doTransformIfPossible(
                 prompt = prompt,
                 interaction = interaction.copy(toolCallbacks = allToolCallbacks.map {
-                    it.withEventPublication(
+                    toolDecorator.decorate(
+                        it,
                         agentProcess,
-                        interaction.llm
+                        interaction.llm,
                     )
                 }),
                 outputClass = outputClass,
