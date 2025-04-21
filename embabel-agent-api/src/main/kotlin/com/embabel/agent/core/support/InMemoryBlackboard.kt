@@ -16,12 +16,15 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.core.Blackboard
+import java.util.*
 
 /**
  * Simple in memory blackboard implementation
  * backed by a map.
  */
-class InMemoryBlackboard : Blackboard {
+class InMemoryBlackboard(
+    override val blackboardId: String = UUID.randomUUID().toString(),
+) : Blackboard {
     private val _map: MutableMap<String, Any> = mutableMapOf()
     private val _entries: MutableList<Any> = mutableListOf()
 

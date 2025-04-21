@@ -74,6 +74,13 @@ interface MayHaveFinalResult {
 interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
 
     /**
+     * Unique identifier of this blackboard.
+     * Blackboard doesn't extend StableIdentified to avoid
+     * conflict with implementations that are otherwise identified
+     */
+    val blackboardId: String
+
+    /**
      * Return the value of a variable, if it is set.
      * Does not limit return via type information.
      */

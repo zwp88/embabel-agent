@@ -9,8 +9,7 @@
     </parent>
     <artifactId>embabel-horoscope-example</artifactId>
     <packaging>jar</packaging>
-    <name>Embabel Agent Haroscope Example</name>
+    <name>Embabel Agent Horoscope Example</name>
     <description>Personal Horoscope usecase, modelled as Embabel Agentic Flow</description>
-    
     
 </project>
