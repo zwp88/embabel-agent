@@ -43,7 +43,7 @@ open class LoggingAgenticEventListener(
     private val processCompletionMessage: String = "[{}] completed in {}",
     private val processFailureMessage: String = "[{}] failed",
     private val objectAddedMessage: String = "[{}] object added: {}",
-    private val objectBoundMessage: String = "[{}] bbject bound: {} to {}",
+    private val objectBoundMessage: String = "[{}] object bound: {} to {}",
     private val functionCallRequestEventMessage: String = "[{}] calling function {} with payload {}",
     private val functionCallResponseEventMessage: String = "[{}] function {} response {} in {}ms with payload {}",
     private val llmRequestEventMessage: String = "[{}] requesting LLM transform {} from {} -> {} using {}",

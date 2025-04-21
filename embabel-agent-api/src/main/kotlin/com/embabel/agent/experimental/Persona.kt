@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.experimental
 
-import com.embabel.agent.api.common.Location
-import com.embabel.agent.api.common.PromptContribution
-import com.embabel.agent.api.common.PromptContributor
+import com.embabel.common.ai.prompt.Location
+import com.embabel.common.ai.prompt.PromptContribution
+import com.embabel.common.ai.prompt.PromptContributor
 
 /**
  * Inspired by crew.ai. Not that we think this is necessarily
@@ -41,6 +41,7 @@ data class Persona(
         return PromptContribution(
             content = content,
             location = Location.BEGINNING,
+            role = "persona",
         )
     }
 }

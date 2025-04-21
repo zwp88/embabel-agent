@@ -15,9 +15,10 @@
  */
 package com.embabel.agent.experimental
 
-import com.embabel.agent.api.common.Location
-import com.embabel.agent.api.common.PromptContribution
-import com.embabel.agent.api.common.PromptContributor
+import com.embabel.common.ai.prompt.Location
+import com.embabel.common.ai.prompt.PromptContribution
+import com.embabel.common.ai.prompt.PromptContributor
+
 
 /**
  * CO-STAR prompt framework
@@ -54,6 +55,7 @@ data class CoStar(
         return PromptContribution(
             content = content,
             location = Location.BEGINNING,
+            role = "costar",
         )
     }
 }

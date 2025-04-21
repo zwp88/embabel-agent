@@ -21,6 +21,7 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.common.ai.prompt.PromptContributor
 import org.springframework.ai.tool.ToolCallback
 
 /**

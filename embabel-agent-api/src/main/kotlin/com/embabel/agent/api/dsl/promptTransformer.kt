@@ -65,7 +65,11 @@ inline fun <reified I, reified O : Any> promptTransformer(
         referencedInputProperties = referencedInputProperties,
         toolGroups = toolGroups,
     ) {
-        it.promptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = emptyList()).createObject(
+        it.promptRunner(
+            llm = llm,
+            toolCallbacks = toolCallbacks,
+            promptContributors = emptyList(),
+        ).createObject(
             prompt = prompt(it),
             outputClass = O::class.java,
         )
