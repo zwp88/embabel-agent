@@ -32,26 +32,13 @@ import org.apache.commons.lang3.text.WordUtils
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.Terminal
-import org.jline.utils.AttributedString
-import org.jline.utils.AttributedStyle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.env.ConfigurableEnvironment
-import org.springframework.shell.jline.PromptProvider
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
 
-
-/**
- * Vanilla prompt provider
- */
-class DefaultPromptProvider : PromptProvider {
-    override fun getPrompt() = AttributedString(
-        "embabel> ",
-        AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW)
-    )
-}
 
 @ShellComponent
 class ShellCommands(
