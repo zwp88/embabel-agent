@@ -39,6 +39,8 @@ internal class SimpleAgentProcess(
 
     private var goalName: String? = null
 
+    private var _status: AgentProcessStatusCode = AgentProcessStatusCode.RUNNING
+
     override val processContext = ProcessContext(
         platformServices = platformServices,
         agentProcess = this,
@@ -48,6 +50,9 @@ internal class SimpleAgentProcess(
     private val worldStateDeterminer: WorldStateDeterminer = BlackboardWorldStateDeterminer(processContext)
 
     private val planner = AStarGoapPlanner(worldStateDeterminer)
+
+    override val status: AgentProcessStatusCode
+        get() = _status
 
     override fun bind(name: String, value: Any): Bindable {
         blackboard[name] = value
@@ -85,34 +90,43 @@ internal class SimpleAgentProcess(
         addObject(value)
     }
 
-    override fun run(): AgentProcessStatus {
+    override fun run(): AgentProcess {
         if (agent.goals.isEmpty()) {
             logger.info("🤔 Process {} has no goals: {}", this.id, agent.goals)
-            return AgentProcessStatus.InvalidAgent(agentProcess = this, reason = "Agent ${agent.name} has no goals")
+            error("Agent ${agent.name} has no goals")
         }
 
-        var processStatus = tick()
+        tick()
         var actions = 0
-        while (processStatus is AgentProcessStatus.Running) {
+        while (status == AgentProcessStatusCode.RUNNING) {
             if (++actions > processOptions.maxActions) {
                 logger.info("Process {} exceeded max actions: {}", this.id, processOptions.maxActions)
-                return AgentProcessStatus.Failed(this, reason = "Exceeded max actions of ${processOptions.maxActions}")
+                _status = AgentProcessStatusCode.FAILED
+                return this
             }
-            processStatus = tick()
+            tick()
         }
-        when {
-            processStatus.isFinished() -> {
-                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(processStatus))
+        when (status) {
+            AgentProcessStatusCode.COMPLETED -> {
+                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
             }
 
-            processStatus is AgentProcessStatus.Waiting -> {
-                platformServices.eventListener.onProcessEvent(AgentProcessWaitingEvent(processStatus))
+            AgentProcessStatusCode.FAILED -> {
+                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
+            }
+
+            AgentProcessStatusCode.WAITING -> {
+                platformServices.eventListener.onProcessEvent(AgentProcessWaitingEvent(this))
+            }
+
+            else -> {
+                TODO("handle status $status")
             }
         }
-        return processStatus
+        return this
     }
 
-    override fun tick(): AgentProcessStatus {
+    override fun tick(): AgentProcess {
         val worldState = worldStateDeterminer.determineWorldState()
         platformServices.eventListener.onProcessEvent(
             AgentProcessReadyToPlanEvent(
@@ -135,10 +149,8 @@ internal class SimpleAgentProcess(
                 agent.goapSystem.infoString(),
                 blackboard,
             )
-            return AgentProcessStatus.Failed(
-                agentProcess = this,
-                reason = "Process $id failed: No plan from $worldState",
-            )
+            _status = AgentProcessStatusCode.FAILED
+            return this
         }
         platformServices.eventListener.onProcessEvent(
             AgentProcessPlanFormulatedEvent(
@@ -163,13 +175,14 @@ internal class SimpleAgentProcess(
                 this.runningTime.seconds,
             )
             logger.debug("Final blackboard: {}", blackboard.infoString())
-            return AgentProcessStatus.Completed(agentProcess = this)
+            _status = AgentProcessStatusCode.COMPLETED
         } else {
             logger.debug("▶️ Process {} running: {}\n\tPlan: {}", id, worldState, plan.infoString())
             val agent = agent.actions.single { it.name == plan.actions.first().name }
             val actionStatus = executeAction(agent)
-            return actionStatusToAgentProcessStatus(actionStatus)
+            _status = actionStatusToAgentProcessStatus(actionStatus)
         }
+        return this
     }
 
     private fun executeAction(action: Action): ActionStatus {
@@ -207,21 +220,21 @@ internal class SimpleAgentProcess(
         return actionStatus
     }
 
-    private fun actionStatusToAgentProcessStatus(actionStatus: ActionStatus): AgentProcessStatus {
+    private fun actionStatusToAgentProcessStatus(actionStatus: ActionStatus): AgentProcessStatusCode {
         return when (actionStatus.status) {
             ActionStatusCode.SUCCEEDED -> {
                 logger.debug("Process {} action {} is running", id, actionStatus.status)
-                AgentProcessStatus.Running(agentProcess = this)
+                AgentProcessStatusCode.RUNNING
             }
 
             ActionStatusCode.FAILED -> {
                 logger.debug("❌ Process {} action {} failed", id, actionStatus.status)
-                AgentProcessStatus.Failed(agentProcess = this, reason = "Action ${actionStatus.status} failed")
+                AgentProcessStatusCode.FAILED
             }
 
             ActionStatusCode.WAITING -> {
                 logger.debug("⏳ Process {} action {} waiting", id, actionStatus.status)
-                AgentProcessStatus.Waiting(agentProcess = this)
+                AgentProcessStatusCode.WAITING
             }
         }
     }

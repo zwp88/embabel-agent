@@ -22,7 +22,7 @@ import java.time.Instant
 /**
  * Run of an agent
  */
-interface AgentProcess : Blackboard, Timed {
+interface AgentProcess : Blackboard, Timed, OperationStatus<AgentProcessStatusCode> {
 
     /**
      * Unique id of this process
@@ -46,18 +46,36 @@ interface AgentProcess : Blackboard, Timed {
      * regardless of the result of the action.
      * @return status code of the action. Side effects may have occurred in Blackboard
      */
-    fun tick(): AgentProcessStatus
+    fun tick(): AgentProcess
 
     /**
      * Run the process as far as we can.
      * Might complete, fail, get stuck or hit a waiting state.
      * @return status code of the process. Side effects may have occurred in Blackboard
      */
-    fun run(): AgentProcessStatus
+    fun run(): AgentProcess
 
     /**
      * How long this process has been running
      */
     override val runningTime get(): Duration = Duration.between(startedDate, Instant.now())
 
+    fun <O> resultOfType(outputClass: Class<O>): O {
+        require(status == AgentProcessStatusCode.COMPLETED) {
+            "Cannot get result of process that is not completed"
+        }
+        return processContext.getValue("it", outputClass.simpleName) as O?
+            ?: error("No result found in process status")
+
+    }
+
+    override fun finalResult(): Any? {
+        require(status == AgentProcessStatusCode.COMPLETED) {
+            "Cannot get result of process that is not completed"
+        }
+        return processContext.blackboard.finalResult()
+    }
+
 }
+
+inline fun <reified O> AgentProcess.resultOfType(): O = resultOfType(O::class.java)

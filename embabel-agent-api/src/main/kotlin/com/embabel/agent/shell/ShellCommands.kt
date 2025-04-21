@@ -17,7 +17,7 @@ package com.embabel.agent.shell
 
 import com.embabel.agent.api.common.*
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.AgentProcessStatus
+import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.core.hitl.ConfirmationRequest
@@ -62,7 +62,7 @@ class ShellCommands(
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
 
-    private val agentProcessStatuses = mutableListOf<AgentProcessStatus>()
+    private val agentProcesses = mutableListOf<AgentProcess>()
 
     @ShellMethod(value = "List all active Spring profiles")
     fun profiles(): String {
@@ -125,10 +125,10 @@ class ShellCommands(
         key = ["blackboard", "bb"],
     )
     fun blackboard(): String {
-        if (agentProcessStatuses.isEmpty()) {
+        if (agentProcesses.isEmpty()) {
             return "No blackboard available, as no agent process has run. Please run a command first."
         }
-        val ap = agentProcessStatuses.last().agentProcess
+        val ap = agentProcesses.last()
         return ap.processContext.blackboard.infoString(verbose = true)
     }
 
@@ -222,7 +222,7 @@ class ShellCommands(
         try {
             val result = runProcess()
             logger.debug("Result: {}\n", result)
-            agentProcessStatuses.add(result.agentProcessStatus)
+            agentProcesses.add(result.agentProcess)
             if (result.output is HasContent) {
                 // TODO naive Markdown test
                 if (result.output.text.contains("#")) {
@@ -279,9 +279,8 @@ class ShellCommands(
             return runProcess(verbosity, basis) {
                 DynamicExecutionResult.fromProcessStatus(
                     basis = basis,
-                    agentProcessStatus = pwe.agentProcess.run()
+                    agentProcess = pwe.agentProcess.run()
                 )
-
             }
         }
     }

@@ -120,7 +120,7 @@ interface AgentPlatform : AgentScope {
         agent: Agent,
         processOptions: ProcessOptions = ProcessOptions(),
         bindings: Map<String, Any>,
-    ): AgentProcessStatus
+    ): AgentProcess
 
     fun createChildProcess(
         agent: Agent,

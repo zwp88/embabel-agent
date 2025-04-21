@@ -19,7 +19,6 @@ import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.AgentProcessStatus
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.core.types.Timed
 import com.embabel.common.util.VisualizableTask
@@ -105,12 +104,12 @@ class AgentProcessFunctionCallResponseEvent internal constructor(
 ) : AbstractAgentProcessEvent(agentProcess), Timed
 
 class AgentProcessFinishedEvent(
-    val agentProcessStatus: AgentProcessStatus,
-) : AbstractAgentProcessEvent(agentProcessStatus.agentProcess)
+    agentProcess: AgentProcess,
+) : AbstractAgentProcessEvent(agentProcess)
 
 class AgentProcessWaitingEvent(
-    val agentProcessStatus: AgentProcessStatus.Waiting,
-) : AbstractAgentProcessEvent(agentProcessStatus.agentProcess)
+    agentProcess: AgentProcess,
+) : AbstractAgentProcessEvent(agentProcess)
 
 class LlmRequestEvent<O>(
     agentProcess: AgentProcess,

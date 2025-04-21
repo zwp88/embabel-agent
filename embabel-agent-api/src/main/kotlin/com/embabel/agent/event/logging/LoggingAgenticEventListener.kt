@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.event.logging
 
-import com.embabel.agent.core.AgentProcessStatus
+import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.personality.severance.LumonColors
 import com.embabel.common.util.AnsiColor
@@ -148,21 +148,17 @@ open class LoggingAgenticEventListener(
             }
 
             is AgentProcessFinishedEvent -> {
-                when (event.agentProcessStatus) {
-                    is AgentProcessStatus.Completed -> {
+                when (event.agentProcess.status) {
+                    AgentProcessStatusCode.COMPLETED -> {
                         logger.info(
                             processCompletionMessage,
                             event.processId,
-                            event.agentProcessStatus.runningTime,
+                            event.agentProcess.runningTime,
                         )
                     }
 
-                    is AgentProcessStatus.Failed -> {
-                        logger.info(processFailureMessage, event.agentProcessStatus.agentProcess.id)
-                    }
-
-                    is AgentProcessStatus.InvalidAgent -> {
-                        logger.info("[{}] has invalid agent", event.processId)
+                    AgentProcessStatusCode.FAILED -> {
+                        logger.info(processFailureMessage, event.agentProcess.id)
                     }
 
                     else -> {

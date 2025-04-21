@@ -21,8 +21,8 @@ import java.time.Duration
 /**
  * Stuck means we failed to find a plan from here
  */
-enum class AgentStatusCode {
-    INVALID_AGENT, RUNNING, COMPLETED, FAILED, STUCK, WAITING
+enum class AgentProcessStatusCode {
+    RUNNING, COMPLETED, FAILED, STUCK, WAITING
 }
 
 enum class ActionStatusCode {
@@ -47,58 +47,3 @@ open class ActionStatus(
     override val runningTime: Duration,
     override val status: ActionStatusCode,
 ) : OperationStatus<ActionStatusCode>
-
-/**
- * Subclasses are open to allow AgentPlatform implementations to include their own
- * additional information
- */
-sealed class AgentProcessStatus(
-    val agentProcess: AgentProcess,
-    override val status: AgentStatusCode,
-) : OperationStatus<AgentStatusCode>, MayHaveFinalResult {
-
-    fun isFinished(): Boolean = listOf(
-        AgentStatusCode.COMPLETED,
-        AgentStatusCode.FAILED,
-    ).contains(status)
-
-    private fun <O> doOnCompletion(block: (agentProcess: AgentProcess) -> O?): O? {
-        return when (this) {
-            is Completed -> {
-                block(agentProcess)
-            }
-
-            is InvalidAgent -> error("Invalid agent: ${this.reason}")
-            else -> {
-                error("Process is not completed: $status")
-            }
-        }
-    }
-
-    fun <O> resultOfType(outputClass: Class<O>): O = doOnCompletion {
-        agentProcess.processContext.getValue("it", outputClass.simpleName) as O?
-    }
-        ?: error("No result found in process status")
-
-    override fun finalResult(): Any? = doOnCompletion {
-        agentProcess.processContext.blackboard.finalResult()
-    }
-
-    override val runningTime: Duration = agentProcess.runningTime
-
-    open class InvalidAgent(agentProcess: AgentProcess, val reason: String) :
-        AgentProcessStatus(agentProcess, AgentStatusCode.INVALID_AGENT)
-
-    open class Completed(agentProcess: AgentProcess) : AgentProcessStatus(agentProcess, AgentStatusCode.COMPLETED)
-
-    open class Failed(agentProcess: AgentProcess, val reason: String) :
-        AgentProcessStatus(agentProcess, AgentStatusCode.FAILED)
-
-    open class Running(agentProcess: AgentProcess) : AgentProcessStatus(agentProcess, AgentStatusCode.RUNNING)
-
-    open class Stuck(agentProcess: AgentProcess) : AgentProcessStatus(agentProcess, AgentStatusCode.STUCK)
-
-    open class Waiting(agentProcess: AgentProcess) : AgentProcessStatus(agentProcess, AgentStatusCode.WAITING)
-}
-
-inline fun <reified O> AgentProcessStatus.resultOfType(): O = resultOfType(O::class.java)

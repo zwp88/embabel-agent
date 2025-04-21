@@ -179,7 +179,7 @@ internal class DefaultAgentPlatform(
         agent: Agent,
         processOptions: ProcessOptions,
         bindings: Map<String, Any>,
-    ): AgentProcessStatus {
+    ): AgentProcess {
         val blackboard = createBlackboard()
         blackboard.bindAll(bindings)
         val agentProcess = createAgentProcess(agent, processOptions, blackboard)

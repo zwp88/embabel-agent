@@ -38,41 +38,41 @@ class DynamicExecutionResult private constructor(
     val basis: Any,
 
     val output: Any,
-    val agentProcessStatus: AgentProcessStatus,
+    val agentProcess: AgentProcess,
 ) {
 
     companion object {
 
         fun fromProcessStatus(
             basis: Any,
-            agentProcessStatus: AgentProcessStatus,
+            agentProcess: AgentProcess,
         ): DynamicExecutionResult =
-            when (agentProcessStatus.status) {
-                AgentStatusCode.COMPLETED -> {
+            when (agentProcess.status) {
+                AgentProcessStatusCode.COMPLETED -> {
                     DynamicExecutionResult(
                         basis = basis,
-                        output = agentProcessStatus.finalResult()!!,
-                        agentProcessStatus = agentProcessStatus,
+                        output = agentProcess.finalResult()!!,
+                        agentProcess = agentProcess,
                     )
                 }
 
-                AgentStatusCode.WAITING -> {
+                AgentProcessStatusCode.WAITING -> {
                     throw ProcessWaitingException(
-                        agentProcess = agentProcessStatus.agentProcess,
+                        agentProcess = agentProcess,
                         // TODO this is dirty
-                        awaitable = agentProcessStatus.agentProcess.finalResult() as Awaitable<*, *>
+                        awaitable = agentProcess.finalResult() as Awaitable<*, *>
                     )
                 }
 
-                AgentStatusCode.FAILED -> {
+                AgentProcessStatusCode.FAILED -> {
                     throw ProcessExecutionFailedException(
-                        agentProcess = agentProcessStatus.agentProcess,
-                        detail = "Process ${agentProcessStatus.agentProcess.id} failed"
+                        agentProcess = agentProcess,
+                        detail = "Process ${agentProcess.id} failed"
                     )
                 }
 
                 else -> {
-                    TODO("Handle other statuses: ${agentProcessStatus.status}")
+                    TODO("Handle other statuses: ${agentProcess.status}")
                 }
             }
     }
@@ -177,7 +177,7 @@ fun AgentPlatform.chooseAndAccomplishGoal(
             basis = userInput,
         )
     )
-    val processStatus = runAgentFrom(
+    val agentProcess = runAgentFrom(
         processOptions = processOptions,
         agent = goalAgent,
         bindings = mapOf(
@@ -185,7 +185,7 @@ fun AgentPlatform.chooseAndAccomplishGoal(
         )
     )
 
-    return DynamicExecutionResult.fromProcessStatus(basis = userInput, agentProcessStatus = processStatus)
+    return DynamicExecutionResult.fromProcessStatus(basis = userInput, agentProcess = agentProcess)
 }
 
 
@@ -255,7 +255,7 @@ fun AgentPlatform.chooseAndRunAgent(
             basis = userInput,
         )
     )
-    val processStatus = runAgentFrom(
+    val agentProcess = runAgentFrom(
         processOptions = processOptions,
         agent = agent,
         bindings = mapOf(
@@ -264,6 +264,6 @@ fun AgentPlatform.chooseAndRunAgent(
     )
     return DynamicExecutionResult.fromProcessStatus(
         basis = userInput,
-        agentProcessStatus = processStatus,
+        agentProcess = agentProcess,
     )
 }

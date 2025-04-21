@@ -24,7 +24,7 @@ import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.transformer
 import com.embabel.agent.core.Agent
-import com.embabel.agent.core.AgentStatusCode
+import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.library.Person
@@ -128,7 +128,7 @@ class SimpleAgentProcessTest {
                 parentId = null,
             )
             val agentStatus = agentProcess.tick()
-            assertEquals(AgentStatusCode.WAITING, agentStatus.status)
+            assertEquals(AgentProcessStatusCode.WAITING, agentStatus.status)
             val confirmation = blackboard.finalResult()
             assertTrue(confirmation is ConfirmationRequest<*>)
         }
@@ -149,7 +149,7 @@ class SimpleAgentProcessTest {
                 parentId = null,
             )
             val agentStatus = agentProcess.run()
-            assertEquals(AgentStatusCode.WAITING, agentStatus.status)
+            assertEquals(AgentProcessStatusCode.WAITING, agentStatus.status)
         }
     }
 
