@@ -20,6 +20,10 @@ import com.embabel.common.util.kotlin.loggerFor
 import java.time.Instant
 import java.util.*
 
+/**
+ * Request confirmation from the user before promoting
+ * an object to the blackboard. Rejection will hold back a flow.
+ */
 class ConfirmationRequest<P : Any>(
     payload: P,
     val message: String,
@@ -32,7 +36,7 @@ class ConfirmationRequest<P : Any>(
     override fun onResponse(
         response: ConfirmationResponse,
         processContext: ProcessContext,
-    ): ResponseResponse {
+    ): ResponseImpact {
 
         return if (response.accepted) {
             loggerFor<ConfirmationRequest<*>>().info(
@@ -40,10 +44,10 @@ class ConfirmationRequest<P : Any>(
                 payload,
             )
             processContext.blackboard += payload
-            ResponseResponse.ACCEPTED
+            ResponseImpact.UPDATED
         } else {
             loggerFor<ConfirmationRequest<*>>().info("Rejected confirmation request: {}", payload)
-            ResponseResponse.REJECTED
+            ResponseImpact.UNCHANGED
         }
     }
 
@@ -58,7 +62,7 @@ class ConfirmationRequest<P : Any>(
 
 data class ConfirmationResponse(
     override val id: String = UUID.randomUUID().toString(),
-    override val awaitedId: String,
+    override val awaitableId: String,
     val accepted: Boolean,
     private val persistent: Boolean = false,
     override val timestamp: Instant = Instant.now(),

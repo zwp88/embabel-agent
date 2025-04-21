@@ -20,7 +20,7 @@ import com.embabel.agent.core.AgentProcess
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Decorate the tool for use on the platform
+ * Decorate tools for use on the platform
  */
 fun interface ToolDecorator {
 

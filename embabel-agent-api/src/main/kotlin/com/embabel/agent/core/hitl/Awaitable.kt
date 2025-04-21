@@ -36,22 +36,25 @@ interface Awaitable<P : Any, R : AwaitableResponse> : StableIdentified, Timestam
     fun onResponse(
         response: R,
         processContext: ProcessContext,
-    ): ResponseResponse
+    ): ResponseImpact
 
 }
 
 interface AwaitableResponse : StableIdentified, Timestamped {
 
-    val awaitedId: String
+    /**
+     * Id of the Awaitable that this relates to
+     */
+    val awaitableId: String
 
 }
 
 /**
- * Response of handling an awaitable
+ * Response of handling an Awaitable
  */
-enum class ResponseResponse {
-    ACCEPTED,
-    REJECTED,
+enum class ResponseImpact {
+    UPDATED,
+    UNCHANGED,
 }
 
 /**

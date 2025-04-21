@@ -293,7 +293,7 @@ class ShellCommands(
                 .equals("y", ignoreCase = true)
         }
         return ConfirmationResponse(
-            awaitedId = confirmationRequest.id,
+            awaitableId = confirmationRequest.id,
             accepted = confirmed,
         )
     }
