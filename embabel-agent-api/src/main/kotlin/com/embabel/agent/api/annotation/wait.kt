@@ -16,7 +16,12 @@
 package com.embabel.agent.api.annotation
 
 import com.embabel.agent.core.hitl.Awaitable
+import com.embabel.agent.core.hitl.ConfirmationRequest
 
+/**
+ * Call when the current AgentProcess should
+ * wait for a response from the user.
+ */
 fun <P : Any> waitFor(
     awaitable: Awaitable<P, *>,
 ): P {
@@ -25,6 +30,14 @@ fun <P : Any> waitFor(
     )
 }
 
+fun <P : Any> confirm(
+    what: P,
+    description: String,
+): P {
+    throw AwaitableResponseException(
+        awaitable = ConfirmationRequest(what, description),
+    )
+}
 
 /**
  * Not an error, but gets special treatment in the platform.

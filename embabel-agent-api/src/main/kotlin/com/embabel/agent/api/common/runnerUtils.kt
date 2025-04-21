@@ -30,7 +30,7 @@ import kotlin.Throws
  * Result of directly trying to execute a goal
  * Forcing client to discriminate
  */
-data class DynamicExecutionResult(
+class DynamicExecutionResult private constructor(
 
     /**
      * What triggered this result. Process input.
@@ -39,7 +39,44 @@ data class DynamicExecutionResult(
 
     val output: Any,
     val agentProcessStatus: AgentProcessStatus,
-)
+) {
+
+    companion object {
+
+        fun fromProcessStatus(
+            basis: Any,
+            agentProcessStatus: AgentProcessStatus,
+        ): DynamicExecutionResult =
+            when (agentProcessStatus.status) {
+                AgentStatusCode.COMPLETED -> {
+                    DynamicExecutionResult(
+                        basis = basis,
+                        output = agentProcessStatus.finalResult()!!,
+                        agentProcessStatus = agentProcessStatus,
+                    )
+                }
+
+                AgentStatusCode.WAITING -> {
+                    throw ProcessWaitingException(
+                        agentProcess = agentProcessStatus.agentProcess,
+                        // TODO this is dirty
+                        awaitable = agentProcessStatus.agentProcess.finalResult() as Awaitable<*, *>
+                    )
+                }
+
+                AgentStatusCode.FAILED -> {
+                    throw ProcessExecutionFailedException(
+                        agentProcess = agentProcessStatus.agentProcess,
+                        detail = "Process ${agentProcessStatus.agentProcess.id} failed"
+                    )
+                }
+
+                else -> {
+                    TODO("Handle other statuses: ${agentProcessStatus.status}")
+                }
+            }
+    }
+}
 
 /**
  * Used for control flow
@@ -68,7 +105,7 @@ class ProcessExecutionFailedException(
 class ProcessWaitingException(
     agentProcess: AgentProcess,
     val awaitable: Awaitable<*, *>,
-) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} is waiting for $awaitable")
+) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} is waiting for ${awaitable.infoString()}")
 
 /**
  * Choose a goal based on the user input and try to achieve it.
@@ -147,11 +184,8 @@ fun AgentPlatform.chooseAndAccomplishGoal(
             "it" to userInput
         )
     )
-    return DynamicExecutionResult(
-        basis = userInput,
-        output = processStatus.finalResult()!!,
-        agentProcessStatus = processStatus,
-    )
+
+    return DynamicExecutionResult.fromProcessStatus(basis = userInput, agentProcessStatus = processStatus)
 }
 
 
@@ -228,9 +262,8 @@ fun AgentPlatform.chooseAndRunAgent(
             "it" to userInput
         )
     )
-    return DynamicExecutionResult(
+    return DynamicExecutionResult.fromProcessStatus(
         basis = userInput,
-        output = processStatus.finalResult()!!,
         agentProcessStatus = processStatus,
     )
 }

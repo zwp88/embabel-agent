@@ -44,13 +44,14 @@ interface AgentProcess : Blackboard, Timed {
      * Perform the next step only.
      * Return when an action has been completed and the process is ready to plan,
      * regardless of the result of the action.
-     * @return whether we're done
+     * @return status code of the action. Side effects may have occurred in Blackboard
      */
     fun tick(): AgentProcessStatus
 
     /**
      * Run the process as far as we can.
      * Might complete, fail, get stuck or hit a waiting state.
+     * @return status code of the process. Side effects may have occurred in Blackboard
      */
     fun run(): AgentProcessStatus
 

@@ -167,13 +167,12 @@ internal class SimpleAgentProcess(
         } else {
             logger.debug("▶️ Process {} running: {}\n\tPlan: {}", id, worldState, plan.infoString())
             val agent = agent.actions.single { it.name == plan.actions.first().name }
-            executeAction(agent)
-            return AgentProcessStatus.Running(agentProcess = this)
+            val actionStatus = executeAction(agent)
+            return actionStatusToAgentProcessStatus(actionStatus)
         }
-
     }
 
-    private fun executeAction(action: Action) {
+    private fun executeAction(action: Action): ActionStatus {
         val outputTypes: Map<String, SchemaType> =
             action.outputs.associateBy({ it.name }, { agent.findDataType(it.type) })
         logger.debug(
@@ -183,7 +182,7 @@ internal class SimpleAgentProcess(
             outputTypes,
         )
 
-        action.qos.retryTemplate().execute<Any, Exception> {
+        val actionStatus = action.qos.retryTemplate().execute<ActionStatus, Exception> {
             platformServices.eventListener.onProcessEvent(
                 ActionExecutionStartEvent(
                     agentProcess = this,
@@ -202,7 +201,28 @@ internal class SimpleAgentProcess(
                     actionStatus = actionStatus,
                 )
             )
+            actionStatus
         }
         logger.debug("New world state: {}", worldStateDeterminer.determineWorldState())
+        return actionStatus
+    }
+
+    private fun actionStatusToAgentProcessStatus(actionStatus: ActionStatus): AgentProcessStatus {
+        return when (actionStatus.status) {
+            ActionStatusCode.SUCCEEDED -> {
+                logger.debug("Process {} action {} is running", id, actionStatus.status)
+                AgentProcessStatus.Running(agentProcess = this)
+            }
+
+            ActionStatusCode.FAILED -> {
+                logger.debug("❌ Process {} action {} failed", id, actionStatus.status)
+                AgentProcessStatus.Failed(agentProcess = this, reason = "Action ${actionStatus.status} failed")
+            }
+
+            ActionStatusCode.WAITING -> {
+                logger.debug("⏳ Process {} action {} waiting", id, actionStatus.status)
+                AgentProcessStatus.Waiting(agentProcess = this)
+            }
+        }
     }
 }

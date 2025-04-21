@@ -15,20 +15,23 @@
  */
 package com.embabel.agent.shell
 
-import com.embabel.agent.api.common.NoAgentFound
-import com.embabel.agent.api.common.NoGoalFound
-import com.embabel.agent.api.common.chooseAndAccomplishGoal
-import com.embabel.agent.api.common.chooseAndRunAgent
+import com.embabel.agent.api.common.*
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentProcessStatus
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
+import com.embabel.agent.core.hitl.ConfirmationRequest
+import com.embabel.agent.core.hitl.ConfirmationResponse
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.severance.LumonColors
+import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.apache.commons.lang3.text.WordUtils
+import org.jline.reader.LineReader
+import org.jline.reader.LineReaderBuilder
+import org.jline.terminal.Terminal
 import org.jline.utils.AttributedString
 import org.jline.utils.AttributedStyle
 import org.slf4j.Logger
@@ -54,6 +57,7 @@ class DefaultPromptProvider : PromptProvider {
 class ShellCommands(
     private val agentPlatform: AgentPlatform,
     private val environment: ConfigurableEnvironment,
+    private val terminal: Terminal,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
@@ -190,8 +194,10 @@ class ShellCommands(
             verbosity = verbosity,
         )
         logger.info("Created process options: $processOptions".color(LumonColors.MEMBRANE))
-        try {
-            val result = if (open) {
+
+
+        return runProcess(verbosity = verbosity, basis = intent) {
+            if (open) {
                 logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
                 agentPlatform.chooseAndAccomplishGoal(
                     intent = intent,
@@ -204,6 +210,17 @@ class ShellCommands(
                     processOptions = processOptions
                 )
             }
+        }
+
+    }
+
+    fun runProcess(
+        verbosity: Verbosity,
+        basis: Any,
+        runProcess: () -> DynamicExecutionResult
+    ): String {
+        try {
+            val result = runProcess()
             logger.debug("Result: {}\n", result)
             agentProcessStatuses.add(result.agentProcessStatus)
             if (result.output is HasContent) {
@@ -244,7 +261,51 @@ class ShellCommands(
                 )
             }
             return "I'm sorry. I don't know how to do that.\n"
-        }
+        } catch (pwe: ProcessWaitingException) {
+            val awaitableResponse = when (pwe.awaitable) {
+                is ConfirmationRequest<*> ->
+                    confirmationResponseFromUserInput(
+                        confirmationRequest = pwe.awaitable
+                    )
 
+                else -> {
+                    TODO("Unhandled awaitable: ${pwe.awaitable.infoString()}")
+                }
+            }
+            pwe.awaitable.onResponse(
+                response = awaitableResponse,
+                processContext = pwe.agentProcess!!.processContext
+            )
+            return runProcess(verbosity, basis) {
+                DynamicExecutionResult.fromProcessStatus(
+                    basis = basis,
+                    agentProcessStatus = pwe.agentProcess.run()
+                )
+
+            }
+        }
     }
+
+    private fun confirmationResponseFromUserInput(confirmationRequest: ConfirmationRequest<*>): ConfirmationResponse {
+        val confirmed = doWithReader {
+            it.readLine("${confirmationRequest.message} (y/n): ".color(AnsiColor.YELLOW))
+                .equals("y", ignoreCase = true)
+        }
+        return ConfirmationResponse(
+            awaitedId = confirmationRequest.id,
+            accepted = confirmed,
+        )
+    }
+
+
+    /**
+     * Get further input
+     */
+    private fun <T> doWithReader(callback: (LineReader) -> T): T {
+        val lineReader = LineReaderBuilder.builder()
+            .terminal(terminal)
+            .build()
+        return callback(lineReader)
+    }
+
 }

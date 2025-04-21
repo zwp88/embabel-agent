@@ -80,21 +80,26 @@ internal class MultiTransformer<O : Any>(
                 action = this,
             )
         )
-        if (!outputClass.isInstance(output)) {
-            throw IllegalArgumentException(
-                """
+        if (output == null) {
+            null
+        } else {
+            if (!outputClass.isInstance(output)) {
+                throw IllegalArgumentException(
+                    """
                 Output of action $name is not of type ${outputClass.name}.
                 Did you incorrectly obtain a PromptRunner via 'using' before the end of an action method?
                 Take a payload object as the last signature of your method signature.
+                Return was $output
                 """.trimIndent()
-            )
-        }
-        if (outputVarName != null) {
-            logger.debug("Binding output of action {}: {} to {}", name, outputVarName, output)
-            processContext.agentProcess[outputVarName] = output
-        } else {
-            logger.debug("Adding output of action {}: {}", name, output)
-            processContext.agentProcess += output
+                )
+            }
+            if (outputVarName != null) {
+                logger.debug("Binding output of action {}: {} to {}", name, outputVarName, output)
+                processContext.agentProcess[outputVarName] = output
+            } else {
+                logger.debug("Adding output of action {}: {}", name, output)
+                processContext.agentProcess += output
+            }
         }
     }
 

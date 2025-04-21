@@ -68,11 +68,10 @@ sealed class AgentProcessStatus(
                 block(agentProcess)
             }
 
-            is Failed -> error("Process failed")
-            is Running -> throw IllegalStateException("Process is still running")
-            is Stuck -> TODO("handle stuck")
-            is Waiting -> TODO("handle waiting")
             is InvalidAgent -> error("Invalid agent: ${this.reason}")
+            else -> {
+                error("Process is not completed: $status")
+            }
         }
     }
 

@@ -15,9 +15,24 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.api.annotation.AchievesGoal
+import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.confirm
+import com.embabel.agent.api.annotation.support.AgentMetadataReader
+import com.embabel.agent.api.annotation.waitFor
+import com.embabel.agent.api.dsl.Frog
+import com.embabel.agent.api.dsl.agent
+import com.embabel.agent.api.dsl.transformer
+import com.embabel.agent.core.Agent
+import com.embabel.agent.core.AgentStatusCode
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.library.Person
+import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
+import com.embabel.agent.event.logging.personality.severance.SeveranceLoggingAgenticEventListener
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.agent.support.SimpleTestAgent
@@ -28,11 +43,115 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-private data class LocalPerson(
+data class LocalPerson(
     override val name: String,
 ) : Person
 
+@com.embabel.agent.api.annotation.Agent(description = "waiting agent")
+class AnnotationWaitingAgent {
+
+    @Action
+    fun fromInput(input: UserInput): LocalPerson {
+        return confirm(
+            LocalPerson(name = input.content),
+            "Is this the right dude?"
+        )
+    }
+
+    @Action
+    @AchievesGoal(description = "the big goal in the sky")
+    fun toFrog(person: LocalPerson): Frog {
+        return Frog(person.name)
+    }
+}
+
+val DslWaitingAgent = agent("Waiter", description = "Simple test agent that waits") {
+    action {
+        transformer<UserInput, LocalPerson>(name = "thing") {
+            val person = LocalPerson(name = "Rod")
+            waitFor(
+                ConfirmationRequest(
+                    person,
+                    "Is this the dude?"
+                )
+            )
+        }
+    }
+
+    action {
+        transformer<LocalPerson, Frog>(name = "thing2") {
+            Frog(name = it.input.name)
+        }
+    }
+
+    goal(name = "done", description = "done", satisfiedBy = Frog::class)
+}
+
 class SimpleAgentProcessTest {
+
+    @Nested
+    inner class Waiting {
+
+        @Test
+        fun `wait on tick for DSL agent`() {
+            waitOnTick(DslWaitingAgent)
+        }
+
+        @Test
+        fun `wait on run for DSL agent`() {
+            waitOnRun(DslWaitingAgent)
+        }
+
+        @Test
+        fun `wait on tick for annotation agent`() {
+            waitOnTick(AgentMetadataReader().createAgentMetadata(AnnotationWaitingAgent()) as Agent)
+        }
+
+        @Test
+        fun `wait on run for annotation agent`() {
+            waitOnRun(AgentMetadataReader().createAgentMetadata(AnnotationWaitingAgent()) as Agent)
+        }
+
+        private fun waitOnTick(agent: Agent) {
+            val ese = EventSavingAgenticEventListener()
+            val mockPlatformServices = mockk<PlatformServices>()
+            every { mockPlatformServices.eventListener } returns ese
+            every { mockPlatformServices.llmOperations } returns mockk()
+            val blackboard = InMemoryBlackboard()
+            blackboard += ("it" to UserInput("Rod"))
+            val agentProcess = SimpleAgentProcess(
+                id = "test",
+                agent = agent,
+                processOptions = ProcessOptions(),
+                blackboard = blackboard,
+                platformServices = mockPlatformServices,
+                parentId = null,
+            )
+            val agentStatus = agentProcess.tick()
+            assertEquals(AgentStatusCode.WAITING, agentStatus.status)
+            val confirmation = blackboard.finalResult()
+            assertTrue(confirmation is ConfirmationRequest<*>)
+        }
+
+        private fun waitOnRun(agent: Agent) {
+            val ese: AgenticEventListener = SeveranceLoggingAgenticEventListener()
+            val mockPlatformServices = mockk<PlatformServices>()
+            every { mockPlatformServices.eventListener } returns ese
+            every { mockPlatformServices.llmOperations } returns mockk()
+            val blackboard = InMemoryBlackboard()
+            blackboard += ("it" to UserInput("Rod"))
+            val agentProcess = SimpleAgentProcess(
+                id = "test",
+                agent = agent,
+                processOptions = ProcessOptions(),
+                blackboard = blackboard,
+                platformServices = mockPlatformServices,
+                parentId = null,
+            )
+            val agentStatus = agentProcess.run()
+            assertEquals(AgentStatusCode.WAITING, agentStatus.status)
+        }
+    }
 
     @Nested
     inner class Binding {
@@ -45,7 +164,8 @@ class SimpleAgentProcessTest {
             every { mockPlatformServices.llmOperations } returns mockk()
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
-                "test", agent = SimpleTestAgent,
+                id = "test",
+                agent = SimpleTestAgent,
                 processOptions = mockk(),
                 blackboard = blackboard,
                 platformServices = mockPlatformServices,
@@ -64,7 +184,8 @@ class SimpleAgentProcessTest {
             every { mockPlatformServices.llmOperations } returns mockk()
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
-                "test", agent = SimpleTestAgent,
+                id = "test",
+                agent = SimpleTestAgent,
                 processOptions = mockk(),
                 blackboard = blackboard,
                 platformServices = mockPlatformServices,

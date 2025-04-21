@@ -35,8 +35,11 @@ class ConfirmationRequest<P : Any>(
     ): ResponseResponse {
 
         return if (response.accepted) {
-            loggerFor<ConfirmationRequest<*>>().info("Accepted confirmation request: {}", payload)
-            TODO()
+            loggerFor<ConfirmationRequest<*>>().info(
+                "Accepted confirmation request. Promoting payload to blackboard: {}",
+                payload,
+            )
+            processContext.blackboard += payload
             ResponseResponse.ACCEPTED
         } else {
             loggerFor<ConfirmationRequest<*>>().info("Rejected confirmation request: {}", payload)
