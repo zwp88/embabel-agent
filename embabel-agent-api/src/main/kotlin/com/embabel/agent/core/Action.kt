@@ -173,6 +173,12 @@ interface AgentSystemStep : GoapStep, Described {
 interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, ToolConsumer {
     val outputs: Set<IoBinding>
     override val cost: Double get() = 0.0
+
+    /**
+     * Can this action be run again if it's already run?
+     */
+    val canRerun: Boolean
+
     val transitions: List<Transition>
     val qos: Qos
 

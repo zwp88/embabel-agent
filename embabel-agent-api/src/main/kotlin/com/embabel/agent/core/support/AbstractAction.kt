@@ -37,7 +37,7 @@ const val HAS_RUN_CONDITION_PREFIX = "hasRun_"
  * @param cost the cost of the action
  * @param inputs the input bindings
  * @param outputs the output bindings
- * @param canRerun can we rerun this action with the same inputs?
+ * @param canRerun can we rerun this action?
  * @param transitions any transitions
  * @param qos quality of service requirements
  */
@@ -53,7 +53,7 @@ abstract class AbstractAction(
     override val transitions: List<Transition> = emptyList(),
     override val toolCallbacks: Collection<ToolCallback>,
     override val toolGroups: Collection<String>,
-    val canRerun: Boolean,
+    override val canRerun: Boolean,
     override val qos: Qos = Qos(),
 ) : Action {
 
