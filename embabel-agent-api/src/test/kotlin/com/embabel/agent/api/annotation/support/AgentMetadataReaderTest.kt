@@ -266,7 +266,7 @@ class AgentMetadataReaderTest {
                     secondArg(),
                 )
             }
-            every { mockAgentProcess.finalResult() } returns Person("John Doe")
+            every { mockAgentProcess.lastResult() } returns Person("John Doe")
 
             val pc = ProcessContext(
                 platformServices = mockPlatformServices,
@@ -274,7 +274,7 @@ class AgentMetadataReaderTest {
             )
             val result = action.execute(pc, mockk(), action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
-            assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+            assertEquals(Person("John Doe"), pc.blackboard.lastResult())
         }
 
         @Test
@@ -315,7 +315,7 @@ class AgentMetadataReaderTest {
                     secondArg(),
                 )
             }
-            every { mockAgentProcess.finalResult() } returns Person("John Doe")
+            every { mockAgentProcess.lastResult() } returns Person("John Doe")
 
             val pc = ProcessContext(
 
@@ -324,7 +324,7 @@ class AgentMetadataReaderTest {
             )
             val result = action.execute(pc, mockk(), action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
-            assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+            assertEquals(Person("John Doe"), pc.blackboard.lastResult())
         }
 
         @Test
@@ -365,7 +365,7 @@ class AgentMetadataReaderTest {
                     secondArg(),
                 )
             }
-            every { mockAgentProcess.finalResult() } returns Person("John Doe")
+            every { mockAgentProcess.lastResult() } returns Person("John Doe")
 
             val pc = ProcessContext(
 
@@ -374,7 +374,7 @@ class AgentMetadataReaderTest {
             )
             val result = action.execute(pc, mockk(), action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
-            assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+            assertEquals(Person("John Doe"), pc.blackboard.lastResult())
         }
 
         @Test
@@ -408,7 +408,7 @@ class AgentMetadataReaderTest {
                     secondArg(),
                 )
             }
-            every { mockAgentProcess.finalResult() } returns Person("John Doe")
+            every { mockAgentProcess.lastResult() } returns Person("John Doe")
 
             val pc = ProcessContext(
                 platformServices = mockPlatformServices,
@@ -416,7 +416,7 @@ class AgentMetadataReaderTest {
             )
             val result = action.execute(pc, mockk(), action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
-            assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+            assertEquals(Person("John Doe"), pc.blackboard.lastResult())
         }
 
         @Test
@@ -531,7 +531,7 @@ class AgentMetadataReaderTest {
                         secondArg(),
                     )
                 }
-                every { mockAgentProcess.finalResult() } returns Person("John Doe")
+                every { mockAgentProcess.lastResult() } returns Person("John Doe")
 
                 val pc = ProcessContext(
                     platformServices = mockPlatformServices,
@@ -539,7 +539,7 @@ class AgentMetadataReaderTest {
                 )
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.SUCCEEDED, result.status)
-                assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+                assertEquals(Person("John Doe"), pc.blackboard.lastResult())
                 assertEquals("magical", llmo.captured.llm.model)
                 assertEquals(1.7, llmo.captured.llm.temperature)
             }
@@ -583,7 +583,7 @@ class AgentMetadataReaderTest {
                         secondArg(),
                     )
                 }
-                every { mockAgentProcess.finalResult() } returns Person("John Doe")
+                every { mockAgentProcess.lastResult() } returns Person("John Doe")
 
                 val pc = ProcessContext(
                     platformServices = mockPlatformServices,
@@ -591,7 +591,7 @@ class AgentMetadataReaderTest {
                 )
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.SUCCEEDED, result.status)
-                assertEquals(Person("John Doe"), pc.blackboard.finalResult())
+                assertEquals(Person("John Doe"), pc.blackboard.lastResult())
                 assertEquals(1, llmi.captured.toolCallbacks.size)
                 assertEquals("thing", llmi.captured.toolCallbacks.single().toolDefinition.name())
                 assertEquals(LlmOptions.DEFAULT_MODEL, llmi.captured.llm.model)
@@ -636,7 +636,7 @@ class AgentMetadataReaderTest {
                         secondArg(),
                     )
                 }
-                every { mockAgentProcess.finalResult() } returns UserInput("John Doe")
+                every { mockAgentProcess.lastResult() } returns UserInput("John Doe")
 
                 val pc = ProcessContext(
                     platformServices = mockPlatformServices,
@@ -644,8 +644,8 @@ class AgentMetadataReaderTest {
                 )
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.SUCCEEDED, result.status)
-                assertTrue(pc.blackboard.finalResult() is UserInput)
-                assertEquals("John Doe", (pc.blackboard.finalResult() as UserInput).content)
+                assertTrue(pc.blackboard.lastResult() is UserInput)
+                assertEquals("John Doe", (pc.blackboard.lastResult() as UserInput).content)
                 assertEquals(1, llmo.captured.toolCallbacks.size)
                 assertEquals("reverse", llmo.captured.toolCallbacks.single().toolDefinition.name())
                 assertEquals(LlmOptions.DEFAULT_MODEL, llmo.captured.llm.model)
@@ -687,9 +687,9 @@ class AgentMetadataReaderTest {
                     )
                 }
                 every {
-                    mockAgentProcess.finalResult()
+                    mockAgentProcess.lastResult()
                 } answers {
-                    blackboard.finalResult()
+                    blackboard.lastResult()
                 }
 
                 val pc = ProcessContext(
@@ -698,7 +698,7 @@ class AgentMetadataReaderTest {
                 )
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.WAITING, result.status)
-                val fr = pc.blackboard.finalResult()
+                val fr = pc.blackboard.lastResult()
                 assertTrue(
                     fr is ConfirmationRequest<*>,
                     "Last result should be an ConfirmationRequest: had ${blackboard.infoString(true)}",

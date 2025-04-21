@@ -66,14 +66,6 @@ interface AgentProcess : Blackboard, Timed, OperationStatus<AgentProcessStatusCo
         }
         return processContext.getValue("it", outputClass.simpleName) as O?
             ?: error("No result found in process status")
-
-    }
-
-    override fun finalResult(): Any? {
-        require(status == AgentProcessStatusCode.COMPLETED) {
-            "Cannot get result of process that is not completed"
-        }
-        return processContext.blackboard.finalResult()
     }
 
 }

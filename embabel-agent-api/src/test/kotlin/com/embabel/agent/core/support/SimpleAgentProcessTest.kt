@@ -129,7 +129,7 @@ class SimpleAgentProcessTest {
             )
             val agentStatus = agentProcess.tick()
             assertEquals(AgentProcessStatusCode.WAITING, agentStatus.status)
-            val confirmation = blackboard.finalResult()
+            val confirmation = blackboard.lastResult()
             assertTrue(confirmation is ConfirmationRequest<*>)
         }
 

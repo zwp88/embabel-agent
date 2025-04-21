@@ -58,12 +58,12 @@ interface Bindable {
     }
 }
 
-interface MayHaveFinalResult {
+interface MayHaveLastResult {
 
     /**
-     * Final result, of any type, if there is one.
+     * Last result, of any type, if there is one.
      */
-    fun finalResult(): Any?
+    fun lastResult(): Any?
 
 }
 
@@ -71,7 +71,7 @@ interface MayHaveFinalResult {
 /**
  * How agent processes maintain context
  */
-interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
+interface Blackboard : Bindable, MayHaveLastResult, HasInfoString {
 
     /**
      * Unique identifier of this blackboard.
@@ -142,7 +142,7 @@ interface Blackboard : Bindable, MayHaveFinalResult, HasInfoString {
 
     fun getCondition(key: String): Boolean?
 
-    override fun finalResult(): Any? {
+    override fun lastResult(): Any? {
         return objects.lastOrNull()
     }
 

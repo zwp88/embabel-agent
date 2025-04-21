@@ -51,7 +51,7 @@ class DynamicExecutionResult private constructor(
                 AgentProcessStatusCode.COMPLETED -> {
                     DynamicExecutionResult(
                         basis = basis,
-                        output = agentProcess.finalResult()!!,
+                        output = agentProcess.lastResult()!!,
                         agentProcess = agentProcess,
                     )
                 }
@@ -60,7 +60,7 @@ class DynamicExecutionResult private constructor(
                     throw ProcessWaitingException(
                         agentProcess = agentProcess,
                         // TODO this is dirty
-                        awaitable = agentProcess.finalResult() as Awaitable<*, *>
+                        awaitable = agentProcess.lastResult() as Awaitable<*, *>
                     )
                 }
 
