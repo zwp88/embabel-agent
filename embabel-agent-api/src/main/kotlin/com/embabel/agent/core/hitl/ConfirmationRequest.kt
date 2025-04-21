@@ -50,6 +50,10 @@ class ConfirmationRequest<P : Any>(
     override fun infoString(verbose: Boolean?): String {
         return "ConfirmationRequest(id=$id, payload=$payload, message='$message')"
     }
+
+    override fun toString(): String {
+        return "ConfirmationRequest(id=$id, payloadType:${payload::class.qualifiedName}, message='$message')"
+    }
 }
 
 data class ConfirmationResponse(

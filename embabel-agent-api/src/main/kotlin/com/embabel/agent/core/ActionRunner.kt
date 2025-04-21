@@ -66,7 +66,7 @@ interface ActionRunner {
                 } catch (are: AwaitableResponseException) {
                     // Not an error condition
                     // Bind the awaitable to the blackboard
-                    logger.info(
+                    logger.debug(
                         "{} adding awaitable to blackboard: {}",
                         processContext.agentProcess.id,
                         are.awaitable.infoString(verbose = false),

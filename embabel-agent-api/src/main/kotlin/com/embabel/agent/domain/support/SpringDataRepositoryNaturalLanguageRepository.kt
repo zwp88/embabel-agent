@@ -70,7 +70,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
             <description>${findEntitiesRequest.description}</description>
             """.trimIndent()
         )
-        logger.info(
+        logger.debug(
             "Found fields for {}: {}",
             entityType.simpleName,
             referencedFinderInvocations.fields.sortedBy { it.name }
@@ -84,14 +84,14 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
                 .firstOrNull { it.name == finder.name }
                 ?: continue
 
-            logger.info(
+            logger.debug(
                 "Invoking repository method {} with value {}",
                 repositoryMethod,
                 finder.value,
             )
             val result = repositoryMethod.invoke(repository, finder.value)
             val maybeEntity = extractResultIfPossible(result)
-            logger.info("Found result for {}: {}", finder.name, maybeEntity)
+            logger.debug("Found result for {}: {}", finder.name, maybeEntity)
             if (maybeEntity != null) {
                 matches.add(
                     EntityMatch(

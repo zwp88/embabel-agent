@@ -42,8 +42,8 @@ open class LoggingAgenticEventListener(
     private val agentProcessPlanFormulatedEventMessage: String = "[{}] formulated plan {} from {}",
     private val processCompletionMessage: String = "[{}] completed in {}",
     private val processFailureMessage: String = "[{}] failed",
-    private val objectAddedMessage: String = "{} Object added: {} to [{}]",
-    private val objectBoundMessage: String = "{} Object bound: {} to {} in [{}]",
+    private val objectAddedMessage: String = "[{}] object added: {}",
+    private val objectBoundMessage: String = "[{}] bbject bound: {} to {}",
     private val functionCallRequestEventMessage: String = "[{}] calling function {} with payload {}",
     private val functionCallResponseEventMessage: String = "[{}] function {} response {} in {}ms with payload {}",
     private val llmRequestEventMessage: String = "[{}] requesting LLM transform {} from {} -> {} using {}",
@@ -175,11 +175,11 @@ open class LoggingAgenticEventListener(
             }
 
             is ObjectAddedEvent -> {
-                logger.info(objectAddedMessage, event.agentProcess.id, event.value, event.processId)
+                logger.info(objectAddedMessage, event.processId, event.value)
             }
 
             is ObjectBoundEvent -> {
-                logger.info(objectBoundMessage, event.agentProcess.id, event.name, event.value, event.processId)
+                logger.info(objectBoundMessage, event.processId, event.name, event.value)
             }
 
             is LlmRequestEvent<*> -> {

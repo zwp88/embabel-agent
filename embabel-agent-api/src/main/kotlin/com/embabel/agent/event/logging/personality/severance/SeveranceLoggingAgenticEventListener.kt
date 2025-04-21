@@ -57,7 +57,7 @@ val CompletionMessages = listOf(
 @Service
 @Profile("severance")
 class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
-    url="https://www.imdb.com/title/tt11280740/",
+    url = "https://www.imdb.com/title/tt11280740/",
     logger = LoggerFactory.getLogger("MDR"),
     welcomeMessage = """
 
@@ -98,8 +98,8 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
 
         """.trimIndent(),
     processFailureMessage = "[{}] WOE: failed",
-    objectAddedMessage = "[{}] Perpetuity wing: object added: {} to [{}]",
-    objectBoundMessage = "[{}] Perpetuity wing: object bound: {} to {} in [{}]",
+    objectAddedMessage = "[{}] Perpetuity wing: object added: {}",
+    objectBoundMessage = "[{}] Perpetuity wing: object bound: {} to {}",
     functionCallRequestEventMessage = "[{}] VERVE: calling function {} with payload {}",
     functionCallResponseEventMessage = "[{}] VISION: function {} response {} in {}ms with payload {}",
     llmRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM transform {} from {} -> {} using {}",
