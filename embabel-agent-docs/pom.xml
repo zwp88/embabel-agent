@@ -61,6 +61,8 @@
                     <attributes>
                         <sourcedir>${project.build.sourceDirectory}</sourcedir>
                         <imagesdir>images</imagesdir>
+                        <stylesheet>embabel-agent-docs.css</stylesheet>
+                        <stylesDir>${project.basedir}/src/main/resources/themes</stylesDir>
                         <embabel-agent-version>${agent-api.version}</embabel-agent-version>
                     </attributes>
                 </configuration>

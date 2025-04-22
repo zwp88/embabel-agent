@@ -31,13 +31,14 @@ import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.web.client.RestTemplate
 
-
 @Configuration
+@EnableConfigurationProperties(ModelProperties::class)
 class AgentPlatformConfiguration(
 ) {
 

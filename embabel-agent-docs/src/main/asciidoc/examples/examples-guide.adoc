@@ -5,5 +5,5 @@
 
 The following chapters are dedicated to _Agent Examples_.
 
-include::haroscope.adoc[]
+include::horoscope.adoc[]
 include::movie.adoc[]

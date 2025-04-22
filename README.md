@@ -231,8 +231,7 @@ Required:
 
 Optional:
 
-Optional external services:
-
+- `ANTHROPIC_API_KEY`: For the Anthropic API
 - `BRAVE_API_KEY`: For the Brave Search API. Web, news and video search is exposed if this key is available.
 
 ## Running via Spring Shell
@@ -271,6 +270,16 @@ Omit these for less verbose logging.
 
 > Spring Shell supports history. Type `!!` to repeat the last command.
 > This will survive restarts, so is handy when iterating on an agent.
+
+## Bringing in additional LLMs
+
+Simply define Spring beans of type `Llm`.
+See the `OpenAiConfiguration` class as an example.
+
+Remember:
+
+- Provide the knowledge cutoff date if you know it
+- Make the configuration class conditional on any required API key.
 
 ## Running Tests
 
