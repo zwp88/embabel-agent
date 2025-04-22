@@ -3,3 +3,51 @@
 
 ==== Say few works about Agent Flow
 
+[plantuml]
+....
+@startuml
+scale 0.8
+
+[*] --> Idle
+
+state "Order Processing System" as OrderSystem {
+    Idle --> OrderReceived: New Order
+
+    OrderReceived --> Validating: Validate Order
+
+    Validating --> PaymentPending: Valid Order
+    Validating --> Rejected: Invalid Order
+
+    PaymentPending --> Processing: Payment Received
+    PaymentPending --> Cancelled: Payment Timeout
+    PaymentPending --> Cancelled: Customer Cancels
+
+    Processing --> Packaging: Items Ready
+    Processing --> BackOrdered: Items Not Available
+
+    BackOrdered --> Processing: Items Received
+    BackOrdered --> Cancelled: Extended Delay
+
+    Packaging --> Shipped: Package Complete
+
+    Shipped --> InTransit: Handover to Courier
+
+    InTransit --> Delivered: Delivery Confirmed
+    InTransit --> ReturnProcessing: Return Request
+
+    Delivered --> Completed: No Returns (30 days)
+    Delivered --> ReturnProcessing: Return Requested
+
+    ReturnProcessing --> Refunded: Return Accepted
+    ReturnProcessing --> Completed: Return Rejected
+
+    Refunded --> Completed: Process Complete
+}
+
+Rejected --> [*]
+Cancelled --> [*]
+Completed --> [*]
+
+@enduml
+....
+

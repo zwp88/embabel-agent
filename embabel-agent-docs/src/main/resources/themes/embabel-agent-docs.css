@@ -1,0 +1,245 @@
+/* AsciiDoctor Dark Theme
+ * A dark theme for AsciiDoctor HTML output
+ */
+
+/* Import the default AsciiDoctor stylesheet first */
+@import "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
+
+/* Base color variables */
+:root {
+  --bg-color: #1e1e1e;
+  --text-color: #e0e0e0;
+  --link-color: #4da6ff;
+  --link-hover-color: #80bfff;
+  --heading-color: #63c0f5;
+  --code-bg-color: #2d2d2d;
+  --code-text-color: #f8f8f2;
+  --quote-bg-color: #2a2a2a;
+  --quote-border-color: #444444;
+  --table-header-bg: #2d2d2d;
+  --table-border-color: #444444;
+  --table-alt-bg: #292929;
+  --admonition-note-bg: #264f78;
+  --admonition-tip-bg: #2d632d;
+  --admonition-important-bg: #663c00;
+  --admonition-warning-bg: #7a3300;
+  --admonition-caution-bg: #7a0000;
+}
+
+/* Basic elements */
+html, body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Links */
+a, a:hover, a:focus {
+  color: var(--link-color);
+}
+
+a:hover, a:focus {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+/* Document title and top-most header - make it white */
+h1, #header h1, #header > h1:first-child, #toctitle, .sidebarblock > .content > .title {
+  color: #ffffff;
+}
+
+/* Other headings keep the blue tint */
+h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+}
+
+/* Code blocks */
+pre, code {
+  background-color: var(--code-bg-color);
+  color: var(--code-text-color);
+  border: none;
+}
+
+.literalblock pre, .literalblock pre[class], .listingblock pre, .listingblock pre[class] {
+  background-color: var(--code-bg-color);
+  border: 1px solid #444;
+}
+
+/* Tables */
+table {
+  background-color: transparent;
+  border-color: var(--table-border-color);
+}
+
+table thead, table tfoot {
+  background-color: var(--table-header-bg);
+}
+
+table tr.even, table tr.alt, table tr:nth-of-type(even) {
+  background-color: var(--table-alt-bg);
+}
+
+/* Blockquotes */
+blockquote, .quoteblock {
+  background-color: var(--quote-bg-color);
+  border-left: 4px solid var(--quote-border-color);
+}
+
+/* Sidebars and panels */
+.sidebarblock {
+  background-color: #252525;
+  border: 1px solid #444;
+}
+
+.exampleblock > .content {
+  background-color: #252525;
+  border: 1px solid #444;
+}
+
+/* Admonition blocks */
+.admonitionblock > table td.icon {
+  text-align: center;
+  width: 80px;
+}
+
+.admonitionblock > table td.icon img {
+  max-width: none;
+}
+
+.admonitionblock > table td.icon .title {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.admonitionblock > table td.content {
+  padding-left: 1.125em;
+  padding-right: 1.25em;
+  border-left: 1px solid #444;
+  color: #e0e0e0;
+}
+
+.admonitionblock.note > table td.icon {
+  background-color: var(--admonition-note-bg);
+}
+
+.admonitionblock.tip > table td.icon {
+  background-color: var(--admonition-tip-bg);
+}
+
+.admonitionblock.important > table td.icon {
+  background-color: var(--admonition-important-bg);
+}
+
+.admonitionblock.warning > table td.icon {
+  background-color: var(--admonition-warning-bg);
+}
+
+.admonitionblock.caution > table td.icon {
+  background-color: var(--admonition-caution-bg);
+}
+
+/* TOC - standard and left panel */
+#toc, #toc.toc, #content #toc, #toc.toc2, #header .details, .sidebarblock, .listingblock, .literalblock, .imageblock, .tableblock {
+  background-color: #252525;
+  border: 1px solid #444;
+}
+
+#toc a, #toc.toc a, #content #toc a, #toc.toc2 a {
+  color: var(--link-color);
+}
+
+#toc a:hover, #toc.toc a:hover, #content #toc a:hover, #toc.toc2 a:hover {
+  color: var(--link-hover-color);
+}
+
+/* Left sidebar TOC */
+.toc2 {
+  background-color: #1a1a1a;
+  border-right: 1px solid #444;
+  color: var(--text-color);
+}
+
+body.toc2 {
+  background-color: var(--bg-color);
+}
+
+#toc.toc2 #toctitle {
+  color: var(--heading-color);
+}
+
+/* TOC list items */
+#toc.toc2 ul.sectlevel0 > li > a, #toc.toc2 ul.sectlevel1 > li > a {
+  color: var(--link-color);
+}
+
+#toc.toc2 ul.sectlevel0 > li > a:hover, #toc.toc2 ul.sectlevel1 > li > a:hover {
+  color: var(--link-hover-color);
+}
+
+/* Current selection in TOC */
+#toc.toc2 ul.sectlevel0 > li.active > a, #toc.toc2 ul.sectlevel1 > li.active > a {
+  font-weight: bold;
+  color: var(--heading-color);
+}
+
+/* Footer */
+#footer, #footer-text {
+  color: #888;
+}
+
+/* Horizontal rule */
+hr {
+  border-top: 1px solid #444;
+}
+
+/* Mark the floating header anchors */
+.anchor {
+  color: var(--heading-color);
+}
+
+/* Footnotes */
+.footnote, .footnotes ol li {
+  color: #bbb;
+}
+
+/* Keyboard/button shortcuts */
+.keyseq {
+  color: #ddd;
+}
+
+kbd {
+  background-color: #333;
+  border: 1px solid #555;
+  color: #ddd;
+}
+
+/* Source code highlighting - basic overrides */
+.hljs {
+  background-color: var(--code-bg-color) !important;
+}
+
+/* Callouts */
+.conum[data-value] {
+  background-color: rgba(80, 160, 250, 0.8);
+  color: #fff;
+}
+
+.conum[data-value] * {
+  color: #fff !important;
+}
+
+/* Image borders */
+.imageblock img, .image img {
+  border: 1px solid #444;
+}
+
+/* Print styles - ensure dark theme also works in print */
+@media print {
+  body {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+  }
+  
+  a, a:visited {
+    color: var(--link-color) !important;
+  }
+}
