@@ -36,7 +36,7 @@ open class LoggingAgenticEventListener(
     private val rankingChoiceRequestEventMessage: String = "Choosing {} based on {}",
     private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}. Choices: {}",
     private val rankingChoiceNotMadeEventMessage: String = "Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
-    private val dymamicAgentCreationMessage: String = "Created agent {}",
+    private val dynamicAgentCreationMessage: String = "Created agent {}",
     private val agentProcessCreationEventMessage: String = "[{}] created",
     private val agentProcessReadyToPlanEventMessage: String = "[{}] ready to plan from {}",
     private val agentProcessPlanFormulatedEventMessage: String = "[{}] formulated plan {} from {}",
@@ -95,7 +95,7 @@ open class LoggingAgenticEventListener(
             }
 
             is DynamicAgentCreationEvent -> {
-                logger.info(dymamicAgentCreationMessage, event.agent.infoString())
+                logger.info(dynamicAgentCreationMessage, event.agent.infoString())
             }
 
             else -> {

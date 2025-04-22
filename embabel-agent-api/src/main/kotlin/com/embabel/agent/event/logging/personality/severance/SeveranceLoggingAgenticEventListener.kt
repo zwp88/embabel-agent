@@ -81,7 +81,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         """.trimIndent()
     ),
     rankingChoiceNotMadeEventMessage = "WOE: Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
-    dymamicAgentCreationMessage = "WILES: Created agent {}",
+    dynamicAgentCreationMessage = "WILES: Created agent {}",
     agentProcessCreationEventMessage = kier(
         """
         May my gaze be singularly placed upon the path, may the words of virtue guide me in the daily labor of my great undertaking.
