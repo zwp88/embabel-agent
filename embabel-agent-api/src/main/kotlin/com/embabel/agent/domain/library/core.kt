@@ -27,7 +27,10 @@ interface HasContent {
 interface Person {
 
     val name: String
+
 }
+
+data class PersonImpl(override val name: String) : Person
 
 
 data class RelevantNewsStories(

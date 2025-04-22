@@ -22,6 +22,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -88,7 +89,7 @@ private class OperationPayloadPromptRunner(
         prompt: String,
         outputClass: Class<T>,
     ): T? {
-        return payload.processContext.createObjectIfPossible<T>(
+        val result = payload.processContext.createObjectIfPossible<T>(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
@@ -99,7 +100,16 @@ private class OperationPayloadPromptRunner(
             outputClass = outputClass,
             agentProcess = payload.processContext.agentProcess,
             action = payload.action,
-        ).getOrNull()
+        )
+        if (result.isFailure) {
+            loggerFor<OperationPayloadPromptRunner>().warn(
+                "Failed to create object of type {} with prompt {}: {}",
+                outputClass.name,
+                prompt,
+                result.exceptionOrNull()?.message,
+            )
+        }
+        return result.getOrNull()
     }
 }
 

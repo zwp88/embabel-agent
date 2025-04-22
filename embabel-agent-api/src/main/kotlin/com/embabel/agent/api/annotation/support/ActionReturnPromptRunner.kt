@@ -66,7 +66,7 @@ private class ActionReturnPromptRunner(
         throw ExecutePromptException(
             prompt = prompt,
             llm = llm,
-            requireResult = true,
+            requireResult = false,
             outputClass = outputClass,
             toolCallbacks = toolCallbacks,
             promptContributors = promptContributors,

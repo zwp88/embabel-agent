@@ -23,6 +23,7 @@ import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
+import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.messages.SystemMessage
 import org.springframework.ai.chat.messages.UserMessage
@@ -32,15 +33,6 @@ import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
 
-val DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION = """
-    The JSON return has 2 cases: success or failure.
-    If you can return the required success structure, return just the "success" property.
-    If it is impossible to return this structure, return only the "failure"
-    property explaining why in 10 words or less.
-    NEVER MAKE ANYTHING UP. Success can only result from sufficient
-    information, not subjective guesswork.
-""".trimIndent()
-
 /**
  * LlmOperations implementation that uses the Spring AI ChatClient
  */
@@ -48,7 +40,8 @@ val DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION = """
 internal class ChatClientLlmOperations(
     private val modelProvider: ModelProvider,
     toolDecorator: ToolDecorator,
-    private val maybeReturnPromptContribution: String = DEFAULT_MAYBE_RETURN_PROMPT_CONTRIBUTION,
+    private val templateRenderer: TemplateRenderer,
+    private val maybePromptTemplate: String = "maybe_prompt_contribution",
 ) : AbstractLlmOperations(toolDecorator) {
 
     override fun <O> doTransform(
@@ -97,6 +90,11 @@ internal class ChatClientLlmOperations(
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>,
     ): Result<O> {
+        val maybeReturnPromptContribution = templateRenderer.renderLoadedTemplate(
+            maybePromptTemplate,
+            emptyMap(),
+        )
+
         val models = getModels(interaction.llm)
         val promptContributions =
             (interaction.promptContributors + models.second.promptContributors).joinToString("\n") { it.contribution() }

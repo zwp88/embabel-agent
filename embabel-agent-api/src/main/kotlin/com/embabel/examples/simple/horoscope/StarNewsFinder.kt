@@ -22,9 +22,11 @@ import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.annotation.support.usingDefaultLlm
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.api.common.createObjectIfPossible
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
+import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import org.springframework.beans.factory.annotation.Value
@@ -54,10 +56,35 @@ class StarNewsFinder(
     private val storyCount: Int,
 ) {
 
+    // TODO should be able to use the Person interface directly?
     @Action
-    fun extractPerson(userInput: UserInput): StarPerson =
+    fun extractPerson(userInput: UserInput): PersonImpl? =
         // All prompts are typesafe
-        usingDefaultLlm.createObject("Create a person from this user input, extracting their name and star sign: $userInput")
+        using(LlmOptions("gpt-4o")).createObjectIfPossible(
+            """
+            Create a person from this user input, extracting their name:
+            ${userInput.content}
+            """.trimIndent()
+        )
+
+    // TODO should work with the Person interface rather than PersonImpl
+    @Action
+    fun addWooWoo(person: PersonImpl): StarPerson {
+        return StarPerson(
+            name = person.name,
+            sign = "aries",
+        )
+    }
+
+    @Action
+    fun extractStarPerson(userInput: UserInput): StarPerson? =
+        // All prompts are typesafe
+        using(LlmOptions("gpt-4o")).createObjectIfPossible(
+            """
+            Create a person from this user input, extracting their name and star sign:
+            ${userInput.content}
+            """.trimIndent()
+        )
 
     @Action
     fun retrieveHoroscope(starPerson: StarPerson) =
