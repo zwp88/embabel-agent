@@ -21,6 +21,7 @@ import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.ai.model.ByNameModelSelectionCriteria
+import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.messages.SystemMessage
@@ -61,8 +62,9 @@ internal class ChatClientLlmOperations(
             error("Output class must not be a List")
         }
 
-        val chatClient = createChatClient(interaction.llm)
-        val promptContributions = interaction.promptContributors.joinToString("\n") { it.contribution() }
+        val models = getModels(interaction.llm)
+        val promptContributions =
+            (interaction.promptContributors + models.second.promptContributors).joinToString("\n") { it.contribution() }
 
         val springAiPrompt = Prompt(
             buildList {
@@ -78,7 +80,7 @@ internal class ChatClientLlmOperations(
             )
         }
 
-        val callResponse = chatClient
+        val callResponse = models.first
             .prompt(springAiPrompt)
             .tools(interaction.toolCallbacks)
             .call()
@@ -95,8 +97,9 @@ internal class ChatClientLlmOperations(
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>,
     ): Result<O> {
-        val chatClient = createChatClient(interaction.llm)
-        val promptContributions = interaction.promptContributors.joinToString("\n") { it.contribution() }
+        val models = getModels(interaction.llm)
+        val promptContributions =
+            (interaction.promptContributors + models.second.promptContributors).joinToString("\n") { it.contribution() }
         val springAiPrompt = Prompt(
             buildList {
                 if (promptContributions.isNotEmpty()) {
@@ -113,7 +116,7 @@ internal class ChatClientLlmOperations(
             MaybeReturn::class.java,
             outputClass,
         )
-        val output = chatClient
+        val output = models.first
             .prompt(springAiPrompt)
             .tools(interaction.toolCallbacks)
             .call()
@@ -139,16 +142,16 @@ internal class ChatClientLlmOperations(
         }
     }
 
-    private fun createChatClient(
+    private fun getModels(
         llmOptions: LlmOptions
-    ): ChatClient {
-        val chatModel = modelProvider.getLlm(
+    ): Pair<ChatClient, Llm> {
+        val llm = modelProvider.getLlm(
             ByNameModelSelectionCriteria(
                 name = llmOptions.model,
             )
-        ).model
+        )
         val chatClient = ChatClient
-            .builder(chatModel)
+            .builder(llm.model)
             .defaultOptions(
                 // TODO should not be OpenAI specific
                 OpenAiChatOptions.builder()
@@ -156,7 +159,7 @@ internal class ChatClientLlmOperations(
                     .build()
             )
             .build()
-        return chatClient
+        return Pair(chatClient, llm)
     }
 }
 

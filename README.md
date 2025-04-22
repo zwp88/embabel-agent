@@ -231,8 +231,7 @@ Required:
 
 Optional:
 
-Optional external services:
-
+- `ANTHROPIC_API_KEY`: For the Anthropic API
 - `BRAVE_API_KEY`: For the Brave Search API. Web, news and video search is exposed if this key is available.
 
 ## Running via Spring Shell
