@@ -37,6 +37,10 @@ data class Verbosity(
  * @param contextId context id to use for this process. Can be null.
  * If set it can enable connection to external resources and persistence
  * from previous runs.
+ * @param blackboard an existing blackboard to use for this process.
+ * By default, it will be modified as the process runs.
+ * Whether this is an independent copy is up to the caller, who can call spawn()
+ * before passing this argument.
  * @param test whether to run in test mode. In test mode, the agent platform
  * will not use any external resources such as LLMs, and will not persist any state.
  * @param verbosity detailed verbosity settings for logging etc.
@@ -45,6 +49,7 @@ data class Verbosity(
  */
 data class ProcessOptions(
     val contextId: ContextId? = null,
+    val blackboard: Blackboard? = null,
     val test: Boolean = false,
     val verbosity: Verbosity = Verbosity(),
     val allowGoalChange: Boolean = true,
@@ -116,6 +121,10 @@ interface AgentPlatform : AgentScope {
 
     fun deploy(goal: Goal): AgentPlatform
 
+    /**
+     * Run the agent from the given ProcessOptions.
+     * We might create a new blackboard or have one
+     */
     fun runAgentFrom(
         agent: Agent,
         processOptions: ProcessOptions = ProcessOptions(),

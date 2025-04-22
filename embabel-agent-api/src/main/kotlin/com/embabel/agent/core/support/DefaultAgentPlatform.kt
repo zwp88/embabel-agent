@@ -171,7 +171,11 @@ internal class DefaultAgentPlatform(
         return this
     }
 
-    private fun createBlackboard(): Blackboard {
+    private fun createBlackboard(processOptions: ProcessOptions): Blackboard {
+        if (processOptions.blackboard != null) {
+            logger.info("Using existing blackboard {}", processOptions.blackboard.blackboardId)
+            return processOptions.blackboard
+        }
         return InMemoryBlackboard()
     }
 
@@ -180,7 +184,7 @@ internal class DefaultAgentPlatform(
         processOptions: ProcessOptions,
         bindings: Map<String, Any>,
     ): AgentProcess {
-        val blackboard = createBlackboard()
+        val blackboard = createBlackboard(processOptions)
         blackboard.bindAll(bindings)
         val agentProcess = createAgentProcess(agent, processOptions, blackboard)
         return agentProcess.run()

@@ -16,10 +16,7 @@
 package com.embabel.agent.shell
 
 import com.embabel.agent.api.common.*
-import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.core.Verbosity
+import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.hitl.ConfirmationResponse
 import com.embabel.agent.domain.library.HasContent
@@ -27,7 +24,7 @@ import com.embabel.agent.event.logging.personality.severance.LumonColors
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.lang3.text.WordUtils
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
@@ -45,11 +42,20 @@ class ShellCommands(
     private val agentPlatform: AgentPlatform,
     private val environment: ConfigurableEnvironment,
     private val terminal: Terminal,
+    private val objectMapper: ObjectMapper,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
 
     private val agentProcesses = mutableListOf<AgentProcess>()
+
+    private var blackboard: Blackboard? = null
+
+    @ShellMethod(value = "Clear blackboard")
+    fun clear(): String {
+        blackboard = null
+        return "Blackboard cleared"
+    }
 
     @ShellMethod(value = "List all active Spring profiles")
     fun profiles(): String {
@@ -93,13 +99,18 @@ class ShellCommands(
     fun demo(): String {
         val intent = "Lynda is a scorpio. Find news for her"
         logger.info("Demo executing intent: '$intent'")
+        val verbosity = Verbosity(
+            debug = false,
+            showPrompts = true,
+            showLlmResponses = false,
+            showPlanning = true,
+        )
         val output = executeIntent(
-            intent = intent, open = false,
-            verbosity = Verbosity(
-                debug = false,
-                showPrompts = true,
-                showLlmResponses = false,
-                showPlanning = true,
+            intent = intent,
+            open = false,
+            processOptions = ProcessOptions(
+                test = false,
+                verbosity = verbosity,
             )
         )
         logger.info("Execute your own intent via the 'execute' command. Enclose the intent in quotes. For example:")
@@ -112,11 +123,9 @@ class ShellCommands(
         key = ["blackboard", "bb"],
     )
     fun blackboard(): String {
-        if (agentProcesses.isEmpty()) {
-            return "No blackboard available, as no agent process has run. Please run a command first."
-        }
-        val ap = agentProcesses.last()
-        return ap.processContext.blackboard.infoString(verbose = true)
+        return if (blackboard == null) {
+            "No blackboard available. Please run a command first."
+        } else blackboard!!.infoString(verbose = true)
     }
 
     @ShellMethod("List available tool groups")
@@ -151,39 +160,41 @@ class ShellCommands(
         @ShellOption(value = ["-p", "--showPrompts"], help = "show prompts to LLMs") showPrompts: Boolean,
         @ShellOption(value = ["-r", "--showResponses"], help = "show LLM responses") showLlmResponses: Boolean = false,
         @ShellOption(value = ["-d", "--debug"], help = "show debug info") debug: Boolean = false,
+        @ShellOption(value = ["-s", "--state"], help = "Use existing blackboard") state: Boolean = false,
+
         @ShellOption(
             value = ["-s", "--showPlanning"],
             help = "show detailed planning info",
             defaultValue = "true",
         ) showPlanning: Boolean = true,
     ): String {
+        val verbosity = Verbosity(
+            debug = debug,
+            showPrompts = showPrompts,
+            showLlmResponses = showLlmResponses,
+            showPlanning = showPlanning,
+        )
         return executeIntent(
             open = open,
-            test = test,
             intent = intent,
-            verbosity = Verbosity(
-                debug = debug,
-                showPrompts = showPrompts,
-                showLlmResponses = showLlmResponses,
-                showPlanning = showPlanning,
-            ),
+            processOptions = ProcessOptions(
+                test = test,
+                blackboard = if (state) blackboard else null,
+                verbosity = verbosity,
+                allowGoalChange = true,
+                maxActions = 40,
+            )
         )
     }
 
     private fun executeIntent(
         open: Boolean,
-        test: Boolean = false,
-        verbosity: Verbosity,
+        processOptions: ProcessOptions,
         intent: String,
     ): String {
-        val processOptions = ProcessOptions(
-            test = test,
-            verbosity = verbosity,
-        )
         logger.info("Created process options: $processOptions".color(LumonColors.MEMBRANE))
 
-
-        return runProcess(verbosity = verbosity, basis = intent) {
+        return runProcess(verbosity = processOptions.verbosity, basis = intent) {
             if (open) {
                 logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
                 agentPlatform.chooseAndAccomplishGoal(
@@ -201,15 +212,20 @@ class ShellCommands(
 
     }
 
+    private fun recordAgentProcess(agentProcess: AgentProcess) {
+        agentProcesses.add(agentProcess)
+        blackboard = agentProcess.processContext.blackboard
+    }
+
     fun runProcess(
         verbosity: Verbosity,
         basis: Any,
-        runProcess: () -> DynamicExecutionResult
+        run: () -> DynamicExecutionResult
     ): String {
         try {
-            val result = runProcess()
+            val result = run()
             logger.debug("Result: {}\n", result)
-            agentProcesses.add(result.agentProcess)
+            recordAgentProcess(result.agentProcess)
             if (result.output is HasContent) {
                 // TODO naive Markdown test
                 if (result.output.text.contains("#")) {
@@ -221,7 +237,7 @@ class ShellCommands(
                 ) + "\n"
             }
 
-            return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
                 result.output
             ).color(
                 LumonColors.GREEN

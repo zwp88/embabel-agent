@@ -81,6 +81,6 @@ class InMemoryBlackboard(
             if (verbose == true) "\n" + objects.joinToString(joiner) else objects.map { "${it::class.simpleName}" }
         val mapString =
             if (verbose == true) "\n" + _map.entries.joinToString(joiner) else _map.entries.joinToString(joiner) { "${it.key}=${it.value::class.simpleName}" }
-        return "${javaClass.simpleName}(map:$mapString, ${joiner}entries:$entriesString)"
+        return "${javaClass.simpleName}: id=$blackboardId${joiner}map:$mapString${joiner}entries:$entriesString"
     }
 }
