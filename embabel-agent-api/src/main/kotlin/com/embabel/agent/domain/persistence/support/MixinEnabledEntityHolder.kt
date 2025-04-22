@@ -1,6 +1,6 @@
 package com.embabel.agent.domain.persistence.support
 
-import com.embabel.agent.domain.persistence.Entity
+import com.embabel.agent.domain.persistence.MixinEnabledEntity
 import org.aopalliance.intercept.MethodInvocation
 import org.springframework.aop.framework.ProxyFactory
 import org.springframework.aop.support.DefaultIntroductionAdvisor
@@ -11,24 +11,25 @@ data class MixinHolder<T>(
     val mixin: T,
 )
 
-data class EntityHolder(
-    val root: Entity<String>,
+data class MixinEnabledEntityHolder(
+    val root: MixinEnabledEntity<String>,
     val mixins: List<MixinHolder<*>>,
-) : Entity<String> {
+) : MixinEnabledEntity<String> {
 
     override val id: String?
         get() = root.id
 
-    val implementationOfAllInterfaces: Any by lazy {
+    fun implementationOfAllInterfaces(plus: List<Class<*>> = emptyList()): Any {
         val introductionInterceptor = EntityIntroductionInterceptor()
         // Create the proxy with all interfaces
         val allInterfaces = mutableListOf<Class<*>>().apply {
             // Add the root entity interface
-            add(Entity::class.java)
+            add(MixinEnabledEntity::class.java)
             // Add all mixin interfaces
             mixins.forEach { mixinHolder ->
                 add(mixinHolder.mixinInterface)
             }
+            addAll(plus)
         }.toTypedArray()
 
         // Create the proxy using Spring's ProxyFactory
@@ -37,7 +38,7 @@ data class EntityHolder(
         factory.setInterfaces(*allInterfaces)
         val advisor = DefaultIntroductionAdvisor(introductionInterceptor)
         factory.addAdvisor(advisor)
-        factory.proxy
+        return factory.proxy
     }
 
     private inner class EntityIntroductionInterceptor : DelegatingIntroductionInterceptor(root) {
@@ -49,7 +50,7 @@ data class EntityHolder(
 
             // If the method is from our root entity, delegate to it
             if (root.javaClass.interfaces.contains(declaringClass) ||
-                declaringClass == Entity::class.java
+                declaringClass == MixinEnabledEntity::class.java
             ) {
                 return super.invoke(mi)
             }

@@ -19,9 +19,11 @@ interface Address {
 
 private data class AddressImpl(override val street: String, override val city: String) : Address
 
-interface PersonEntity : Person, Entity<String>
+interface PersonEntity : Person, MixinEnabledEntity<String>
 
 data class LocalPerson(override val name: String, override val id: String? = null) : PersonEntity
+
+interface PersonWithAddress : PersonEntity, Address
 
 class InMemoryMixinRepositoryTest {
 
@@ -35,7 +37,7 @@ class InMemoryMixinRepositoryTest {
     }
 
     @Test
-    fun `can add interface`() {
+    fun `can add interface and load`() {
         val repository = InMemoryMixinRepository()
         val person = LocalPerson("John Doe")
         assertNull(person.id)
@@ -48,6 +50,8 @@ class InMemoryMixinRepositoryTest {
         assertNotNull(loadedMixin)
         loadedMixin as Address
         assertEquals("123 Main St", loadedMixin.street)
+        loadedMixin as Person
+        assertEquals("John Doe", loadedMixin.name)
     }
 
     @Test
@@ -55,6 +59,22 @@ class InMemoryMixinRepositoryTest {
         val repository = InMemoryMixinRepository()
         val loaded = repository.findById("abcd", PersonEntity::class.java)
         assertNull(loaded)
+    }
+
+    @Test
+    fun `find by subinterface defined at point of use`() {
+        val repository = InMemoryMixinRepository()
+        val person = LocalPerson("John Doe")
+        assertNull(person.id)
+        val savedPerson = repository.save(person)
+        assertNotNull(savedPerson.id)
+        val mixin = repository.become(savedPerson, Address("123 Main St", "Springfield"), Address::class.java)
+        repository.save(mixin)
+
+        val loadedMixin = repository.findById<PersonEntity, PersonWithAddress, String>(savedPerson.id!!)
+        assertNotNull(loadedMixin)
+        assertEquals("123 Main St", loadedMixin.street)
+        assertEquals("John Doe", loadedMixin.name)
     }
 
 }

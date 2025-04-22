@@ -1,6 +1,6 @@
 package com.embabel.agent.domain.persistence.support
 
-import com.embabel.agent.domain.persistence.Entity
+import com.embabel.agent.domain.persistence.MixinEnabledEntity
 import com.embabel.agent.domain.persistence.MixinRepository
 import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.memberFunctions
@@ -9,9 +9,9 @@ abstract class AbstractMixinRepository<ID>(
     private val generateId: () -> ID,
 ) : MixinRepository<ID> {
 
-    protected abstract fun store(entity: Entity<ID>, id: ID)
+    protected abstract fun store(entity: MixinEnabledEntity<ID>, id: ID)
 
-    override fun <E : Entity<ID>> save(entity: E): E {
+    override fun <E : MixinEnabledEntity<ID>> save(entity: E): E {
         val id = entity.id ?: generateId()
 
         // Create a copy of the entity with the new ID using reflection
