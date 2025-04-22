@@ -1,0 +1,185 @@
+package com.embabel.agent.experimental.hitl
+
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import java.util.*
+
+/**
+ * Form that can be represented in a data-independent way
+ */
+data class Form(
+    val title: String,
+    val controls: List<Control>,
+    val id: String = UUID.randomUUID().toString(),
+)
+
+enum class ControlType {
+    BUTTON, DROPDOWN, TEXT_FIELD, TEXT_AREA, CHECKBOX, RADIO_GROUP,
+    DATE_PICKER, TIME_PICKER, SLIDER, TOGGLE, FILE_UPLOAD
+}
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    property = "type",
+    include = JsonTypeInfo.As.EXISTING_PROPERTY
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = Button::class, name = "BUTTON"),
+    JsonSubTypes.Type(value = Dropdown::class, name = "DROPDOWN"),
+    JsonSubTypes.Type(value = TextField::class, name = "TEXT_FIELD"),
+    JsonSubTypes.Type(value = TextArea::class, name = "TEXT_AREA"),
+    JsonSubTypes.Type(value = Checkbox::class, name = "CHECKBOX"),
+    JsonSubTypes.Type(value = RadioGroup::class, name = "RADIO_GROUP"),
+    JsonSubTypes.Type(value = DatePicker::class, name = "DATE_PICKER"),
+    JsonSubTypes.Type(value = TimePicker::class, name = "TIME_PICKER"),
+    JsonSubTypes.Type(value = Slider::class, name = "SLIDER"),
+    JsonSubTypes.Type(value = Toggle::class, name = "TOGGLE"),
+    JsonSubTypes.Type(value = FileUpload::class, name = "FILE_UPLOAD"),
+)
+sealed interface Control {
+    val id: String
+    val type: ControlType
+}
+
+sealed interface RequirableControl : Control {
+    val required: Boolean
+    val disabled: Boolean
+}
+
+data class Button(
+    val label: String,
+    val description: String = label,
+    override val id: String = UUID.randomUUID().toString(),
+) : Control {
+
+    override val type: ControlType = ControlType.BUTTON
+}
+
+data class Dropdown(
+    val label: String,
+    val options: List<DropdownOption>,
+    val placeholder: String = "",
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+    override val type: ControlType = ControlType.DROPDOWN
+}
+
+data class DropdownOption(val label: String, val value: String = label)
+
+data class TextField(
+    val label: String,
+    val placeholder: String = "",
+    val value: String = "",
+    val maxLength: Int? = null,
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    val validationPattern: String? = null,
+    val validationMessage: String? = null,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+
+    override val type: ControlType = ControlType.TEXT_FIELD
+}
+
+data class TextArea(
+    val label: String,
+    val placeholder: String = "",
+    val value: String = "",
+    val rows: Int = 3,
+    val maxLength: Int? = null,
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+
+    override val type: ControlType = ControlType.TEXT_AREA
+}
+
+data class Checkbox(
+    val label: String,
+    val checked: Boolean = false,
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+    override val type: ControlType = ControlType.CHECKBOX
+
+}
+
+data class RadioGroup(
+    val label: String,
+    val options: List<RadioOption>,
+    val selectedValue: String? = null,
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+
+    override val type: ControlType = ControlType.RADIO_GROUP
+}
+
+data class RadioOption(val label: String, val value: String = label)
+
+data class DatePicker(
+    val label: String,
+    val value: String? = null,
+    val minDate: String? = null,
+    val maxDate: String? = null,
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+
+    override val type: ControlType = ControlType.DATE_PICKER
+}
+
+data class TimePicker(
+    val label: String,
+    val value: String? = null,
+    val is24Hour: Boolean = false,
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+
+    override val type: ControlType = ControlType.TIME_PICKER
+}
+
+data class Slider(
+    val label: String,
+    val min: Double = 0.0,
+    val max: Double = 100.0,
+    val step: Double = 1.0,
+    val value: Double = min,
+    val showMarkers: Boolean = false,
+    val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : Control {
+
+    override val type: ControlType = ControlType.SLIDER
+}
+
+data class Toggle(
+    val label: String,
+    val enabled: Boolean = false,
+    val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : Control {
+
+    override val type: ControlType = ControlType.TOGGLE
+}
+
+data class FileUpload(
+    val label: String,
+    val acceptedFileTypes: List<String> = listOf("*/*"),
+    val maxFileSize: Long? = null,
+    val maxFiles: Int = 1,
+    override val required: Boolean = false,
+    override val disabled: Boolean = false,
+    override val id: String = UUID.randomUUID().toString(),
+) : RequirableControl {
+
+    override val type: ControlType = ControlType.FILE_UPLOAD
+}

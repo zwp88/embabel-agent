@@ -1,0 +1,166 @@
+package com.embabel.agent.experimental.hitl
+
+import java.time.LocalDate
+import java.time.LocalTime
+
+fun interface Validator {
+    fun validate(value: ControlValue, control: Control): ValidationResult
+}
+
+class RequiredValidator : Validator {
+    override fun validate(value: ControlValue, control: Control): ValidationResult {
+        val isEmpty = when (value) {
+            is ControlValue.TextValue -> value.value.isBlank()
+            is ControlValue.BooleanValue -> !value.value // For checkbox "required" means it must be checked
+            is ControlValue.OptionValue -> value.value.isBlank()
+            is ControlValue.MultiOptionValue -> value.values.isEmpty()
+            is ControlValue.FileValue -> value.fileIds.isEmpty()
+            is ControlValue.DateValue, is ControlValue.TimeValue, is ControlValue.NumberValue -> false
+            is ControlValue.EmptyValue -> true
+        }
+
+        return if (isEmpty) {
+            ValidationResult(false, "This field is required")
+        } else {
+            ValidationResult(true)
+        }
+    }
+}
+
+class PatternValidator(private val pattern: String, private val errorMessage: String) : Validator {
+    override fun validate(value: ControlValue, control: Control): ValidationResult {
+        return when (value) {
+            is ControlValue.TextValue -> {
+                if (value.value.matches(Regex(pattern))) {
+                    ValidationResult(true)
+                } else {
+                    ValidationResult(false, errorMessage)
+                }
+            }
+
+            else -> ValidationResult(true) // Only applicable to text values
+        }
+    }
+}
+
+class DefaultFormProcessor : FormProcessor {
+
+    override fun processSubmission(form: Form, submission: FormSubmission): FormSubmissionResult {
+        require(form.id == submission.formId) {
+            "Form ID in submission does not match the form ID"
+        }
+        val validators = defaultValidatorsFor(form)
+        val processedValues = mutableMapOf<String, ControlValue>()
+        val errors = mutableMapOf<String, String>()
+
+        // Process each control in the form
+        form.controls.forEach { control ->
+            val rawValue = submission.values[control.id]
+
+            // Convert raw value to typed ControlValue
+            val controlValue = convertToControlValue(rawValue, control)
+            processedValues[control.id] = controlValue
+
+            // Validate the value if validators exist for this control
+            validators[control.id]?.forEach { validator ->
+                val result = validator.validate(controlValue, control)
+                if (!result.isValid) {
+                    errors[control.id] = result.errorMessage ?: "Invalid value"
+                }
+            }
+        }
+
+        return FormSubmissionResult(
+            submission = submission,
+            values = processedValues,
+            valid = errors.isEmpty(),
+            validationErrors = errors
+        )
+    }
+
+    private fun convertToControlValue(value: Any?, control: Control): ControlValue {
+        if (value == null) return ControlValue.EmptyValue
+
+        return when (control) {
+            is TextField, is TextArea -> ControlValue.TextValue(value.toString())
+            is Checkbox, is Toggle -> ControlValue.BooleanValue(value as Boolean)
+            is Slider -> ControlValue.NumberValue(value as Double)
+            is DatePicker -> {
+                if (value is LocalDate) ControlValue.DateValue(value)
+                else ControlValue.DateValue(LocalDate.parse(value.toString()))
+            }
+
+            is TimePicker -> {
+                if (value is LocalTime) ControlValue.TimeValue(value)
+                else ControlValue.TimeValue(LocalTime.parse(value.toString()))
+            }
+
+            is Dropdown -> ControlValue.OptionValue(value.toString())
+            is RadioGroup -> ControlValue.OptionValue(value.toString())
+            is FileUpload -> {
+                if (value is Map<*, *>) {
+                    val fileIds = (value["ids"] as? List<*>)?.map { it.toString() } ?: emptyList()
+                    val fileNames = (value["names"] as? List<*>)?.map { it.toString() } ?: emptyList()
+                    ControlValue.FileValue(fileIds, fileNames)
+                } else {
+                    ControlValue.EmptyValue
+                }
+            }
+
+            is Button -> ControlValue.EmptyValue
+        }
+    }
+}
+
+private fun defaultValidatorsFor(form: Form): Map<String, List<Validator>> {
+    val validators = mutableMapOf<String, List<Validator>>()
+
+    form.controls.forEach { control ->
+        val controlValidators = mutableListOf<Validator>()
+
+        // Add required validator if needed
+        when (control) {
+            is TextField -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+                if (control.validationPattern != null && control.validationMessage != null) {
+                    controlValidators.add(PatternValidator(control.validationPattern, control.validationMessage))
+                }
+            }
+
+            is TextArea -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            is Dropdown -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            is Checkbox -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            is RadioGroup -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            is DatePicker -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            is TimePicker -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            is FileUpload -> {
+                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            else -> {} // No validation for other controls
+        }
+
+        if (controlValidators.isNotEmpty()) {
+            validators[control.id] = controlValidators
+        }
+    }
+    return validators
+}
