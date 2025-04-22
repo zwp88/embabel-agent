@@ -90,6 +90,10 @@ internal class ChatClientLlmOperations(
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>,
     ): Result<O> {
+        val maybeReturnPromptContribution = templateRenderer.renderLoadedTemplate(
+            maybePromptTemplate,
+            emptyMap(),
+        )
 
         val models = getModels(interaction.llm)
         val promptContributions =
