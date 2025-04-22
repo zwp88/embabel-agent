@@ -1,7 +1,26 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.embabel.agent.domain.persistence.support
 
+import com.embabel.agent.domain.mixin.MixinHolder
+import com.embabel.agent.domain.mixin.MixinManager
 import com.embabel.agent.domain.persistence.MixinEnabledEntity
 import java.util.*
+
+typealias MixinEnabledEntityHolder = MixinManager<MixinEnabledEntity<String>>
 
 class InMemoryMixinRepository : AbstractMixinRepository<String>(
     generateId = { UUID.randomUUID().toString() },
@@ -11,10 +30,9 @@ class InMemoryMixinRepository : AbstractMixinRepository<String>(
 
     override fun store(entity: MixinEnabledEntity<String>, id: String) {
         var found = map[id]
-        val entityHolder = found?.copy(root = entity)
+        val entityHolder = found?.updateRoot(root = entity)
             ?: MixinEnabledEntityHolder(
                 root = entity,
-                mixins = emptyList(),
             )
         map[id] = entityHolder
     }
@@ -43,8 +61,8 @@ class InMemoryMixinRepository : AbstractMixinRepository<String>(
             mixin = t,
         )
         // TODO change the mixin if it already exists
-        val mixins = foundEntityHolder.mixins + mixin
-        map[e.id!!] = foundEntityHolder.copy(mixins = mixins)
+        val mixins = foundEntityHolder + mixin
+        map[e.id!!] = mixins
         return e
     }
 
