@@ -44,7 +44,7 @@ class OpenAiConfiguration(
     private val openAiApi = OpenAiApi.builder().apiKey(apiKey).build()
 
     @Bean
-    fun gpr4omini(): Llm {
+    fun gpt4omini(): Llm {
         val model = "gpt-4o-mini"
         return Llm.withKnowledgeCutoff(
             name = model,

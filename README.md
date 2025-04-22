@@ -272,6 +272,16 @@ Omit these for less verbose logging.
 > Spring Shell supports history. Type `!!` to repeat the last command.
 > This will survive restarts, so is handy when iterating on an agent.
 
+## Bringing in additional LLMs
+
+Simply define Spring beans of type `Llm`.
+See the `OpenAiConfiguration` class as an example.
+
+Remember:
+
+- Provide the knowledge cutoff date if you know it
+- Make the configuration class conditional on any required API key.
+
 ## Running Tests
 
 Run the tests via Maven.
