@@ -56,6 +56,7 @@ class StarNewsFinder(
     private val storyCount: Int,
 ) {
 
+    // TODO should be able to use the Person interface directly?
     @Action
     fun extractPerson(userInput: UserInput): PersonImpl? =
         // All prompts are typesafe
@@ -66,7 +67,7 @@ class StarNewsFinder(
             """.trimIndent()
         )
 
-    // TODO didn't work with Person the interface
+    // TODO should work with the Person interface rather than PersonImpl
     @Action
     fun addWooWoo(person: PersonImpl): StarPerson {
         return StarPerson(

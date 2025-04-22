@@ -32,7 +32,7 @@ import com.embabel.agent.domain.persistence.FindEntitiesRequest
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
-import com.embabel.agent.experimental.Persona
+import com.embabel.agent.experimental.prompt.Persona
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile

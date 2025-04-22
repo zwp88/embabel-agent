@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.domain.persistence.support
 
-import com.embabel.agent.domain.mixin.MixinManager
 import com.embabel.agent.domain.persistence.MixinEnabledEntity
+import com.embabel.agent.experimental.domain.mixin.MixinManager
 import java.util.*
 
 typealias MixinEnabledEntityHolder = MixinManager<MixinEnabledEntity<String>>
