@@ -26,7 +26,7 @@ interface Proxied
 /**
  * Hold a single mixin interface and its implementation.
  */
-data class MixinHolder<T>(
+private data class MixinHolder<T>(
     val mixinInterface: Class<T>,
     val mixin: T,
 )
@@ -46,17 +46,14 @@ class MixinManager<R : Any>(
         return this
     }
 
-    operator fun plus(mixinHolder: MixinHolder<*>): MixinManager<R> {
-        mixins += mixinHolder
-        // TODO check if the mixin interface is already present
-        return this
-    }
-
     fun allInterfaces(): List<Class<*>> {
         return mixins.map { it.mixinInterface } + firstInterface(root)
     }
 
     fun <T> become(t: T, type: Class<T>): R {
+        if (!type.isInterface) {
+            throw IllegalArgumentException("Type $type is not an interface")
+        }
         val mixinHolder = MixinHolder(
             mixinInterface = type,
             mixin = t,
@@ -78,9 +75,9 @@ class MixinManager<R : Any>(
      * the root entity interface and all mixin interfaces.
      * @param plus additional interfaces to add
      */
-    fun implementationOfAllInterfaces(plus: List<Class<*>> = emptyList()): R {
+    fun instance(plus: List<Class<*>> = emptyList()): R {
         val introductionInterceptor = EntityIntroductionInterceptor()
-        // Adding Proxied interface to the list of interfaces seems to ensure that
+        // Adding Proxied tag interface to the list of interfaces seems to ensure that
         // CGLIB isn't used
         val allInterfaces = (allInterfaces() + plus + Proxied::class.java).toTypedArray()
 
@@ -91,7 +88,6 @@ class MixinManager<R : Any>(
     }
 
     private inner class EntityIntroductionInterceptor : DelegatingIntroductionInterceptor(root) {
-        // Return an object made with Spring AOP IntroductionAdvisor that implements all interfaces
         override fun invoke(mi: MethodInvocation): Any? {
             // Try to find a mixin that can handle this method
             val method = mi.method
@@ -123,5 +119,5 @@ class MixinManager<R : Any>(
 
 private fun firstInterface(o: Any): Class<*> {
     return o.javaClass.interfaces.firstOrNull()
-        ?: throw IllegalStateException("Object implements no interface")
+        ?: throw IllegalArgumentException("Object implements no interface")
 }

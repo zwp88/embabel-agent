@@ -17,6 +17,7 @@ package com.embabel.agent.domain.mixin
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
 interface Animal {
@@ -66,8 +67,8 @@ class MixinManagerTest {
     fun `leaves root type alone`() {
         val dog = Dog("Rex", "Labrador")
         val mixinManager = MixinManager(dog)
-        mixinManager.implementationOfAllInterfaces() is Dog
-        assertEquals(dog.name, mixinManager.implementationOfAllInterfaces().name)
+        mixinManager.instance() is Dog
+        assertEquals(dog.name, mixinManager.instance().name)
     }
 
     @Test
@@ -75,10 +76,10 @@ class MixinManagerTest {
         val dog = Dog("Rex", "Labrador")
         val insured = Insured("123456")
         val mixinManager = MixinManager(dog)
-        mixinManager.implementationOfAllInterfaces() is Dog
-        assertFalse(mixinManager.implementationOfAllInterfaces() is Insured)
+        mixinManager.instance() is Dog
+        assertFalse(mixinManager.instance() is Insured)
         mixinManager.becomeFirstInterface(insured)
-        val impl = mixinManager.implementationOfAllInterfaces()
+        val impl = mixinManager.instance()
         impl as Insured
         assertEquals(dog.name, impl.name)
         assertEquals(insured.policyNumber, impl.policyNumber)
@@ -90,14 +91,29 @@ class MixinManagerTest {
         val dog = Dog("Rex", "Labrador")
         val insured = Insured("123456")
         val mixinManager = MixinManager(dog)
-        mixinManager.implementationOfAllInterfaces() is Dog
-        assertFalse(mixinManager.implementationOfAllInterfaces() is Insured)
+        mixinManager.instance() is Dog
+        assertFalse(mixinManager.instance() is Insured)
         mixinManager.become(insured, Insured::class.java)
-        val impl = mixinManager.implementationOfAllInterfaces()
+        val impl = mixinManager.instance()
         impl as Insured
         assertEquals(dog.name, impl.name)
         assertEquals(insured.policyNumber, impl.policyNumber)
         assertEquals(setOf(Dog::class.java, Insured::class.java), mixinManager.allInterfaces().toSet())
     }
 
+    @Test
+    fun `refuses to add no interface`() {
+        val dog = Dog("Rex", "Labrador")
+        val nif = NoInterfaceInSight()
+        val mixinManager = MixinManager(dog)
+        assertThrows<IllegalArgumentException> {
+            mixinManager.become(nif, NoInterfaceInSight::class.java)
+        }
+        assertThrows<IllegalArgumentException> {
+            mixinManager.becomeFirstInterface(nif)
+        }
+    }
+
 }
+
+data class NoInterfaceInSight(val bad: Boolean = true)
