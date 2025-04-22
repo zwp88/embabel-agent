@@ -18,6 +18,10 @@ package com.embabel.agent.domain.support
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.domain.persistence.EntityMatch
+import com.embabel.agent.domain.persistence.FindEntitiesRequest
+import com.embabel.agent.domain.persistence.FindEntitiesResponse
+import com.embabel.agent.domain.persistence.NaturalLanguageRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.CrudRepository
 import java.util.*

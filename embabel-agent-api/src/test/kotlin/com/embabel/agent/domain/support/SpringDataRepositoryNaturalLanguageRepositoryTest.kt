@@ -17,6 +17,7 @@ package com.embabel.agent.domain.support
 
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.domain.persistence.FindEntitiesRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.support
+package com.embabel.agent.domain.persistence
 
 import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.ZeroToOne
@@ -32,7 +32,7 @@ data class EntityMatch<T>(
     override val match: T,
     override val score: ZeroToOne,
     val source: String,
-): SimilarityResult<T>
+) : SimilarityResult<T>
 
 data class FindEntitiesResponse<T>(
     val request: FindEntitiesRequest,
