@@ -23,6 +23,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 /**
  * CO-STAR prompt framework
  * See https://towardsdatascience.com/how-i-won-singapores-gpt-4-prompt-engineering-competition-34c195a93d41/
+ * CoStar response comes from usage createObject, so we don't need to include it
  */
 data class CoStar(
     val context: String,
@@ -30,7 +31,6 @@ data class CoStar(
     val style: String,
     val tone: String,
     val audience: String,
-    // response comes from usage
     private val separator: String = "#".repeat(12),
 ) : PromptContributor {
 

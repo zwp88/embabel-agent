@@ -62,11 +62,7 @@ class AnthropicAiConfiguration {
                     .build()
             )
             .build()
-        return if (knowledgeCutoffDate == null)
-            Llm(
-                name = name,
-                model = chatModel,
-            ) else Llm.withKnowledgeCutoff(
+        return Llm(
             name = name,
             model = chatModel,
             knowledgeCutoffDate = knowledgeCutoffDate,

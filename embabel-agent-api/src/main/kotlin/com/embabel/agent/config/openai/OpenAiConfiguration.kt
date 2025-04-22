@@ -46,7 +46,7 @@ class OpenAiConfiguration(
     @Bean
     fun gpt4omini(): Llm {
         val model = "gpt-4o-mini"
-        return Llm.withKnowledgeCutoff(
+        return Llm(
             name = model,
             model = chatModelOf(model),
             knowledgeCutoffDate = LocalDate.of(2024, 7, 18),
@@ -56,7 +56,7 @@ class OpenAiConfiguration(
     @Bean
     fun gpt4o(): Llm {
         val model = "gpt-4o"
-        return Llm.withKnowledgeCutoff(
+        return Llm(
             name = "gpt-4o",
             model = chatModelOf(model),
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
