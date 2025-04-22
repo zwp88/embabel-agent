@@ -51,7 +51,7 @@ class InMemoryMixinRepositoryTest {
     }
 
     @Test
-    fun `not found`() {
+    fun `not found by root entity`() {
         val repository = InMemoryMixinRepository()
         val loaded = repository.findById("abcd", PersonEntity::class.java)
         assertNull(loaded)

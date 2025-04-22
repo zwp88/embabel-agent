@@ -1,7 +1,6 @@
 package com.embabel.agent.domain.persistence.support
 
 import com.embabel.agent.domain.persistence.Entity
-import com.embabel.agent.domain.persistence.Mixin2
 import java.util.*
 
 class InMemoryMixinRepository : AbstractMixinRepository<String>(
@@ -25,14 +24,6 @@ class InMemoryMixinRepository : AbstractMixinRepository<String>(
         type: Class<E>
     ): E? {
         return map[id]?.implementationOfAllInterfaces as? E?
-    }
-
-    override fun <E1 : Entity<String>, E2 : Entity<String>> findById(
-        id: String,
-        type1: Class<E1>,
-        type2: Class<E2>
-    ): Mixin2<E1, E2, String> {
-        TODO("Not yet implemented")
     }
 
     override fun <E1 : Entity<String>, E2 : E1> findById(
