@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.experimental.form
 
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timestamped
 import java.time.Instant
 import java.time.LocalDate
@@ -37,7 +38,12 @@ data class FormSubmissionResult(
     val values: Map<String, ControlValue>,
     val valid: Boolean = true,
     val validationErrors: Map<String, String> = emptyMap(),
-)
+) : HasInfoString {
+
+    override fun infoString(verbose: Boolean?): String {
+        return "${javaClass.simpleName}(submissionId=${submission.submissionId}, valid=$valid, validationErrors=$validationErrors)"
+    }
+}
 
 sealed class ControlValue {
     data class TextValue(val value: String) : ControlValue()

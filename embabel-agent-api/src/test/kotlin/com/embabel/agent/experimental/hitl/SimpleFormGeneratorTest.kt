@@ -55,13 +55,32 @@ data class AllTypesClass(
     val listField: List<String>
 )
 
+
 class SimpleFormGeneratorTest {
 
-    private val formGenerator = SimpleFormGenerator()
+    private val formGenerator = SimpleFormGenerator
 
     @Nested
     @DisplayName("Basic Form Generation Tests")
     inner class BasicFormGenerationTests {
+
+        @Test
+        @DisplayName("Single field data class")
+        fun singleField() {
+            data class Starry(
+                @Text(label = "Enter your star sign")
+                val sign: String,
+            )
+
+            // When
+            val form = formGenerator.generateForm<Starry>("Test Form")
+
+            // Then
+            assertEquals("Test Form", form.title)
+            assertEquals(2, form.controls.size)
+            assertTrue(form.controls[0] is TextField, "Expected TextField, got ${form.controls}")
+            assertEquals("Enter your star sign", (form.controls[0] as TextField).label)
+        }
 
         @Test
         @DisplayName("Should generate form with correct title")
@@ -98,14 +117,15 @@ class SimpleFormGeneratorTest {
         }
 
         @Test
-        @DisplayName("Should skip properties without FormField annotation")
+        @DisplayName("Should skip properties with NotFormField annotation")
         fun shouldSkipPropertiesWithoutAnnotation() {
             // Given
             data class MixedClass(
                 @FormField("annotated-id")
                 val annotatedField: String,
 
-                // No annotation, should be skipped
+                // Negative annotation, should be skipped
+                @NoFormField
                 val unannotatedField: String
             )
 
@@ -296,7 +316,7 @@ class SimpleFormGeneratorTest {
 
             // Then - excluding the submit button
             val controls = form.controls.dropLast(1)
-            assertEquals(1, controls.size)
+            assertEquals(2, controls.size)
 
             // Should only include the annotated field from the outer class
             assertEquals("outer-id", (controls[0] as TextField).id)

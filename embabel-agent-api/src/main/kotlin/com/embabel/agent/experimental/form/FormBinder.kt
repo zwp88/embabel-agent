@@ -35,6 +35,8 @@ annotation class NoFormField
  */
 class FormBinder<T : Any>(private val targetClass: KClass<T>) {
 
+    constructor (targetClass: Class<T>) : this(targetClass.kotlin)
+
     class FormBindingException(message: String) : Exception(message)
 
     class ValidationException(val errors: Map<String, String>) : Exception("Form validation failed")

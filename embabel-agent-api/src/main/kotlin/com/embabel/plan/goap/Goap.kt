@@ -243,10 +243,6 @@ class GoapPlan(
     val worldState: WorldState,
 ) : Plan(actions, goal) {
 
-    override fun infoString(verbose: Boolean?): String {
-        return super.infoString(verbose) + "; worldState=$worldState"
-    }
-
     override fun toString(): String {
         return infoString(verbose = false)
     }

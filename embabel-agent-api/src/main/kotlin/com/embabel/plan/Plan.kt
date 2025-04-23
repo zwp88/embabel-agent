@@ -70,7 +70,7 @@ open class Plan(
                 actions.mapIndexed { index, action ->
                     "\t".repeat(index + 1) + action.name
                 }.joinToString(" ->\n")
-            }\n\tcost=$cost; netValue=$netValue"
+            }\ncost=$cost; netValue=$netValue"
 
         } else {
             actions.joinToString(" -> ") { it.name } +

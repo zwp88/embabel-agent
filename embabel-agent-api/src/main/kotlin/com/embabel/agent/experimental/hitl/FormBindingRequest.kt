@@ -21,7 +21,9 @@ import com.embabel.agent.core.hitl.AwaitableResponse
 import com.embabel.agent.core.hitl.ResponseImpact
 import com.embabel.agent.experimental.form.DefaultFormProcessor
 import com.embabel.agent.experimental.form.Form
+import com.embabel.agent.experimental.form.FormBinder
 import com.embabel.agent.experimental.form.FormSubmission
+import com.embabel.common.util.kotlin.loggerFor
 import java.time.Instant
 import java.util.*
 
@@ -29,7 +31,7 @@ import java.util.*
  * Present the user with a form
  * and bind it to the given class
  */
-class FormBindingRequest<O>(
+class FormBindingRequest<O : Any>(
     form: Form,
     val outputClass: Class<O>,
     persistent: Boolean = false,
@@ -46,13 +48,12 @@ class FormBindingRequest<O>(
         if (!formSubmissionResult.valid) {
             throw IllegalStateException("Form submission is not valid: ${formSubmissionResult.validationErrors}")
         }
-        val theO: Any = TODO()
-        processContext.blackboard += theO
+        val formBinder = FormBinder(outputClass)
+        val boundInstance = formBinder.bind(formSubmissionResult)
+        loggerFor<FormBindingRequest<*>>()
+            .info("Bound form submission to {}", boundInstance)
+        processContext.blackboard += boundInstance
         return ResponseImpact.UPDATED
-    }
-
-    override fun infoString(verbose: Boolean?): String {
-        return "InformationRequest(id=$id, payload=$payload, form='$payload')"
     }
 
     override fun toString(): String = infoString(verbose = false)

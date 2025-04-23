@@ -157,13 +157,7 @@ internal class SimpleAgentProcess(
             _status = AgentProcessStatusCode.STUCK
             return this
         }
-        platformServices.eventListener.onProcessEvent(
-            AgentProcessPlanFormulatedEvent(
-                agentProcess = this,
-                worldState = worldState,
-                plan = plan,
-            )
-        )
+
         if (goalName != null && goalName != plan.goal.name) {
             logger.info("Process {} goal changed: {} -> {}", this.id, goalName, plan.goal.name)
             require(processOptions.allowGoalChange) {
@@ -182,6 +176,13 @@ internal class SimpleAgentProcess(
             logger.debug("Final blackboard: {}", blackboard.infoString())
             _status = AgentProcessStatusCode.COMPLETED
         } else {
+            platformServices.eventListener.onProcessEvent(
+                AgentProcessPlanFormulatedEvent(
+                    agentProcess = this,
+                    worldState = worldState,
+                    plan = plan,
+                )
+            )
             logger.debug("▶️ Process {} running: {}\n\tPlan: {}", id, worldState, plan.infoString())
             val agent = agent.actions.single { it.name == plan.actions.first().name }
             val actionStatus = executeAction(agent)

@@ -28,13 +28,16 @@ annotation class Text(
 
 interface FormGenerator {
 
-    fun <T : Any> generateForm(dataClass: KClass<T>, formTitle: String): Form
+    fun <T : Any> generateForm(dataClass: KClass<T>, title: String): Form
+
+    fun <T : Any> generateForm(dataClass: Class<T>, title: String): Form =
+        generateForm(dataClass.kotlin, title)
 
 }
 
 /**
  * Generate a form from any class with FormField annotations
  */
-inline fun <reified T : Any> FormGenerator.generateForm(formTitle: String): Form {
-    return generateForm(T::class, formTitle)
+inline fun <reified T : Any> FormGenerator.generateForm(title: String): Form {
+    return generateForm(T::class, title)
 }

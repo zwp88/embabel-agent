@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.experimental.form
 
+import com.embabel.common.core.types.HasInfoString
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.util.*
@@ -26,7 +27,12 @@ data class Form(
     val title: String,
     val controls: List<Control>,
     val id: String = UUID.randomUUID().toString(),
-)
+) : HasInfoString {
+
+    override fun infoString(verbose: Boolean?): String {
+        return toString()
+    }
+}
 
 enum class ControlType {
     BUTTON, DROPDOWN, TEXT_FIELD, TEXT_AREA, CHECKBOX, RADIO_GROUP,

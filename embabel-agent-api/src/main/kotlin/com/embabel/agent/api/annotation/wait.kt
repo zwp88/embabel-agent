@@ -17,6 +17,8 @@ package com.embabel.agent.api.annotation
 
 import com.embabel.agent.core.hitl.Awaitable
 import com.embabel.agent.core.hitl.ConfirmationRequest
+import com.embabel.agent.experimental.form.SimpleFormGenerator
+import com.embabel.agent.experimental.hitl.FormBindingRequest
 
 /**
  * Call when the current AgentProcess should
@@ -33,11 +35,34 @@ fun <P : Any> waitFor(
 fun <P : Any> confirm(
     what: P,
     description: String,
+): P = waitFor(ConfirmationRequest(what, description))
+
+inline fun <reified P : Any> fromForm(
+    title: String,
+): P = fromForm(
+    title = title,
+    dataClass = P::class.java,
+)
+
+/**
+ * Bind input to the data class
+ */
+fun <P : Any> fromForm(
+    title: String? = null,
+    dataClass: Class<P>,
 ): P {
+    val form =
+        SimpleFormGenerator.generateForm(dataClass = dataClass, title = title ?: "Bind to ${dataClass.simpleName}")
+    val formBindingRequest = FormBindingRequest(
+        form = form,
+        outputClass = dataClass,
+        persistent = false,
+    )
     throw AwaitableResponseException(
-        awaitable = ConfirmationRequest(what, description),
+        awaitable = formBindingRequest,
     )
 }
+
 
 /**
  * Not an error, but gets special treatment in the platform.

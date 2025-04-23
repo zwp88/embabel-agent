@@ -21,6 +21,7 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.jvmErasure
 
@@ -32,18 +33,14 @@ object SimpleFormGenerator : FormGenerator {
     /**
      * Generate a form from any class with FormField annotations
      */
-    override fun <T : Any> generateForm(dataClass: KClass<T>, formTitle: String): Form {
+    override fun <T : Any> generateForm(dataClass: KClass<T>, title: String): Form {
         val controls = mutableListOf<Control>()
 
-        // Get all properties from the class
         val properties = getPropertiesInDeclarationOrder(dataClass)
+            .filterNot { it.hasAnnotation<NoFormField>() }
 
-        // Process each property
         properties.forEach { property ->
-            // Try to create a control for this property
-            createControlForProperty(property)?.let { control ->
-                controls.add(control)
-            }
+            controls.add(createControlForProperty(property))
         }
 
         // Add submit button
@@ -55,7 +52,7 @@ object SimpleFormGenerator : FormGenerator {
         )
 
         return Form(
-            title = formTitle,
+            title = title,
             controls = controls
         )
     }
@@ -63,12 +60,10 @@ object SimpleFormGenerator : FormGenerator {
     /**
      * Create an appropriate control for a property
      */
-    private fun createControlForProperty(property: KProperty<*>): Control? {
+    private fun createControlForProperty(property: KProperty<*>): Control {
         // Check if property has a FormField annotation
         val formField = property.findAnnotation<FormField>()
-
-        // Get control ID from annotation or generate a new one
-        val controlId = formField?.controlId ?: return null // Skip properties without annotation
+        val controlId = formField?.controlId ?: property.name
 
         val textField = property.findAnnotation<Text>()
         // Generate a user-friendly label from the property name

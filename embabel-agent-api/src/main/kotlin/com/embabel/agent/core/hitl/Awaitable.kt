@@ -38,6 +38,10 @@ interface Awaitable<P : Any, R : AwaitableResponse> : StableIdentified, Timestam
         processContext: ProcessContext,
     ): ResponseImpact
 
+    override fun infoString(verbose: Boolean?): String {
+        return "${javaClass.name}(id=$id, payload=$payload, form='$payload')"
+    }
+
 }
 
 interface AwaitableResponse : StableIdentified, Timestamped {

@@ -17,6 +17,7 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.Awaitable
+import com.embabel.agent.core.hitl.AwaitableResponse
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.RankingChoiceRequestEvent
@@ -60,7 +61,7 @@ class DynamicExecutionResult private constructor(
                     throw ProcessWaitingException(
                         agentProcess = agentProcess,
                         // TODO this is dirty
-                        awaitable = agentProcess.lastResult() as Awaitable<*, *>
+                        awaitable = agentProcess.lastResult() as Awaitable<*, AwaitableResponse>,
                     )
                 }
 
@@ -116,7 +117,7 @@ class ProcessExecutionStuckException(
 
 class ProcessWaitingException(
     agentProcess: AgentProcess,
-    val awaitable: Awaitable<*, *>,
+    val awaitable: Awaitable<*, AwaitableResponse>,
 ) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} is waiting for ${awaitable.infoString()}")
 
 /**

@@ -18,6 +18,7 @@ package com.embabel.examples.simple.horoscope
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.fromForm
 import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.annotation.support.usingDefaultLlm
 import com.embabel.agent.api.common.LlmOptions
@@ -29,8 +30,13 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.experimental.form.Text
 import org.springframework.beans.factory.annotation.Value
 
+data class Starry(
+    @Text(label = "Star sign")
+    val sign: String,
+)
 
 data class StarPerson(
     override val name: String,
@@ -67,12 +73,21 @@ class StarNewsFinder(
             """.trimIndent()
         )
 
+    @Action(cost = 100.0) // Make it costly so it won't be used in a plan unless there's no other path
+    fun makeStarry(
+        person: PersonImpl,
+    ): Starry =
+        fromForm("Let's get some astrological details for ${person.name}")
+
     // TODO should work with the Person interface rather than PersonImpl
     @Action
-    fun addWooWoo(person: PersonImpl): StarPerson {
+    fun assembleStarPerson(
+        person: PersonImpl,
+        starry: Starry,
+    ): StarPerson {
         return StarPerson(
             name = person.name,
-            sign = "aries",
+            sign = starry.sign,
         )
     }
 

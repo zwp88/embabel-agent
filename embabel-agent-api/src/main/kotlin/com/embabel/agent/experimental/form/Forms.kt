@@ -17,5 +17,5 @@ package com.embabel.agent.experimental.form
 
 object Forms {
 
-    
+
 }
