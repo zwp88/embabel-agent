@@ -15,22 +15,22 @@
  */
 package com.embabel.agent.experimental.hitl
 
-object Forms {
+import kotlin.reflect.KClass
 
-    fun singleField(
-        title: String,
-        label: String,
-        placeholder: String = ""
-    ): Form {
-        return Form(
-            title = title,
-            controls = listOf(
-                TextField(
-                    label = label,
-                    placeholder = placeholder,
-                    required = true,
-                ),
-            ),
-        )
-    }
+@Target(AnnotationTarget.PROPERTY)
+annotation class Text(
+    val label: String,
+    val placeholder: String = "",
+)
+
+interface FormGenerator {
+    fun <T : Any> generateForm(dataClass: KClass<T>, formTitle: String): Form
+
+}
+
+/**
+ * Generate a form from any class with FormField annotations
+ */
+inline fun <reified T : Any> FormGenerator.generateForm(formTitle: String): Form {
+    return generateForm(T::class, formTitle)
 }

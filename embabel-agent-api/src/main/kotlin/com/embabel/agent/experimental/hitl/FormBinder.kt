@@ -1,26 +1,42 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.embabel.agent.experimental.hitl
 
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
 @Target(AnnotationTarget.PROPERTY)
 annotation class FormField(val controlId: String)
 
+/**
+ * Indicates that this is not a form field
+ */
 @Target(AnnotationTarget.PROPERTY)
-annotation class NotFormField
+annotation class NoFormField
 
 /**
  * Form binder system that maps form submission values to Kotlin data classes
  */
 class FormBinder<T : Any>(private val targetClass: KClass<T>) {
 
-
-    // Custom exceptions
     class FormBindingException(message: String) : Exception(message)
+
     class ValidationException(val errors: Map<String, String>) : Exception("Form validation failed")
 
     /**
@@ -45,8 +61,8 @@ class FormBinder<T : Any>(private val targetClass: KClass<T>) {
         val parameterValues = mutableMapOf<KParameter, Any?>()
 
         // Get properties with FormField annotation
-        val formFields = targetClass.memberProperties
-            .filterNot { it.annotations.any { annotation -> annotation is NotFormField } }
+        val formFields = getPropertiesInDeclarationOrder(targetClass)
+            .filterNot { it.annotations.any { annotation -> annotation is NoFormField } }
 
         // Map each annotated property to its parameter and value from the form submission
         formFields.forEach { property ->
