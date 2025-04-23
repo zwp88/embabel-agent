@@ -34,6 +34,35 @@ import com.embabel.agent.core.Goal as IGoal
 
 
 /**
+ * Agentic info about a type
+ */
+data class AgenticInfo(
+    val type: Class<*>,
+) {
+
+    val agenticAnnotation: Agentic? = type.getAnnotation(Agentic::class.java)
+    val agentAnnotation: Agent? = type.getAnnotation(Agent::class.java)
+
+    /**
+     * Is this type agentic at all?
+     */
+    fun agentic() = agenticAnnotation != null || agentAnnotation != null
+
+    fun validationErrors(): Collection<String> {
+        val errors = mutableListOf<String>()
+        if (agenticAnnotation != null && agentAnnotation != null) {
+            errors += "Both @Agentic and @Agent annotations found on ${type.name}. Treating class as Agent, but both should not be used"
+        }
+        if (agentAnnotation != null && agentAnnotation.description.isBlank()) {
+            errors + "No description provided for @${Agent::class.java.simpleName} on ${type.name}"
+        }
+        return errors
+    }
+
+    fun noAutoScan() = agenticAnnotation?.scan == false || agentAnnotation?.scan == false
+}
+
+/**
  * Read AgentMetadata from annotated classes.
  * Looks for @Agentic, @Condition and @Action annotations
  * and properties of type Goal.
@@ -45,6 +74,7 @@ class AgentMetadataReader {
 
     private val logger = LoggerFactory.getLogger(AgentMetadataReader::class.java)
 
+
     /**
      * Given this configured instance, find all the methods annotated with @Action and @Condition
      * The instance will have been previous injected by Spring if it's Spring-managed.
@@ -54,30 +84,28 @@ class AgentMetadataReader {
      * otherwise the AgentMetadata superinterface
      */
     fun createAgentMetadata(instance: Any): AgentScope? {
-        val type = instance.javaClass
-        val agenticAnnotation = type.getAnnotation(Agentic::class.java)
-        val agentAnnotation = type.getAnnotation(Agent::class.java)
-        if (agenticAnnotation == null && agentAnnotation == null) {
+        val agenticInfo = AgenticInfo(instance.javaClass)
+        if (!agenticInfo.agentic()) {
             logger.debug(
                 "No @{} or @{} annotation found on {}",
                 Agentic::class.simpleName,
                 Agent::class.simpleName,
-                type.name,
+                agenticInfo.type.name,
             )
             return null
         }
-        if (agenticAnnotation != null && agentAnnotation != null) {
-            logger.debug(
-                "Both @{} and @{} annotations found on {}. Treating class as Agent, but both should not be used",
+        if (agenticInfo.validationErrors().isNotEmpty()) {
+            logger.warn(
+                agenticInfo.validationErrors().joinToString("\n"),
                 Agentic::class.simpleName,
                 Agent::class.simpleName,
-                type.name,
+                agenticInfo.type.name,
             )
             return null
         }
-        val getterGoals = findGoalGetters(type).map { getGoal(it, instance) }
-        val actionMethods = findActionMethods(type)
-        val conditionMethods = findConditionMethods(type)
+        val getterGoals = findGoalGetters(agenticInfo.type).map { getGoal(it, instance) }
+        val actionMethods = findActionMethods(agenticInfo.type)
+        val conditionMethods = findConditionMethods(agenticInfo.type)
         val actionGoals = actionMethods.mapNotNull { createGoalFromActionMethod(it) }
         val goals = getterGoals + actionGoals
 
@@ -86,7 +114,7 @@ class AgentMetadataReader {
                 "No methods annotated with @{} or @{} and no goals defined on {}",
                 Action::class.simpleName,
                 Condition::class.simpleName,
-                type.simpleName,
+                agenticInfo.type.simpleName,
             )
             return null
         }
@@ -95,17 +123,10 @@ class AgentMetadataReader {
         val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
         val actions = actionMethods.map { createAction(it, instance, toolCallbacks) }
 
-        if (agentAnnotation != null) {
+        if (agenticInfo.agentAnnotation != null) {
             return com.embabel.agent.core.Agent(
-                name = agentAnnotation.name.ifBlank { type.name },
-                description = agentAnnotation.description.ifBlank {
-                    logger.error(
-                        "No description provided for @{} on {}",
-                        Agent::class.simpleName,
-                        type.simpleName,
-                    )
-                    type.simpleName
-                },
+                name = agenticInfo.agentAnnotation.name.ifBlank { agenticInfo.type.name },
+                description = agenticInfo.agentAnnotation.description,
                 conditions = conditions,
                 actions = actions,
                 goals = goals.toSet(),
@@ -113,7 +134,7 @@ class AgentMetadataReader {
         }
 
         return AgentScope(
-            name = type.name,
+            name = agenticInfo.type.name,
             conditions = conditions,
             actions = actions,
             goals = goals.toSet(),

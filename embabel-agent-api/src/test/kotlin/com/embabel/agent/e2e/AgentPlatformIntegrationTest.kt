@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -165,7 +164,6 @@ class AgentPlatformIntegrationTest(
                 "Lynda is a Scorpio, find some news for her",
                 ProcessOptions(test = true),
             )
-
             assertNotNull(dynamicExecutionResult.output)
             assertTrue(
                 dynamicExecutionResult.output is Writeup,
@@ -184,13 +182,12 @@ class AgentPlatformIntegrationTest(
                 "Lynda is a Scorpio, find some news for her",
                 ProcessOptions(test = true),
             )
-
-                    assertNotNull(dynamicExecutionResult.output)
-                    assertTrue(
-                        dynamicExecutionResult.output is Writeup,
-                        "Expected FunnyWriteup, got ${dynamicExecutionResult.output?.javaClass?.name}"
-                    )
-                }
+            assertNotNull(dynamicExecutionResult.output)
+            assertTrue(
+                dynamicExecutionResult.output is Writeup,
+                "Expected FunnyWriteup, got ${dynamicExecutionResult.output?.javaClass?.name}"
+            )
+        }
 
     }
 }

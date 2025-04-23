@@ -47,7 +47,10 @@ data class LocalPerson(
     override val name: String,
 ) : Person
 
-@com.embabel.agent.api.annotation.Agent(description = "waiting agent")
+@com.embabel.agent.api.annotation.Agent(
+    description = "waiting agent",
+    scan = false,
+)
 class AnnotationWaitingAgent {
 
     @Action

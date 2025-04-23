@@ -16,14 +16,16 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.annotation.support.AgentMetadataReader
+import com.embabel.agent.api.annotation.support.AgenticInfo
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentPlatformProperties
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 
-interface AutoRegisteringAgentPlatformProperties : AgentPlatformProperties {
+interface AgentScanningAgentPlatformProperties : AgentPlatformProperties {
     val autoRegister: Boolean
 }
 
@@ -32,16 +34,26 @@ interface AutoRegisteringAgentPlatformProperties : AgentPlatformProperties {
  */
 @Service
 @Order(Ordered.LOWEST_PRECEDENCE)
-internal class AutoRegisteringBeanPostProcessor(
+internal class AgentScanningBeanPostProcessor(
     private val agentMetadataReader: AgentMetadataReader,
     private val agentPlatform: AgentPlatform,
-    private val properties: AutoRegisteringAgentPlatformProperties,
+    private val properties: AgentScanningAgentPlatformProperties,
 ) : BeanPostProcessor {
+
+    private val logger = LoggerFactory.getLogger(AgentScanningBeanPostProcessor::class.java)
 
     override fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
         if (properties.autoRegister) {
             val agentMetadata = agentMetadataReader.createAgentMetadata(bean)
             if (agentMetadata != null) {
+                val agenticInfo = AgenticInfo(bean.javaClass)
+                if (!agenticInfo.agentic() || agenticInfo.noAutoScan()) {
+                    logger.debug(
+                        "Classpath scanning disabled on {}: ignoring this class",
+                        bean.javaClass.name,
+                    )
+                    return null
+                }
                 agentPlatform.deploy(agentMetadata)
             }
         }

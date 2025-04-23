@@ -24,19 +24,27 @@ import org.springframework.stereotype.Component
  * Indicates that this class exposes agentic functions.
  * This is a Spring stereotype annotation, so will be picked up on the classpath and injected
  * if it's on the configuration classpath.
+ * @param scan Whether to find this agent in the classpath. If false, it will not be found by classpath scanning.
+ * This is useful for testing
+ * [com.embabel.agent.api.annotation.support.AgentMetadataReader] will still process it if asked directly.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(
     AnnotationTarget.CLASS,
 )
 @Component
-annotation class Agentic
+annotation class Agentic(
+    val scan: Boolean = true,
+)
 
 /**
  * Indicates that this class is an agent.
  * It doesn't just contribution actions, goals and conditions:
  * it is an agent in itself.
  * Either @Agent or @Agentic should be used: not both
+ * @param name Name of the agent. If not provided, the name will be the class FQN
+ * @param description Description of the agent. This is used for documentation purposes and to choose an agent
+ * @param scan Whether to find this agent in the classpath. If false, it will not be found by the agent manager.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(
@@ -46,6 +54,7 @@ annotation class Agentic
 annotation class Agent(
     val name: String = "",
     val description: String,
+    val scan: Boolean = true,
 )
 
 /**

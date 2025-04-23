@@ -23,7 +23,7 @@ import com.embabel.agent.domain.special.ExtractableCompanion
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.*
-import com.embabel.agent.spi.support.AutoRegisteringAgentPlatformProperties
+import com.embabel.agent.spi.support.AgentScanningAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
@@ -47,7 +47,7 @@ data class DefaultAgentPlatformProperties(
     override val goalConfidenceCutOff: ZeroToOne = 0.6,
     override val agentConfidenceCutOff: ZeroToOne = 0.6,
     override val autoRegister: Boolean = true,
-) : AutoRegisteringAgentPlatformProperties
+) : AgentScanningAgentPlatformProperties
 
 @Service
 internal class DefaultAgentPlatform(
