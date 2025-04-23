@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.config.anthropic
+package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
@@ -29,11 +29,11 @@ import java.time.LocalDate
 
 @Configuration
 @ConditionalOnProperty("ANTHROPIC_API_KEY")
-@ExcludeFromJacocoGeneratedReport(reason = "Anthropic AI configuration can't be unit tested")
-class AnthropicAiConfiguration {
+@ExcludeFromJacocoGeneratedReport(reason = "Anthropic configuration can't be unit tested")
+class AnthropicModels {
 
     init {
-        loggerFor<AnthropicAiConfiguration>().info("Anthropic AI models are available")
+        loggerFor<AnthropicModels>().info("Anthropic models are available")
     }
 
     @Bean

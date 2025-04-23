@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.config.openai
+package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.config.OpenAiConfiguration
@@ -29,11 +29,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.LocalDate
 
-
 @ExcludeFromJacocoGeneratedReport(reason = "Open AI configuration can't be unit tested")
 @Configuration
 @ConditionalOnProperty("OPENAI_API_KEY")
-class OpenAiConfiguration(
+class OpenAiModels(
     @Value("\${OPENAI_API_KEY}")
     private val apiKey: String,
 ) {

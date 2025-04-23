@@ -140,7 +140,7 @@ class StarNewsFinder(
         horoscope: Horoscope,
     ): Writeup =
         // Customize LLM call
-        using(LlmOptions().withTemperature(1.2)).createObject(
+        using(LlmOptions("gemma2:2b").withTemperature(1.2)).createObject(
             """
             Take the following news stories and write up something
             amusing for the target person.
