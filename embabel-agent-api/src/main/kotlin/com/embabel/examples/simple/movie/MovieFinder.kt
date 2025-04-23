@@ -20,6 +20,7 @@ import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
@@ -54,7 +55,6 @@ data class MovieBuff(
      * We use this so we don't overwhelm the prompt
      */
     fun randomRatings(n: Int): List<MovieRating> {
-        // Take random n ratings
         return movieRatings.shuffled().take(n)
     }
 }
@@ -138,10 +138,13 @@ class MovieFinder(
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? {
+        return movieBuffRepository.findAll().firstOrNull()
+
         // TODO Standard action helper that can bind
         val fer = movieBuffRepository.naturalLanguageRepository(payload).find(
             FindEntitiesRequest(description = userInput.content),
         )
+        // TODO present a choices form
         return when {
             fer.matches.size == 1 -> {
                 waitFor(
@@ -157,7 +160,6 @@ class MovieFinder(
                 null
             }
         }
-
     }
 
     @Action
@@ -165,7 +167,7 @@ class MovieFinder(
         movieBuff: MovieBuff,
         payload: TransformationPayload<*, DecoratedMovieBuff>,
     ): DecoratedMovieBuff {
-        val tasteProfile = payload.promptRunner(LlmOptions("gpt-4o-mini")) generateText
+        val tasteProfile = payload.promptRunner(LlmOptions(AnthropicModels.CLAUDE_37_SONNET)) generateText
                 """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
@@ -189,7 +191,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        using(LlmOptions(OpenAiModels.GPT_4o)).createObject(
+        using(LlmOptions(OpenAiModels.GPT_4o_MINI)).createObject(
             """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
@@ -219,7 +221,8 @@ class MovieFinder(
         payload: TransformationPayload<*, SuggestedMovieTitles>,
     ): StreamableMovies {
         val suggestedMovieTitles = payload.promptRunner(
-            LlmOptions(model = "gpt-4o"), promptContributors = listOf(config.suggesterPersona),
+            LlmOptions(model = OpenAiModels.GPT_4o).withTemperature(1.3),
+            promptContributors = listOf(config.suggesterPersona),
         ).createObject<SuggestedMovieTitles>(
             """
             Suggest ${config.suggestionCount} movie titles that ${dmb.movieBuff.name} hasn't seen, but may find interesting.
@@ -288,7 +291,7 @@ class MovieFinder(
                             country = movieBuff.countryCode
                         )
                     val availableToUser = allStreamingOptions.filter {
-                        it.service.name.lowercase() in movieBuff.streamingServices.map { it.lowercase() }
+                        (it.service.name.lowercase() in movieBuff.streamingServices.map { it.lowercase() })  //|| it.type == "free"
                     }
                     logger.debug(
                         "Movie {} available in [{}] on {}",
@@ -362,7 +365,7 @@ class MovieFinder(
         payload: TransformationPayload<*, SuggestionWriteup>,
     ): SuggestionWriteup {
         val text = payload.promptRunner(
-            llm = LlmOptions(OpenAiModels.GPT_4o),
+            llm = LlmOptions(OpenAiModels.GPT_4o_MINI),
             promptContributors = listOf(config.suggesterPersona)
         ) generateText
                 """

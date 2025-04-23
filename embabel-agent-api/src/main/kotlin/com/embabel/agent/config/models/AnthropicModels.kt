@@ -39,12 +39,12 @@ class AnthropicModels {
     @Bean
     fun claudeSonnet(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf("claude-3-7-sonnet-latest", apiKey, .0, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
+    ): Llm = anthropicModelOf(CLAUDE_37_SONNET, apiKey, .0, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
 
     @Bean
     fun claudeHaiku(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf("claude-3-5-haiku-latest", apiKey, .0, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
+    ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, .0, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
 
     private fun anthropicModelOf(
         name: String,
@@ -67,6 +67,13 @@ class AnthropicModels {
             model = chatModel,
             knowledgeCutoffDate = knowledgeCutoffDate,
         )
+    }
+
+    companion object {
+
+        const val CLAUDE_37_SONNET = "claude-3-7-sonnet-latest"
+
+        const val CLAUDE_35_HAIKU = "claude-3-5-haiku-latest"
     }
 
 }

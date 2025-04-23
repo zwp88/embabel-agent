@@ -17,6 +17,7 @@ package com.embabel.agent.domain.support
 
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.domain.persistence.EntityMatch
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
 import com.embabel.agent.domain.persistence.FindEntitiesResponse
@@ -50,12 +51,14 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     override fun find(
         findEntitiesRequest: FindEntitiesRequest,
     ): FindEntitiesResponse<T> {
-        val llm = LlmOptions().withModel("gpt-4o")
+        val llm = LlmOptions().withModel(OpenAiModels.GPT_4o)
 
         // Find the finder methods on the repository
         val finderMethodsOnRepositoryTakingOneArg: List<String> =
             repository.javaClass.methods
                 .filter { it.name.startsWith("find") }
+                // TODO questionable
+                .filterNot { it.name.startsWith("findAll") }
                 .filter { it.parameterTypes.size == 1 }
                 .map { it.name }
         logger.info(
@@ -88,7 +91,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
                 .firstOrNull { it.name == finder.name }
                 ?: continue
 
-            logger.debug(
+            logger.info(
                 "Invoking repository method {} with value {}",
                 repositoryMethod,
                 finder.value,
@@ -132,6 +135,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     private fun extractResultIfPossible(result: Any?): T? {
         return when {
             result == null -> null
+            result is Iterable<*> -> result.firstOrNull() as T?
             entityType.isAssignableFrom(result.javaClass) -> result as T
             Optional::class.java.isAssignableFrom(result.javaClass) ->
                 (result as Optional<*>).orElse(null) as T
