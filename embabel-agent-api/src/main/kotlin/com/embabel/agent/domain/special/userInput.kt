@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.domain.special
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.dsl.Transformer
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timestamped
 import java.time.Instant
 

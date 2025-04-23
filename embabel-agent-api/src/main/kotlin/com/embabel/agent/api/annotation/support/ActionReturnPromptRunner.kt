@@ -16,8 +16,8 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.common.ExecutePromptException
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import org.springframework.ai.tool.ToolCallback
 

@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.Qos
 import com.embabel.agent.core.Transition
+import com.embabel.common.ai.model.LlmOptions
 import org.springframework.ai.tool.ToolCallback
 
 /**

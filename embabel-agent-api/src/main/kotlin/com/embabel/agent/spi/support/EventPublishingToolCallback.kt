@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
 import com.embabel.agent.spi.ToolDecorator
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.time
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition

@@ -15,13 +15,14 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.ai.model.Llm
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.messages.SystemMessage
@@ -140,9 +141,9 @@ internal class ChatClientLlmOperations(
     }
 
     private fun getModels(
-        llmOptions: LlmOptions
+        llmOptions: LlmOptions,
     ): Pair<ChatClient, Llm> {
-        val llm = modelProvider.getLlm(llmOptions.criteria)
+        val llm = modelProvider.getLlm(llmOptions.criteria ?: byRole(ModelProvider.BEST_ROLE))
         val chatClient = ChatClient
             .builder(llm.model)
             .defaultOptions(

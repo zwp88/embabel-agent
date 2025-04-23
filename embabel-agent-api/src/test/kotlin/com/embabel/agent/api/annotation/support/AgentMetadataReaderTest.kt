@@ -16,7 +16,6 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.ActionStatusCode
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.IoBinding
@@ -28,6 +27,7 @@ import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every

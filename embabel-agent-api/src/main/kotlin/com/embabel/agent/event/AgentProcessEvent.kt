@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.event
 
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timed
 import com.embabel.common.util.VisualizableTask
 import com.embabel.plan.Plan

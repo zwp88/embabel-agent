@@ -17,10 +17,10 @@ package com.embabel.examples.simple.movie
 
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.annotation.support.using
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
@@ -33,6 +33,7 @@ import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.prompt.Persona
+import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
@@ -188,7 +189,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        using(LlmOptions("gpt-4o")).createObject(
+        using(LlmOptions(OpenAiModels.GPT_4o)).createObject(
             """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
@@ -361,7 +362,7 @@ class MovieFinder(
         payload: TransformationPayload<*, SuggestionWriteup>,
     ): SuggestionWriteup {
         val text = payload.promptRunner(
-            llm = LlmOptions("gpt-4o"),
+            llm = LlmOptions(OpenAiModels.GPT_4o),
             promptContributors = listOf(config.suggesterPersona)
         ) generateText
                 """

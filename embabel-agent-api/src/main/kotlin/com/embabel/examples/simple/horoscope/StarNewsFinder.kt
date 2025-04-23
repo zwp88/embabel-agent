@@ -21,7 +21,6 @@ import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.fromForm
 import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.annotation.support.usingDefaultLlm
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
 import com.embabel.agent.config.models.OpenAiModels
@@ -32,6 +31,7 @@ import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.experimental.form.Text
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
 import org.springframework.beans.factory.annotation.Value
 
@@ -68,7 +68,7 @@ class StarNewsFinder(
     @Action
     fun extractPerson(userInput: UserInput): PersonImpl? =
         // All prompts are typesafe
-        using(LlmOptions("gpt-4o")).createObjectIfPossible(
+        using(LlmOptions(OpenAiModels.GPT_4o)).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name:
             ${userInput.content}
@@ -96,7 +96,7 @@ class StarNewsFinder(
     @Action
     fun extractStarPerson(userInput: UserInput): StarPerson? =
         // All prompts are typesafe
-        using(LlmOptions("gpt-4o")).createObjectIfPossible(
+        using(LlmOptions(OpenAiModels.GPT_4o)).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name and star sign:
             ${userInput.content}
@@ -145,7 +145,6 @@ class StarNewsFinder(
         using(
             LlmOptions(
                 ModelSelectionCriteria.firstOf(
-                    "claude-3-5-haiku-latest",
                     OpenAiModels.GPT_4o_MINI,
                 )
             ).withTemperature(.9)

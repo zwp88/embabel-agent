@@ -15,11 +15,12 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.api.common.LlmOptions
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.*
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import org.springframework.stereotype.Service
@@ -66,7 +67,7 @@ internal class LlmRanker(
             prompt = prompt,
             interaction = LlmInteraction(
                 id = InteractionId("rank-${wordForThing}s"),
-                llm = LlmOptions(model = "gpt-4o-mini"),
+                llm = LlmOptions(model = OpenAiModels.GPT_4o_MINI),
             ),
             outputClass = RankingsResponse::class.java,
             llmRequestEvent = null,

@@ -16,7 +16,6 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
@@ -24,6 +23,7 @@ import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.common.ai.model.LlmOptions
 import org.springframework.ai.tool.annotation.Tool
 
 data class Person(val name: String) {
@@ -194,7 +194,7 @@ class OnePromptActionOnly(
 
     val promptRunner = using(
         // Java style usage
-        llm = LlmOptions.DEFAULT.withTemperature(1.7).withModel("magical"),
+        llm = LlmOptions().withTemperature(1.7).withModel("magical"),
     )
 
     @Action(cost = 500.0)
@@ -231,7 +231,7 @@ class Combined {
     // Can reuse this or inject
     val magicalLlm = using(
         // Java style usage
-        llm = LlmOptions.DEFAULT.withTemperature(1.7).withModel("magical"),
+        llm = LlmOptions().withTemperature(1.7).withModel("magical"),
     )
 
     @Condition(cost = .5)

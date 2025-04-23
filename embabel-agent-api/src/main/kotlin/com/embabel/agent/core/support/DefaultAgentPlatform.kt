@@ -15,8 +15,6 @@
  */
 package com.embabel.agent.core.support
 
-//import com.embabel.ScriptEvaluationService
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.Extractable
 import com.embabel.agent.domain.special.ExtractableCompanion
@@ -25,6 +23,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.AgentScanningAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -52,7 +51,6 @@ data class DefaultAgentPlatformProperties(
 @Service
 internal class DefaultAgentPlatform(
     private val templateRenderer: TemplateRenderer,
-//    private val scriptEvaluationService: ScriptEvaluationService,
     private val llmOperations: LlmOperations,
     override val ranker: Ranker,
     override val toolGroupResolver: ToolGroupResolver,

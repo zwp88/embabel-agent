@@ -17,13 +17,13 @@ package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ExecutePromptException
-import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
+import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
