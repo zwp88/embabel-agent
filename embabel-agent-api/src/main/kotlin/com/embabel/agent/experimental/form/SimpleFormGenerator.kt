@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental.hitl
+package com.embabel.agent.experimental.form
 
 import java.time.LocalDate
 import java.time.LocalTime
@@ -27,7 +27,7 @@ import kotlin.reflect.jvm.jvmErasure
 /**
  * Simple form generator that uses FormField annotations
  */
-class SimpleFormGenerator : FormGenerator {
+object SimpleFormGenerator : FormGenerator {
 
     /**
      * Generate a form from any class with FormField annotations

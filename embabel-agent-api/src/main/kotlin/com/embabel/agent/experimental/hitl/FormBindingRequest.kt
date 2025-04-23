@@ -19,6 +19,9 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.AbstractAwaitable
 import com.embabel.agent.core.hitl.AwaitableResponse
 import com.embabel.agent.core.hitl.ResponseImpact
+import com.embabel.agent.experimental.form.DefaultFormProcessor
+import com.embabel.agent.experimental.form.Form
+import com.embabel.agent.experimental.form.FormSubmission
 import java.time.Instant
 import java.util.*
 

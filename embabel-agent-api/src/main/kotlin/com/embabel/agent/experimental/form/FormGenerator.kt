@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental.hitl
+package com.embabel.agent.experimental.form
 
 import kotlin.reflect.KClass
 
+/**
+ * Annotation for a text field
+ */
 @Target(AnnotationTarget.PROPERTY)
 annotation class Text(
     val label: String,
@@ -24,6 +27,7 @@ annotation class Text(
 )
 
 interface FormGenerator {
+
     fun <T : Any> generateForm(dataClass: KClass<T>, formTitle: String): Form
 
 }
