@@ -20,7 +20,6 @@ import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
-import com.embabel.common.ai.model.ByNameModelSelectionCriteria
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
@@ -143,11 +142,7 @@ internal class ChatClientLlmOperations(
     private fun getModels(
         llmOptions: LlmOptions
     ): Pair<ChatClient, Llm> {
-        val llm = modelProvider.getLlm(
-            ByNameModelSelectionCriteria(
-                name = llmOptions.model,
-            )
-        )
+        val llm = modelProvider.getLlm(llmOptions.criteria)
         val chatClient = ChatClient
             .builder(llm.model)
             .defaultOptions(

@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.common.core.types.HasInfoString
 
 
@@ -23,7 +25,7 @@ import com.embabel.common.core.types.HasInfoString
  * Analogous to Spring AI ChatOptions.
  */
 interface LlmOptions : HasInfoString {
-    val model: String
+    val criteria: ModelSelectionCriteria
     val temperature: Double
 
     companion object {
@@ -35,7 +37,15 @@ interface LlmOptions : HasInfoString {
             model: String = DEFAULT_MODEL,
             temperature: Double = DEFAULT_TEMPERATURE,
         ): BuildableLlmOptions = BuildableLlmOptions(
-            model = model,
+            criteria = byName(model),
+            temperature = temperature,
+        )
+
+        operator fun invoke(
+            criteria: ModelSelectionCriteria,
+            temperature: Double = DEFAULT_TEMPERATURE,
+        ): BuildableLlmOptions = BuildableLlmOptions(
+            criteria = criteria,
             temperature = temperature,
         )
 
@@ -46,12 +56,12 @@ interface LlmOptions : HasInfoString {
     }
 
     override fun infoString(verbose: Boolean?): String {
-        return "LlmOptions(model='$model', temperature=$temperature)"
+        return "LlmOptions(criteria='$criteria', temperature=$temperature)"
     }
 }
 
 data class BuildableLlmOptions(
-    override val model: String,
+    override val criteria: ModelSelectionCriteria,
     override val temperature: Double,
 ) : LlmOptions {
 
@@ -60,6 +70,6 @@ data class BuildableLlmOptions(
     }
 
     fun withModel(model: String): BuildableLlmOptions {
-        return copy(model = model)
+        return copy(criteria = criteria)
     }
 }

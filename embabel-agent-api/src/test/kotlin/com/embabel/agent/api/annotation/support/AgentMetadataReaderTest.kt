@@ -28,6 +28,7 @@ import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
 import io.mockk.mockk
@@ -540,7 +541,7 @@ class AgentMetadataReaderTest {
                 val result = action.execute(pc, mockk(), action)
                 assertEquals(ActionStatusCode.SUCCEEDED, result.status)
                 assertEquals(Person("John Doe"), pc.blackboard.lastResult())
-                assertEquals("magical", llmo.captured.llm.model)
+                assertEquals(byName(LlmOptions.DEFAULT_MODEL), llmo.captured.llm.criteria)
                 assertEquals(1.7, llmo.captured.llm.temperature)
             }
 
@@ -594,7 +595,7 @@ class AgentMetadataReaderTest {
                 assertEquals(Person("John Doe"), pc.blackboard.lastResult())
                 assertEquals(1, llmi.captured.toolCallbacks.size)
                 assertEquals("thing", llmi.captured.toolCallbacks.single().toolDefinition.name())
-                assertEquals(LlmOptions.DEFAULT_MODEL, llmi.captured.llm.model)
+                assertEquals(byName(LlmOptions.DEFAULT_MODEL), llmi.captured.llm.criteria)
             }
 
             @Test
@@ -648,7 +649,7 @@ class AgentMetadataReaderTest {
                 assertEquals("John Doe", (pc.blackboard.lastResult() as UserInput).content)
                 assertEquals(1, llmo.captured.toolCallbacks.size)
                 assertEquals("reverse", llmo.captured.toolCallbacks.single().toolDefinition.name())
-                assertEquals(LlmOptions.DEFAULT_MODEL, llmo.captured.llm.model)
+                assertEquals(byName(LlmOptions.DEFAULT_MODEL), llmo.captured.llm.criteria)
             }
 
         }

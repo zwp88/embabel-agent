@@ -44,7 +44,7 @@ class OpenAiModels(
 
     @Bean
     fun gpt4omini(): Llm {
-        val model = "gpt-4o-mini"
+        val model = GPT_4o_MINI
         return Llm(
             name = model,
             model = chatModelOf(model),
@@ -54,9 +54,9 @@ class OpenAiModels(
 
     @Bean
     fun gpt4o(): Llm {
-        val model = "gpt-4o"
+        val model = GPT_4o
         return Llm(
-            name = "gpt-4o",
+            name = model,
             model = chatModelOf(model),
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
         )
@@ -68,5 +68,12 @@ class OpenAiModels(
             .defaultOptions(
                 OpenAiChatOptions.builder().model(model).build()
             ).build()
+    }
+
+    companion object {
+
+        const val GPT_4o_MINI = "gpt-4o-mini"
+
+        const val GPT_4o = "gpt-4o"
     }
 }

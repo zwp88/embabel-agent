@@ -65,7 +65,7 @@ data class PromptCondition(
             agentProcess = processContext.agentProcess,
             action = null,
         )
-        logger.info("Condition {}: determination from {} was {}", name, llm.model, determination)
+        logger.info("Condition {}: determination from {} was {}", name, llm.criteria, determination)
         return ConditionDetermination(determination.result)
     }
 }

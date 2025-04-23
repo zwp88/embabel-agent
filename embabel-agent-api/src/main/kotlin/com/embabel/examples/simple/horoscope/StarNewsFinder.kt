@@ -24,6 +24,7 @@ import com.embabel.agent.api.annotation.support.usingDefaultLlm
 import com.embabel.agent.api.common.LlmOptions
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
@@ -31,6 +32,7 @@ import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.experimental.form.Text
+import com.embabel.common.ai.model.ModelSelectionCriteria
 import org.springframework.beans.factory.annotation.Value
 
 data class Starry(
@@ -140,7 +142,14 @@ class StarNewsFinder(
         horoscope: Horoscope,
     ): Writeup =
         // Customize LLM call
-        using(LlmOptions("gemma2:2b").withTemperature(1.2)).createObject(
+        using(
+            LlmOptions(
+                ModelSelectionCriteria.firstOf(
+                    "claude-3-5-haiku-latest",
+                    OpenAiModels.GPT_4o_MINI,
+                )
+            ).withTemperature(.9)
+        ).createObject(
             """
             Take the following news stories and write up something
             amusing for the target person.
