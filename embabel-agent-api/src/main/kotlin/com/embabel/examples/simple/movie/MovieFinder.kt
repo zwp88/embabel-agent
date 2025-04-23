@@ -191,7 +191,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        using(LlmOptions(OpenAiModels.GPT_4o_MINI)).createObject(
+        using(LlmOptions(AnthropicModels.CLAUDE_37_SONNET)).createObject(
             """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}

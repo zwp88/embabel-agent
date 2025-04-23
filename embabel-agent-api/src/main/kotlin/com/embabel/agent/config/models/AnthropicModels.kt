@@ -15,11 +15,12 @@
  */
 package com.embabel.agent.config.models
 
+import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
+import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.anthropic.AnthropicChatModel
-import org.springframework.ai.anthropic.AnthropicChatOptions
 import org.springframework.ai.anthropic.api.AnthropicApi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -39,34 +40,32 @@ class AnthropicModels {
     @Bean
     fun claudeSonnet(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf(CLAUDE_37_SONNET, apiKey, .0, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
+    ): Llm = anthropicModelOf(CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
 
     @Bean
     fun claudeHaiku(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, .0, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
+    ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
 
     private fun anthropicModelOf(
         name: String,
         apiKey: String,
-        temperature: Double,
         knowledgeCutoffDate: LocalDate?,
     ): Llm {
+
         val chatModel = AnthropicChatModel.builder()
             .anthropicApi(AnthropicApi(apiKey))
-            .defaultOptions(
-                AnthropicChatOptions.builder()
-                    .model(name)
-                    .temperature(temperature)
-                    .maxTokens(1000)
-                    .build()
-            )
             .build()
         return Llm(
             name = name,
             model = chatModel,
+            optionsConverter = optionsConverter,
             knowledgeCutoffDate = knowledgeCutoffDate,
         )
+    }
+
+    private val optionsConverter: OptionsConverter = { options ->
+        DefaultOptionsConverter.invoke(options)
     }
 
     companion object {

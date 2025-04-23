@@ -1,3 +1,18 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.AgentProcess
@@ -10,10 +25,12 @@ import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.ai.chat.messages.AssistantMessage
@@ -70,7 +87,7 @@ class ChatClientLlmOperationsTest {
         val crit = slot<ModelSelectionCriteria>()
         val fakeLlm = Llm("fake", fakeChatModel)
         every { mockModelProvider.getLlm(capture(crit)) } returns fakeLlm
-        val cco = ChatClientLlmOperations(mockModelProvider, DefaultToolDecorator(), mockk())
+        val cco = ChatClientLlmOperations(mockModelProvider, DefaultToolDecorator(), JinjavaTemplateRenderer())
         return Setup(cco, mockAgentProcess)
     }
 
@@ -112,6 +129,47 @@ class ChatClientLlmOperationsTest {
                 agentProcess = setup.mockAgentProcess,
             )
             assertEquals(duke, result)
+        }
+    }
+
+    @Nested
+    inner class CreateObjectIfPossible {
+
+        @Test
+        fun `returns data class - success`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn(success = duke)))
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObjectIfPossible(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result.getOrThrow())
+        }
+
+        @Test
+        fun `returns data class - failure`() {
+            val fakeChatModel =
+                FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn<Dog>(failure = "didn't work")))
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObjectIfPossible(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertTrue(result.isFailure)
         }
     }
 

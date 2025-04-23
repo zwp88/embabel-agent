@@ -73,8 +73,6 @@ internal class DefaultAgentPlatform(
     )
 
     private val platformServices = PlatformServices(
-        templateRenderer = templateRenderer,
-//        scriptEvaluationService = scriptEvaluationService,
         llmOperations = llmOperations,
         agentPlatform = this,
         eventListener = eventListener,
