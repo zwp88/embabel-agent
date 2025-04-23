@@ -34,77 +34,10 @@ enum class ConditionDetermination {
     }
 }
 
-typealias GoapState = Map<String, ConditionDetermination>
-
 typealias EffectSpec = Map<String, ConditionDetermination>
 
 private fun preconditionsSatisfied(preconditions: EffectSpec, currentState: GoapState): Boolean =
     preconditions.all { (key, value) -> currentState[key] == value }
-
-/**
- * Determine the world state: the conditions that drive GOAP planning
- * Our conditions can have 3 values: true, false or unknown.
- * Unknown may be genuinely unknown, or it may mean that the condition has been lazily evaluated
- * and needs to be evaluated again.
- */
-interface WorldStateDeterminer {
-
-    /**
-     * Determine world state. Optimization is permitted.
-     * Implementations may choose to return UNKNOWN for expensive conditions,
-     * which the planner should invoke lazily
-     */
-    fun determineWorldState(): WorldState
-
-    /**
-     * Determine an individual condition, disabling any caching.
-     * Any previously UNKNOWN condition must be re-evaluated if possible.
-     */
-    fun determineCondition(condition: String): ConditionDetermination
-
-    companion object {
-
-        fun fromMap(
-            map: Map<String, ConditionDetermination>,
-        ): WorldStateDeterminer =
-            FromMapWorldStateDeterminer(map)
-
-    }
-
-}
-
-private class FromMapWorldStateDeterminer(
-    private val map: Map<String, ConditionDetermination>,
-) : WorldStateDeterminer {
-
-    override fun determineWorldState(): WorldState = WorldState(map)
-
-    override fun determineCondition(condition: String): ConditionDetermination {
-        return map[condition] ?: ConditionDetermination.UNKNOWN
-    }
-}
-
-data class WorldState(
-    val state: GoapState = emptyMap(),
-) {
-
-    fun unknownConditions(): Collection<String> =
-        state.entries
-            .filter { it.value == ConditionDetermination.UNKNOWN }
-            .map { it.key }
-
-    /**
-     * Generate variants with different values for this condition
-     */
-    internal fun variants(unknownCondition: String): Collection<WorldState> {
-        return setOf(ConditionDetermination.TRUE, ConditionDetermination.FALSE).map {
-            this + (unknownCondition to it)
-        }
-    }
-
-    operator fun plus(pair: Pair<String, ConditionDetermination>): WorldState =
-        WorldState(this.state + pair)
-}
 
 interface GoapStep : Step {
 

@@ -126,6 +126,9 @@ internal class SimpleAgentProcess(
 
             else -> {
                 platformServices.eventListener.onProcessEvent(AgentProcessStuckEvent(this))
+                // TODO handle stuck
+                // Look at what changes from this world state could cause plans to change
+                // Depends on number
             }
         }
         return this
