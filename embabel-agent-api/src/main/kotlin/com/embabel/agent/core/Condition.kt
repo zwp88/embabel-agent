@@ -16,6 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.core.primitive.PromptCondition
+import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -31,8 +32,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     JsonSubTypes.Type(value = PromptCondition::class),
 )
-interface Condition {
-    val name: String
+interface Condition : Named {
 
     /**
      * Cost of evaluating the condition. 0 is cheap, 1 is expensive.
@@ -53,6 +53,10 @@ interface Condition {
     operator fun not(): Condition = NotCondition(this)
 
     operator fun inv(): Condition = UnknownCondition(this)
+
+    infix fun or(b: Condition): Condition = OrCondition(this, b)
+
+    infix fun and(b: Condition): Condition = AndCondition(this, b)
 }
 
 /**
@@ -88,5 +92,55 @@ private class UnknownCondition(private val condition: Condition) : Condition {
         ConditionDetermination.TRUE -> ConditionDetermination.FALSE
         ConditionDetermination.FALSE -> ConditionDetermination.FALSE
         ConditionDetermination.UNKNOWN -> ConditionDetermination.TRUE
+    }
+}
+
+private class OrCondition(private val a: Condition, private val b: Condition) : Condition {
+    override val name = "(${a.name} OR ${b.name})"
+
+    // The cost is the minimum of both conditions since we can short-circuit
+    // after evaluating the cheaper condition if it's TRUE
+    override val cost = minOf(a.cost, b.cost)
+
+    override fun evaluate(processContext: ProcessContext): ConditionDetermination {
+        val aResult = a.evaluate(processContext)
+        // Short-circuit if a is TRUE
+        if (aResult == ConditionDetermination.TRUE) return ConditionDetermination.TRUE
+
+        val bResult = b.evaluate(processContext)
+        // If either is TRUE, result is TRUE
+        if (bResult == ConditionDetermination.TRUE) return ConditionDetermination.TRUE
+
+        // If either is UNKNOWN, result is UNKNOWN
+        if (aResult == ConditionDetermination.UNKNOWN || bResult == ConditionDetermination.UNKNOWN)
+            return ConditionDetermination.UNKNOWN
+
+        // Both must be FALSE
+        return ConditionDetermination.FALSE
+    }
+}
+
+private class AndCondition(private val a: Condition, private val b: Condition) : Condition {
+    override val name = "(${a.name} AND ${b.name})"
+
+    // The cost is the minimum of both conditions since we can short-circuit
+    // after evaluating the cheaper condition if it's FALSE
+    override val cost = minOf(a.cost, b.cost)
+
+    override fun evaluate(processContext: ProcessContext): ConditionDetermination {
+        val aResult = a.evaluate(processContext)
+        // Short-circuit if a is FALSE
+        if (aResult == ConditionDetermination.FALSE) return ConditionDetermination.FALSE
+
+        val bResult = b.evaluate(processContext)
+        // If either is FALSE, result is FALSE
+        if (bResult == ConditionDetermination.FALSE) return ConditionDetermination.FALSE
+
+        // If either is UNKNOWN, result is UNKNOWN
+        if (aResult == ConditionDetermination.UNKNOWN || bResult == ConditionDetermination.UNKNOWN)
+            return ConditionDetermination.UNKNOWN
+
+        // Both must be TRUE
+        return ConditionDetermination.TRUE
     }
 }

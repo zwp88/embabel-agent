@@ -225,6 +225,9 @@ data class FunnyWriteup(
 
 ## Environment variables
 
+> Environment variables are consistent with common usage, rather than Spring AI.
+> For example, we prefer `OPENAI_API_KEY` to `SPRING_AI_OPENAI_API_KEY`.
+
 Required:
 
 - `OPENAI_API_KEY`: For the OpenAI API
