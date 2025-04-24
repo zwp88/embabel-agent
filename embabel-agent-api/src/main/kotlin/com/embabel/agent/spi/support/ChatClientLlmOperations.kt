@@ -28,6 +28,7 @@ import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.messages.SystemMessage
 import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.prompt.Prompt
+import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
@@ -151,7 +152,11 @@ internal class ChatClientLlmOperations(
         val chatClient = ChatClient
             .builder(llm.model)
             .defaultOptions(
-                llm.optionsConverter.invoke(llmOptions)
+                // TODO this should not be OpenAI specific but we lose tools if we aren't
+//                llm.optionsConverter.invoke(llmOptions)
+                OpenAiChatOptions.builder()
+                    .temperature(llmOptions.temperature)
+                    .build()
             )
             .build()
         return Resources(chatClient = chatClient, llm = llm)

@@ -18,6 +18,7 @@ package com.embabel.agent.config
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
 import com.embabel.agent.toolgroups.web.domain.WebScraperTools
 import com.embabel.agent.toolgroups.web.search.brave.BraveNewsSearchService
@@ -58,6 +59,20 @@ class ToolGroupsConfiguration(
                 provider = "Embabel",
             ),
             toolCallbacks = scraper + braveSearchTools
+        )
+    }
+
+    @Bean
+    fun fileToolsGroup(): ToolGroup {
+        val codeTools = FileTools(System.getProperty("user.dir"))
+        val tools = ToolCallbacks.from(codeTools).toList()
+        return ToolGroup(
+            metadata = ToolGroupMetadata(
+                role = "file",
+                artifact = "file",
+                provider = "Embabel",
+            ),
+            toolCallbacks = tools,
         )
     }
 

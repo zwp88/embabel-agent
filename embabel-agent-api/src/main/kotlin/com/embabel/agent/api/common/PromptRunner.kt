@@ -65,6 +65,10 @@ interface PromptRunner : LlmCall {
 inline infix fun <reified T> PromptRunner.createObject(prompt: String): T =
     createObject(prompt, T::class.java)
 
+/** Method overloading is evil */
+inline infix fun <reified T> PromptRunner.create(prompt: String): T =
+    createObject(prompt, T::class.java)
+
 inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
     createObjectIfPossible(prompt, T::class.java)
 
