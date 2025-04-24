@@ -24,16 +24,16 @@ import java.util.concurrent.ConcurrentHashMap
  */
 open class InMemoryRepository<T : Any>(
     private val idGetter: (T) -> String?,
-    private val idWither: ((T, String) -> T),
+    private val idSetter: ((T, String) -> T),
 ) : CrudRepository<T, String> {
 
     private val storage = ConcurrentHashMap<String, T>()
 
     override fun <S : T> save(entity: S): S {
         var savedEntity = entity
-        val id = idGetter.invoke(entity) ?: UUID.randomUUID().toString()
-        // TODO this is dirty
-        savedEntity = idWither.invoke(savedEntity, id) as S
+        val existingId = idGetter.invoke(entity)
+        val id = existingId ?: UUID.randomUUID().toString()
+        savedEntity = (if (existingId == null) idSetter.invoke(savedEntity, id) else entity) as S
         storage[id] = savedEntity
         return savedEntity
     }

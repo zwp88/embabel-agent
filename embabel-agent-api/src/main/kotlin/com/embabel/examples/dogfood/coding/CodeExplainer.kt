@@ -18,6 +18,7 @@ package com.embabel.examples.dogfood.coding
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels
@@ -27,9 +28,17 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.Location
 import com.embabel.common.ai.prompt.PromptContribution
 import com.embabel.common.ai.prompt.PromptContributor
+import com.fasterxml.jackson.annotation.JsonClassDescription
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import org.slf4j.LoggerFactory
+import org.springframework.data.repository.CrudRepository
 
+@JsonClassDescription("Analysis of a technology project")
 data class Project(
+    val location: String,
+    @get:JsonPropertyDescription("The technologies used in the project. List, comma separated. Include 10")
     val tech: String,
+    @get: JsonPropertyDescription("Notes on the coding style used in this project. 20 words.")
     val codingStyle: String,
 ) : PromptContributor {
 
@@ -50,25 +59,45 @@ data class Explanation(
     override val text: String,
 ) : HasContent
 
-val Embabel = Project(
-    tech = """
-        |Kotlin, Spring Boot, Maven, Jacoco, Spring AI
-        |JUnit 5, mockk
-        |"""".trimMargin(),
-    codingStyle = """
-        Favor clarity. Use Kotlin coding conventions and consistent formatting.
-        Use the Spring idiom where possible.
-        Favor immutability.
-        Favor test cases using @Nested classes. Use ` instead of @DisplayName for test cases.
-    """.trimIndent(),
-)
+interface ProjectRepository : CrudRepository<Project, String>
+
 
 @Agent(description = "Explain code")
 class CodeExplainer(
-    val root: String = System.getProperty("user.dir"),
-    // TODO could look this up from DB or ask
-    val project: Project = Embabel,
+    val projectRepository: ProjectRepository,
+    val defaultLocation: String = System.getProperty("user.dir"),
 ) {
+
+    private val logger = LoggerFactory.getLogger(CodeExplainer::class.java)
+
+    private val claudeSonnet = LlmOptions(
+        AnthropicModels.CLAUDE_37_SONNET
+    )
+
+    @Action
+    fun loadExistingProject(): Project? {
+        val found = projectRepository.findById(defaultLocation)
+        if (found.isPresent) {
+            logger.info("Found existing project at $defaultLocation")
+        }
+        return found.orElse(null)
+    }
+
+    /**
+     * Use an LLM to analyze the project.
+     * This is expensive so we set cost high
+     */
+    @Action(cost = 10000.0)
+    fun analyzeProject(): Project =
+        using(claudeSonnet).create<Project>(
+            """
+                Analyze the project at $defaultLocation
+                Use the file tools to read code and directories before analyzing it
+            """.trimIndent(),
+        ).also { project ->
+            // So we don't need to do this again
+            projectRepository.save(project)
+        }
 
     @Action(
         toolGroups = [
@@ -77,7 +106,11 @@ class CodeExplainer(
         ],
     )
     @AchievesGoal(description = "Code has been explained to the user")
-    fun explainCode(userInput: UserInput, payload: OperationPayload): Explanation {
+    fun explainCode(
+        userInput: UserInput,
+        project: Project,
+        payload: OperationPayload
+    ): Explanation {
         val explanation: String = payload.promptRunner(
             llm = LlmOptions(
                 AnthropicModels.CLAUDE_37_SONNET
@@ -85,11 +118,10 @@ class CodeExplainer(
             promptContributors = listOf(project)
         ).create(
             """
-                Explain code
+                Execute the following user request around explaining or modifying code in the given project.
                 Use the file tools to read code and directories before explaining it
-                Look up online if you need to.
 
-                The user request:
+                User request:
                 "${userInput.content}"
             """.trimIndent(),
         )
