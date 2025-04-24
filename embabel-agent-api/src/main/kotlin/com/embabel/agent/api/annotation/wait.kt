@@ -17,8 +17,8 @@ package com.embabel.agent.api.annotation
 
 import com.embabel.agent.core.hitl.Awaitable
 import com.embabel.agent.core.hitl.ConfirmationRequest
-import com.embabel.agent.experimental.form.SimpleFormGenerator
-import com.embabel.agent.experimental.hitl.FormBindingRequest
+import com.embabel.ux.form.SimpleFormGenerator
+import com.embabel.agent.core.hitl.FormBindingRequest
 
 /**
  * Call when the current AgentProcess should

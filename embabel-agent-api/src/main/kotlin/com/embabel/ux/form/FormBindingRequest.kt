@@ -13,9 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental.form
+package com.embabel.ux.form
 
-object Forms {
+import com.embabel.agent.core.hitl.AwaitableResponse
+import java.time.Instant
+import java.util.*
 
+data class FormResponse(
+    override val id: String = UUID.randomUUID().toString(),
+    override val awaitableId: String,
+    val formSubmission: FormSubmission,
+    private val persistent: Boolean = false,
+    override val timestamp: Instant = Instant.now(),
+) : AwaitableResponse {
 
+    override fun persistent() = persistent
 }

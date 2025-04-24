@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental.hitl
+package com.embabel.agent.core.hitl
 
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.hitl.AbstractAwaitable
-import com.embabel.agent.core.hitl.AwaitableResponse
-import com.embabel.agent.core.hitl.ResponseImpact
-import com.embabel.agent.experimental.form.DefaultFormProcessor
-import com.embabel.agent.experimental.form.Form
-import com.embabel.agent.experimental.form.FormBinder
-import com.embabel.agent.experimental.form.FormSubmission
 import com.embabel.common.util.kotlin.loggerFor
-import java.time.Instant
-import java.util.*
+import com.embabel.ux.form.DefaultFormProcessor
+import com.embabel.ux.form.Form
+import com.embabel.ux.form.FormBinder
+import com.embabel.ux.form.FormResponse
 
 /**
  * Present the user with a form
@@ -57,15 +52,4 @@ class FormBindingRequest<O : Any>(
     }
 
     override fun toString(): String = infoString(verbose = false)
-}
-
-data class FormResponse(
-    override val id: String = UUID.randomUUID().toString(),
-    override val awaitableId: String,
-    val formSubmission: FormSubmission,
-    private val persistent: Boolean = false,
-    override val timestamp: Instant = Instant.now(),
-) : AwaitableResponse {
-
-    override fun persistent() = persistent
 }

@@ -30,7 +30,7 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.experimental.form.Text
+import com.embabel.ux.form.Text
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
 import org.springframework.beans.factory.annotation.Value

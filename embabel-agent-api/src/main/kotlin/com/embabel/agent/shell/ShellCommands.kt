@@ -21,11 +21,11 @@ import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.hitl.ConfirmationResponse
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.severance.LumonColors
-import com.embabel.agent.experimental.form.Button
-import com.embabel.agent.experimental.form.FormSubmission
-import com.embabel.agent.experimental.form.TextField
-import com.embabel.agent.experimental.hitl.FormBindingRequest
-import com.embabel.agent.experimental.hitl.FormResponse
+import com.embabel.ux.form.Button
+import com.embabel.ux.form.FormSubmission
+import com.embabel.ux.form.TextField
+import com.embabel.agent.core.hitl.FormBindingRequest
+import com.embabel.ux.form.FormResponse
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.bold
 import com.embabel.common.util.color

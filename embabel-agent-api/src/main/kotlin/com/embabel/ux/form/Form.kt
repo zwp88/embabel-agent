@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental.form
+package com.embabel.ux.form
 
 import com.embabel.common.core.types.HasInfoString
 import com.fasterxml.jackson.annotation.JsonSubTypes
