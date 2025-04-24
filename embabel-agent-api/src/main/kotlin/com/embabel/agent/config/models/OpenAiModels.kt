@@ -16,6 +16,7 @@
 package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.Llm
+import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.ai.model.config.OpenAiConfiguration
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.kotlin.loggerFor
@@ -58,6 +59,7 @@ class OpenAiModels(
         return Llm(
             name = model,
             model = chatModelOf(model),
+            optionsConverter = optionsConverter,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
         )
     }
@@ -68,6 +70,12 @@ class OpenAiModels(
             .defaultOptions(
                 OpenAiChatOptions.builder().model(model).build()
             ).build()
+    }
+
+    private val optionsConverter: OptionsConverter = { options ->
+        OpenAiChatOptions.builder()
+            .temperature(options.temperature)
+            .build()
     }
 
     companion object {

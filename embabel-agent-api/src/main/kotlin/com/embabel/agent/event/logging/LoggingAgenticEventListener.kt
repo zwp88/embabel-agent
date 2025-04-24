@@ -210,7 +210,7 @@ open class LoggingAgenticEventListener(
                     val promptInfo = "\nPrompt ${event.interaction.id}:\n${
                         event.springAiPrompt.toString().color(AnsiColor.GREEN)
                     }\ntools: ${
-                        event.interaction.toolCallbacks.joinToString() { it.toolDefinition.name() }
+                        event.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
                             .color(AnsiColor.BRIGHT_MAGENTA)
                     }"
                     logger.info(
