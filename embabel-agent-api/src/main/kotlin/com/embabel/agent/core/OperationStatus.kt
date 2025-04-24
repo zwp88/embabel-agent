@@ -22,11 +22,31 @@ import java.time.Duration
  * Stuck means we failed to find a plan from here
  */
 enum class AgentProcessStatusCode {
-    RUNNING, COMPLETED, FAILED, STUCK, WAITING
+    /** The process is running without any known problems */
+    RUNNING,
+
+    /** The process has completed successfully */
+    COMPLETED,
+
+    /** Game over. The process has failed */
+    FAILED,
+
+    /** The process cannot formulate a plan to progress. This does not necessarily mean failure. Something might change */
+    STUCK,
+
+    /** The process is waiting for user input or another external event */
+    WAITING
 }
 
 enum class ActionStatusCode {
-    SUCCEEDED, FAILED, WAITING,
+    /** The action succeeded */
+    SUCCEEDED,
+
+    /** The action failed */
+    FAILED,
+
+    /** The action result means we're waiting for user input or another external event */
+    WAITING,
 }
 
 /**
