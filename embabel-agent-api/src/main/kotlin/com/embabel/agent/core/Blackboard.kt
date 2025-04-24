@@ -92,7 +92,7 @@ interface Blackboard : Bindable, MayHaveLastResult, HasInfoString {
      * For example, getValue("it", "Animal") will match a Dog if Dog extends Animal
      */
     fun getValue(
-        variable: String,
+        variable: String = IoBinding.DEFAULT_BINDING,
         type: String,
         domainTypes: Collection<Class<*>>,
     ): Any? {

@@ -23,6 +23,7 @@ import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ProcessContext
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
@@ -212,7 +213,13 @@ class AgentMetadataReader {
             name = generateName(instance, method.name),
             cost = conditionAnnotation.cost,
         )
-        { processContext -> ReflectionUtils.invokeMethod(method, instance, processContext) as Boolean }
+        { processContext ->
+            invokeConditionMethod(
+                method = method,
+                instance = instance,
+                processContext = processContext,
+            )
+        }
     }
 
     private fun createAction(
@@ -305,6 +312,45 @@ class AgentMetadataReader {
         )
 
         return result as O
+    }
+
+    private fun invokeConditionMethod(
+        method: Method,
+        instance: Any,
+        processContext: ProcessContext,
+    ): Boolean {
+        logger.debug("Invoking condition method {}", method.name)
+        val args = mutableListOf<Any>()
+        for (m in method.parameters) {
+            when {
+                ProcessContext::class.java.isAssignableFrom(m.type) -> {
+                    args += processContext
+                }
+                // TODO required match binding: Consistent with actions
+
+                else -> {
+                    args += processContext.blackboard.getValue(
+                        type = m.type.name,
+                        domainTypes = processContext.agentProcess.agent.domainTypes,
+                    )
+                        ?: return run {
+                            logger.info(
+                                "Condition method {}.{} has unsupported argument type {}",
+                                instance.javaClass.name,
+                                m.name,
+                                m.type,
+                            )
+                            false
+                        }
+                }
+            }
+        }
+        return try {
+            ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray()) as Boolean
+        } catch (t: Throwable) {
+            logger.warn("Error invoking condition method ${method.name}", t)
+            false
+        }
     }
 
     /**

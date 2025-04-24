@@ -19,6 +19,7 @@ import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
@@ -83,11 +84,31 @@ class NoConditions {
 }
 
 @Agentic
-class OneConditionOnly {
+class OneProcessContextConditionOnly {
 
     @Condition(cost = .5)
     fun condition1(processContext: ProcessContext): Boolean {
         return true
+    }
+
+}
+
+@Agentic
+class ConditionFromBlackboard {
+
+    @Condition
+    fun condition1(person: Person): Boolean {
+        return person.name == "Rod"
+    }
+
+}
+
+@Agentic
+class ConditionsFromBlackboard {
+
+    @Condition
+    fun condition1(person: Person, frog: Frog): Boolean {
+        return person.name == "Rod"
     }
 
 }

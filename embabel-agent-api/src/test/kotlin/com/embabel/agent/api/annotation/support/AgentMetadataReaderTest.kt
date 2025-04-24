@@ -16,6 +16,7 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.ActionStatusCode
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.IoBinding
@@ -126,22 +127,109 @@ class AgentMetadataReaderTest {
         }
 
         @Test
-        fun `one condition only`() {
+        fun `one condition taking ProcessContext`() {
             val reader = AgentMetadataReader()
-            val metadata = reader.createAgentMetadata(OneConditionOnly())
+            val metadata = reader.createAgentMetadata(OneProcessContextConditionOnly())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.conditions.size)
-            assertEquals("${OneConditionOnly::class.java.name}.condition1", metadata.conditions.first().name)
+            assertEquals(
+                "${OneProcessContextConditionOnly::class.java.name}.condition1",
+                metadata.conditions.first().name
+            )
         }
 
         @Test
-        fun `condition invocation`() {
+        fun `processContext condition invocation`() {
             val reader = AgentMetadataReader()
-            val metadata = reader.createAgentMetadata(OneConditionOnly())
+            val metadata = reader.createAgentMetadata(OneProcessContextConditionOnly())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.conditions.size)
             val condition = metadata.conditions.first()
             assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockk()))
+        }
+
+        @Test
+        fun `blackboard condition invocation not found`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(ConditionFromBlackboard())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.conditions.size)
+            val condition = metadata.conditions.first()
+            val mockProcessContext = mockk<ProcessContext>()
+            every { mockProcessContext.blackboard } returns InMemoryBlackboard()
+            every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
+                Person::class.java,
+            )
+            assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
+        }
+
+        @Test
+        fun `blackboard condition invocation found and true`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(ConditionFromBlackboard())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.conditions.size)
+            val condition = metadata.conditions.first()
+            val mockProcessContext = mockk<ProcessContext>()
+            val bb = InMemoryBlackboard()
+            bb += Person("Rod")
+            every { mockProcessContext.blackboard } returns bb
+            every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
+                Person::class.java,
+            )
+            assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
+        }
+
+        @Test
+        fun `blackboard condition invocation found and false`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(ConditionFromBlackboard())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.conditions.size)
+            val condition = metadata.conditions.first()
+            val mockProcessContext = mockk<ProcessContext>()
+            val bb = InMemoryBlackboard()
+            bb += Person("ted")
+            every { mockProcessContext.blackboard } returns bb
+            every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
+                Person::class.java,
+            )
+            assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
+        }
+
+        @Test
+        fun `blackboard conditions invocation not all found and false`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(ConditionsFromBlackboard())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.conditions.size)
+            val condition = metadata.conditions.first()
+            val mockProcessContext = mockk<ProcessContext>()
+            val bb = InMemoryBlackboard()
+            bb += Person("Rod")
+            every { mockProcessContext.blackboard } returns bb
+            every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
+                Person::class.java, Frog::class.java,
+            )
+            assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
+        }
+
+        @Test
+        fun `blackboard conditions invocation all found and true`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(ConditionsFromBlackboard())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.conditions.size)
+            val condition = metadata.conditions.first()
+            val mockProcessContext = mockk<ProcessContext>()
+            val bb = InMemoryBlackboard()
+            bb += Person("Rod")
+            bb += Frog("Kermit")
+            every { mockProcessContext.blackboard } returns bb
+            every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
+                Person::class.java, Frog::class.java,
+            )
+            assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
         }
 
     }
