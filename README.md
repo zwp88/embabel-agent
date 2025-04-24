@@ -223,7 +223,7 @@ data class FunnyWriteup(
 
 ## Getting Started
 
-## Environment variables
+### Environment variables
 
 > Environment variables are consistent with common usage, rather than Spring AI.
 > For example, we prefer `OPENAI_API_KEY` to `SPRING_AI_OPENAI_API_KEY`.
@@ -237,7 +237,7 @@ Optional:
 - `ANTHROPIC_API_KEY`: For the Anthropic API
 - `BRAVE_API_KEY`: For the Brave Search API. Web, news and video search is exposed if this key is available.
 
-## Running via Spring Shell
+### Running via Spring Shell
 
 The easiest way to run the application using using one of the scripts in the
 `scripts` directory. You can start the shell in interactive mode with:
@@ -274,7 +274,7 @@ Omit these for less verbose logging.
 > Spring Shell supports history. Type `!!` to repeat the last command.
 > This will survive restarts, so is handy when iterating on an agent.
 
-## Bringing in additional LLMs
+### Bringing in additional LLMs
 
 Simply define Spring beans of type `Llm`.
 See the `OpenAiConfiguration` class as an example.
@@ -283,6 +283,28 @@ Remember:
 
 - Provide the knowledge cutoff date if you know it
 - Make the configuration class conditional on any required API key.
+
+## Application Design
+
+### Domain objects
+
+Applications center around domain objects. These can be created by LLMs or user
+code and manipulated by user code.
+
+Use Jackson annotations to help LLMs with descriptions as well as mark fields to ignore.
+For example:
+
+```kotlin
+@JsonClassDescription("Person with astrology details")
+data class StarPerson(
+    override val name: String,
+    @get:JsonPropertyDescription("Star sign")
+    val sign: String,
+) : Person
+```
+
+See [Java Json Schema Generation - Module Jackson](https://github.com/victools/jsonschema-generator/tree/main/jsonschema-module-jackson)
+for documentation of the library used.
 
 ## Running Tests
 

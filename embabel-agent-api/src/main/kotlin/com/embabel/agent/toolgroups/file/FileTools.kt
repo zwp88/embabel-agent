@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.toolgroups.file
 
+import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -28,6 +29,8 @@ import java.nio.file.Paths
 class FileTools(
     val root: String,
 ) {
+
+    private val logger = LoggerFactory.getLogger(FileTools::class.java)
 
     /**
      * Resolves a relative path against the root directory
@@ -115,8 +118,9 @@ class FileTools(
         return "file created"
     }
 
-    @Tool(description = "Edit the file at the given location")
+    @Tool(description = "Edit the file at the given location. Replace oldContent with newContent")
     fun editFile(path: String, oldContent: String, newContent: String): String {
+        logger.info("Editing file at path: $path: $oldContent -> $newContent")
         val resolvedPath = resolvePath(path)
         if (!Files.exists(resolvedPath)) {
             throw IllegalArgumentException("File does not exist: $path")
@@ -131,6 +135,7 @@ class FileTools(
         }
 
         Files.writeString(resolvedPath, newContent)
+        logger.info("Edited file at path: $path")
         return "file edited"
     }
 }

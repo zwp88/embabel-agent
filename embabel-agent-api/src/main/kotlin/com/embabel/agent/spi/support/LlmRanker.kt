@@ -23,6 +23,8 @@ import com.embabel.agent.spi.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
+import com.fasterxml.jackson.annotation.JsonClassDescription
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.stereotype.Service
 
 /**
@@ -83,11 +85,14 @@ internal class LlmRanker(
     }
 }
 
+@JsonClassDescription("List of ranked choices")
 internal data class RankingsResponse(
     val rankings: List<RankedChoiceResponse>,
 )
 
 internal data class RankedChoiceResponse(
+    @get:JsonPropertyDescription("name of what we're ranking")
     val name: String,
+    @get:JsonPropertyDescription("confidence score from 0-1")
     val confidence: Double,
 )

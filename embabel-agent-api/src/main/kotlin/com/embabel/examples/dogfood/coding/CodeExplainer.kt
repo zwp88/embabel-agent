@@ -24,29 +24,70 @@ import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.prompt.Location
+import com.embabel.common.ai.prompt.PromptContribution
+import com.embabel.common.ai.prompt.PromptContributor
+
+data class Project(
+    val tech: String,
+    val codingStyle: String,
+) : PromptContributor {
+
+    override fun promptContribution() = PromptContribution(
+        """
+            |Project:
+            |$tech
+            |
+            |Coding style:
+            |$codingStyle
+        """.trimMargin(),
+        location = Location.BEGINNING,
+        role = "project",
+    )
+}
 
 data class Explanation(
     override val text: String,
 ) : HasContent
 
+val Embabel = Project(
+    tech = """
+        |Kotlin, Spring Boot, Maven, Jacoco, Spring AI
+        |JUnit 5, mockk
+        |"""".trimMargin(),
+    codingStyle = """
+        Favor clarity. Use Kotlin coding conventions and consistent formatting.
+        Use the Spring idiom where possible.
+        Favor immutability.
+        Favor test cases using @Nested classes. Use ` instead of @DisplayName for test cases.
+    """.trimIndent(),
+)
+
 @Agent(description = "Explain code")
 class CodeExplainer(
     val root: String = System.getProperty("user.dir"),
+    // TODO could look this up from DB or ask
+    val project: Project = Embabel,
 ) {
 
     @Action(
-        toolGroups = ["file"],
+        toolGroups = [
+            "file",
+//            ToolGroup.WEB,
+        ],
     )
     @AchievesGoal(description = "Code has been explained to the user")
     fun explainCode(userInput: UserInput, payload: OperationPayload): Explanation {
         val explanation: String = payload.promptRunner(
             llm = LlmOptions(
                 AnthropicModels.CLAUDE_37_SONNET
-            )
+            ),
+            promptContributors = listOf(project)
         ).create(
             """
                 Explain code
                 Use the file tools to read code and directories before explaining it
+                Look up online if you need to.
 
                 The user request:
                 "${userInput.content}"
