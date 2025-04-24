@@ -96,7 +96,7 @@ internal class DefaultAgentPlatform(
         return this
     }
 
-    override fun deploy(action: Action): DefaultAgentPlatform {
+    fun deploy(action: Action): DefaultAgentPlatform {
         logger.info("Deploying action {}", action.name)
         val agent = Agent(
             name = action.name,
@@ -105,22 +105,6 @@ internal class DefaultAgentPlatform(
             goals = emptySet(),
         )
         return deploy(agent)
-    }
-
-    override fun deploy(goal: Goal): AgentPlatform {
-        logger.info("Deploying goal {}", goal.name)
-        val agent = Agent(
-            name = "goal-${goal.name}",
-            description = goal.description,
-            actions = emptyList(),
-            goals = setOf(goal),
-        )
-        return deploy(agent)
-    }
-
-    fun deploy(path: String): DefaultAgentPlatform {
-        val resource = PathMatchingResourcePatternResolver().getResource(path)
-        return deploy(resource)
     }
 
     fun deploy(resource: Resource): DefaultAgentPlatform {

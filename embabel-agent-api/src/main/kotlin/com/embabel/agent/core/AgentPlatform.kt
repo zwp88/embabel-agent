@@ -117,10 +117,6 @@ interface AgentPlatform : AgentScope {
         return this
     }
 
-    fun deploy(action: Action): AgentPlatform
-
-    fun deploy(goal: Goal): AgentPlatform
-
     /**
      * Run the agent from the given ProcessOptions.
      * We might create a new blackboard or have one

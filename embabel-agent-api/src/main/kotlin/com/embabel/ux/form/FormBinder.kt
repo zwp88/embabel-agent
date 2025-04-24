@@ -153,27 +153,3 @@ class FormBinder<T : Any>(private val targetClass: KClass<T>) {
 inline fun <reified T : Any> FormSubmissionResult.bindTo(): T {
     return FormBinder(T::class).bind(this)
 }
-
-// Example usage with a domain class
-data class UserRegistration(
-    @FormField("name-field-id")
-    val fullName: String,
-
-    @FormField("email-field-id")
-    val email: String,
-
-    @FormField("age-field-id")
-    val age: Int,
-
-    @FormField("birth-date-id")
-    val birthDate: LocalDate,
-
-    @FormField("country-id")
-    val country: String,
-
-    @FormField("terms-accepted-id")
-    val termsAccepted: Boolean,
-
-    @FormField("bio-id")
-    val biography: String? = null
-)

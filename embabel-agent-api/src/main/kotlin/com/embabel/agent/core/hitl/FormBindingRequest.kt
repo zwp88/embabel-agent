@@ -20,7 +20,9 @@ import com.embabel.common.util.kotlin.loggerFor
 import com.embabel.ux.form.DefaultFormProcessor
 import com.embabel.ux.form.Form
 import com.embabel.ux.form.FormBinder
-import com.embabel.ux.form.FormResponse
+import com.embabel.ux.form.FormSubmission
+import java.time.Instant
+import java.util.*
 
 /**
  * Present the user with a form
@@ -52,4 +54,15 @@ class FormBindingRequest<O : Any>(
     }
 
     override fun toString(): String = infoString(verbose = false)
+}
+
+data class FormResponse(
+    override val id: String = UUID.randomUUID().toString(),
+    override val awaitableId: String,
+    val formSubmission: FormSubmission,
+    private val persistent: Boolean = false,
+    override val timestamp: Instant = Instant.now(),
+) : AwaitableResponse {
+
+    override fun persistent() = persistent
 }

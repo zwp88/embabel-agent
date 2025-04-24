@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.core.primitive
+package com.embabel.agent.experimental.primitive
 
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext

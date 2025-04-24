@@ -17,7 +17,7 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.asTransformation
 import com.embabel.agent.core.*
-import com.embabel.agent.core.primitive.PromptCondition
+import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.plan.goap.ConditionDetermination
 import kotlin.reflect.KClass

@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.agent.core.primitive.PromptCondition
+import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
