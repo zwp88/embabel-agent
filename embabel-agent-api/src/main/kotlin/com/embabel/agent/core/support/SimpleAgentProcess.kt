@@ -18,6 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.*
 import com.embabel.agent.event.*
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.spi.StuckHandlingResultCode
 import com.embabel.plan.goap.AStarGoapPlanner
 import com.embabel.plan.goap.WorldStateDeterminer
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -112,6 +113,11 @@ internal class SimpleAgentProcess(
             tick()
         }
         when (status) {
+
+            AgentProcessStatusCode.RUNNING -> {
+                logger.debug("Process {} is happily running: {}", this.id, status)
+            }
+
             AgentProcessStatusCode.COMPLETED -> {
                 platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
             }
@@ -124,14 +130,37 @@ internal class SimpleAgentProcess(
                 platformServices.eventListener.onProcessEvent(AgentProcessWaitingEvent(this))
             }
 
-            else -> {
+            AgentProcessStatusCode.STUCK -> {
                 platformServices.eventListener.onProcessEvent(AgentProcessStuckEvent(this))
-                // TODO handle stuck
-                // Look at what changes from this world state could cause plans to change
-                // Depends on number
+                handleStuck(agent)
             }
         }
         return this
+    }
+
+    /**
+     * Try to resolve a stuck process using StuckHandler if provided
+     */
+    private fun handleStuck(agent: Agent) {
+        val stuckHandler = agent.stuckHandler
+        if (stuckHandler == null) {
+            logger.warn("Process {} is stuck: no handler", this.id)
+            return
+        }
+        val result = stuckHandler.handleStuck(this)
+        platformServices.eventListener.onProcessEvent(result)
+        when (result.code) {
+            StuckHandlingResultCode.REPLAN -> {
+                logger.info("Process {} unstuck and will replan: {}", this.id, result.message)
+                _status = AgentProcessStatusCode.RUNNING
+                run()
+            }
+
+            StuckHandlingResultCode.NO_RESOLUTION -> {
+                logger.warn("Process {} stuck: {}", this.id, result.message)
+                _status = AgentProcessStatusCode.STUCK
+            }
+        }
     }
 
     override fun tick(): AgentProcess {
@@ -153,7 +182,7 @@ internal class SimpleAgentProcess(
             logger.info(
                 "❌ Process {} stuck: No plan from {} in {}, context={}",
                 id,
-                worldState,
+                worldState.state,
                 agent.goapSystem.infoString(),
                 blackboard,
             )

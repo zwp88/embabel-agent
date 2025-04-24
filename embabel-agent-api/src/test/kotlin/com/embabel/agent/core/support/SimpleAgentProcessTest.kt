@@ -24,6 +24,7 @@ import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.transformer
 import com.embabel.agent.core.Agent
+import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.hitl.ConfirmationRequest
@@ -34,6 +35,9 @@ import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
 import com.embabel.agent.event.logging.personality.severance.SeveranceLoggingAgenticEventListener
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.spi.StuckHandler
+import com.embabel.agent.spi.StuckHandlerResult
+import com.embabel.agent.spi.StuckHandlingResultCode
 import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.agent.support.SimpleTestAgent
 import io.mockk.every
@@ -154,6 +158,69 @@ class SimpleAgentProcessTest {
             val agentStatus = agentProcess.run()
             assertEquals(AgentProcessStatusCode.WAITING, agentStatus.status)
         }
+    }
+
+    @Nested
+    inner class StuckHandling {
+
+        @Test
+        fun `expect stuck for DSL agent with no stuck handler`() {
+            val agentProcess = run(DslWaitingAgent)
+            assertEquals(AgentProcessStatusCode.STUCK, agentProcess.status)
+        }
+
+        @Test
+        fun `expect stuck for annotation agent with no stuck handler`() {
+            val agentProcess = run(AgentMetadataReader().createAgentMetadata(AnnotationWaitingAgent()) as Agent)
+            assertEquals(AgentProcessStatusCode.STUCK, agentProcess.status)
+        }
+
+        @Test
+        fun `expect unstuck for DSL agent with magic stuck handler`() {
+            unstick(DslWaitingAgent)
+        }
+
+        @Test
+        fun `expect unstuck for annotation agent with magic stuck handler`() {
+            unstick(AgentMetadataReader().createAgentMetadata(AnnotationWaitingAgent()) as Agent)
+        }
+
+        private fun unstick(agent: Agent) {
+            var called = false
+            val stuckHandler = StuckHandler {
+                called = true
+                it.processContext.blackboard["it"] = UserInput("Rod")
+                StuckHandlerResult(
+                    message = "The magic unsticker unstuck the stuckness",
+                    handler = null,
+                    code = StuckHandlingResultCode.REPLAN,
+                    agentProcess = it,
+                )
+            }
+            val agentProcess = run(agent.copy(stuckHandler = stuckHandler))
+            assertTrue(called, "Stuck handler must have been called")
+            assertEquals(AgentProcessStatusCode.WAITING, agentProcess.status)
+        }
+
+
+        private fun run(agent: Agent): AgentProcess {
+            val ese = EventSavingAgenticEventListener()
+            val mockPlatformServices = mockk<PlatformServices>()
+            every { mockPlatformServices.eventListener } returns ese
+            every { mockPlatformServices.llmOperations } returns mockk()
+            val blackboard = InMemoryBlackboard()
+            // Don't add anything to the blackboard
+            val agentProcess = SimpleAgentProcess(
+                id = "test",
+                agent = agent,
+                processOptions = ProcessOptions(),
+                blackboard = blackboard,
+                platformServices = mockPlatformServices,
+                parentId = null,
+            )
+            return agentProcess.run()
+        }
+
     }
 
     @Nested
