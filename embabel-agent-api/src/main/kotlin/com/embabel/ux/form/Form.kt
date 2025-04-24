@@ -80,7 +80,7 @@ data class Dropdown(
     val label: String,
     val options: List<DropdownOption>,
     val placeholder: String = "",
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
 ) : RequirableControl {
@@ -94,7 +94,7 @@ data class TextField(
     val placeholder: String = "",
     val value: String = "",
     val maxLength: Int? = null,
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     val validationPattern: String? = null,
     val validationMessage: String? = null,
@@ -110,7 +110,7 @@ data class TextArea(
     val value: String = "",
     val rows: Int = 3,
     val maxLength: Int? = null,
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
 ) : RequirableControl {
@@ -121,7 +121,7 @@ data class TextArea(
 data class Checkbox(
     val label: String,
     val checked: Boolean = false,
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
 ) : RequirableControl {
@@ -133,7 +133,7 @@ data class RadioGroup(
     val label: String,
     val options: List<RadioOption>,
     val selectedValue: String? = null,
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
 ) : RequirableControl {
@@ -148,7 +148,7 @@ data class DatePicker(
     val value: String? = null,
     val minDate: String? = null,
     val maxDate: String? = null,
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
 ) : RequirableControl {
@@ -160,7 +160,7 @@ data class TimePicker(
     val label: String,
     val value: String? = null,
     val is24Hour: Boolean = false,
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
 ) : RequirableControl {
@@ -175,9 +175,10 @@ data class Slider(
     val step: Double = 1.0,
     val value: Double = min,
     val showMarkers: Boolean = false,
-    val disabled: Boolean = false,
+    override val required: Boolean = true,
+    override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
-) : Control {
+) : RequirableControl {
 
     override val type: ControlType = ControlType.SLIDER
 }
@@ -197,7 +198,7 @@ data class FileUpload(
     val acceptedFileTypes: List<String> = listOf("*/*"),
     val maxFileSize: Long? = null,
     val maxFiles: Int = 1,
-    override val required: Boolean = false,
+    override val required: Boolean = true,
     override val disabled: Boolean = false,
     override val id: String = UUID.randomUUID().toString(),
 ) : RequirableControl {

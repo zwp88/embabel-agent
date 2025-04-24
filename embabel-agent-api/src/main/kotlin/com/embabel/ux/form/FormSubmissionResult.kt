@@ -41,7 +41,7 @@ data class FormSubmissionResult(
 ) : HasInfoString {
 
     override fun infoString(verbose: Boolean?): String {
-        return "${javaClass.simpleName}(submissionId=${submission.submissionId}, valid=$valid, validationErrors=$validationErrors)"
+        return if (verbose == true) toString() else "${javaClass.simpleName}(submissionId=${submission.submissionId}, valid=$valid, validationErrors=$validationErrors)"
     }
 }
 

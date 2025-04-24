@@ -17,7 +17,6 @@ package com.embabel.ux.form
 
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.collections.get
 
 fun interface Validator {
     fun validate(value: ControlValue, control: Control): ValidationResult
@@ -43,6 +42,7 @@ class RequiredValidator : Validator {
     }
 }
 
+
 class PatternValidator(private val pattern: String, private val errorMessage: String) : Validator {
     override fun validate(value: ControlValue, control: Control): ValidationResult {
         return when (value) {
@@ -59,6 +59,39 @@ class PatternValidator(private val pattern: String, private val errorMessage: St
     }
 }
 
+class DoubleRangeValidator(private val min: Double, private val max: Double, private val errorMessage: String) :
+    Validator {
+    override fun validate(value: ControlValue, control: Control): ValidationResult {
+        return when (value) {
+            is ControlValue.NumberValue -> {
+                if (value.value in min..max) {
+                    ValidationResult(true)
+                } else {
+                    ValidationResult(false, errorMessage)
+                }
+            }
+
+            else -> ValidationResult(true) // Only applicable to text values
+        }
+    }
+}
+
+class DropDownValidator(private val options: List<String>, private val errorMessage: String) : Validator {
+    override fun validate(value: ControlValue, control: Control): ValidationResult {
+        return when (value) {
+            is ControlValue.OptionValue -> {
+                if (options.contains(value.value)) {
+                    ValidationResult(true)
+                } else {
+                    ValidationResult(false, errorMessage)
+                }
+            }
+
+            else -> ValidationResult(true)
+        }
+    }
+}
+
 class DefaultFormProcessor : FormProcessor {
 
     override fun processSubmission(form: Form, submission: FormSubmission): FormSubmissionResult {
@@ -70,21 +103,25 @@ class DefaultFormProcessor : FormProcessor {
         val errors = mutableMapOf<String, String>()
 
         // Process each control in the form
-        form.controls.forEach { control ->
-            val rawValue = submission.values[control.id]
+        form.controls
+            .filterNot {
+                it is RequirableControl && it.disabled
+            }
+            .forEach { control ->
+                val rawValue = submission.values[control.id]
 
-            // Convert raw value to typed ControlValue
-            val controlValue = convertToControlValue(rawValue, control)
-            processedValues[control.id] = controlValue
+                // Convert raw value to typed ControlValue
+                val controlValue = convertToControlValue(rawValue, control)
+                processedValues[control.id] = controlValue
 
-            // Validate the value if validators exist for this control
-            validators[control.id]?.forEach { validator ->
-                val result = validator.validate(controlValue, control)
-                if (!result.isValid) {
-                    errors[control.id] = result.errorMessage ?: "Invalid value"
+                // Validate the value if validators exist for this control
+                validators[control.id]?.forEach { validator ->
+                    val result = validator.validate(controlValue, control)
+                    if (!result.isValid) {
+                        errors[control.id] = result.errorMessage ?: "Invalid value"
+                    }
                 }
             }
-        }
 
         return FormSubmissionResult(
             submission = submission,
@@ -111,7 +148,10 @@ class DefaultFormProcessor : FormProcessor {
                 else ControlValue.TimeValue(LocalTime.parse(value.toString()))
             }
 
-            is Dropdown -> ControlValue.OptionValue(value.toString())
+            is Dropdown -> {
+                ControlValue.OptionValue(value.toString())
+            }
+
             is RadioGroup -> ControlValue.OptionValue(value.toString())
             is FileUpload -> {
                 if (value is Map<*, *>) {
@@ -133,42 +173,43 @@ private fun defaultValidatorsFor(form: Form): Map<String, List<Validator>> {
 
     form.controls.forEach { control ->
         val controlValidators = mutableListOf<Validator>()
-
-        // Add required validator if needed
+        if (control is RequirableControl && control.required) {
+            controlValidators += RequiredValidator()
+        }
         when (control) {
             is TextField -> {
-                if (control.required) controlValidators.add(RequiredValidator())
                 if (control.validationPattern != null && control.validationMessage != null) {
                     controlValidators.add(PatternValidator(control.validationPattern, control.validationMessage))
                 }
             }
 
-            is TextArea -> {
-                if (control.required) controlValidators.add(RequiredValidator())
-            }
-
             is Dropdown -> {
-                if (control.required) controlValidators.add(RequiredValidator())
-            }
-
-            is Checkbox -> {
-                if (control.required) controlValidators.add(RequiredValidator())
-            }
-
-            is RadioGroup -> {
-                if (control.required) controlValidators.add(RequiredValidator())
+                controlValidators.add(
+                    DropDownValidator(
+                        control.options.map { it.value },
+                        "Value must be one of ${control.options.joinToString()}",
+                    )
+                )
             }
 
             is DatePicker -> {
-                if (control.required) controlValidators.add(RequiredValidator())
             }
 
             is TimePicker -> {
-                if (control.required) controlValidators.add(RequiredValidator())
             }
 
             is FileUpload -> {
-                if (control.required) controlValidators.add(RequiredValidator())
+            }
+
+            is Slider -> {
+                controlValidators.add(
+                    DoubleRangeValidator(
+                        control.min,
+                        control.max,
+                        "Value must be between ${control.min} and ${control.max}",
+                    )
+                )
+
             }
 
             else -> {} // No validation for other controls
