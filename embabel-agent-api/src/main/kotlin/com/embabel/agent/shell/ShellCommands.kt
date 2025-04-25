@@ -167,6 +167,8 @@ class ShellCommands(
         @ShellOption(value = ["-r", "--showResponses"], help = "show LLM responses") showLlmResponses: Boolean = false,
         @ShellOption(value = ["-d", "--debug"], help = "show debug info") debug: Boolean = false,
         @ShellOption(value = ["-s", "--state"], help = "Use existing blackboard") state: Boolean = false,
+        @ShellOption(value = ["-td", "--toolDelay"], help = "Tool delay") toolDelay: Boolean = false,
+        @ShellOption(value = ["-od", "--operationDelay"], help = "Operation delay") operationDelay: Boolean = false,
 
         @ShellOption(
             value = ["-s", "--showPlanning"],
@@ -189,6 +191,8 @@ class ShellCommands(
                 verbosity = verbosity,
                 allowGoalChange = true,
                 maxActions = 40,
+                toolDelay = if (toolDelay) Delay.MEDIUM else Delay.NONE,
+                operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
             )
         )
     }
@@ -198,7 +202,12 @@ class ShellCommands(
         processOptions: ProcessOptions,
         intent: String,
     ): String {
-        logger.info("Created process options: $processOptions".color(LumonColors.MEMBRANE))
+//        logger.info("Created process options: $processOptions".color(LumonColors.MEMBRANE))
+        logger.info(
+            "Created process options: ${
+                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(processOptions)
+            }".color(LumonColors.MEMBRANE)
+        )
 
         return runProcess(verbosity = processOptions.verbosity, basis = intent) {
             if (open) {

@@ -32,6 +32,10 @@ data class Verbosity(
     val showLongPlans: Boolean get() = showPlanning || debug || showLlmResponses || showPrompts
 }
 
+enum class Delay {
+    NONE, MEDIUM, LONG
+}
+
 /**
  * How to run an AgentProcess
  * @param contextId context id to use for this process. Can be null.
@@ -54,6 +58,8 @@ data class ProcessOptions(
     val verbosity: Verbosity = Verbosity(),
     val allowGoalChange: Boolean = true,
     val maxActions: Int = 40,
+    val toolDelay: Delay = Delay.NONE,
+    val operationDelay: Delay = Delay.NONE,
 )
 
 /**

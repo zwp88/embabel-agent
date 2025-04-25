@@ -25,6 +25,7 @@ import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.DefaultToolDecorator
 import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
+import com.embabel.agent.spi.support.ProcessOptionsOperationScheduler
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
 import com.embabel.common.ai.model.*
 import com.embabel.common.core.MobyNameGenerator
@@ -85,7 +86,8 @@ class AgentPlatformConfiguration(
     )
 
     @Bean
-    fun actionScheduler(): OperationScheduler = OperationScheduler.PRONTO
+    fun actionScheduler(): OperationScheduler =
+        ProcessOptionsOperationScheduler()
 
     @Bean
     fun modelProvider(
