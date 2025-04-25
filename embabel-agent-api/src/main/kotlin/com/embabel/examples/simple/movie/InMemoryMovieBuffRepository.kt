@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class InMemoryMovieBuffRepository : MovieBuffRepository,
-    InMemoryRepository<MovieBuff>(
+    InMemoryCrudRepository<MovieBuff>(
         idGetter = { it.name },
         idSetter = { it, id -> it.copy(name = id) },
     )

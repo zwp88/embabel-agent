@@ -21,6 +21,7 @@ import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.anthropic.AnthropicChatModel
+import org.springframework.ai.anthropic.AnthropicChatOptions
 import org.springframework.ai.anthropic.api.AnthropicApi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -53,8 +54,16 @@ class AnthropicModels {
         knowledgeCutoffDate: LocalDate?,
     ): Llm {
 
-        val chatModel = AnthropicChatModel.builder()
+        val chatModel = AnthropicChatModel
+            .builder()
+
             .anthropicApi(AnthropicApi(apiKey))
+            .defaultOptions(
+                AnthropicChatOptions.builder()
+                    .model(name)
+                    .maxTokens(20000)
+                    .build()
+            )
             .build()
         return Llm(
             name = name,

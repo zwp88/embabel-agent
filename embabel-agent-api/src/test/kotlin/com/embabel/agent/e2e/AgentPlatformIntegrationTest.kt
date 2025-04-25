@@ -25,8 +25,8 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.common.test.config.FakeAiConfiguration
 import com.embabel.examples.simple.horoscope.HoroscopeService
-import com.embabel.examples.simple.horoscope.StarNewsFinder
-import com.embabel.examples.simple.horoscope.Writeup
+import com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder
+import com.embabel.examples.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

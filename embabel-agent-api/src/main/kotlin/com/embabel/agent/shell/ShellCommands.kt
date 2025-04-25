@@ -191,7 +191,7 @@ class ShellCommands(
                 verbosity = verbosity,
                 allowGoalChange = true,
                 maxActions = 40,
-                toolDelay = if (toolDelay) Delay.MEDIUM else Delay.NONE,
+                toolDelay = if (toolDelay) Delay.LONG else Delay.NONE,
                 operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
             )
         )

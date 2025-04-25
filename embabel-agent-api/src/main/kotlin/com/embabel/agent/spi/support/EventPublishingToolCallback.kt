@@ -20,6 +20,7 @@ import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.time
+import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
@@ -31,7 +32,7 @@ class DefaultToolDecorator : ToolDecorator {
         agentProcess: AgentProcess,
         llmOptions: LlmOptions,
     ): ToolCallback {
-        return tool.withEventPublication(agentProcess, llmOptions)
+        return ExceptionLoggingToolCallback(tool.withEventPublication(agentProcess, llmOptions))
     }
 }
 
@@ -68,4 +69,27 @@ class EventPublishingToolCallback(
         )
         return response
     }
+}
+
+class ExceptionLoggingToolCallback(
+    private val delegate: ToolCallback,
+) : ToolCallback {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
+
+    override fun call(toolInput: String): String =
+        try {
+            delegate.call(toolInput)
+        } catch (t: Throwable) {
+            // TODO publish tool call failure event,
+            // maybe conflate with above
+            logger.warn(
+                "Tool call failed: {}",
+                delegate.toolDefinition.name(),
+                t,
+            )
+            "Tool failure: ${t.message}"
+        }
 }

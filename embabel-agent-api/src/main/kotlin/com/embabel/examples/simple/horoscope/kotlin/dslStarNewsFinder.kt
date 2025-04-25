@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.examples.simple.horoscope
+package com.embabel.examples.simple.horoscope.kotlin
 
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.promptTransformer
 import com.embabel.agent.api.dsl.transformer
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.examples.simple.horoscope.HoroscopeService
 import org.springframework.beans.factory.annotation.Value
 
 fun starFinderAgent(

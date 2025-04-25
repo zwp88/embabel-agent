@@ -17,6 +17,9 @@ package com.embabel.examples.simple.horoscope
 
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.testing.captureLlmCall
+import com.embabel.examples.simple.horoscope.kotlin.Horoscope
+import com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder
+import com.embabel.examples.simple.horoscope.kotlin.StarPerson
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

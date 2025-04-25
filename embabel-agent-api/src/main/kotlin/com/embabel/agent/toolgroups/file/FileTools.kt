@@ -107,6 +107,7 @@ class FileTools(
     fun createFile(path: String, content: String): String {
         val resolvedPath = resolvePath(path)
         if (Files.exists(resolvedPath)) {
+            logger.warn("File already exists at {}", path)
             throw IllegalArgumentException("File already exists: $path")
         }
 
@@ -118,7 +119,7 @@ class FileTools(
         return "file created"
     }
 
-    @Tool(description = "Edit the file at the given location. Replace oldContent with newContent")
+    @Tool(description = "Edit the file at the given location. Replace oldContent with newContent. oldContent is typically just a part of the file. e.g. use it to replace a particular method to add another method")
     fun editFile(path: String, oldContent: String, newContent: String): String {
         logger.info("Editing file at path: $path: $oldContent -> $newContent")
         val resolvedPath = resolvePath(path)
@@ -130,12 +131,31 @@ class FileTools(
         }
 
         val currentContent = Files.readString(resolvedPath)
-        if (currentContent != oldContent) {
-            throw IllegalStateException("Current file content does not match the expected old content")
-        }
+//        if (currentContent != oldContent) {
+//            throw IllegalStateException("Current file content does not match the expected old content")
+//        }
+        val newFileContent = currentContent.replace(oldContent, newContent)
 
-        Files.writeString(resolvedPath, newContent)
+        Files.writeString(resolvedPath, newFileContent)
         logger.info("Edited file at path: $path")
         return "file edited"
     }
+
+    // April 25 2005: This method is the first method added to
+    // an Embabel project by an Embabel agent
+    @Tool(description = "Create a directory at the given path")
+    fun createDirectory(path: String): String {
+        val resolvedPath = resolvePath(path)
+        if (Files.exists(resolvedPath)) {
+            if (Files.isDirectory(resolvedPath)) {
+                return "directory already exists"
+            }
+            throw IllegalArgumentException("A file already exists at this path: $path")
+        }
+
+        Files.createDirectories(resolvedPath)
+        logger.info("Created directory at path: $path")
+        return "directory created"
+    }
+
 }

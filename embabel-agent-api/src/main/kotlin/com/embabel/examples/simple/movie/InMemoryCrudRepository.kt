@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Spring Data CRUD with in memory storage
  */
-open class InMemoryRepository<T : Any>(
+open class InMemoryCrudRepository<T : Any>(
     private val idGetter: (T) -> String?,
     private val idSetter: ((T, String) -> T),
 ) : CrudRepository<T, String> {

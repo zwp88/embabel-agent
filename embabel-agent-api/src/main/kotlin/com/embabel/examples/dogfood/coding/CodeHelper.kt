@@ -63,18 +63,18 @@ interface ProjectRepository : CrudRepository<Project, String>
 
 
 @Agent(
-    description = "Explain code",
+    description = "Explain code or perform changes to a software project or directory structure",
     toolGroups = [
         "file",
 //            ToolGroup.WEB,
     ],
 )
-class CodeExplainer(
+class CodeHelper(
     val projectRepository: ProjectRepository,
-    val defaultLocation: String = System.getProperty("user.dir"),
+    val defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
 ) {
 
-    private val logger = LoggerFactory.getLogger(CodeExplainer::class.java)
+    private val logger = LoggerFactory.getLogger(CodeHelper::class.java)
 
     private val claudeSonnet = LlmOptions(
         AnthropicModels.CLAUDE_37_SONNET
@@ -120,7 +120,9 @@ class CodeExplainer(
         ).create(
             """
                 Execute the following user request around explaining or modifying code in the given project.
-                Use the file tools to read code and directories before explaining it
+                Use the file tools to read code and directories.
+                Use the project information to help you understand the code.
+                The project will be in git so you can safely modify content without worrying about backups.
 
                 User request:
                 "${userInput.content}"

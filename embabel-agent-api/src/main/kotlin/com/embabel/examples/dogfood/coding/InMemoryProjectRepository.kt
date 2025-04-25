@@ -15,23 +15,23 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.examples.simple.movie.InMemoryRepository
+import com.embabel.examples.simple.movie.InMemoryCrudRepository
 import org.springframework.stereotype.Service
 
 @Service
 class InMemoryMovieProjectRepository : ProjectRepository,
-    InMemoryRepository<Project>(
+    InMemoryCrudRepository<Project>(
         idGetter = { it.location },
         idSetter = { _, _ -> TODO("shouldn't be called") },
     ) {
 
     init {
-        save(Embabel)
+        save(EmbabelAgentApi)
     }
 }
 
-val Embabel = Project(
-    location = System.getProperty("user.dir"),
+val EmbabelAgentApi = Project(
+    location = System.getProperty("user.dir") + "/embabel-agent-api",
     tech = """
         |Kotlin, Spring Boot, Maven, Jacoco, Spring AI
         |JUnit 5, mockk

@@ -75,7 +75,7 @@ data class Agent(
     }
 
     override fun infoString(verbose: Boolean?): String {
-        return "Agent " + super.infoString(verbose)
+        return "description: ${description}\n\tname: " + super.infoString(verbose)
     }
 
     private companion object {
