@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 
+const val DEFAULT_VERSION = "0.1.0-SNAPSHOT"
 
 /**
  * An agent defines a set of actions and conditions
@@ -40,7 +41,7 @@ import org.springframework.ai.tool.ToolCallback
  */
 data class Agent(
     override val name: String,
-    val version: String = "0.1.0-SNAPSHOT",
+    val version: String = DEFAULT_VERSION,
     override val description: String,
     override val toolCallbacks: Collection<ToolCallback> = emptyList(),
     override val toolGroups: Collection<String> = emptyList(),

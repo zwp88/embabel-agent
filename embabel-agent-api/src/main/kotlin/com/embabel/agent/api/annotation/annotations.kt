@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.annotation
 
+import com.embabel.agent.core.DEFAULT_VERSION
 import com.embabel.agent.core.IoBinding
 import com.embabel.common.core.types.ZeroToOne
 import org.springframework.stereotype.Component
@@ -54,7 +55,9 @@ annotation class Agentic(
 annotation class Agent(
     val name: String = "",
     val description: String,
+    val version: String = DEFAULT_VERSION,
     val scan: Boolean = true,
+    val toolGroups: Array<String> = [],
 )
 
 /**

@@ -62,7 +62,13 @@ data class Explanation(
 interface ProjectRepository : CrudRepository<Project, String>
 
 
-@Agent(description = "Explain code")
+@Agent(
+    description = "Explain code",
+    toolGroups = [
+        "file",
+//            ToolGroup.WEB,
+    ],
+)
 class CodeExplainer(
     val projectRepository: ProjectRepository,
     val defaultLocation: String = System.getProperty("user.dir"),
@@ -99,12 +105,7 @@ class CodeExplainer(
             projectRepository.save(project)
         }
 
-    @Action(
-        toolGroups = [
-            "file",
-//            ToolGroup.WEB,
-        ],
-    )
+    @Action
     @AchievesGoal(description = "Code has been explained to the user")
     fun explainCode(
         userInput: UserInput,

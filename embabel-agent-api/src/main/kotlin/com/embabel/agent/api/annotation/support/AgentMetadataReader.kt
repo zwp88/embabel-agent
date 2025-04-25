@@ -128,9 +128,11 @@ class AgentMetadataReader {
             return com.embabel.agent.core.Agent(
                 name = agenticInfo.agentAnnotation.name.ifBlank { agenticInfo.type.name },
                 description = agenticInfo.agentAnnotation.description,
+                version = agenticInfo.agentAnnotation.version,
                 conditions = conditions,
                 actions = actions,
                 goals = goals.toSet(),
+                toolGroups = agenticInfo.agentAnnotation.toolGroups.toList(),
             )
         }
 
