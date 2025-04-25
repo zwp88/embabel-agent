@@ -33,7 +33,7 @@ internal class MultiTransformer<O : Any>(
     value: Double = 0.0,
     transitions: List<Transition> = emptyList(),
     canRerun: Boolean = false,
-    qos: Qos = Qos(),
+    qos: ActionQos = ActionQos(),
     inputs: Set<IoBinding>,
     private val inputClasses: List<Class<*>>,
     private val outputClass: Class<O>,

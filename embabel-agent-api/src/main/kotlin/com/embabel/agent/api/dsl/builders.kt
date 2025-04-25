@@ -34,7 +34,7 @@ inline fun <reified I, reified O : Any> transformer(
     transitions: List<Transition> = emptyList(),
     toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Collection<String> = emptySet(),
-    qos: Qos = Qos(),
+    qos: ActionQos = ActionQos(),
     referencedInputProperties: Set<String>? = null,
     block: Transformation<I, O>,
 ): Action {
@@ -92,7 +92,7 @@ class Transformer<I, O>(
     value: Double = 0.0,
     transitions: List<Transition> = emptyList(),
     canRerun: Boolean = false,
-    qos: Qos = Qos(),
+    qos: ActionQos = ActionQos(),
     private val inputClass: Class<I>,
     private val outputClass: Class<O>,
     private val inputVarName: String = "it",

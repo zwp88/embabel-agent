@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.ActionRunner
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.Qos
 import com.embabel.agent.core.Transition
 import org.springframework.ai.tool.ToolCallback
 
@@ -49,7 +49,7 @@ internal class SerializableAction(
     toolCallbacks: Collection<ToolCallback> = emptyList(),
     toolGroups: Collection<String> = emptySet(),
     val runner: ActionRunner,
-    qos: Qos = Qos(),
+    qos: ActionQos = ActionQos(),
     canRerun: Boolean = false,
 ) : AbstractAction(
     name = name,

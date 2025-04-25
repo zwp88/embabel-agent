@@ -16,8 +16,8 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.core.Action
+import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.Qos
 import com.embabel.agent.core.Transition
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
@@ -54,7 +54,7 @@ abstract class AbstractAction(
     override val toolCallbacks: Collection<ToolCallback>,
     override val toolGroups: Collection<String>,
     override val canRerun: Boolean,
-    override val qos: Qos = Qos(),
+    override val qos: ActionQos = ActionQos(),
 ) : Action {
 
     protected val logger: Logger = LoggerFactory.getLogger(javaClass)

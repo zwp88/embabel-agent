@@ -16,8 +16,8 @@
 package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
-import com.embabel.agent.core.Qos
 import com.embabel.agent.core.Transition
 import com.embabel.common.ai.model.LlmOptions
 import org.springframework.ai.tool.ToolCallback
@@ -35,7 +35,7 @@ inline fun <reified I, reified O : Any> promptTransformer(
     cost: Double = 0.0,
     transitions: List<Transition> = emptyList(),
     toolGroups: Collection<String> = emptyList(),
-    qos: Qos = Qos(),
+    qos: ActionQos = ActionQos(),
     referencedInputProperties: Set<String>? = null,
     llm: LlmOptions = LlmOptions(),
     expectation: Condition? = null,

@@ -180,7 +180,7 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
     val canRerun: Boolean
 
     val transitions: List<Transition>
-    val qos: Qos
+    val qos: ActionQos
 
     override val schemaTypes: Collection<SchemaType>
         get() =

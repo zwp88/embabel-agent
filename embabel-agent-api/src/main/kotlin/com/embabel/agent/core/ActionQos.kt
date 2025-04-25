@@ -21,7 +21,7 @@ import org.springframework.retry.support.RetryTemplateBuilder
 /**
  * Quality of service requirements for an action
  */
-data class Qos(
+data class ActionQos(
     val maxAttempts: Int = 3,
     val idempotent: Boolean = false,
 ) {
