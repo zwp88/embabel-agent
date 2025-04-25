@@ -28,7 +28,7 @@ data class ActionInvocation(
 /**
  * Run of an agent
  */
-interface AgentProcess : Blackboard, Timed, OperationStatus<AgentProcessStatusCode> {
+interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentProcessStatusCode> {
 
     /**
      * Unique id of this process
@@ -40,8 +40,6 @@ interface AgentProcess : Blackboard, Timed, OperationStatus<AgentProcessStatusCo
     val history: List<ActionInvocation>
 
     val processContext: ProcessContext
-
-    val startedDate: Instant
 
     /**
      * The agent that this process is running for
@@ -66,7 +64,7 @@ interface AgentProcess : Blackboard, Timed, OperationStatus<AgentProcessStatusCo
     /**
      * How long this process has been running
      */
-    override val runningTime get(): Duration = Duration.between(startedDate, Instant.now())
+    override val runningTime get(): Duration = Duration.between(timestamp, Instant.now())
 
     fun <O> resultOfType(outputClass: Class<O>): O {
         require(status == AgentProcessStatusCode.COMPLETED) {

@@ -33,7 +33,7 @@ internal class SimpleAgentProcess(
     val blackboard: Blackboard,
     @get:JsonIgnore
     val platformServices: PlatformServices,
-    override val startedDate: Instant = Instant.now(),
+    override val timestamp: Instant = Instant.now(),
 ) : AgentProcess, Blackboard by blackboard {
 
     private val logger = LoggerFactory.getLogger(SimpleAgentProcess::class.java)
