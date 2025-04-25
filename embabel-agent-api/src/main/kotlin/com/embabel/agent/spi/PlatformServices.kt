@@ -26,4 +26,5 @@ data class PlatformServices(
     val agentPlatform: AgentPlatform,
     val llmOperations: LlmOperations,
     val eventListener: AgenticEventListener,
+    val operationScheduler: OperationScheduler,
 )

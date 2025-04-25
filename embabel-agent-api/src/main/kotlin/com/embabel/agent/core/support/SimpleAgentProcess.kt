@@ -17,12 +17,12 @@ package com.embabel.agent.core.support
 
 import com.embabel.agent.core.*
 import com.embabel.agent.event.*
-import com.embabel.agent.spi.PlatformServices
-import com.embabel.agent.spi.StuckHandlingResultCode
+import com.embabel.agent.spi.*
 import com.embabel.plan.goap.AStarGoapPlanner
 import com.embabel.plan.goap.WorldStateDeterminer
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.time.Instant
 
 internal class SimpleAgentProcess(
@@ -113,7 +113,6 @@ internal class SimpleAgentProcess(
             tick()
         }
         when (status) {
-
             AgentProcessStatusCode.RUNNING -> {
                 logger.debug("Process {} is happily running: {}", this.id, status)
             }
@@ -131,6 +130,11 @@ internal class SimpleAgentProcess(
             }
 
             AgentProcessStatusCode.STUCK -> {
+                platformServices.eventListener.onProcessEvent(AgentProcessPausedEvent(this))
+                handleStuck(agent)
+            }
+
+            AgentProcessStatusCode.PAUSED -> {
                 platformServices.eventListener.onProcessEvent(AgentProcessStuckEvent(this))
                 handleStuck(agent)
             }
@@ -233,13 +237,34 @@ internal class SimpleAgentProcess(
             outputTypes,
         )
 
-        val actionStatus = action.qos.retryTemplate().execute<ActionStatus, Exception> {
-            platformServices.eventListener.onProcessEvent(
-                ActionExecutionStartEvent(
-                    agentProcess = this,
-                    action = action,
+        val actionExecutionStartEvent = ActionExecutionStartEvent(
+            agentProcess = this,
+            action = action,
+        )
+        platformServices.eventListener.onProcessEvent(actionExecutionStartEvent)
+        val actionExecutionSchedule = platformServices.operationScheduler.scheduleAction(actionExecutionStartEvent)
+        when (actionExecutionSchedule) {
+            is ProntoActionExecutionSchedule -> {
+                // Do nothing
+            }
+
+            is DelayedActionExecutionSchedule -> {
+                // Delay and move on
+                logger.debug("Process {} delayed action {}: {}", id, action.name, actionExecutionSchedule)
+                Thread.sleep(actionExecutionSchedule.delay.toMillis())
+                logger.debug("Process {} delayed action {}: done", id, action.name)
+            }
+
+            is ScheduledActionExecutionSchedule -> {
+                return ActionStatus(
+                    Duration.between(actionExecutionStartEvent.timestamp, Instant.now()),
+                    ActionStatusCode.PAUSED
                 )
-            )
+            }
+        }
+
+        val actionStatus = action.qos.retryTemplate().execute<ActionStatus, Exception> {
+
             val actionStatus = action.execute(
                 processContext = processContext,
                 outputTypes = outputTypes,
@@ -276,6 +301,11 @@ internal class SimpleAgentProcess(
             ActionStatusCode.WAITING -> {
                 logger.debug("⏳ Process {} action {} waiting", id, actionStatus.status)
                 AgentProcessStatusCode.WAITING
+            }
+
+            ActionStatusCode.PAUSED -> {
+                logger.debug("⏳ Process {} action {} paused", id, actionStatus.status)
+                AgentProcessStatusCode.PAUSED
             }
         }
     }

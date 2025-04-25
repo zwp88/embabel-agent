@@ -20,6 +20,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.shell.DefaultPromptProvider
 import com.embabel.agent.spi.AgentProcessRepository
+import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.DefaultToolDecorator
@@ -37,6 +38,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.web.client.RestTemplate
 
+/**
+ * Core configuration for AgentPlatform
+ */
 @Configuration
 @EnableConfigurationProperties(ModelProperties::class)
 class AgentPlatformConfiguration(
@@ -54,10 +58,16 @@ class AgentPlatformConfiguration(
     @Bean
     fun templateRenderer(): TemplateRenderer = JinjavaTemplateRenderer()
 
+    /**
+     * Fallback if we don't have a more interesting logger
+     */
     @Bean
     @ConditionalOnMissingBean(LoggingAgenticEventListener::class)
     fun defaultLogger(): AgenticEventListener = LoggingAgenticEventListener()
 
+    /**
+     * Fallback if we don't have a more interesting prompt provider
+     */
     @Bean
     @ConditionalOnMissingBean(PromptProvider::class)
     fun defaultPromptProvider(): PromptProvider = DefaultPromptProvider()
@@ -75,18 +85,17 @@ class AgentPlatformConfiguration(
     )
 
     @Bean
+    fun actionScheduler(): OperationScheduler = OperationScheduler.PRONTO
+
+    @Bean
     fun modelProvider(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,
         properties: ModelProperties,
-    ): ModelProvider {
-
-        return ApplicationPropertiesModelProvider(
-            llms = llms,
-            embeddingServices = embeddingServices,
-            properties = properties,
-        )
-
-    }
+    ): ModelProvider = ApplicationPropertiesModelProvider(
+        llms = llms,
+        embeddingServices = embeddingServices,
+        properties = properties,
+    )
 
 }

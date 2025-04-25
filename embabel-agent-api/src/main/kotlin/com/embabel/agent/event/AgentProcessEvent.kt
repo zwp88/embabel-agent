@@ -111,6 +111,10 @@ class AgentProcessWaitingEvent(
     agentProcess: AgentProcess,
 ) : AbstractAgentProcessEvent(agentProcess)
 
+class AgentProcessPausedEvent(
+    agentProcess: AgentProcess,
+) : AbstractAgentProcessEvent(agentProcess)
+
 class AgentProcessStuckEvent(
     agentProcess: AgentProcess,
 ) : AbstractAgentProcessEvent(agentProcess)

@@ -58,6 +58,7 @@ internal class DefaultAgentPlatform(
     private val processIdGenerator: ProcessIdGenerator,
     override val properties: DefaultAgentPlatformProperties,
     private val agentProcessRepository: AgentProcessRepository,
+    private val operationScheduler: OperationScheduler,
 ) : AgentPlatform {
 
     private val logger = LoggerFactory.getLogger(DefaultAgentPlatform::class.java)
@@ -76,6 +77,7 @@ internal class DefaultAgentPlatform(
         llmOperations = llmOperations,
         agentPlatform = this,
         eventListener = eventListener,
+        operationScheduler = operationScheduler,
     )
 
     init {

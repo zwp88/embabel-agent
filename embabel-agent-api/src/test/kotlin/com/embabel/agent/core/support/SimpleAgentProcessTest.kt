@@ -34,10 +34,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
 import com.embabel.agent.event.logging.personality.severance.SeveranceLoggingAgenticEventListener
-import com.embabel.agent.spi.PlatformServices
-import com.embabel.agent.spi.StuckHandler
-import com.embabel.agent.spi.StuckHandlerResult
-import com.embabel.agent.spi.StuckHandlingResultCode
+import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.agent.support.SimpleTestAgent
 import io.mockk.every
@@ -124,6 +121,8 @@ class SimpleAgentProcessTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns ese
             every { mockPlatformServices.llmOperations } returns mockk()
+            every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
+
             val blackboard = InMemoryBlackboard()
             blackboard += ("it" to UserInput("Rod"))
             val agentProcess = SimpleAgentProcess(
@@ -145,6 +144,8 @@ class SimpleAgentProcessTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns ese
             every { mockPlatformServices.llmOperations } returns mockk()
+            every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
+
             val blackboard = InMemoryBlackboard()
             blackboard += ("it" to UserInput("Rod"))
             val agentProcess = SimpleAgentProcess(
@@ -208,6 +209,7 @@ class SimpleAgentProcessTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns ese
             every { mockPlatformServices.llmOperations } returns mockk()
+            every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
             val blackboard = InMemoryBlackboard()
             // Don't add anything to the blackboard
             val agentProcess = SimpleAgentProcess(

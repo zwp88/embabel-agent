@@ -35,7 +35,13 @@ enum class AgentProcessStatusCode {
     STUCK,
 
     /** The process is waiting for user input or another external event */
-    WAITING
+    WAITING,
+
+    /**
+     * The process is running without error but has paused because
+     * of scheduling policy.
+     **/
+    PAUSED,
 }
 
 enum class ActionStatusCode {
@@ -47,6 +53,8 @@ enum class ActionStatusCode {
 
     /** The action result means we're waiting for user input or another external event */
     WAITING,
+
+    PAUSED,
 }
 
 /**
