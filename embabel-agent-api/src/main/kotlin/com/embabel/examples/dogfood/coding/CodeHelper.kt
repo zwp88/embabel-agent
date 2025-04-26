@@ -53,6 +53,12 @@ data class Project(
         location = Location.BEGINNING,
         role = "project",
     )
+
+    // TODO this branches. Or does it wait?
+    @Action
+    fun build() {
+
+    }
 }
 
 data class Explanation(
@@ -119,10 +125,38 @@ class CodeHelper(
             promptContributors = listOf(project)
         ).create(
             """
-                Execute the following user request around explaining or modifying code in the given project.
+                Execute the following user request to explain something about the given project.
+                Use the file tools to read code and directories.
+                Use the project information to help you understand the code.
+
+                User request:
+                "${userInput.content}"
+            """.trimIndent(),
+        )
+        return Explanation(explanation)
+    }
+
+    // TODO or can an agent have only one goal?
+    // Wider scope, between platform and agent
+    @Action
+    @AchievesGoal(description = "Modify project code as per user request")
+    fun modifyCode(
+        userInput: UserInput,
+        project: Project,
+        payload: OperationPayload
+    ): Explanation {
+        val explanation: String = payload.promptRunner(
+            llm = LlmOptions(
+                AnthropicModels.CLAUDE_37_SONNET
+            ),
+            promptContributors = listOf(project)
+        ).create(
+            """
+                Execute the following user request to modify code in the given project.
                 Use the file tools to read code and directories.
                 Use the project information to help you understand the code.
                 The project will be in git so you can safely modify content without worrying about backups.
+                Return an explanation of what you did and why.
 
                 User request:
                 "${userInput.content}"

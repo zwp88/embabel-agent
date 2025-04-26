@@ -19,19 +19,97 @@ import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
+interface ToolGroupDescription {
+
+    /**
+     * Natural language description of the tool group.
+     * May be used by an LLM to choose tool groups so should be informative.
+     * Tool groups with the same role should have similar descriptions,
+     * although they should call out any unique features.
+     */
+    val description: String
+
+    /**
+     * Role of the tool group. Many tool groups can provide this
+     * Multiple tool groups can provide the same role,
+     * for example with different QoS.
+     */
+    val role: String
+
+    companion object {
+        operator fun invoke(
+            description: String,
+            role: String,
+        ): ToolGroupDescription = ToolGroupDescriptionImpl(
+            description = description,
+            role = role,
+        )
+    }
+
+}
+
+private data class ToolGroupDescriptionImpl(
+    override val description: String,
+    override val role: String,
+) : ToolGroupDescription
+
 /**
- * Metadata about a tool group
- * @param role role of the tool group. Many tool groups can provide this
- * @param artifact name of the tool group
- * @param provider group provider
- * @param version version of the tool
+ * Metadata about a tool group. Interface as platforms
+ * may extend it
  */
-data class ToolGroupMetadata(
-    val role: String,
-    val artifact: String,
-    val provider: String,
-    val version: String = "0.1.0-SNAPSHOT",
-)
+interface ToolGroupMetadata : ToolGroupDescription {
+
+    /**
+     * Name of the tool group
+     */
+    val artifact: String
+
+    /**
+     * Provider of the tool group
+     */
+    val provider: String
+
+    /**
+     * Version of the tool group
+     */
+    val version: String
+
+    companion object {
+        operator fun invoke(
+            description: String,
+            role: String,
+            artifact: String,
+            provider: String,
+            version: String = "0.1.0-SNAPSHOT",
+        ): ToolGroupMetadata = MinimalToolGroupMetadata(
+            description = description,
+            role = role,
+            artifact = artifact,
+            provider = provider,
+            version = version,
+        )
+
+        operator fun invoke(
+            description: ToolGroupDescription,
+            artifact: String,
+            provider: String,
+        ): ToolGroupMetadata = MinimalToolGroupMetadata(
+            description = description.description,
+            role = description.role,
+            artifact = artifact,
+            provider = provider,
+        )
+    }
+
+}
+
+private data class MinimalToolGroupMetadata(
+    override val description: String,
+    override val role: String,
+    override val artifact: String,
+    override val provider: String,
+    override val version: String = "0.1.0-SNAPSHOT",
+) : ToolGroupMetadata
 
 interface ToolCallbackConsumer {
 
@@ -57,7 +135,7 @@ interface ToolGroupConsumer {
  * Interface allowing abstraction between tool concept
  * and specific tools.
  */
-interface ToolConsumer: ToolCallbackConsumer, ToolGroupConsumer {
+interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
 
     val name: String
 
@@ -95,7 +173,19 @@ data class ToolGroup(
      * Define well known tool groups
      */
     companion object {
+
         const val WEB = "web"
+
+        val WEB_DESCRIPTION = ToolGroupDescription(
+            description = "Tools for web search and scraping",
+            role = WEB,
+        )
+
+        const val FILE = "file"
+        val FILE_DESCRIPTION = ToolGroupDescription(
+            description = "Tools for file and directory operations",
+            role = FILE,
+        )
     }
 }
 

@@ -54,8 +54,8 @@ class ToolGroupsConfiguration(
         val scraper = ToolCallbacks.from(WebScraperTools(JSoupWebCrawler(maxDepth = 3))).toList()
         return ToolGroup(
             metadata = ToolGroupMetadata(
-                role = ToolGroup.WEB,
-                artifact = "web-scraper",
+                description = ToolGroup.WEB_DESCRIPTION,
+                artifact = "embabel-web",
                 provider = "Embabel",
             ),
             toolCallbacks = scraper + braveSearchTools
@@ -68,7 +68,7 @@ class ToolGroupsConfiguration(
         val tools = ToolCallbacks.from(codeTools).toList()
         return ToolGroup(
             metadata = ToolGroupMetadata(
-                role = "file",
+                description = ToolGroup.FILE_DESCRIPTION,
                 artifact = "file",
                 provider = "Embabel",
             ),
