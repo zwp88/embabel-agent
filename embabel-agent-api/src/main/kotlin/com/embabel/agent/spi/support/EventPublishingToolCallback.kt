@@ -57,6 +57,9 @@ class EventPublishingToolCallback(
             function = delegate.toolDefinition.name(),
             toolInput = toolInput,
         )
+        val toolCallSchedule =
+            agentProcess.processContext.platformServices.operationScheduler.scheduleToolCall(functionCallRequestEvent)
+        Thread.sleep(toolCallSchedule.delay.toMillis())
         agentProcess.processContext.onProcessEvent(functionCallRequestEvent)
         val (response, millis) = time {
             delegate.call(toolInput)

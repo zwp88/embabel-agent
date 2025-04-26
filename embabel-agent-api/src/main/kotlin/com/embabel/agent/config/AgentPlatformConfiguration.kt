@@ -15,20 +15,15 @@
  */
 package com.embabel.agent.config
 
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
 import com.embabel.agent.shell.DefaultPromptProvider
-import com.embabel.agent.spi.AgentProcessRepository
-import com.embabel.agent.spi.OperationScheduler
-import com.embabel.agent.spi.ToolDecorator
-import com.embabel.agent.spi.ToolGroupResolver
-import com.embabel.agent.spi.support.DefaultToolDecorator
-import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
-import com.embabel.agent.spi.support.ProcessOptionsOperationScheduler
-import com.embabel.agent.spi.support.RegistryToolGroupResolver
+import com.embabel.agent.spi.*
+import com.embabel.agent.spi.support.*
 import com.embabel.common.ai.model.*
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
@@ -81,6 +76,13 @@ class AgentPlatformConfiguration(
 
     @Bean
     fun restTemplate() = RestTemplate()
+
+    @Bean
+    fun ranker(llmOperations: LlmOperations): Ranker = LlmRanker(
+        llmOperations = llmOperations,
+        llm = LlmOptions(OpenAiModels.GPT_4o),
+        maxAttempts = 3,
+    )
 
     @Bean
     fun agentProcessRepository(): AgentProcessRepository = InMemoryAgentProcessRepository()

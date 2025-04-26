@@ -18,6 +18,7 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
 import com.embabel.agent.event.AgentProcessFunctionCallResponseEvent
+import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.common.ai.model.LlmOptions
 import io.mockk.every
@@ -58,6 +59,8 @@ class ToolDecoratorsKtTest {
         every { agentProcess.processContext.onProcessEvent(any()) } answers {
             // Do nothing
         }
+        every { agentProcess.processContext.platformServices } returns mockPlatformServices
+        every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
         val llm = LlmOptions()
         val decorated = tool.withEventPublication(agentProcess, llm)
         val rawResult = tool.call("{}")
@@ -75,6 +78,8 @@ class ToolDecoratorsKtTest {
         every { agentProcess.processContext.onProcessEvent(any()) } answers {
             ese.processEvents.add(firstArg())
         }
+        every { agentProcess.processContext.platformServices } returns mockPlatformServices
+        every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
         val llm = LlmOptions()
         val decorated = tool.withEventPublication(agentProcess, llm)
         decorated.call("{}")

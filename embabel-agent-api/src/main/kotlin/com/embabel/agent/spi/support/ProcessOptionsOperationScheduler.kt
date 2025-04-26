@@ -18,7 +18,10 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.core.Delay
 import com.embabel.agent.event.ActionExecutionStartEvent
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
-import com.embabel.agent.spi.*
+import com.embabel.agent.spi.ActionExecutionSchedule
+import com.embabel.agent.spi.DelayedActionExecutionSchedule
+import com.embabel.agent.spi.OperationScheduler
+import com.embabel.agent.spi.ToolCallSchedule
 import java.time.Duration
 
 /**
@@ -47,8 +50,8 @@ class ProcessOptionsOperationScheduler(
     }
 
     override fun scheduleToolCall(functionCallRequestEvent: AgentProcessFunctionCallRequestEvent): ToolCallSchedule {
-        return DelayedToolCallSchedule(
-            Duration.ofMillis(
+        return ToolCallSchedule(
+            delay = Duration.ofMillis(
                 toolDelays[functionCallRequestEvent.agentProcess.processContext.processOptions.operationDelay]
                     ?: 0L,
             )

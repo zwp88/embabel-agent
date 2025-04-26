@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.Goal
 import com.embabel.agent.domain.special.UserInput
@@ -25,15 +24,21 @@ import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import org.springframework.stereotype.Service
+import org.springframework.retry.support.RetryTemplate
+import org.springframework.retry.support.RetryTemplateBuilder
 
 /**
  * Use an LLM to rank things
  */
-@Service
 internal class LlmRanker(
     private val llmOperations: LlmOperations,
+    private val llm: LlmOptions = LlmOptions(),
+    private val maxAttempts: Int = 3,
 ) : Ranker {
+
+    private val retryTemplate: RetryTemplate =
+        RetryTemplateBuilder().maxAttempts(maxAttempts).fixedBackoff(20)
+            .build()
 
     override fun rankAgents(
         userInput: UserInput,
@@ -50,10 +55,23 @@ internal class LlmRanker(
         things: Set<T>,
         wordForThing: String,
     ): Rankings<T> where T : Named, T : Described {
-
         if (things.isEmpty()) {
             return Rankings(emptyList())
         }
+        return retryTemplate.execute<Rankings<T>, Exception> {
+            rankThingsInternal(
+                userInput = userInput,
+                things = things,
+                wordForThing = wordForThing,
+            )
+        }
+    }
+
+    private fun <T> rankThingsInternal(
+        userInput: UserInput,
+        things: Set<T>,
+        wordForThing: String,
+    ): Rankings<T> where T : Named, T : Described {
 
         val prompt = """
             Given the user input, choose the $wordForThing that best reflects the user's intent.
@@ -64,16 +82,28 @@ internal class LlmRanker(
             ${things.joinToString("\n") { "- ${it.name}: ${it.description}" }}
 
             Return the name of the chosen $wordForThing and the confidence score (0-1).
+            IMPORTANT: The fully qualified name must be exactly the same as in the list.
         """.trimIndent()
-        val grr = llmOperations.doTransform<RankingsResponse>(
+        val grr = llmOperations.doTransform(
             prompt = prompt,
             interaction = LlmInteraction(
                 id = InteractionId("rank-${wordForThing}s"),
-                llm = LlmOptions(model = OpenAiModels.GPT_4o_MINI),
+                llm = llm,
             ),
             outputClass = RankingsResponse::class.java,
             llmRequestEvent = null,
         )
+        val thingNames = things.map { it.name }
+        val bogus = grr.rankings.find { rankingChoice -> thingNames.none { rankingChoice.name == it } }
+        if (bogus != null) {
+            throw IllegalStateException(
+                "Ranker returned choice '$bogus' not in the list of available ${wordForThing}s: ${
+                    thingNames
+                }, raw=$grr"
+            )
+            return Rankings(emptyList())
+        }
+
         return Rankings(
             rankings = grr.rankings.map {
                 Ranking(

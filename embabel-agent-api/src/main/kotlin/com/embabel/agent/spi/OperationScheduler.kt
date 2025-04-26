@@ -50,16 +50,10 @@ data class ScheduledActionExecutionSchedule(
 ) : ActionExecutionSchedule
 
 
-sealed interface ToolCallSchedule : Timestamped
-
-data class ProntoToolCallSchedule(
+data class ToolCallSchedule(
+    val delay: Duration = Duration.ZERO,
     override val timestamp: Instant = Instant.now(),
-) : ToolCallSchedule
-
-data class DelayedToolCallSchedule(
-    val delay: Duration,
-    override val timestamp: Instant = Instant.now(),
-) : ToolCallSchedule
+) : Timestamped
 
 
 /**
@@ -90,5 +84,5 @@ private object ProntoOperationScheduler : OperationScheduler {
         ProntoActionExecutionSchedule()
 
     override fun scheduleToolCall(functionCallRequestEvent: AgentProcessFunctionCallRequestEvent): ToolCallSchedule =
-        ProntoToolCallSchedule()
+        ToolCallSchedule()
 }
