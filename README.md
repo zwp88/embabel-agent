@@ -274,6 +274,16 @@ Omit these for less verbose logging.
 > Spring Shell supports history. Type `!!` to repeat the last command.
 > This will survive restarts, so is handy when iterating on an agent.
 
+#### Further examples
+
+```
+execute "explain this project for a five your old"
+
+execute "take the StarNewsFinder kotlin example of the agent framework. create a parallel .java package beside its and create a java version of the same agent use the same annotations and other classes. use records for the data classes. make it modern java"
+
+execute "consider the StarNewsFinder kotlin class. This is intended as an example. Is there anything you could do to make it simpler? Include suggested API changes. Do not change code"
+```
+
 ### Bringing in additional LLMs
 
 Simply define Spring beans of type `Llm`.

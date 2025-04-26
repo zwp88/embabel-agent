@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.event.logging.personality.severance
 
+import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.shell.MessageGeneratorPromptProvider
 import com.embabel.common.util.RandomFromFileMessageGenerator
 import com.embabel.common.util.bold
@@ -25,10 +26,16 @@ import org.springframework.stereotype.Component
 
 fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColors.MEMBRANE)}"
 
-object LumonColors {
+@Component
+@Profile("severance")
+object LumonColors : ColorPalette {
     const val MEMBRANE: Int = 0xbeb780
     const val GREEN: Int = 0x7da17e
 
+    override val highlight: Int
+        get() = MEMBRANE
+    override val color2: Int
+        get() = GREEN
 }
 
 val LumonDepartments = listOf(

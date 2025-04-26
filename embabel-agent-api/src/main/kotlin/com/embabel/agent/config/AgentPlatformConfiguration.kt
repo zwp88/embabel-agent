@@ -18,6 +18,8 @@ package com.embabel.agent.config
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
+import com.embabel.agent.event.logging.personality.ColorPalette
+import com.embabel.agent.event.logging.personality.DefaultColorPalette
 import com.embabel.agent.shell.DefaultPromptProvider
 import com.embabel.agent.spi.AgentProcessRepository
 import com.embabel.agent.spi.OperationScheduler
@@ -72,6 +74,10 @@ class AgentPlatformConfiguration(
     @Bean
     @ConditionalOnMissingBean(PromptProvider::class)
     fun defaultPromptProvider(): PromptProvider = DefaultPromptProvider()
+
+    @Bean
+    @ConditionalOnMissingBean(ColorPalette::class)
+    fun defaultColorPalette(): ColorPalette = DefaultColorPalette()
 
     @Bean
     fun restTemplate() = RestTemplate()

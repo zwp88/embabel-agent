@@ -22,7 +22,7 @@ import com.embabel.agent.core.hitl.ConfirmationResponse
 import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.core.hitl.FormResponse
 import com.embabel.agent.domain.library.HasContent
-import com.embabel.agent.event.logging.personality.severance.LumonColors
+import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
@@ -49,6 +49,7 @@ class ShellCommands(
     private val environment: ConfigurableEnvironment,
     private val terminal: Terminal,
     private val objectMapper: ObjectMapper,
+    private val colorPalette: ColorPalette,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
@@ -120,7 +121,7 @@ class ShellCommands(
             )
         )
         logger.info("Execute your own intent via the 'execute' command. Enclose the intent in quotes. For example:")
-        logger.info("execute \"$intent\"".color(LumonColors.GREEN))
+        logger.info("execute \"$intent\"".color(colorPalette.color2))
         return output
     }
 
@@ -206,7 +207,7 @@ class ShellCommands(
         logger.info(
             "Created process options: ${
                 objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(processOptions)
-            }".color(LumonColors.MEMBRANE)
+            }".color(colorPalette.highlight)
         )
 
         return runProcess(verbosity = processOptions.verbosity, basis = intent) {
@@ -245,17 +246,17 @@ class ShellCommands(
                 // TODO naive Markdown test
                 if (result.output.text.contains("#")) {
                     return "\n" + markdownToConsole(result.output.text)
-                        .color(LumonColors.GREEN) + "\n"
+                        .color(colorPalette.color2) + "\n"
                 }
                 return WordUtils.wrap(result.output.text, 140).color(
-                    LumonColors.GREEN,
+                    colorPalette.color2,
                 ) + "\n"
             }
 
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
                 result.output
             ).color(
-                LumonColors.GREEN
+                colorPalette.color2,
             )
         } catch (ngf: NoGoalFound) {
             if (verbosity.debug) {
