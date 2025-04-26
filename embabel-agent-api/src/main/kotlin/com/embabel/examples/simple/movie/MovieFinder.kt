@@ -20,7 +20,6 @@ import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject
-import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
@@ -131,6 +130,8 @@ class MovieFinder(
 
     private val logger = LoggerFactory.getLogger(MovieFinder::class.java)
 
+    private val llm = LlmOptions(OpenAiModels.GPT_4o_MINI)
+
     init {
         // TODO this is only for example purposes
         populateMovieBuffRepository(movieBuffRepository)
@@ -167,7 +168,7 @@ class MovieFinder(
         movieBuff: MovieBuff,
         payload: TransformationPayload<*, DecoratedMovieBuff>,
     ): DecoratedMovieBuff {
-        val tasteProfile = payload.promptRunner(LlmOptions(AnthropicModels.CLAUDE_37_SONNET)) generateText
+        val tasteProfile = payload.promptRunner(llm) generateText
                 """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
@@ -191,7 +192,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        using(LlmOptions(AnthropicModels.CLAUDE_37_SONNET)).createObject(
+        using(llm).createObject(
             """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
@@ -221,7 +222,7 @@ class MovieFinder(
         payload: TransformationPayload<*, SuggestedMovieTitles>,
     ): StreamableMovies {
         val suggestedMovieTitles = payload.promptRunner(
-            LlmOptions(model = OpenAiModels.GPT_4o).withTemperature(1.3),
+            llm.withTemperature(1.3),
             promptContributors = listOf(config.suggesterPersona),
         ).createObject<SuggestedMovieTitles>(
             """
@@ -365,7 +366,7 @@ class MovieFinder(
         payload: TransformationPayload<*, SuggestionWriteup>,
     ): SuggestionWriteup {
         val text = payload.promptRunner(
-            llm = LlmOptions(OpenAiModels.GPT_4o_MINI),
+            llm = llm,
             promptContributors = listOf(config.suggesterPersona)
         ) generateText
                 """
