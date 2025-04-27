@@ -23,6 +23,9 @@ import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.core.hitl.FormResponse
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.ColorPalette
+import com.embabel.chat.ChatSession
+import com.embabel.chat.UserMessage
+import com.embabel.chat.agent.AgentPlatformChatSession
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
@@ -68,6 +71,18 @@ class ShellCommands(
     fun profiles(): String {
         val profiles = environment.activeProfiles
         return "Active profiles: ${profiles.joinToString()}"
+    }
+
+    @ShellMethod("Chat")
+    fun chat(): String {
+        val processOptions = ProcessOptions()
+        blackboard = processOptions.blackboard
+        val chatSession = AgentPlatformChatSession(
+            agentPlatform = this.agentPlatform,
+            messageListener = { },
+            processOptions = processOptions,
+        )
+        return chat(terminal, chatSession, colorPalette)
     }
 
     @ShellMethod("List agents")
@@ -328,6 +343,29 @@ private fun <T> doWithReader(
         .terminal(terminal)
         .build()
     return callback(lineReader)
+}
+
+private fun chat(
+    terminal: Terminal,
+    chatSession: ChatSession,
+    colorPalette: ColorPalette,
+): String {
+    val lineReader = LineReaderBuilder.builder()
+        .terminal(terminal)
+        .build()
+    lineReader.printAbove("Chat session started. Type 'exit' to end the session.")
+    while (true) {
+        val userInput = lineReader.readLine("You: ".color(colorPalette.highlight))
+        if (userInput.equals("exit", ignoreCase = true)) {
+            break
+        }
+        val userMessage = UserMessage(userInput)
+        chatSession.send(userMessage) {
+            lineReader.printAbove("Assistant: ${it.content.color(colorPalette.color2)}")
+        }
+    }
+
+    return "Conversation finished"
 }
 
 private fun confirmationResponseFromUserInput(

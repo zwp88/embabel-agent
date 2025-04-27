@@ -298,6 +298,10 @@ This will look for a goal, find the star finder goal and
 run the flow. `-p` will log prompts `-r` will log LLM responses.
 Omit these for less verbose logging.
 
+Use the `chat` command to enter an interactive chat with the agent.
+It will retain conversation history and attempt to run the most appropriate
+agent for each command.
+
 > Spring Shell supports history. Type `!!` to repeat the last command.
 > This will survive restarts, so is handy when iterating on an agent.
 
