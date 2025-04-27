@@ -16,16 +16,12 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.core.*
-import com.embabel.agent.domain.special.Extractable
-import com.embabel.agent.domain.special.ExtractableCompanion
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.AgentScanningAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
-import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.ZeroToOne
-import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -50,7 +46,6 @@ data class DefaultAgentPlatformProperties(
 
 @Service
 internal class DefaultAgentPlatform(
-    private val templateRenderer: TemplateRenderer,
     private val llmOperations: LlmOperations,
     override val ranker: Ranker,
     override val toolGroupResolver: ToolGroupResolver,
@@ -94,7 +89,6 @@ internal class DefaultAgentPlatform(
     override fun deploy(agent: Agent): DefaultAgentPlatform {
         logger.info("Deploying agent {}", agent.name)
         agents[agent.name] = agent
-        updateDomainTypeActions()
         return this
     }
 
@@ -115,31 +109,6 @@ internal class DefaultAgentPlatform(
         return deploy(agent)
     }
 
-    private fun updateDomainTypeActions() {
-        updateDomainTypeExtractionActions()
-    }
-
-    private fun updateDomainTypeExtractionActions() {
-        val extractables = domainTypes
-            .filter { Extractable::class.java.isAssignableFrom(it) }
-            .map { it as Class<out Extractable> }
-        logger.debug(
-            "Registering extraction actions for {} types: {}",
-            extractables.size,
-            extractables.map { it.simpleName },
-        )
-        extractables
-            .forEach { type ->
-                val companion = type.getDeclaredField("Companion").get(null) as ExtractableCompanion
-                val extractionAction = companion.extractionAction(LlmOptions())
-                if (!actions.any { it.name == extractionAction.name }) {
-                    logger.info("Registering extraction action {}", extractionAction.name)
-                    deploy(extractionAction)
-                } else {
-                    logger.debug("Extraction action {} already registered", extractionAction.name)
-                }
-            }
-    }
 
     /**
      * Deploy all agents from the given path

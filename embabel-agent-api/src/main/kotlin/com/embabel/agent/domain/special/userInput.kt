@@ -15,8 +15,6 @@
  */
 package com.embabel.agent.domain.special
 
-import com.embabel.agent.api.dsl.Transformer
-import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timestamped
 import java.time.Instant
 
@@ -27,15 +25,3 @@ data class UserInput(
     val content: String,
     override val timestamp: Instant = Instant.now(),
 ) : Timestamped
-
-/**
- * Interface implemented by objects that can be extracted from text using an LLM.
- */
-interface Extractable {
-    val companion: ExtractableCompanion
-}
-
-interface ExtractableCompanion {
-    fun extractionAction(llmOptions: LlmOptions): Transformer<UserInput, out Extractable>
-
-}
