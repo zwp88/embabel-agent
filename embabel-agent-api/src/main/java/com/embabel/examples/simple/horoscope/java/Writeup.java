@@ -20,41 +20,16 @@ import com.fasterxml.jackson.annotation.JsonClassDescription;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Objects;
-
 @JsonClassDescription("Writeup relating to a person's horoscope and relevant news")
-public class Writeup implements HasContent {
-
-    private final String text;
-
+public record Writeup(String text) implements HasContent {
+    
     @JsonCreator
-    public Writeup(
-            @JsonProperty("text") String text) {
+    public Writeup(@JsonProperty("text") String text) {
         this.text = text;
     }
-
+    
     @Override
     public String getText() {
         return text;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Writeup writeup = (Writeup) o;
-        return Objects.equals(text, writeup.text);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(text);
-    }
-
-    @Override
-    public String toString() {
-        return "Writeup{" +
-                "text='" + text + '\'' +
-                '}';
     }
 }

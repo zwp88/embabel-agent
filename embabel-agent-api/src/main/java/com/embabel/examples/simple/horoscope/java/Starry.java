@@ -18,38 +18,6 @@ package com.embabel.examples.simple.horoscope.java;
 import com.embabel.ux.form.Text;
 import com.fasterxml.jackson.annotation.JsonClassDescription;
 
-import java.util.Objects;
-
 @JsonClassDescription("Astrological details for a person")
-public class Starry {
-    @Text(label = "Star sign")
-    private final String sign;
-
-    public Starry(String sign) {
-        this.sign = sign;
-    }
-
-    public String getSign() {
-        return sign;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Starry starry = (Starry) o;
-        return Objects.equals(sign, starry.sign);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sign);
-    }
-
-    @Override
-    public String toString() {
-        return "Starry{" +
-                "sign='" + sign + '\'' +
-                '}';
-    }
+public record Starry(@Text(label = "Star sign") String sign) {
 }

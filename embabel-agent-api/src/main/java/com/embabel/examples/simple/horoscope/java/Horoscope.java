@@ -15,36 +15,5 @@
  */
 package com.embabel.examples.simple.horoscope.java;
 
-import java.util.Objects;
-
-public class Horoscope {
-    private final String summary;
-
-    public Horoscope(String summary) {
-        this.summary = summary;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Horoscope horoscope = (Horoscope) o;
-        return Objects.equals(summary, horoscope.summary);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(summary);
-    }
-
-    @Override
-    public String toString() {
-        return "Horoscope{" +
-                "summary='" + summary + '\'' +
-                '}';
-    }
+public record Horoscope(String summary) {
 }
