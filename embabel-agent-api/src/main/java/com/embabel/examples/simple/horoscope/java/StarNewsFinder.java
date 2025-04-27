@@ -17,6 +17,7 @@ package com.embabel.examples.simple.horoscope.java;
 
 import com.embabel.agent.api.annotation.AchievesGoal;
 import com.embabel.agent.api.annotation.Action;
+import com.embabel.agent.api.annotation.Agent;
 import com.embabel.agent.config.models.OpenAiModels;
 import com.embabel.agent.core.ToolGroup;
 import com.embabel.agent.domain.library.PersonImpl;
@@ -36,9 +37,10 @@ import static com.embabel.agent.api.annotation.support.ActionReturnPromptRunnerK
 /**
  * Find news based on a person's star sign
  */
-//@Agent(
-//        description = "Find news based on a person's star sign",
-//        scan = false)
+@Agent(
+        description = "Find news based on a person's star sign",
+        beanName = "javaStarNewsFinder",
+        scan = true)
 public class StarNewsFinder {
 
     private final HoroscopeService horoscopeService;

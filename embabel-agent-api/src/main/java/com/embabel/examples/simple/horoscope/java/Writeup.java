@@ -16,13 +16,20 @@
 package com.embabel.examples.simple.horoscope.java;
 
 import com.embabel.agent.domain.library.HasContent;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
+@JsonClassDescription("Writeup relating to a person's horoscope and relevant news")
 public class Writeup implements HasContent {
+
     private final String text;
 
-    public Writeup(String text) {
+    @JsonCreator
+    public Writeup(
+            @JsonProperty("text") String text) {
         this.text = text;
     }
 

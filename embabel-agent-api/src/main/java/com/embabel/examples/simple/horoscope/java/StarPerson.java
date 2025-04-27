@@ -17,6 +17,8 @@ package com.embabel.examples.simple.horoscope.java;
 
 import com.embabel.agent.domain.library.Person;
 import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 import java.util.Objects;
@@ -24,11 +26,15 @@ import java.util.Objects;
 @JsonClassDescription("Person with astrology details")
 public class StarPerson implements Person {
     private final String name;
-    
+
     @JsonPropertyDescription("Star sign")
     private final String sign;
 
-    public StarPerson(String name, String sign) {
+    @JsonCreator
+    public StarPerson(
+            @JsonProperty("name") String name,
+            @JsonProperty("sign") String sign
+    ) {
         this.name = name;
         this.sign = sign;
     }

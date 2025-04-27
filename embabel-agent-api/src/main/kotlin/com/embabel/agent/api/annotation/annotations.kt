@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation
 import com.embabel.agent.core.DEFAULT_VERSION
 import com.embabel.agent.core.IoBinding
 import com.embabel.common.core.types.ZeroToOne
+import org.springframework.core.annotation.AliasFor
 import org.springframework.stereotype.Component
 
 
@@ -58,6 +59,14 @@ annotation class Agent(
     val version: String = DEFAULT_VERSION,
     val scan: Boolean = true,
     val toolGroups: Array<String> = [],
+
+    /**
+     * The value may indicate a suggestion for a logical component name,
+     * to be turned into a Spring bean in case of an autodetected component.
+     * @return the suggested component name, if any (or empty String otherwise)
+     */
+    @get:AliasFor(annotation = Component::class, attribute = "value")
+    val beanName: String = ""
 )
 
 /**

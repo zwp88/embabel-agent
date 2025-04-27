@@ -19,13 +19,13 @@ import com.embabel.agent.api.common.*
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.*
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.common.test.config.FakeAiConfiguration
 import com.embabel.examples.simple.horoscope.HoroscopeService
-import com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder
 import com.embabel.examples.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -109,10 +109,10 @@ class AgentPlatformIntegrationTest(
 
         @Test
         fun `run star finder as transform by name`() {
-            val writeup = typedOps.asFunction<UserInput, Writeup>(
+            val writeup = typedOps.asFunction<UserInput, HasContent>(
                 processOptions = ProcessOptions(test = true),
-                outputClass = Writeup::class.java,
-                agentName = StarNewsFinder::class.qualifiedName!!,
+                outputClass = HasContent::class.java,
+                agentName = com.embabel.examples.simple.horoscope.java.StarNewsFinder::class.qualifiedName!!,
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
             )
@@ -133,9 +133,9 @@ class AgentPlatformIntegrationTest(
 
         @Test
         fun `run star finder as AgentPlatform transform`() {
-            val writeup = typedOps.asFunction<UserInput, Writeup>(
+            val writeup = typedOps.asFunction<UserInput, com.embabel.examples.simple.horoscope.java.Writeup>(
                 processOptions = ProcessOptions(test = true),
-                outputClass = Writeup::class.java,
+                outputClass = com.embabel.examples.simple.horoscope.java.Writeup::class.java,
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
             )
@@ -166,8 +166,8 @@ class AgentPlatformIntegrationTest(
             )
             assertNotNull(dynamicExecutionResult.output)
             assertTrue(
-                dynamicExecutionResult.output is Writeup,
-                "Expected FunnyWriteup, got ${dynamicExecutionResult.output.javaClass.name}"
+                dynamicExecutionResult.output is HasContent,
+                "Expected HasContent, got ${dynamicExecutionResult.output.javaClass.name}"
             )
 
         }
@@ -184,8 +184,8 @@ class AgentPlatformIntegrationTest(
             )
             assertNotNull(dynamicExecutionResult.output)
             assertTrue(
-                dynamicExecutionResult.output is Writeup,
-                "Expected FunnyWriteup, got ${dynamicExecutionResult.output?.javaClass?.name}"
+                dynamicExecutionResult.output is HasContent,
+                "Expected HasContent, got ${dynamicExecutionResult.output?.javaClass?.name}"
             )
         }
 

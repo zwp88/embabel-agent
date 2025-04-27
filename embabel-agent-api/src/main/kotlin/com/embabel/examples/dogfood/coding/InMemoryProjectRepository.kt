@@ -43,10 +43,8 @@ val EmbabelAgentApi = Project(
         Favor test cases using @Nested classes. Use ` instead of @DisplayName for test cases.
         In log statements, use placeholders for efficiency.
         E.g. logger.info("{} {}", a, b) instead of logger.info("computed string").
-        
+
         In Java, use modern Java features like var, records, and switch expressions.
         Use multiline strings rather than concatenation.
-        
-       
     """.trimIndent(),
 )

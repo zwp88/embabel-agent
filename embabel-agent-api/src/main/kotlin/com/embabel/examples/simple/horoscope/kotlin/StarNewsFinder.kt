@@ -62,7 +62,11 @@ data class Writeup(
 /**
  * Find news based on a person's star sign
  */
-@Agent(description = "Find news based on a person's star sign")
+@Agent(
+    description = "Find news based on a person's star sign",
+    scan = false,
+    beanName = "KotlinStarNewsFinder",
+)
 class StarNewsFinder(
     // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
