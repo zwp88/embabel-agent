@@ -15,8 +15,6 @@
  */
 package com.embabel.agent.experimental.prompt
 
-import com.embabel.common.ai.prompt.Location
-import com.embabel.common.ai.prompt.PromptContribution
 import com.embabel.common.ai.prompt.PromptContributor
 
 /**
@@ -31,17 +29,11 @@ data class Persona(
     val objective: String,
 ) : PromptContributor {
 
-    override fun promptContribution(): PromptContribution {
-        val content = """
+    override fun contribution() = """
             You are $name.
             Your persona: $persona.
             Your objective is $objective.
             Your voice: $voice.
         """.trimIndent()
-        return PromptContribution(
-            content = content,
-            location = Location.BEGINNING,
-            role = "persona",
-        )
-    }
+
 }

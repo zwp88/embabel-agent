@@ -25,8 +25,6 @@ import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.prompt.Location
-import com.embabel.common.ai.prompt.PromptContribution
 import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
@@ -42,17 +40,14 @@ data class Project(
     val codingStyle: String,
 ) : PromptContributor {
 
-    override fun promptContribution() = PromptContribution(
+    override fun contribution() =
         """
             |Project:
             |$tech
             |
             |Coding style:
             |$codingStyle
-        """.trimMargin(),
-        location = Location.BEGINNING,
-        role = "project",
-    )
+        """.trimMargin()
 
     // TODO this branches. Or does it wait?
     @Action

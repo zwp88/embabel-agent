@@ -15,8 +15,6 @@
  */
 package com.embabel.agent.experimental.prompt
 
-import com.embabel.common.ai.prompt.Location
-import com.embabel.common.ai.prompt.PromptContribution
 import com.embabel.common.ai.prompt.PromptContributor
 
 
@@ -34,8 +32,7 @@ data class CoStar(
     private val separator: String = "#".repeat(12),
 ) : PromptContributor {
 
-    override fun promptContribution(): PromptContribution {
-        val content = """
+    override fun contribution() = """
             # CONTEXT #
             $context
             $separator
@@ -52,10 +49,5 @@ data class CoStar(
             $audience
             $separator
         """.trimIndent()
-        return PromptContribution(
-            content = content,
-            location = Location.BEGINNING,
-            role = "costar",
-        )
-    }
+
 }
