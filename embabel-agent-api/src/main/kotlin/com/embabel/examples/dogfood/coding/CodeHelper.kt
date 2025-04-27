@@ -18,12 +18,17 @@ package com.embabel.examples.dogfood.coding
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.Condition
 import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels
+import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.lastOrNull
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.toolgroups.code.BuildResult
+import com.embabel.agent.toolgroups.code.toMavenBuildResult
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
@@ -60,7 +65,7 @@ data class Explanation(
     override val text: String,
 ) : HasContent
 
-data class WorkReport(
+data class CodeModificationReport(
     override val text: String,
 ) : HasContent
 
@@ -70,8 +75,7 @@ interface ProjectRepository : CrudRepository<Project, String>
 @Agent(
     description = "Explain code or perform changes to a software project or directory structure",
     toolGroups = [
-        "file",
-//            ToolGroup.WEB,
+        ToolGroup.FILE,
     ],
 )
 class CodeHelper(
@@ -110,13 +114,38 @@ class CodeHelper(
             projectRepository.save(project)
         }
 
-    @Action
+    @Action(
+        cost = 1000.0,
+        toolGroups = [
+            ToolGroup.FILE,
+            ToolGroup.CI,
+        ],
+    )
+    fun build(project: Project, payload: OperationPayload): BuildResult {
+        val buildOutput = payload.promptRunner(
+            llm = claudeSonnet,
+            promptContributors = listOf(project)
+        ).generateText(
+            """
+                Build the project at $defaultLocation
+                Using the appropriate tool
+            """.trimIndent(),
+        )
+        return toMavenBuildResult(buildOutput)
+    }
+
+    @Action(
+        toolGroups = [
+            ToolGroup.FILE,
+        ],
+    )
     @AchievesGoal(description = "Code has been explained to the user")
     fun explainCode(
         userInput: UserInput,
         project: Project,
-        payload: OperationPayload
+        payload: OperationPayload,
     ): Explanation {
+        val buildFailure = payload.lastOrNull<BuildResult> { !it.success }
         val explanation: String = payload.promptRunner(
             llm = LlmOptions(
                 AnthropicModels.CLAUDE_37_SONNET
@@ -130,20 +159,31 @@ class CodeHelper(
 
                 User request:
                 "${userInput.content}"
+                ${
+                buildFailure?.let {
+                    "Previous build failed:\n" + it.contribution()
+                }
+            }                            
             """.trimIndent(),
         )
         return Explanation(explanation)
     }
 
-    // TODO or can an agent have only one goal?
-    // Wider scope, between platform and agent
-    @Action
+    @Condition
+    fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success
+
+    @Action(pre = ["buildSucceeded"])
     @AchievesGoal(description = "Modify project code as per user request")
+    fun done(codeModificationReport: CodeModificationReport): CodeModificationReport {
+        return codeModificationReport
+    }
+
+    @Action(canRerun = true)
     fun modifyCode(
         userInput: UserInput,
         project: Project,
-        payload: OperationPayload
-    ): WorkReport {
+        payload: OperationPayload,
+    ): CodeModificationReport {
         val explanation: String = payload.promptRunner(
             llm = LlmOptions(
                 AnthropicModels.CLAUDE_37_SONNET
@@ -161,6 +201,6 @@ class CodeHelper(
                 "${userInput.content}"
             """.trimIndent(),
         )
-        return WorkReport(explanation)
+        return CodeModificationReport(explanation)
     }
 }

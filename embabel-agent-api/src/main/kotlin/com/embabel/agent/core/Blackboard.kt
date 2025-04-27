@@ -188,11 +188,19 @@ inline fun <reified T> Blackboard.last(): T? {
     return objects.filterIsInstance<T>().lastOrNull()
 }
 
+inline fun <reified T> Blackboard.lastOrNull(predicate: (t: T) -> Boolean): T? {
+    return objects.filterIsInstance<T>().lastOrNull { predicate(it) }
+}
+
 /**
  * Last entry of the given type, if there is one
  */
 fun <T> Blackboard.last(clazz: Class<T>): T? {
     return objects.filterIsInstance<T>(clazz).lastOrNull()
+}
+
+fun <T> Blackboard.lastOrNull(clazz: Class<T>, predicate: (t: T) -> Boolean): T? {
+    return objects.filterIsInstance<T>(clazz).lastOrNull { predicate(it) }
 }
 
 /**

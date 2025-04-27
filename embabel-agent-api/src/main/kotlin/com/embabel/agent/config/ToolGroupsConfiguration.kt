@@ -18,6 +18,7 @@ package com.embabel.agent.config
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.toolgroups.code.CiTools
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
 import com.embabel.agent.toolgroups.web.domain.WebScraperTools
@@ -66,17 +67,8 @@ class ToolGroupsConfiguration(
     fun fileToolsGroup(): ToolGroup =
         FileTools(root = System.getProperty("user.dir"))
 
-
-//    @Bean
-//    fun astrologyToolGroup(): ToolGroup {
-//        return ToolGroup(
-//            metadata = ToolGroupMetadata(
-//                role = "astrology",
-//                artifact = "default-starman",
-//                provider = "Embabel",
-//            ),
-//            toolCallbacks = ToolCallbacks.from(horoscopeTools).toList()
-//        )
-//    }
+    @Bean
+    fun codeToolsGroup(): ToolGroup =
+        CiTools(root = System.getProperty("user.dir") + "/embabel-agent-api")
 
 }

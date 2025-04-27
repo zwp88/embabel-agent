@@ -198,10 +198,10 @@ interface ToolGroup {
             role = FILE,
         )
 
-        const val CODE = "code"
-        val CODE_DESCRIPTION = ToolGroupDescription(
-            description = "Tools for operating on software code",
-            role = CODE,
+        const val CI = "code"
+        val CI_DESCRIPTION = ToolGroupDescription(
+            description = "Tools for running CI on a project",
+            role = CI,
         )
     }
 }
