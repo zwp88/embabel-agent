@@ -24,7 +24,7 @@ import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
-import com.embabel.common.test.config.FakeAiConfiguration
+import com.embabel.common.test.ai.config.FakeAiConfiguration
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.examples.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
