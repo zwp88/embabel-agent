@@ -163,7 +163,7 @@ class CodeHelper(
                 buildFailure?.let {
                     "Previous build failed:\n" + it.contribution()
                 }
-            }                            
+            }
             """.trimIndent(),
         )
         return Explanation(explanation)
