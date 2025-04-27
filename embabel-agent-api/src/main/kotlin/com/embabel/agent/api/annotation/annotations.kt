@@ -64,6 +64,8 @@ annotation class Agent(
  * Annotates a method that evaluates a condition.
  * This will have access to the processContext and also
  * can use any other state.
+ * @param name Name of the condition. If not provided, the name will be the method name
+ * Useful if we want to avoid magic strings by sharing a constant
  * @param cost Cost of evaluating the condition, between 0 and 1.
  * 0 is cheap; 1 is the most expensive. The platform can use this
  * information for optimization.
@@ -72,6 +74,7 @@ annotation class Agent(
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 annotation class Condition(
+    val name: String = "",
     val cost: ZeroToOne = 0.0,
 )
 

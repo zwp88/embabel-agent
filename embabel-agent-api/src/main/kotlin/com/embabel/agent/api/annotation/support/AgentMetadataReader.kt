@@ -31,7 +31,7 @@ import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
-import com.embabel.agent.core.Goal as IGoal
+import com.embabel.agent.core.Goal as AgentCoreGoal
 
 
 /**
@@ -146,6 +146,8 @@ class AgentMetadataReader {
 
     /**
      * Generate a qualified name to avoid name clashes.
+     * @param instance The instance of the class we are reading
+     * @param name The name of the method or property for which we should generate a method
      */
     private fun generateName(instance: Any, name: String): String {
         return "${instance.javaClass.name}.$name"
@@ -186,7 +188,7 @@ class AgentMetadataReader {
             if (method.parameterCount == 0 &&
                 method.returnType != Void.TYPE
             ) {
-                if (IGoal::class.java.isAssignableFrom(method.returnType)) {
+                if (AgentCoreGoal::class.java.isAssignableFrom(method.returnType)) {
                     goalGetters.add(method)
                 }
             }
@@ -200,9 +202,9 @@ class AgentMetadataReader {
     private fun getGoal(
         method: Method,
         instance: Any,
-    ): IGoal {
+    ): AgentCoreGoal {
         // We need to change the name to be the property name
-        val rawGoal = ReflectionUtils.invokeMethod(method, instance) as IGoal
+        val rawGoal = ReflectionUtils.invokeMethod(method, instance) as AgentCoreGoal
         return rawGoal.copy(name = generateName(instance, getterToPropertyName(method.name)))
     }
 
@@ -212,7 +214,9 @@ class AgentMetadataReader {
     ): ComputedBooleanCondition {
         val conditionAnnotation = method.getAnnotation(Condition::class.java)
         return ComputedBooleanCondition(
-            name = generateName(instance, method.name),
+            name = conditionAnnotation.name.ifBlank {
+                generateName(instance, method.name)
+            },
             cost = conditionAnnotation.cost,
         )
         { processContext ->
@@ -361,7 +365,7 @@ class AgentMetadataReader {
      */
     private fun createGoalFromActionMethod(
         method: Method,
-    ): IGoal? {
+    ): AgentCoreGoal? {
         val actionAnnotation = method.getAnnotation(Action::class.java)
         val goalAnnotation = method.getAnnotation(AchievesGoal::class.java)
         if (goalAnnotation == null) {
@@ -371,7 +375,7 @@ class AgentMetadataReader {
             name = actionAnnotation.outputBinding,
             type = method.returnType.name,
         )
-        return IGoal(
+        return AgentCoreGoal(
             name = "create_${method.returnType.simpleName}",
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),

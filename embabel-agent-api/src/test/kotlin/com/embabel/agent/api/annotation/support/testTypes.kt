@@ -138,6 +138,16 @@ class ConditionFromBlackboard {
 }
 
 @Agentic
+class CustomNameConditionFromBlackboard {
+
+    @Condition(name = "condition1")
+    fun `this is a weird name no one will see`(person: Person): Boolean {
+        return person.name == "Rod"
+    }
+
+}
+
+@Agentic
 class ConditionsFromBlackboard {
 
     @Condition

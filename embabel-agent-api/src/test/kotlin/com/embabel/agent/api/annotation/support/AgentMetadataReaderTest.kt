@@ -214,6 +214,24 @@ class AgentMetadataReaderTest {
         }
 
         @Test
+        fun `custom named blackboard condition invocation found and true`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(CustomNameConditionFromBlackboard())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.conditions.size)
+            val condition = metadata.conditions.first()
+            assertEquals("condition1", condition.name)
+            val mockProcessContext = mockk<ProcessContext>()
+            val bb = InMemoryBlackboard()
+            bb += Person("Rod")
+            every { mockProcessContext.blackboard } returns bb
+            every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
+                Person::class.java,
+            )
+            assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
+        }
+
+        @Test
         fun `blackboard condition invocation found and false`() {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(ConditionFromBlackboard())

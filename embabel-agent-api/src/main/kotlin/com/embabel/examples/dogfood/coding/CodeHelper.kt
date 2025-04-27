@@ -71,6 +71,7 @@ data class CodeModificationReport(
 
 interface ProjectRepository : CrudRepository<Project, String>
 
+const val BuildSucceeded = "buildSucceeded"
 
 @Agent(
     description = "Explain code or perform changes to a software project or directory structure",
@@ -169,10 +170,10 @@ class CodeHelper(
         return Explanation(explanation)
     }
 
-    @Condition
+    @Condition(name = BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success
 
-    @Action(pre = ["buildSucceeded"])
+    @Action(pre = [BuildSucceeded])
     @AchievesGoal(description = "Modify project code as per user request")
     fun done(codeModificationReport: CodeModificationReport): CodeModificationReport {
         return codeModificationReport
