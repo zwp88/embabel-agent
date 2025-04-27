@@ -92,17 +92,6 @@ internal class DefaultAgentPlatform(
         return this
     }
 
-    fun deploy(action: Action): DefaultAgentPlatform {
-        logger.info("Deploying action {}", action.name)
-        val agent = Agent(
-            name = action.name,
-            description = action.description,
-            actions = listOf(action),
-            goals = emptySet(),
-        )
-        return deploy(agent)
-    }
-
     fun deploy(resource: Resource): DefaultAgentPlatform {
         logger.info("Loading agent from {}", resource)
         val agent = yom.readValue<Agent>(resource.inputStream, Agent::class.java)
