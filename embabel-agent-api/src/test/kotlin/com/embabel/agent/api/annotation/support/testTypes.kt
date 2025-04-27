@@ -64,9 +64,43 @@ class TwoGoalsOnly {
 class ActionGoal {
 
     @Action
-    @AchievesGoal(description = "Creating a user")
+    @AchievesGoal(description = "Creating a person")
     fun toPerson(userInput: UserInput): Person {
         return Person(userInput.content)
+    }
+
+}
+
+@Agentic
+class TwoActionGoals {
+
+    @Action
+    @AchievesGoal(description = "Creating a person")
+    fun toPerson(userInput: UserInput): Person {
+        return Person(userInput.content)
+    }
+
+    @Action
+    @AchievesGoal(description = "Creating a frog")
+    fun toFrog(person: Person): Frog {
+        return Frog(person.name)
+    }
+
+}
+
+@Agentic
+class TwoConflictingActionGoals {
+
+    @Action
+    @AchievesGoal(description = "Creating a person")
+    fun toPerson(userInput: UserInput): Person {
+        return Person(userInput.content)
+    }
+
+    @Action
+    @AchievesGoal(description = "Also to person")
+    fun toFrog(person: Person): Person {
+        return person
     }
 
 }

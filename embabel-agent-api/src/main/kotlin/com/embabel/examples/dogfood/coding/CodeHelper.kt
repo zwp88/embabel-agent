@@ -60,6 +60,10 @@ data class Explanation(
     override val text: String,
 ) : HasContent
 
+data class WorkReport(
+    override val text: String,
+) : HasContent
+
 interface ProjectRepository : CrudRepository<Project, String>
 
 
@@ -139,7 +143,7 @@ class CodeHelper(
         userInput: UserInput,
         project: Project,
         payload: OperationPayload
-    ): Explanation {
+    ): WorkReport {
         val explanation: String = payload.promptRunner(
             llm = LlmOptions(
                 AnthropicModels.CLAUDE_37_SONNET
@@ -157,6 +161,6 @@ class CodeHelper(
                 "${userInput.content}"
             """.trimIndent(),
         )
-        return Explanation(explanation)
+        return WorkReport(explanation)
     }
 }

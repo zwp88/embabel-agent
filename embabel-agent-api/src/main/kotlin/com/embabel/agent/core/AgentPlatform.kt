@@ -139,16 +139,16 @@ interface AgentPlatform : AgentScope {
     ): AgentProcess
 
     override val schemaTypes: Collection<SchemaType>
-        get() = agents().flatMap { it.schemaTypes }.distinct()
+        get() = agents().flatMap { it.schemaTypes }.distinctBy { it.name }
 
     override val domainTypes: Collection<Class<*>>
         get() = agents().flatMap { it.domainTypes }.distinct()
 
     override val actions: List<Action>
-        get() = agents().flatMap { it.actions }.distinct()
+        get() = agents().flatMap { it.actions }.distinctBy { it.name }
 
     override val goals: Set<Goal>
-        get() = agents().flatMap { it.goals }.toSet()
+        get() = agents().flatMap { it.goals }.distinctBy { it.name }.toSet()
 
     override val conditions: Set<Condition>
         get() = agents().flatMap { it.conditions }.distinctBy { it.name }.toSet()

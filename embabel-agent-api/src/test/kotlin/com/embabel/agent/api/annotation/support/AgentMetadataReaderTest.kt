@@ -106,12 +106,45 @@ class AgentMetadataReaderTest {
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
             val g = metadata.goals.single()
-            assertEquals("Creating a user", g.description)
+            assertEquals("Creating a person", g.description)
             assertEquals(
                 mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
                 g.preconditions,
                 "Should have precondition for Person",
             )
+        }
+
+        @Test
+        fun `two action goals`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(TwoActionGoals())
+            assertNotNull(metadata)
+            assertEquals(2, metadata!!.goals.size)
+            val personGoal = metadata.goals.find { it.name == "create_Person" }
+                ?: fail("Should have toPerson goal: " + metadata.goals.map { it.name })
+            val frogGoal = metadata.goals.find { it.name == "create_Frog" }
+                ?: fail("Should have toFrog goal: " + metadata.goals.map { it.name })
+
+            assertEquals("Creating a person", personGoal.description)
+            assertEquals(
+                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
+                personGoal.preconditions,
+                "Should have precondition for Person",
+            )
+            assertEquals("Creating a frog", frogGoal.description)
+            assertEquals(
+                mapOf("it:${Frog::class.qualifiedName}" to ConditionDetermination.TRUE),
+                frogGoal.preconditions,
+                "Should have precondition for Frog",
+            )
+        }
+
+        @Test
+        @Disabled("must decide what behavior should be")
+        fun `two conflicting action goals`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(TwoConflictingActionGoals())
+            TODO("decide what to do here: this invalid")
         }
     }
 
