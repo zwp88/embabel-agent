@@ -22,6 +22,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 
+/**
+ * Default version for anything versioned
+ */
 const val DEFAULT_VERSION = "0.1.0-SNAPSHOT"
 
 /**

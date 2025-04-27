@@ -18,6 +18,7 @@ package com.embabel.agent.config
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.toolgroups.code.CiTools
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
@@ -58,6 +59,9 @@ class ToolGroupsConfiguration(
                 description = ToolGroup.WEB_DESCRIPTION,
                 artifact = "embabel-web",
                 provider = "Embabel",
+                permissions = setOf(
+                    ToolGroupPermission.INTERNET_ACCESS,
+                )
             ),
             toolCallbacks = scraper + braveSearchTools
         )

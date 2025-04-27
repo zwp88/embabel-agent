@@ -15,11 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.core.DEFAULT_VERSION
-import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.core.ToolGroupDescription
-import com.embabel.agent.core.ToolGroupMetadata
-import com.embabel.agent.core.ToolGroupMetadata.Companion.invoke
+import com.embabel.agent.core.*
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 
@@ -36,11 +32,14 @@ interface SelfToolGroup : ToolGroup {
 
     val version: String get() = DEFAULT_VERSION
 
+    val permissions: Set<ToolGroupPermission>
+
     override val metadata: ToolGroupMetadata
         get() = ToolGroupMetadata(
             description = description,
             artifact = artifact,
             provider = provider,
+            permissions = permissions,
             version = version,
         )
 

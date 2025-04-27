@@ -16,6 +16,7 @@
 package com.embabel.agent.toolgroups.code
 
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.common.ai.prompt.PromptContributor
 import org.slf4j.LoggerFactory
@@ -26,9 +27,11 @@ class CiTools(
     val root: String,
 ) : SelfToolGroup {
 
+    private val logger = LoggerFactory.getLogger(CiTools::class.java)
+
     override val description = ToolGroup.CI_DESCRIPTION
 
-    private val logger = LoggerFactory.getLogger(CiTools::class.java)
+    override val permissions = setOf(ToolGroupPermission.HOST_ACCESS)
 
     @Tool(description = "build the project using the given command in the root")
     fun buildProject(command: String): String {

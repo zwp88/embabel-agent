@@ -17,6 +17,7 @@ package com.embabel.agent.toolgroups.file
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
+import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolGroup
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
@@ -35,6 +36,8 @@ class FileTools(
 ) : SelfToolGroup {
 
     private val logger = LoggerFactory.getLogger(FileTools::class.java)
+
+    override val permissions = setOf(ToolGroupPermission.HOST_ACCESS)
 
     /**
      * Resolves a relative path against the root directory

@@ -53,6 +53,19 @@ private data class ToolGroupDescriptionImpl(
     override val role: String,
 ) : ToolGroupDescription
 
+enum class ToolGroupPermission {
+    /**
+     * Tool group can be used to modify local resources.
+     * This is a strong permission and should be used with caution.
+     */
+    HOST_ACCESS,
+
+    /**
+     * Tool group accesses the internet.
+     */
+    INTERNET_ACCESS,
+}
+
 /**
  * Metadata about a tool group. Interface as platforms
  * may extend it
@@ -74,18 +87,25 @@ interface ToolGroupMetadata : ToolGroupDescription {
      */
     val version: String
 
+    /**
+     * What this tool group's tools can do.
+     */
+    val permissions: Set<ToolGroupPermission>
+
     companion object {
         operator fun invoke(
             description: String,
             role: String,
             artifact: String,
             provider: String,
+            permissions: Set<ToolGroupPermission>,
             version: String = DEFAULT_VERSION,
         ): ToolGroupMetadata = MinimalToolGroupMetadata(
             description = description,
             role = role,
             artifact = artifact,
             provider = provider,
+            permissions = permissions,
             version = version,
         )
 
@@ -93,12 +113,14 @@ interface ToolGroupMetadata : ToolGroupDescription {
             description: ToolGroupDescription,
             artifact: String,
             provider: String,
+            permissions: Set<ToolGroupPermission>,
             version: String = DEFAULT_VERSION,
         ): ToolGroupMetadata = MinimalToolGroupMetadata(
             description = description.description,
             role = description.role,
             artifact = artifact,
             provider = provider,
+            permissions = permissions,
             version = version,
         )
     }
@@ -110,7 +132,8 @@ private data class MinimalToolGroupMetadata(
     override val role: String,
     override val artifact: String,
     override val provider: String,
-    override val version: String = "0.1.0-SNAPSHOT",
+    override val permissions: Set<ToolGroupPermission>,
+    override val version: String = DEFAULT_VERSION,
 ) : ToolGroupMetadata
 
 interface ToolCallbackConsumer {
