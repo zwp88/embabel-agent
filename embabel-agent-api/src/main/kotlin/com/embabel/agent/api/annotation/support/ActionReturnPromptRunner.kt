@@ -24,6 +24,7 @@ import org.springframework.ai.tool.ToolCallback
 /**
  * Return an ambient prompt runner for use to return in an @Action method.
  */
+@JvmOverloads
 fun using(
     llm: LlmOptions? = null,
     toolCallbacks: List<ToolCallback> = emptyList(),

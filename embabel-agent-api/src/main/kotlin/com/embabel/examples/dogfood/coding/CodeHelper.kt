@@ -158,7 +158,7 @@ class CodeHelper(
                 Use the project information to help you understand the code.
 
                 User request:
-                "${userInput.content}"              
+                "${userInput.content}"
             }
             """.trimIndent(),
         )
@@ -195,7 +195,7 @@ class CodeHelper(
 
                 User request:
                 "${userInput.content}"
-                
+
                 ${
                 buildFailure?.let {
                     "Previous build failed:\n" + it.contribution()

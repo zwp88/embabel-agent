@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 /**
  * Annotation for a text field
  */
-@Target(AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
 annotation class Text(
     val label: String,
     val placeholder: String = "",
