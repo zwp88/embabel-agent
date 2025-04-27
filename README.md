@@ -221,6 +221,30 @@ data class FunnyWriteup(
 ) : HasContent
 ```
 
+## Dog Food Policy
+
+We believe that all aspects of software development can
+be greatly accelerated through the use of AI agents. The ultimate decision
+makers remain human, but they can and should be greatly augmented.
+
+> This project practices extreme dogfooding.
+
+<!-- TODO photo of Duke with kibble -->
+
+Our three key principles:
+
+1. We will use AI agents to help every aspect of the project: coding, documentation, producing marketing copy etc. Any
+   human performing a task should ask why it cannot be automated, and strive toward maximum automation.
+2. Developers retain ultimate control. Developers are responsible for guiding agents toward the solution and iterating
+   as necessary. A development who commits or merges an agent contribution
+   is responsible for ensuring that it meets the project coding standards, which are
+   independent of the use of agents. For example, code must be human readable.
+3. We will not use any third party agents, but only agents built on the Embabel platform. While commercial coding agents
+   may be more advanced, we believe that our
+   platform is the best solution for automation and by dogfooding we will improve it faster.
+
+Developers must carefully read all code they commit and improve generated code if possible.
+
 ## Getting Started
 
 ### Environment variables
