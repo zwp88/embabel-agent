@@ -54,6 +54,11 @@
             <artifactId>kotlin-reflect</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-core</artifactId>
+        </dependency>
+
         <!-- Spring Boot Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -99,6 +104,11 @@
         <!-- Unit and Integration Testing -->
         <!-- Most common testing dependencies are in the embabel-agent-parent -->
         <!-- If something is missing, add it here -->
+        <dependency>
+            <groupId>com.embabel.common</groupId>
+            <artifactId>embabel-common-test-ai</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
