@@ -63,18 +63,9 @@ class ToolGroupsConfiguration(
     }
 
     @Bean
-    fun fileToolsGroup(): ToolGroup {
-        val codeTools = FileTools(System.getProperty("user.dir"))
-        val tools = ToolCallbacks.from(codeTools).toList()
-        return ToolGroup(
-            metadata = ToolGroupMetadata(
-                description = ToolGroup.FILE_DESCRIPTION,
-                artifact = "file",
-                provider = "Embabel",
-            ),
-            toolCallbacks = tools,
-        )
-    }
+    fun fileToolsGroup(): ToolGroup =
+        FileTools(root = System.getProperty("user.dir"))
+
 
 //    @Bean
 //    fun astrologyToolGroup(): ToolGroup {

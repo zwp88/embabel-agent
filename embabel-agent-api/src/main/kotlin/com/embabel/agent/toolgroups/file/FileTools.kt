@@ -15,6 +15,9 @@
  */
 package com.embabel.agent.toolgroups.file
 
+import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.ToolGroupDescription
+import com.embabel.agent.spi.support.SelfToolGroup
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
 import java.nio.file.FileSystems
@@ -27,8 +30,9 @@ import java.nio.file.Paths
  * @param root local files
  */
 class FileTools(
+    override val description: ToolGroupDescription = ToolGroup.FILE_DESCRIPTION,
     val root: String,
-) {
+) : SelfToolGroup {
 
     private val logger = LoggerFactory.getLogger(FileTools::class.java)
 

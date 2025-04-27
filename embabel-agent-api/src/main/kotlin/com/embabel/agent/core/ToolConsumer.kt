@@ -80,7 +80,7 @@ interface ToolGroupMetadata : ToolGroupDescription {
             role: String,
             artifact: String,
             provider: String,
-            version: String = "0.1.0-SNAPSHOT",
+            version: String = DEFAULT_VERSION,
         ): ToolGroupMetadata = MinimalToolGroupMetadata(
             description = description,
             role = role,
@@ -93,11 +93,13 @@ interface ToolGroupMetadata : ToolGroupDescription {
             description: ToolGroupDescription,
             artifact: String,
             provider: String,
+            version: String = DEFAULT_VERSION,
         ): ToolGroupMetadata = MinimalToolGroupMetadata(
             description = description.description,
             role = description.role,
             artifact = artifact,
             provider = provider,
+            version = version,
         )
     }
 
@@ -164,15 +166,24 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
     }
 }
 
-data class ToolGroup(
-    val metadata: ToolGroupMetadata,
-    val toolCallbacks: Collection<ToolCallback>,
-) {
+interface ToolGroup {
+
+    val metadata: ToolGroupMetadata
+
+    val toolCallbacks: Collection<ToolCallback>
 
     /**
      * Define well known tool groups
      */
     companion object {
+
+        operator fun invoke(
+            metadata: ToolGroupMetadata,
+            toolCallbacks: Collection<ToolCallback>,
+        ): ToolGroup = ToolGroupImpl(
+            metadata = metadata,
+            toolCallbacks = toolCallbacks,
+        )
 
         const val WEB = "web"
 
@@ -186,8 +197,19 @@ data class ToolGroup(
             description = "Tools for file and directory operations",
             role = FILE,
         )
+
+        const val CODE = "code"
+        val CODE_DESCRIPTION = ToolGroupDescription(
+            description = "Tools for operating on software code",
+            role = CODE,
+        )
     }
 }
+
+private data class ToolGroupImpl(
+    override val metadata: ToolGroupMetadata,
+    override val toolCallbacks: Collection<ToolCallback>,
+) : ToolGroup
 
 /**
  * Resolution of a tool group request
