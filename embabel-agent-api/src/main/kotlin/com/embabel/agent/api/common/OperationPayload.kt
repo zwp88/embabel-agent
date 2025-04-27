@@ -40,13 +40,13 @@ interface OperationPayload : Blackboard {
     fun promptRunner(
         llm: LlmOptions,
         toolCallbacks: List<ToolCallback> = emptyList(),
-        promptContributors: List<PromptContributor> = emptyList(),
+        promptContributors: List<PromptContributor?> = emptyList(),
     ): PromptRunner =
         OperationPayloadPromptRunner(
             this,
             llm = llm,
             toolCallbacks = toolCallbacks,
-            promptContributors = promptContributors,
+            promptContributors = promptContributors.filterNotNull(),
         )
 
     fun agentPlatform() = processContext.platformServices.agentPlatform

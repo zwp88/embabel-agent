@@ -146,7 +146,6 @@ class CodeHelper(
         project: Project,
         payload: OperationPayload,
     ): Explanation {
-        val buildFailure = payload.lastOrNull<BuildResult> { !it.success }
         val explanation: String = payload.promptRunner(
             llm = LlmOptions(
                 AnthropicModels.CLAUDE_37_SONNET
@@ -159,11 +158,7 @@ class CodeHelper(
                 Use the project information to help you understand the code.
 
                 User request:
-                "${userInput.content}"
-                ${
-                buildFailure?.let {
-                    "Previous build failed:\n" + it.contribution()
-                }
+                "${userInput.content}"              
             }
             """.trimIndent(),
         )
@@ -179,17 +174,16 @@ class CodeHelper(
         return codeModificationReport
     }
 
-    @Action(canRerun = true)
+    @Action(canRerun = true, post = [BuildSucceeded])
     fun modifyCode(
         userInput: UserInput,
         project: Project,
         payload: OperationPayload,
     ): CodeModificationReport {
-        val explanation: String = payload.promptRunner(
-            llm = LlmOptions(
-                AnthropicModels.CLAUDE_37_SONNET
-            ),
-            promptContributors = listOf(project)
+        val buildFailure = payload.lastOrNull<BuildResult> { !it.success }
+        val report: String = payload.promptRunner(
+            llm = claudeSonnet,
+            promptContributors = listOf(project, buildFailure),
         ).create(
             """
                 Execute the following user request to modify code in the given project.
@@ -197,11 +191,18 @@ class CodeHelper(
                 Use the project information to help you understand the code.
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
+                Consider any build failure report.
 
                 User request:
                 "${userInput.content}"
+                
+                ${
+                buildFailure?.let {
+                    "Previous build failed:\n" + it.contribution()
+                }
+            }
             """.trimIndent(),
         )
-        return CodeModificationReport(explanation)
+        return CodeModificationReport(report)
     }
 }
