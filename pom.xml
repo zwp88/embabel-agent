@@ -49,6 +49,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Embabel Common BOM -->
+            <dependency>
+                <groupId>com.embabel.common</groupId>
+                <artifactId>embabel-common-test-dependencies</artifactId>
+                <version>${embabel-common.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -65,12 +73,6 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test</artifactId>
             <version>${kotlin.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.embabel.common</groupId>
-            <artifactId>embabel-common-test</artifactId>
             <scope>test</scope>
         </dependency>
 
