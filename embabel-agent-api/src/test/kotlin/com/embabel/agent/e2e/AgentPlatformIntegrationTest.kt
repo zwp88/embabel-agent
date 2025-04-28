@@ -15,10 +15,12 @@
  */
 package com.embabel.agent.e2e
 
-import com.embabel.agent.api.common.*
+import com.embabel.agent.api.common.AgentPlatformTypedOps
+import com.embabel.agent.api.common.Autonomy
+import com.embabel.agent.api.common.TypedOps
+import com.embabel.agent.api.common.asFunction
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
-import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.NoSuchAgentException
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.library.HasContent
@@ -99,10 +101,10 @@ class FakeConfig {
 )
 class AgentPlatformIntegrationTest(
     @Autowired
-    private val agentPlatform: AgentPlatform,
+    private val autonomy: Autonomy,
 ) {
 
-    private val typedOps: TypedOps = AgentPlatformTypedOps(agentPlatform)
+    private val typedOps: TypedOps = AgentPlatformTypedOps(autonomy.agentPlatform)
 
     @Nested
     inner class SmokeTest {
@@ -154,7 +156,7 @@ class AgentPlatformIntegrationTest(
 
         @Test
         fun `run dsl agent as transform`() {
-            agentPlatform.deploy(EvilWizardAgent)
+            autonomy.agentPlatform.deploy(EvilWizardAgent)
             val frog = typedOps.asFunction<UserInput, Frog>(
                 processOptions = ProcessOptions(test = true),
             ).apply(
@@ -169,7 +171,7 @@ class AgentPlatformIntegrationTest(
 
         @Test
         fun `choose and run star finder agent`() {
-            val dynamicExecutionResult = agentPlatform.chooseAndRunAgent(
+            val dynamicExecutionResult = autonomy.chooseAndRunAgent(
                 "Lynda is a Scorpio, find some news for her",
                 ProcessOptions(test = true),
             )
@@ -187,7 +189,7 @@ class AgentPlatformIntegrationTest(
 
         @Test
         fun `run star finder agent`() {
-            val dynamicExecutionResult = agentPlatform.chooseAndAccomplishGoal(
+            val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
                 "Lynda is a Scorpio, find some news for her",
                 ProcessOptions(test = true),
             )

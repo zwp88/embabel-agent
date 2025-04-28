@@ -15,9 +15,8 @@
  */
 package com.embabel.chat.agent
 
+import com.embabel.agent.api.common.Autonomy
 import com.embabel.agent.api.common.NoGoalFound
-import com.embabel.agent.api.common.chooseAndAccomplishGoal
-import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.chat.*
 
@@ -26,7 +25,7 @@ import com.embabel.chat.*
  * Wholly delegates handling to agent platform.
  */
 class LastMessageIntentAgentPlatformChatSession(
-    private val agentPlatform: AgentPlatform,
+    private val autonomy: Autonomy,
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
     override val conversation: Conversation = InMemoryConversation(),
@@ -40,7 +39,7 @@ class LastMessageIntentAgentPlatformChatSession(
 
     private fun generateResponse(message: UserMessage): AssistantMessage {
         try {
-            val dynamicExecutionResult = agentPlatform.chooseAndAccomplishGoal(
+            val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
                 intent = message.content,
                 processOptions = processOptions
             )
@@ -54,7 +53,7 @@ class LastMessageIntentAgentPlatformChatSession(
                     |I'm sorry Dave. I'm afraid I can't do that.
                     |
                     |Things I CAN do:
-                    |${agentPlatform.goals.joinToString("\n") { "- ${it.description}" }}
+                    |${autonomy.agentPlatform.goals.joinToString("\n") { "- ${it.description}" }}
                 """.trimMargin(),
             )
         }

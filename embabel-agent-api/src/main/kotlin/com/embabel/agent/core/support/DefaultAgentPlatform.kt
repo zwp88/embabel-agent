@@ -19,9 +19,7 @@ import com.embabel.agent.core.*
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.*
-import com.embabel.agent.spi.support.AgentScanningAgentPlatformProperties
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
-import com.embabel.common.core.types.ZeroToOne
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -39,19 +37,16 @@ import org.springframework.stereotype.Service
  */
 @ConfigurationProperties("embabel.agent-platform")
 data class DefaultAgentPlatformProperties(
-    override val goalConfidenceCutOff: ZeroToOne = 0.6,
-    override val agentConfidenceCutOff: ZeroToOne = 0.6,
-    override val autoRegister: Boolean = true,
-) : AgentScanningAgentPlatformProperties
+    val autoRegister: Boolean = true,
+)
 
 @Service
 internal class DefaultAgentPlatform(
     private val llmOperations: LlmOperations,
-    override val ranker: Ranker,
     override val toolGroupResolver: ToolGroupResolver,
     eventListeners: List<AgenticEventListener>,
     private val processIdGenerator: ProcessIdGenerator,
-    override val properties: DefaultAgentPlatformProperties,
+    val properties: DefaultAgentPlatformProperties,
     private val agentProcessRepository: AgentProcessRepository,
     private val operationScheduler: OperationScheduler,
 ) : AgentPlatform {
@@ -64,7 +59,7 @@ internal class DefaultAgentPlatform(
 
     override val name: String = javaClass.name
 
-    override val eventListener: AgenticEventListener = AgenticEventListener.from(
+    private val eventListener: AgenticEventListener = AgenticEventListener.from(
         eventListeners,
     )
 

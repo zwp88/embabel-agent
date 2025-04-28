@@ -18,16 +18,12 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.annotation.support.AgenticInfo
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.AgentPlatformProperties
+import com.embabel.agent.core.support.DefaultAgentPlatformProperties
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
-
-interface AgentScanningAgentPlatformProperties : AgentPlatformProperties {
-    val autoRegister: Boolean
-}
 
 /**
  * Autoregister beans with @Agentic annotation
@@ -37,7 +33,7 @@ interface AgentScanningAgentPlatformProperties : AgentPlatformProperties {
 internal class AgentScanningBeanPostProcessor(
     private val agentMetadataReader: AgentMetadataReader,
     private val agentPlatform: AgentPlatform,
-    private val properties: AgentScanningAgentPlatformProperties,
+    private val properties: DefaultAgentPlatformProperties,
 ) : BeanPostProcessor {
 
     private val logger = LoggerFactory.getLogger(AgentScanningBeanPostProcessor::class.java)

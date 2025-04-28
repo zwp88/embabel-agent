@@ -35,7 +35,7 @@ import org.springframework.shell.standard.ShellOption
 
 @ShellComponent
 class ShellCommands(
-    private val agentPlatform: AgentPlatform,
+    private val autonomy: Autonomy,
     private val environment: ConfigurableEnvironment,
     terminal: Terminal,
     private val objectMapper: ObjectMapper,
@@ -43,6 +43,8 @@ class ShellCommands(
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
+
+    private val agentPlatform = autonomy.agentPlatform
 
     private val terminalServices = TerminalServices(terminal)
 
@@ -74,8 +76,8 @@ class ShellCommands(
         )
         blackboard = processOptions.blackboard
         val chatSession = LastMessageIntentAgentPlatformChatSession(
-            agentPlatform = this.agentPlatform,
             messageListener = { },
+            autonomy = autonomy,
             processOptions = processOptions,
         )
         return terminalServices.chat(chatSession, colorPalette)
@@ -111,6 +113,20 @@ class ShellCommands(
             agentPlatform.goals
                 .joinToString(separator = "\n") { "\t" + it.infoString(verbose = true) }
         }"
+    }
+
+    @ShellMethod("Goal rankings")
+    fun goalRankings(
+        @ShellOption(help = "what the agent system should do") intent: String,
+    ): String {
+        val rankings = autonomy.goalRankingsFor(intent = intent)
+        if (rankings.rankings.isEmpty()) {
+            return "No goals found for intent: \"$intent\"".color(colorPalette.color2)
+        }
+        val fmt = rankings.rankings.joinToString("\n") { ranking ->
+            "${ranking.match.name}: ${ranking.score} - ${ranking.match.description}"
+        }
+        return fmt.color(colorPalette.color2)
     }
 
     @ShellMethod("Information about the AgentPlatform")
@@ -232,13 +248,13 @@ class ShellCommands(
         return runProcess(verbosity = processOptions.verbosity, basis = intent) {
             if (open) {
                 logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
-                agentPlatform.chooseAndAccomplishGoal(
+                autonomy.chooseAndAccomplishGoal(
                     intent = intent,
                     processOptions = processOptions
                 )
             } else {
                 logger.info("Executing in closed mode: Trying to find appropriate agent")
-                agentPlatform.chooseAndRunAgent(
+                autonomy.chooseAndRunAgent(
                     intent = intent,
                     processOptions = processOptions
                 )
@@ -283,7 +299,7 @@ class ShellCommands(
                     """
                     Failed to choose goal:
                         Rankings were: [${ngf.goalRankings.infoString()}]
-                        Cutoff was ${agentPlatform.properties.goalConfidenceCutOff}
+                        Cutoff was ${autonomy.properties.goalConfidenceCutOff}
                     """.trimIndent().color(0xbfb8b8)
                 )
             }
@@ -294,7 +310,7 @@ class ShellCommands(
                     """
                     Failed to choose agent:
                         Rankings were: [${naf.agentRankings.infoString()}]
-                        Cutoff was ${agentPlatform.properties.agentConfidenceCutOff}
+                        Cutoff was ${autonomy.properties.agentConfidenceCutOff}
                     """.trimIndent().color(0xbfb8b8)
                 )
             }

@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.ToolGroupResolver
-import com.embabel.common.core.types.ZeroToOne
 
 /**
  * Controls log output.
@@ -62,20 +59,6 @@ data class ProcessOptions(
     val operationDelay: Delay = Delay.NONE,
 )
 
-/**
- * Properties common to all AgentPlatform implementations
- */
-interface AgentPlatformProperties {
-
-    /**
-     * Goal confidence cut-off, between 0 and 1, which is required
-     * to have confidence in executing the most promising goal.
-     */
-    val goalConfidenceCutOff: ZeroToOne
-
-    val agentConfidenceCutOff: ZeroToOne
-}
-
 class NoSuchAgentException(
     agentName: String,
 ) : IllegalArgumentException("No such agent: $agentName")
@@ -87,12 +70,6 @@ class NoSuchAgentException(
  * See TypedOps for a higher level API with typed I/O.
  */
 interface AgentPlatform : AgentScope {
-
-    val properties: AgentPlatformProperties
-
-    val ranker: Ranker
-
-    val eventListener: AgenticEventListener
 
     val toolGroupResolver: ToolGroupResolver
 

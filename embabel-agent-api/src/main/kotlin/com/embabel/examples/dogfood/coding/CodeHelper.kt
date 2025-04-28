@@ -30,6 +30,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.CrudRepository
 
 @JsonClassDescription("Analysis of a technology project")
@@ -86,6 +87,7 @@ data class SpringRecipe(
         ToolGroup.FILE,
     ],
 )
+@Profile("!test")
 class CodeHelper(
     val projectRepository: ProjectRepository,
     val defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
