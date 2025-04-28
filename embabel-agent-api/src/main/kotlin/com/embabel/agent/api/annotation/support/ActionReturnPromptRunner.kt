@@ -22,25 +22,10 @@ import com.embabel.common.ai.prompt.PromptContributor
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Return an ambient prompt runner for use to return in an @Action method.
- */
-@JvmOverloads
-fun using(
-    llm: LlmOptions? = null,
-    toolCallbacks: List<ToolCallback> = emptyList(),
-    promptContributors: List<PromptContributor> = emptyList(),
-): PromptRunner =
-    ActionReturnPromptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = promptContributors)
-
-
-val usingDefaultLlm: PromptRunner =
-    ActionReturnPromptRunner(llm = null, toolCallbacks = emptyList(), promptContributors = emptyList())
-
-/**
  * PromptRunner implementation that can be used to return a value
  * from an Action.
  */
-private class ActionReturnPromptRunner(
+internal class ActionReturnPromptRunner(
     override val llm: LlmOptions?,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,

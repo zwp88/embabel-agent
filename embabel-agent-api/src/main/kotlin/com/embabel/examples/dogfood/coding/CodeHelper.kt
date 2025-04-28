@@ -15,11 +15,7 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.agent.api.annotation.AchievesGoal
-import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.Condition
-import com.embabel.agent.api.annotation.support.using
+import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels
@@ -37,7 +33,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.data.repository.CrudRepository
 
 @JsonClassDescription("Analysis of a technology project")
-data class Project(
+data class SoftwareProject(
     val location: String,
     @get:JsonPropertyDescription("The technologies used in the project. List, comma separated. Include 10")
     val tech: String,
@@ -54,11 +50,7 @@ data class Project(
             |$codingStyle
         """.trimMargin()
 
-    // TODO this branches. Or does it wait?
-    @Action
-    fun build() {
 
-    }
 }
 
 data class Explanation(
@@ -69,7 +61,7 @@ data class CodeModificationReport(
     override val text: String,
 ) : HasContent
 
-interface ProjectRepository : CrudRepository<Project, String>
+interface ProjectRepository : CrudRepository<SoftwareProject, String>
 
 const val BuildSucceeded = "buildSucceeded"
 
@@ -91,7 +83,7 @@ class CodeHelper(
     )
 
     @Action
-    fun loadExistingProject(): Project? {
+    fun loadExistingProject(): SoftwareProject? {
         val found = projectRepository.findById(defaultLocation)
         if (found.isPresent) {
             logger.info("Found existing project at $defaultLocation")
@@ -104,8 +96,8 @@ class CodeHelper(
      * This is expensive so we set cost high
      */
     @Action(cost = 10000.0)
-    fun analyzeProject(): Project =
-        using(claudeSonnet).create<Project>(
+    fun analyzeProject(): SoftwareProject =
+        using(claudeSonnet).create<SoftwareProject>(
             """
                 Analyze the project at $defaultLocation
                 Use the file tools to read code and directories before analyzing it
@@ -117,12 +109,13 @@ class CodeHelper(
 
     @Action(
         cost = 1000.0,
+        canRerun = true,
         toolGroups = [
             ToolGroup.FILE,
             ToolGroup.CI,
         ],
     )
-    fun build(project: Project, payload: OperationPayload): BuildResult {
+    fun build(project: SoftwareProject, payload: OperationPayload): BuildResult {
         val buildOutput = payload.promptRunner(
             llm = claudeSonnet,
             promptContributors = listOf(project)
@@ -143,13 +136,11 @@ class CodeHelper(
     @AchievesGoal(description = "Code has been explained to the user")
     fun explainCode(
         userInput: UserInput,
-        project: Project,
+        project: SoftwareProject,
         payload: OperationPayload,
     ): Explanation {
         val explanation: String = payload.promptRunner(
-            llm = LlmOptions(
-                AnthropicModels.CLAUDE_37_SONNET
-            ),
+            llm = claudeSonnet,
             promptContributors = listOf(project)
         ).create(
             """
@@ -177,7 +168,7 @@ class CodeHelper(
     @Action(canRerun = true, post = [BuildSucceeded])
     fun modifyCode(
         userInput: UserInput,
-        project: Project,
+        project: SoftwareProject,
         payload: OperationPayload,
     ): CodeModificationReport {
         val buildFailure = payload.lastOrNull<BuildResult> { !it.success }

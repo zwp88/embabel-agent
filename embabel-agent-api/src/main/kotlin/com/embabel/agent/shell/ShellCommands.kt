@@ -17,23 +17,13 @@ package com.embabel.agent.shell
 
 import com.embabel.agent.api.common.*
 import com.embabel.agent.core.*
-import com.embabel.agent.core.hitl.ConfirmationRequest
-import com.embabel.agent.core.hitl.ConfirmationResponse
-import com.embabel.agent.core.hitl.FormBindingRequest
-import com.embabel.agent.core.hitl.FormResponse
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.logging.personality.ColorPalette
-import com.embabel.common.util.AnsiColor
+import com.embabel.chat.agent.LastMessageIntentAgentPlatformChatSession
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
-import com.embabel.common.util.kotlin.loggerFor
-import com.embabel.ux.form.Button
-import com.embabel.ux.form.FormSubmission
-import com.embabel.ux.form.TextField
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.lang3.text.WordUtils
-import org.jline.reader.LineReader
-import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.Terminal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -47,12 +37,14 @@ import org.springframework.shell.standard.ShellOption
 class ShellCommands(
     private val agentPlatform: AgentPlatform,
     private val environment: ConfigurableEnvironment,
-    private val terminal: Terminal,
+    terminal: Terminal,
     private val objectMapper: ObjectMapper,
     private val colorPalette: ColorPalette,
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
+
+    private val terminalServices = TerminalServices(terminal)
 
     private val agentProcesses = mutableListOf<AgentProcess>()
 
@@ -68,6 +60,18 @@ class ShellCommands(
     fun profiles(): String {
         val profiles = environment.activeProfiles
         return "Active profiles: ${profiles.joinToString()}"
+    }
+
+    @ShellMethod("Chat")
+    fun chat(): String {
+        val processOptions = ProcessOptions()
+        blackboard = processOptions.blackboard
+        val chatSession = LastMessageIntentAgentPlatformChatSession(
+            agentPlatform = this.agentPlatform,
+            messageListener = { },
+            processOptions = processOptions,
+        )
+        return terminalServices.chat(chatSession, colorPalette)
     }
 
     @ShellMethod("List agents")
@@ -280,27 +284,10 @@ class ShellCommands(
                 )
             }
             return "I'm sorry. I don't know how to do that.\n"
-        } catch (pese: ProcessExecutionStuckException) {
+        } catch (_: ProcessExecutionStuckException) {
             return "I'm sorry. I don't know how to proceed.\n"
         } catch (pwe: ProcessWaitingException) {
-            val awaitableResponse = when (pwe.awaitable) {
-                is ConfirmationRequest<*> ->
-                    confirmationResponseFromUserInput(
-                        confirmationRequest = pwe.awaitable,
-                        terminal = terminal,
-                    )
-
-                is FormBindingRequest<*> -> {
-                    formBindingResponseFromUserInput(
-                        formBindingRequest = pwe.awaitable,
-                        terminal = terminal,
-                    )
-                }
-
-                else -> {
-                    TODO("Unhandled awaitable: ${pwe.awaitable.infoString()}")
-                }
-            }
+            val awaitableResponse = terminalServices.handleProcessWaitingException(pwe)
             pwe.awaitable.onResponse(
                 response = awaitableResponse,
                 processContext = pwe.agentProcess!!.processContext
@@ -315,110 +302,4 @@ class ShellCommands(
     }
 
 
-}
-
-/**
- * Get further input
- */
-private fun <T> doWithReader(
-    terminal: Terminal,
-    callback: (LineReader) -> T
-): T {
-    val lineReader = LineReaderBuilder.builder()
-        .terminal(terminal)
-        .build()
-    return callback(lineReader)
-}
-
-private fun confirmationResponseFromUserInput(
-    confirmationRequest: ConfirmationRequest<*>,
-    terminal: Terminal
-): ConfirmationResponse {
-    val confirmed = doWithReader(terminal) {
-        it.readLine("${confirmationRequest.message} (y/n): ".color(AnsiColor.YELLOW))
-            .equals("y", ignoreCase = true)
-    }
-    return ConfirmationResponse(
-        awaitableId = confirmationRequest.id,
-        accepted = confirmed,
-    )
-}
-
-private fun formBindingResponseFromUserInput(
-    formBindingRequest: FormBindingRequest<*>,
-    terminal: Terminal
-): FormResponse {
-    val form = formBindingRequest.payload
-    val values = mutableMapOf<String, Any>()
-
-    return doWithReader(terminal) { lineReader ->
-        loggerFor<ShellCommands>().info("Form: ${form.infoString()}")
-        lineReader.printAbove(form.title)
-
-        for (control in form.controls) {
-            when (control) {
-                is TextField -> {
-                    var input: String
-                    var isValid = false
-
-                    while (!isValid) {
-                        val prompt = "${control.label}${if (control.required) " *" else ""}: ".color(AnsiColor.YELLOW)
-                        input = lineReader.readLine(prompt)//, control.value, null)
-
-                        // Handle empty input for required fields
-                        if (control.required && input.isBlank()) {
-                            lineReader.printAbove("This field is required.")
-                            continue
-                        }
-
-                        // Validate max length
-                        if (control.maxLength != null && input.length > control.maxLength) {
-                            lineReader.printAbove("Input exceeds maximum length of ${control.maxLength} characters.")
-                            continue
-                        }
-
-                        // Validate pattern if specified
-                        if (control.validationPattern != null && input.isNotBlank()) {
-                            val regex = control.validationPattern.toRegex()
-                            if (!input.matches(regex)) {
-                                lineReader.printAbove(
-                                    control.validationMessage ?: "Input doesn't match required format."
-                                )
-                                continue
-                            }
-                        }
-
-                        values[control.id] = input
-                        isValid = true
-                    }
-                }
-                // Add handling for other control types here as needed
-                // For example: Checkbox, RadioButton, Select, etc.
-                is Button -> {
-                    // Handle submit button click
-                    // TODO finish this
-                }
-
-                else -> {
-                    // Handle unsupported control type
-                    lineReader.printAbove("Unsupported control type: ${control.type}")
-                }
-            }
-        }
-
-        val confirmSubmit = lineReader.readLine("Submit form? (y/n): ".color(AnsiColor.YELLOW))
-            .equals("y", ignoreCase = true)
-
-        if (!confirmSubmit) {
-            TODO("Handle form submission cancellation")
-        } else {
-            FormResponse(
-                awaitableId = formBindingRequest.id,
-                formSubmission = FormSubmission(
-                    formId = form.id,
-                    values = values,
-                )
-            )
-        }
-    }
 }

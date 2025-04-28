@@ -15,12 +15,7 @@
  */
 package com.embabel.examples.simple.horoscope.kotlin
 
-import com.embabel.agent.api.annotation.AchievesGoal
-import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.fromForm
-import com.embabel.agent.api.annotation.support.using
-import com.embabel.agent.api.annotation.support.usingDefaultLlm
+import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
 import com.embabel.agent.config.models.OpenAiModels
