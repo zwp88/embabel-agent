@@ -15,11 +15,7 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.agent.api.annotation.AchievesGoal
-import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.Condition
-import com.embabel.agent.api.annotation.support.using
+import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels

@@ -16,7 +16,6 @@
 package com.embabel.examples.simple.movie
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.annotation.support.using
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.TransformationPayload
 import com.embabel.agent.api.common.createObject

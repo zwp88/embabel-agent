@@ -15,6 +15,7 @@
  */
 package com.embabel.chat
 
+import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.Timestamped
@@ -78,3 +79,5 @@ fun Message.toSpringAiMessage(): SpringAiMessage =
         Role.USER -> UserMessage(content)
         Role.ASSISTANT -> AssistantMessage(content)
     }
+
+fun Conversation.promptContributor() = PromptContributor.fixed(TODO())

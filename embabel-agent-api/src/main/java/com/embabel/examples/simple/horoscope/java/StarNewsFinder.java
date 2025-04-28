@@ -15,9 +15,7 @@
  */
 package com.embabel.examples.simple.horoscope.java;
 
-import com.embabel.agent.api.annotation.AchievesGoal;
-import com.embabel.agent.api.annotation.Action;
-import com.embabel.agent.api.annotation.Agent;
+import com.embabel.agent.api.annotation.*;
 import com.embabel.agent.config.models.OpenAiModels;
 import com.embabel.agent.core.ToolGroup;
 import com.embabel.agent.domain.library.PersonImpl;
@@ -30,9 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.stream.Collectors;
 
-import static com.embabel.agent.api.annotation.WaitKt.fromForm;
-import static com.embabel.agent.api.annotation.support.ActionReturnPromptRunnerKt.getUsingDefaultLlm;
-import static com.embabel.agent.api.annotation.support.ActionReturnPromptRunnerKt.using;
 
 /**
  * Find news based on a person's star sign
@@ -55,18 +50,17 @@ public class StarNewsFinder {
 
     @Action
     public PersonImpl extractPerson(UserInput userInput) {
-        // All prompts are typesafe
-        return using(LlmOptions.fromModel(OpenAiModels.GPT_4o)).createObjectIfPossible(
+        return using.llm(LlmOptions.fromModel(OpenAiModels.GPT_4o)).createObjectIfPossible(
                 """
-                Create a person from this user input, extracting their name:
-                %s""".formatted(userInput.getContent()),
+                        Create a person from this user input, extracting their name:
+                        %s""".formatted(userInput.getContent()),
                 PersonImpl.class
         );
     }
 
     @Action(cost = 100.0) // Make it costly so it won't be used in a plan unless there's no other path
     public Starry makeStarry(PersonImpl person) {
-        return fromForm("Let's get some astrological details for " + person.getName(),
+        return WaitFor.formSubmission("Let's get some astrological details for " + person.getName(),
                 Starry.class);
     }
 
@@ -81,11 +75,10 @@ public class StarNewsFinder {
 
     @Action
     public StarPerson extractStarPerson(UserInput userInput) {
-        // All prompts are typesafe
-        return using(LlmOptions.fromModel(OpenAiModels.GPT_4o)).createObjectIfPossible(
+        return using.llm(LlmOptions.fromModel(OpenAiModels.GPT_4o)).createObjectIfPossible(
                 """
-                Create a person from this user input, extracting their name and star sign:
-                %s""".formatted(userInput.getContent()),
+                        Create a person from this user input, extracting their name and star sign:
+                        %s""".formatted(userInput.getContent()),
                 StarPerson.class
         );
     }
@@ -114,9 +107,9 @@ public class StarNewsFinder {
                 novel gifts
                 - If the horoscope says that they may want to work on their career,
                 find news stories about training courses.""".formatted(
-                        person.name(), person.sign(), horoscope.summary(), storyCount);
-        
-        return getUsingDefaultLlm().createObject(prompt, RelevantNewsStories.class);
+                person.name(), person.sign(), horoscope.summary(), storyCount);
+
+        return using.DEFAULT_LLM.createObject(prompt, RelevantNewsStories.class);
     }
 
     // The @AchievesGoal annotation indicates that completing this action
@@ -130,14 +123,14 @@ public class StarNewsFinder {
             RelevantNewsStories relevantNewsStories,
             Horoscope horoscope) {
         // Customize LLM call
-        var options = LlmOptions.fromCriteria(
+        var llm = LlmOptions.fromCriteria(
                 ModelSelectionCriteria.firstOf(OpenAiModels.GPT_4o_MINI)
         ).withTemperature(0.9);
-        
+
         var newsItems = relevantNewsStories.getItems().stream()
                 .map(item -> "- " + item.getUrl() + ": " + item.getSummary())
                 .collect(Collectors.joining("\n"));
-        
+
         var prompt = """
                 Take the following news stories and write up something
                 amusing for the target person.
@@ -152,8 +145,7 @@ public class StarNewsFinder {
                 %s
                 
                 Format it as Markdown with links.""".formatted(
-                        person.name(), person.sign(), horoscope.summary(), newsItems);
-        
-        return using(options).createObject(prompt, Writeup.class);
+                person.name(), person.sign(), horoscope.summary(), newsItems);
+        return using.llm(llm).createObject(prompt, Writeup.class);
     }
 }
