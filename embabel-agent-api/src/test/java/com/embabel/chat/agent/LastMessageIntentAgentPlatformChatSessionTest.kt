@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class AgentPlatformChatSessionTest {
+class LastMessageIntentAgentPlatformChatSessionTest {
 
     @Test
-    fun testOne() {
+    fun `should invoke chooseAndAccomplishGoal`() {
         val mockAgentPlatform = mockk<AgentPlatform>()
         val intent = slot<String>()
         val der = mockk<DynamicExecutionResult>()
@@ -27,7 +27,7 @@ class AgentPlatformChatSessionTest {
         mockkStatic("com.embabel.agent.api.common.ChooseAndRunKt")
 
         every { any<AgentPlatform>().chooseAndAccomplishGoal(capture(intent), any()) } returns der
-        val chatSession = AgentPlatformChatSession(mockAgentPlatform, {})
+        val chatSession = LastMessageIntentAgentPlatformChatSession(mockAgentPlatform, {})
         val userMessage = UserMessage("Hello, world!")
         val l = MessageSavingMessageListener()
         chatSession.send(userMessage, l)

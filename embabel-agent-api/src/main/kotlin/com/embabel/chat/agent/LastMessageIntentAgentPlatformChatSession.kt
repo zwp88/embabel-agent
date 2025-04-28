@@ -15,20 +15,22 @@
  */
 package com.embabel.chat.agent
 
+import com.embabel.agent.api.common.NoGoalFound
 import com.embabel.agent.api.common.chooseAndAccomplishGoal
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.chat.*
-import org.slf4j.LoggerFactory
 
-class AgentPlatformChatSession(
+/**
+ * Uses last message as intent.
+ * Wholly delegates handling to agent platform.
+ */
+class LastMessageIntentAgentPlatformChatSession(
     private val agentPlatform: AgentPlatform,
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
     override val conversation: Conversation = InMemoryConversation(),
 ) : ChatSession {
-
-    private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun send(message: UserMessage, additionalListener: MessageListener) {
         val m = generateResponse(message)
@@ -37,13 +39,24 @@ class AgentPlatformChatSession(
     }
 
     private fun generateResponse(message: UserMessage): AssistantMessage {
-        val dynamicExecutionResult = agentPlatform.chooseAndAccomplishGoal(
-            intent = message.content,
-            processOptions = processOptions
-        )
-        val result = dynamicExecutionResult.output
-        return AssistantMessage(
-            content = result.toString(),
-        )
+        try {
+            val dynamicExecutionResult = agentPlatform.chooseAndAccomplishGoal(
+                intent = message.content,
+                processOptions = processOptions
+            )
+            val result = dynamicExecutionResult.output
+            return AssistantMessage(
+                content = result.toString(),
+            )
+        } catch (_: NoGoalFound) {
+            return AssistantMessage(
+                content = """|
+                    |I'm sorry Dave. I'm afraid I can't do that.
+                    |
+                    |Things I CAN do:
+                    |${agentPlatform.goals.joinToString("\n") { "- ${it.description}" }}
+                """.trimMargin(),
+            )
+        }
     }
 }
