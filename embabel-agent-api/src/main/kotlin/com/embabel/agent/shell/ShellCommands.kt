@@ -90,6 +90,14 @@ class ShellCommands(
         }"
     }
 
+    @ShellMethod("List conditions")
+    fun conditions(): String {
+        return "${"Conditions:".bold()}\n${
+            agentPlatform.conditions
+                .joinToString(separator = "\n") { "\t" + it.infoString(verbose = true) }
+        }"
+    }
+
     @ShellMethod("List goals")
     fun goals(): String {
         return "${"Goals:".bold()}\n${

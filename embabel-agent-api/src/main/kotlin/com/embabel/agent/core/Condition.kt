@@ -16,6 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.experimental.primitive.PromptCondition
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
@@ -32,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     JsonSubTypes.Type(value = PromptCondition::class),
 )
-interface Condition : Named {
+interface Condition : Named, HasInfoString {
 
     /**
      * Cost of evaluating the condition. 0 is cheap, 1 is expensive.
@@ -49,6 +50,10 @@ interface Condition : Named {
     fun evaluate(
         processContext: ProcessContext,
     ): ConditionDetermination
+
+    override fun infoString(verbose: Boolean?): String {
+        return "Condition(name='$name', cost=$cost)"
+    }
 
     operator fun not(): Condition = NotCondition(this)
 

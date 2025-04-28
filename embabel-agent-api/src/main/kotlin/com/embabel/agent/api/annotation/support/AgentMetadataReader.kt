@@ -335,17 +335,28 @@ class AgentMetadataReader {
                 // TODO required match binding: Consistent with actions
 
                 else -> {
+                    val domainTypes = processContext.agentProcess.agent.domainTypes
                     args += processContext.blackboard.getValue(
                         type = m.type.name,
-                        domainTypes = processContext.agentProcess.agent.domainTypes,
+                        domainTypes = domainTypes,
                     )
                         ?: return run {
-                            logger.info(
-                                "Condition method {}.{} has unsupported argument type {}",
-                                instance.javaClass.name,
-                                m.name,
-                                m.type,
-                            )
+                            // TODO assignable?
+                            if (domainTypes.contains(m.type)) {
+                                logger.warn(
+                                    "Condition method {}.{} has no value for parameter {} of known type",
+                                    instance.javaClass.name,
+                                    m.name,
+                                    m.type,
+                                )
+                            } else {
+                                logger.info(
+                                    "Condition method {}.{} has unsupported argument type {}",
+                                    instance.javaClass.name,
+                                    m.name,
+                                    m.type,
+                                )
+                            }
                             false
                         }
                 }
