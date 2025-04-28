@@ -15,26 +15,17 @@
  */
 package com.embabel.chat
 
-/**
- * Simplest possible conversation session implementation
- */
-interface ChatSession {
+fun interface MessageListener {
+    fun onMessage(message: Message)
+}
 
-    /**
-     * Conversation history
-     */
-    val conversation: Conversation
+class MessageSavingMessageListener(
+    private val messageList: MutableList<Message> = mutableListOf()
+) : MessageListener {
+    override fun onMessage(message: Message) {
+        messageList.add(message)
+    }
 
-    /**
-     * Listener that will always be active
-     */
-    val messageListener: MessageListener
+    fun messages(): List<Message> = messageList.toList()
 
-    /**
-     * Any response messages will be sent to the messageListener
-     * @param message message to send
-     * @param additionalListener any additional listener to send the message to,
-     * in addition to the messageListener
-     */
-    fun send(message: UserMessage, additionalListener: MessageListener? = null)
 }

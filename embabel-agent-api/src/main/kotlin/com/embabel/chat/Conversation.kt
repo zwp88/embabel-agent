@@ -80,4 +80,8 @@ fun Message.toSpringAiMessage(): SpringAiMessage =
         Role.ASSISTANT -> AssistantMessage(content)
     }
 
-fun Conversation.promptContributor() = PromptContributor.fixed(TODO())
+fun Conversation.promptContributor(
+    conversationFormatter: ConversationFormatter = WindowingConversationFormatter()
+) = PromptContributor.fixed(
+    content = "Conversation so far:\n" + conversationFormatter.format(this),
+)
