@@ -67,7 +67,6 @@ class MixinManagerTest {
     fun `leaves root type alone`() {
         val dog = Dog("Rex", "Labrador")
         val mixinManager = MixinManager(dog)
-        mixinManager.instance() is Dog
         assertEquals(dog.name, mixinManager.instance().name)
     }
 
@@ -76,7 +75,6 @@ class MixinManagerTest {
         val dog = Dog("Rex", "Labrador")
         val insured = Insured("123456")
         val mixinManager = MixinManager(dog)
-        mixinManager.instance() is Dog
         assertFalse(mixinManager.instance() is Insured)
         mixinManager.becomeFirstInterface(insured)
         val impl = mixinManager.instance()
@@ -91,7 +89,6 @@ class MixinManagerTest {
         val dog = Dog("Rex", "Labrador")
         val insured = Insured("123456")
         val mixinManager = MixinManager(dog)
-        mixinManager.instance() is Dog
         assertFalse(mixinManager.instance() is Insured)
         mixinManager.become(insured, Insured::class.java)
         val impl = mixinManager.instance()
