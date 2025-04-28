@@ -18,12 +18,16 @@ package com.embabel.agent.e2e
 import com.embabel.agent.api.common.*
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
-import com.embabel.agent.core.*
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.NoSuchAgentException
+import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
+import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.Named
 import com.embabel.common.test.ai.config.FakeAiConfiguration
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.examples.simple.horoscope.kotlin.Writeup
@@ -53,25 +57,30 @@ class FakeConfig {
 
     @Bean
     @Primary
-    fun fakeGoalRanker() = object : FakeRanker {
-        override fun rankGoals(
-            userInput: UserInput,
-            goals: Set<Goal>
-        ): Rankings<Goal> {
-            val g = goals.find { it.description.contains("horoscope") }!!
-            return Rankings(
-                rankings = listOf(Ranking(g, .9))
-            )
-        }
+    fun fakeRanker() = object : FakeRanker {
 
-        override fun rankAgents(
-            userInput: UserInput,
-            agents: Set<Agent>
-        ): Rankings<Agent> {
-            val a = agents.find { it.name.contains("Star") }!!
-            return Rankings(
-                rankings = listOf(Ranking(a, .9))
-            )
+        override fun <T> rank(
+            description: String,
+            userInput: String,
+            rankables: Set<T>
+        ): Rankings<T> where T : Named, T : Described {
+            when (description) {
+                "agent" -> {
+                    val a = rankables.find { it.name.contains("Star") }!!
+                    return Rankings(
+                        rankings = listOf(Ranking(a, .9))
+                    )
+                }
+
+                "goal" -> {
+                    val g = rankables.find { it.description.contains("horoscope") }!!
+                    return Rankings(
+                        rankings = listOf(Ranking(g, .9))
+                    )
+                }
+
+                else -> throw IllegalArgumentException("Unknown description $description")
+            }
         }
     }
 

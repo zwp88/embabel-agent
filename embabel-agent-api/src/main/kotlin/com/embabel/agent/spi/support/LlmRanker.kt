@@ -15,9 +15,6 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.core.Agent
-import com.embabel.agent.core.Goal
-import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Described
@@ -40,64 +37,56 @@ internal class LlmRanker(
         RetryTemplateBuilder().maxAttempts(maxAttempts).fixedBackoff(20)
             .build()
 
-    override fun rankAgents(
-        userInput: UserInput,
-        agents: Set<Agent>
-    ): Rankings<Agent> = rankThings(userInput, agents, "agent")
-
-    override fun rankGoals(
-        userInput: UserInput,
-        goals: Set<Goal>,
-    ): Rankings<Goal> = rankThings(userInput, goals, "goal")
-
-    private fun <T> rankThings(
-        userInput: UserInput,
-        things: Set<T>,
-        wordForThing: String,
+    override fun <T> rank(
+        description: String,
+        userInput: String,
+        rankables: Set<T>
     ): Rankings<T> where T : Named, T : Described {
-        if (things.isEmpty()) {
+        if (rankables.isEmpty()) {
             return Rankings(emptyList())
         }
         return retryTemplate.execute<Rankings<T>, Exception> {
             rankThingsInternal(
+                description = description,
                 userInput = userInput,
-                things = things,
-                wordForThing = wordForThing,
+                rankables = rankables,
             )
         }
     }
 
     private fun <T> rankThingsInternal(
-        userInput: UserInput,
-        things: Set<T>,
-        wordForThing: String,
+        description: String,
+        userInput: String,
+        rankables: Set<T>,
     ): Rankings<T> where T : Named, T : Described {
+        val type = rankables.firstOrNull()?.javaClass?.simpleName
+            ?: throw IllegalArgumentException("Rankables must not be empty")
 
         val prompt = """
-            Given the user input, choose the $wordForThing that best reflects the user's intent.
+            Given the user input, choose the $description that best reflects the user's intent.
 
-            User input: ${userInput.content}
+            User input: $userInput
 
-            Available ${wordForThing}s:
-            ${things.joinToString("\n") { "- ${it.name}: ${it.description}" }}
+            Available choices:
+            ${rankables.joinToString("\n") { "- ${it.name}: ${it.description}" }}
 
-            Return the name of the chosen $wordForThing and the confidence score (0-1).
+            Return the name of the chosen $type and the confidence score from 0-1.
             IMPORTANT: The fully qualified name must be exactly the same as in the list.
         """.trimIndent()
         val grr = llmOperations.doTransform(
             prompt = prompt,
             interaction = LlmInteraction(
-                id = InteractionId("rank-${wordForThing}s"),
+                id = InteractionId("rank-${type}s"),
                 llm = llm,
             ),
             outputClass = RankingsResponse::class.java,
             llmRequestEvent = null,
         )
-        val thingNames = things.map { it.name }
+        val thingNames = rankables.map { it.name }
         val bogus = grr.rankings.find { rankingChoice -> thingNames.none { rankingChoice.name == it } }
         if (bogus != null) {
             throw IllegalStateException(
-                "Ranker returned choice '$bogus' not in the list of available ${wordForThing}s: ${
+                "Ranker returned choice '$bogus' not in the list of available ${type}s: ${
                     thingNames
                 }, raw=$grr"
             )
@@ -107,7 +96,7 @@ internal class LlmRanker(
         return Rankings(
             rankings = grr.rankings.map {
                 Ranking(
-                    match = things.single { thing -> thing.name == it.name },
+                    match = rankables.single { thing -> thing.name == it.name },
                     score = it.confidence,
                 )
             }.sortedBy { it.score }.reversed()

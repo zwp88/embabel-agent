@@ -16,7 +16,6 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.Goal
-import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.LlmOperations
 import io.mockk.every
 import io.mockk.mockk
@@ -40,8 +39,9 @@ class LlmGoalRankerTest {
         fun `no goals`() {
             val llmt = mockk<LlmOperations>()
             val ranker = LlmRanker(llmt)
-            val result = ranker.rankGoals(
-                UserInput("whatever"), emptySet(),
+            val result = ranker.rank(
+                "goal",
+                userInput = "whatever", emptySet(),
             )
             assertTrue(result.rankings.isEmpty())
         }
@@ -67,8 +67,10 @@ class LlmGoalRankerTest {
                 )
             } returns llmr
             val ranker = LlmRanker(llmt)
-            val rankings = ranker.rankGoals(
-                goals = setOf(
+            val rankings = ranker.rank(
+                "goal",
+                "What is my horoscope for today?",
+                setOf(
                     Goal(
                         name = "horoscope",
                         description = "Get a horoscope",
@@ -77,7 +79,7 @@ class LlmGoalRankerTest {
                         name = "weather",
                         description = "Get the weather",
                     ),
-                ), userInput = UserInput("What is my horoscope for today?")
+                ),
             )
             assertEquals("weather", rankings.rankings[0].match.name)
         }

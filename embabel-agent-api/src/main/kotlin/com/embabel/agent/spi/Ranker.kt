@@ -15,14 +15,7 @@
  */
 package com.embabel.agent.spi
 
-import com.embabel.agent.core.Agent
-import com.embabel.agent.core.Goal
-import com.embabel.agent.domain.special.UserInput
-import com.embabel.common.core.types.Described
-import com.embabel.common.core.types.HasInfoString
-import com.embabel.common.core.types.Named
-import com.embabel.common.core.types.SimilarityResult
-import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.core.types.*
 
 /**
  * Rank available choices based on user input and agent metadata.
@@ -31,15 +24,17 @@ import com.embabel.common.core.types.ZeroToOne
  */
 interface Ranker {
 
-    fun rankGoals(
-        userInput: UserInput,
-        goals: Set<Goal>,
-    ): Rankings<Goal>
-
-    fun rankAgents(
-        userInput: UserInput,
-        agents: Set<Agent>,
-    ): Rankings<Agent>
+    /**
+     * Rank a set of items based on user input and agent metadata.
+     * @param description Description of the item being ranked
+     * @param userInput User input to rank against
+     * @param rankables Set of items to rank
+     */
+    fun <T> rank(
+        description: String,
+        userInput: String,
+        rankables: Set<T>,
+    ): Rankings<T> where T : Named, T : Described
 }
 
 data class Rankings<T>(
@@ -61,4 +56,4 @@ data class Rankings<T>(
 data class Ranking<T>(
     override val match: T,
     override val score: ZeroToOne,
-): SimilarityResult<T> where T : Named, T : Described
+) : SimilarityResult<T> where T : Named, T : Described

@@ -15,12 +15,11 @@
  */
 package com.embabel.agent.testing
 
-import com.embabel.agent.core.Agent
-import com.embabel.agent.core.Goal
-import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
+import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.Named
 import kotlin.random.Random
 
 /**
@@ -31,11 +30,13 @@ interface FakeRanker : Ranker
 class RandomRanker : FakeRanker {
     private val random = Random(System.currentTimeMillis())
 
-    override fun rankAgents(
-        userInput: UserInput,
-        agents: Set<Agent>
-    ): Rankings<Agent> {
-        return Rankings(agents.map {
+    override fun <T> rank(
+        description: String,
+        userInput: String,
+        rankables: Set<T>
+    ): Rankings<T> where T : Named, T : Described {
+
+        return Rankings(rankables.map {
             Ranking(
                 match = it,
                 score = random.nextDouble(),
@@ -43,15 +44,4 @@ class RandomRanker : FakeRanker {
         })
     }
 
-    override fun rankGoals(
-        userInput: UserInput,
-        goals: Set<Goal>,
-    ): Rankings<Goal> {
-        return Rankings(goals.map {
-            Ranking(
-                match = it,
-                score = random.nextDouble(),
-            )
-        })
-    }
 }

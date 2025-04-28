@@ -149,7 +149,11 @@ fun AgentPlatform.chooseAndAccomplishGoal(
     )
     eventListener.onPlatformEvent(goalChoiceEvent)
     val goalRankings = rankerToUse
-        .rankGoals(userInput = userInput, goals = this.goals)
+        .rank(
+            description = "goal",
+            userInput = userInput.content,
+            rankables = this.goals
+        )
     val credibleGoals = goalRankings
         .rankings
         .filter { it.score > properties.goalConfidenceCutOff }
@@ -231,7 +235,7 @@ fun AgentPlatform.chooseAndRunAgent(
     )
     eventListener.onPlatformEvent(agentChoiceEvent)
     val agentRankings = rankerToUse
-        .rankAgents(userInput = userInput, agents = this.agents())
+        .rank(description = "agent", userInput = userInput.content, rankables = this.agents())
     val credibleAgents = agentRankings
         .rankings
         .filter { it.score > properties.agentConfidenceCutOff }
