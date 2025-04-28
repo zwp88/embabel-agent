@@ -89,6 +89,23 @@ class TwoActionGoals {
 }
 
 @Agentic
+class TwoActuallyNonConflictingActionGoalsWithSameOutput {
+
+    @Action
+    @AchievesGoal(description = "Creating a person")
+    fun toPerson(userInput: UserInput): Person {
+        return Person(userInput.content)
+    }
+
+    @Action
+    @AchievesGoal(description = "Also to person")
+    fun alsoToPerson(person: Person): Person {
+        return person
+    }
+
+}
+
+@Agentic
 class TwoConflictingActionGoals {
 
     @Action
@@ -99,8 +116,8 @@ class TwoConflictingActionGoals {
 
     @Action
     @AchievesGoal(description = "Also to person")
-    fun toFrog(person: Person): Person {
-        return person
+    fun alsoToPerson(userInput: UserInput): Person {
+        return Person(userInput.content)
     }
 
 }

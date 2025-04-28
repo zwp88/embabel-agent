@@ -107,7 +107,7 @@ class AgentMetadataReader {
         val getterGoals = findGoalGetters(agenticInfo.type).map { getGoal(it, instance) }
         val actionMethods = findActionMethods(agenticInfo.type)
         val conditionMethods = findConditionMethods(agenticInfo.type)
-        val actionGoals = actionMethods.mapNotNull { createGoalFromActionMethod(it) }
+        val actionGoals = actionMethods.mapNotNull { createGoalFromActionMethod(it, instance) }
         val goals = getterGoals + actionGoals
 
         if (actionMethods.isEmpty() && goals.isEmpty() && conditionMethods.isEmpty()) {
@@ -335,17 +335,28 @@ class AgentMetadataReader {
                 // TODO required match binding: Consistent with actions
 
                 else -> {
+                    val domainTypes = processContext.agentProcess.agent.domainTypes
                     args += processContext.blackboard.getValue(
                         type = m.type.name,
-                        domainTypes = processContext.agentProcess.agent.domainTypes,
+                        domainTypes = domainTypes,
                     )
                         ?: return run {
-                            logger.info(
-                                "Condition method {}.{} has unsupported argument type {}",
-                                instance.javaClass.name,
-                                m.name,
-                                m.type,
-                            )
+                            // TODO assignable?
+                            if (domainTypes.contains(m.type)) {
+                                logger.warn(
+                                    "Condition method {}.{} has no value for parameter {} of known type",
+                                    instance.javaClass.name,
+                                    m.name,
+                                    m.type,
+                                )
+                            } else {
+                                logger.info(
+                                    "Condition method {}.{} has unsupported argument type {}",
+                                    instance.javaClass.name,
+                                    m.name,
+                                    m.type,
+                                )
+                            }
                             false
                         }
                 }
@@ -365,6 +376,7 @@ class AgentMetadataReader {
      */
     private fun createGoalFromActionMethod(
         method: Method,
+        instance: Any,
     ): AgentCoreGoal? {
         val actionAnnotation = method.getAnnotation(Action::class.java)
         val goalAnnotation = method.getAnnotation(AchievesGoal::class.java)
@@ -376,7 +388,7 @@ class AgentMetadataReader {
             type = method.returnType.name,
         )
         return AgentCoreGoal(
-            name = "create_${method.returnType.simpleName}",
+            name = generateName(instance, method.name),
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,

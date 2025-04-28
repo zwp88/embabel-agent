@@ -64,7 +64,14 @@ class ShellCommands(
 
     @ShellMethod("Chat")
     fun chat(): String {
-        val processOptions = ProcessOptions()
+        val processOptions = ProcessOptions(
+            verbosity = Verbosity(
+                debug = false,
+                showPrompts = false,
+                showLlmResponses = false,
+                showPlanning = true,
+            )
+        )
         blackboard = processOptions.blackboard
         val chatSession = LastMessageIntentAgentPlatformChatSession(
             agentPlatform = this.agentPlatform,
@@ -86,6 +93,14 @@ class ShellCommands(
     fun actions(): String {
         return "${"Actions:".bold()}\n${
             agentPlatform.actions
+                .joinToString(separator = "\n") { "\t" + it.infoString(verbose = true) }
+        }"
+    }
+
+    @ShellMethod("List conditions")
+    fun conditions(): String {
+        return "${"Conditions:".bold()}\n${
+            agentPlatform.conditions
                 .joinToString(separator = "\n") { "\t" + it.infoString(verbose = true) }
         }"
     }
