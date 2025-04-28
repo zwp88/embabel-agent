@@ -64,7 +64,14 @@ class ShellCommands(
 
     @ShellMethod("Chat")
     fun chat(): String {
-        val processOptions = ProcessOptions()
+        val processOptions = ProcessOptions(
+            verbosity = Verbosity(
+                debug = false,
+                showPrompts = false,
+                showLlmResponses = false,
+                showPlanning = true,
+            )
+        )
         blackboard = processOptions.blackboard
         val chatSession = LastMessageIntentAgentPlatformChatSession(
             agentPlatform = this.agentPlatform,

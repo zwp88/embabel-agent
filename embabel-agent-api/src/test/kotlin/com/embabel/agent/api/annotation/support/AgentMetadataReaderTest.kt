@@ -115,14 +115,14 @@ class AgentMetadataReaderTest {
         }
 
         @Test
-        fun `two action goals`() {
+        fun `two distinct action goals`() {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(TwoActionGoals())
             assertNotNull(metadata)
             assertEquals(2, metadata!!.goals.size)
-            val personGoal = metadata.goals.find { it.name == "create_Person" }
+            val personGoal = metadata.goals.find { it.name == TwoActionGoals::class.java.name + ".toPerson" }
                 ?: fail("Should have toPerson goal: " + metadata.goals.map { it.name })
-            val frogGoal = metadata.goals.find { it.name == "create_Frog" }
+            val frogGoal = metadata.goals.find { it.name == TwoActionGoals::class.java.name + ".toFrog" }
                 ?: fail("Should have toFrog goal: " + metadata.goals.map { it.name })
 
             assertEquals("Creating a person", personGoal.description)
@@ -136,6 +136,36 @@ class AgentMetadataReaderTest {
                 mapOf("it:${Frog::class.qualifiedName}" to ConditionDetermination.TRUE),
                 frogGoal.preconditions,
                 "Should have precondition for Frog",
+            )
+        }
+
+        @Test
+        fun `two actually non conflicting action goals with different inputs but same output`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(TwoActuallyNonConflictingActionGoalsWithSameOutput())
+            assertNotNull(metadata)
+            assertEquals(2, metadata!!.goals.size)
+            val expectedPersonGoalName =
+                TwoActuallyNonConflictingActionGoalsWithSameOutput::class.java.name + ".toPerson"
+            val personGoal =
+                metadata.goals.find { it.name == expectedPersonGoalName }
+                    ?: fail("Should have $expectedPersonGoalName goal: " + metadata.goals.map { it.name })
+
+            val alsoGoal =
+                metadata.goals.find { it.name == TwoActuallyNonConflictingActionGoalsWithSameOutput::class.java.name + ".alsoToPerson" }
+                    ?: fail("Should have alsoToPerson goal: " + metadata.goals.map { it.name })
+
+            assertEquals("Creating a person", personGoal.description)
+            assertEquals(
+                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
+                personGoal.preconditions,
+                "Should have precondition for Person",
+            )
+            assertEquals("Also to person", alsoGoal.description)
+            assertEquals(
+                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
+                alsoGoal.preconditions,
+                "Should have precondition for alsoPerson",
             )
         }
 

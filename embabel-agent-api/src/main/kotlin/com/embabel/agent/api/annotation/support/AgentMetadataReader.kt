@@ -107,7 +107,7 @@ class AgentMetadataReader {
         val getterGoals = findGoalGetters(agenticInfo.type).map { getGoal(it, instance) }
         val actionMethods = findActionMethods(agenticInfo.type)
         val conditionMethods = findConditionMethods(agenticInfo.type)
-        val actionGoals = actionMethods.mapNotNull { createGoalFromActionMethod(it) }
+        val actionGoals = actionMethods.mapNotNull { createGoalFromActionMethod(it, instance) }
         val goals = getterGoals + actionGoals
 
         if (actionMethods.isEmpty() && goals.isEmpty() && conditionMethods.isEmpty()) {
@@ -376,6 +376,7 @@ class AgentMetadataReader {
      */
     private fun createGoalFromActionMethod(
         method: Method,
+        instance: Any,
     ): AgentCoreGoal? {
         val actionAnnotation = method.getAnnotation(Action::class.java)
         val goalAnnotation = method.getAnnotation(AchievesGoal::class.java)
@@ -387,7 +388,7 @@ class AgentMetadataReader {
             type = method.returnType.name,
         )
         return AgentCoreGoal(
-            name = "create_${method.returnType.simpleName}",
+            name = generateName(instance, method.name),
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,

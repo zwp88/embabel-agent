@@ -122,7 +122,9 @@ class CodeHelper(
             projectRepository.save(project)
         }
 
-    @Action(post = [Conditions.SpringProjectCreated])
+    @Action(
+//        post = [Conditions.SpringProjectCreated]
+    )
     fun createSpringInitialzrProject(payload: OperationPayload): SoftwareProject {
         logger.info("Creating Spring Initialzr project")
 
@@ -130,7 +132,6 @@ class CodeHelper(
         val tempDir = java.nio.file.Files.createTempDirectory("spring-initialzr-").toFile()
         val tempDirPath = tempDir.absolutePath
         logger.info("Created temporary directory at {}", tempDirPath)
-
 
         // Create RestClient to call Spring Initialzr
         val restClient = org.springframework.web.client.RestClient.builder()
@@ -196,7 +197,7 @@ class CodeHelper(
         zipFile.delete()
 
         // Return the project coordinates
-        payload.setCondition(Conditions.SpringProjectCreated, true)
+//        payload.setCondition(Conditions.SpringProjectCreated, true)
         payload += springRecipe
         return SoftwareProject(
             location = projectDir.absolutePath,
@@ -208,7 +209,7 @@ class CodeHelper(
     @Action(
 //        pre = [Conditions.SpringProjectCreated]
     )
-    @AchievesGoal("Created a new Spring project")
+    @AchievesGoal("Create a new Spring project")
     fun describeShinyNewSpringProject(softwareProject: SoftwareProject, springRecipe: SpringRecipe): Explanation =
         Explanation(
             text = """
