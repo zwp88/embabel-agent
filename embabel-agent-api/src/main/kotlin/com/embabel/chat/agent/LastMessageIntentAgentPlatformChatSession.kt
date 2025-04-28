@@ -32,10 +32,10 @@ class LastMessageIntentAgentPlatformChatSession(
     override val conversation: Conversation = InMemoryConversation(),
 ) : ChatSession {
 
-    override fun send(message: UserMessage, additionalListener: MessageListener) {
+    override fun send(message: UserMessage, additionalListener: MessageListener?) {
         val m = generateResponse(message)
         messageListener.onMessage(m)
-        additionalListener.onMessage(m)
+        additionalListener?.onMessage(m)
     }
 
     private fun generateResponse(message: UserMessage): AssistantMessage {

@@ -35,12 +35,21 @@ class MessageSavingMessageListener(
  */
 interface ChatSession {
 
+    /**
+     * Conversation history
+     */
     val conversation: Conversation
 
+    /**
+     * Listener that will always be active
+     */
     val messageListener: MessageListener
 
     /**
      * Any response messages will be sent to the messageListener
+     * @param message message to send
+     * @param additionalListener any additional listener to send the message to,
+     * in addition to the messageListener
      */
-    fun send(message: UserMessage, additionalListener: MessageListener)
+    fun send(message: UserMessage, additionalListener: MessageListener? = null)
 }
