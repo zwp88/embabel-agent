@@ -91,7 +91,7 @@ class AnthropicModels(
     private val keywords = listOf(
         "overloaded",
         "busy",
-        "rate limit",
+        "rate_limit",
         "throttled",
         "quota",
         "organization",
