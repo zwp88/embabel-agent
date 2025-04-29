@@ -73,6 +73,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ▐▙▄▄▖▝▚▄▞▘▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌
 
     """.trimIndent().color(hexToRgb(LumonColors.MEMBRANE)),
+    agentDeploymentEventMessage = "WILES: Deployed agent {}\n\tdescription: {}",
     rankingChoiceRequestEventMessage = kier("Choosing {} based on {}"),
     rankingChoiceMadeEventMessage = kier(
         """

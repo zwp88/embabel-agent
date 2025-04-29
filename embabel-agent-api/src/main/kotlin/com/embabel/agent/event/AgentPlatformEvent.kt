@@ -32,6 +32,13 @@ interface AgentPlatformEvent : AgenticEvent {
     val agentPlatform: AgentPlatform
 }
 
+data class AgentDeploymentEvent(
+    override val agentPlatform: AgentPlatform,
+    val agent: Agent,
+) : AgentPlatformEvent {
+    override val timestamp: Instant = Instant.now()
+}
+
 abstract class RankingEvent<T>(
     override val agentPlatform: AgentPlatform,
     val type: Class<T>,

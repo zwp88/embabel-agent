@@ -40,4 +40,5 @@ class ColossusLoggingAgenticEventListener : LoggingAgenticEventListener(
 
     """.trimIndent().color(hexToRgb(ColossusColors.PANEL)),
     agentProcessPlanFormulatedEventMessage = "[{}] world control formulated plan {} from {}".color(ColossusColors.PANEL),
+    agentDeploymentEventMessage = "Power growing: deployed agent {}\n\tdescription: {}",
 )

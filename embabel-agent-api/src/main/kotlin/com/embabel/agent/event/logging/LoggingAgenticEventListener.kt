@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory
 open class LoggingAgenticEventListener(
     url: String? = null,
     welcomeMessage: String? = null,
+    private val agentDeploymentEventMessage: String = "Deployed agent {}\n\tdescription: {}",
     private val rankingChoiceRequestEventMessage: String = "Choosing {} based on {}",
     private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}. Choices: {}",
     private val rankingChoiceNotMadeEventMessage: String = "Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
@@ -65,6 +66,10 @@ open class LoggingAgenticEventListener(
 
     override fun onPlatformEvent(event: AgentPlatformEvent) {
         when (event) {
+            is AgentDeploymentEvent -> {
+                logger.info(agentDeploymentEventMessage, event.agent.name, event.agent.description)
+            }
+
             is RankingChoiceRequestEvent<*> -> {
                 logger.info(
                     rankingChoiceRequestEventMessage,

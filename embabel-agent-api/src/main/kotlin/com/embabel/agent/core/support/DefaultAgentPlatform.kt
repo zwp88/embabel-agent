@@ -16,6 +16,7 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.core.*
+import com.embabel.agent.event.AgentDeploymentEvent
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.*
@@ -73,7 +74,8 @@ internal class DefaultAgentPlatform(
 
     override fun deploy(agent: Agent): DefaultAgentPlatform {
         agents[agent.name] = agent
-        logger.info("✅ Deployed agent {}", agent.name)
+        logger.debug("✅ Deployed agent {}\n\tdescription: {}", agent.name, agent.description)
+        eventListener.onPlatformEvent(AgentDeploymentEvent(this, agent))
         return this
     }
 
