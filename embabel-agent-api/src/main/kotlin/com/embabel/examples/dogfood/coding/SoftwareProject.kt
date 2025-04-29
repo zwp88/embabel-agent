@@ -15,8 +15,6 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.agent.core.ToolGroupDescription
-import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.toolgroups.code.CiTools
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.common.ai.prompt.PromptContributor
@@ -33,15 +31,6 @@ data class SoftwareProject(
     @get: JsonPropertyDescription("Notes on the coding style used in this project. 20 words.")
     val codingStyle: String,
 ) : PromptContributor, FileTools, CiTools {
-
-    // TODO do we really need this?
-    override val description: ToolGroupDescription
-        get() = ToolGroupDescription("Software project analysis", "project")
-
-    override val permissions: Set<ToolGroupPermission>
-        get() = setOf(
-            ToolGroupPermission.HOST_ACCESS
-        )
 
     override fun contribution() =
         """

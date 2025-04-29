@@ -17,6 +17,7 @@ package com.embabel.agent.toolgroups.code
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
+import com.embabel.agent.spi.support.SelfToolCallbackPublisher
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
 import com.embabel.common.ai.prompt.PromptContributor
@@ -24,12 +25,7 @@ import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.annotation.Tool
 import java.nio.file.Paths
 
-interface CiTools : SelfToolGroup, DirectoryBased {
-
-    override val description
-        get() = ToolGroup.CI_DESCRIPTION
-
-    override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
+interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
 
     @Tool(description = "build the project using the given command in the root")
     fun buildProject(command: String): String {
@@ -64,8 +60,14 @@ interface CiTools : SelfToolGroup, DirectoryBased {
     }
 
     companion object {
-        operator fun invoke(root: String): CiTools = object : CiTools {
+        fun toolGroup(root: String): ToolGroup = object : CiTools, SelfToolGroup {
             override val root: String = root
+
+            override val description
+                get() = ToolGroup.CI_DESCRIPTION
+
+            override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
+
         }
     }
 

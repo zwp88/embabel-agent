@@ -69,10 +69,10 @@ class ToolGroupsConfiguration(
 
     @Bean
     fun fileToolsGroup(): ToolGroup =
-        FileTools(root = System.getProperty("user.dir") + "/embabel-agent-api")
+        FileTools.toolGroup(root = System.getProperty("user.dir") + "/embabel-agent-api")
 
     @Bean
     fun ciToolsGroup(): ToolGroup =
-        CiTools(root = System.getProperty("user.dir") + "/embabel-agent-api")
+        CiTools.toolGroup(root = System.getProperty("user.dir") + "/embabel-agent-api")
 
 }

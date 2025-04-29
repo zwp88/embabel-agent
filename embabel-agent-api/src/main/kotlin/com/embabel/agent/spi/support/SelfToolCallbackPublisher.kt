@@ -20,9 +20,16 @@ import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 
 /**
- * Convenient interface a class can implement to be a tool group
+ * Convenient interface a class can implement to publish any tools
+ * it possesses automatically.
  */
-interface SelfToolGroup : ToolGroup {
+interface SelfToolCallbackPublisher : ToolCallbackPublisher {
+
+    override val toolCallbacks: Collection<ToolCallback>
+        get() = ToolCallbacks.from(this).toList()
+}
+
+interface SelfToolGroup : SelfToolCallbackPublisher, ToolGroup {
 
     val description: ToolGroupDescription
 
@@ -42,7 +49,4 @@ interface SelfToolGroup : ToolGroup {
             permissions = permissions,
             version = version,
         )
-
-    override val toolCallbacks: Collection<ToolCallback>
-        get() = ToolCallbacks.from(this).toList()
 }

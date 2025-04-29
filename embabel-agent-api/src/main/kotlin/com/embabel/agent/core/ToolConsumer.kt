@@ -136,15 +136,17 @@ private data class MinimalToolGroupMetadata(
     override val version: String = DEFAULT_VERSION,
 ) : ToolGroupMetadata
 
-interface ToolCallbackConsumer {
+
+interface ToolCallbackSpec {
 
     /**
-     * Tool callbacks exposed. This will include directly registered tools
-     * and tools resolved from ToolGroups.
+     * Tool callbacks referenced or exposed.
      */
     val toolCallbacks: Collection<ToolCallback>
 
 }
+
+interface ToolCallbackConsumer : ToolCallbackSpec
 
 interface ToolGroupConsumer {
 
@@ -189,11 +191,11 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
     }
 }
 
-interface ToolGroup {
+interface ToolCallbackPublisher : ToolCallbackSpec
+
+interface ToolGroup : ToolCallbackPublisher {
 
     val metadata: ToolGroupMetadata
-
-    val toolCallbacks: Collection<ToolCallback>
 
     /**
      * Define well known tool groups

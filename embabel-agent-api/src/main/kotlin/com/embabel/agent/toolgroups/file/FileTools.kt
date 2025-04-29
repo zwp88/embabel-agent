@@ -18,6 +18,7 @@ package com.embabel.agent.toolgroups.file
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
+import com.embabel.agent.spi.support.SelfToolCallbackPublisher
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
 import com.embabel.common.util.kotlin.loggerFor
@@ -31,11 +32,7 @@ import java.nio.file.Paths
  * Use at your own risk: This makes changes!!
  * @param root local files
  */
-interface FileTools : DirectoryBased, SelfToolGroup {
-
-    override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
-
-    override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
+interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
 
     /**
      * Resolves a relative path against the root directory
@@ -161,8 +158,11 @@ interface FileTools : DirectoryBased, SelfToolGroup {
     }
 
     companion object {
-        operator fun invoke(root: String): FileTools = object : FileTools {
+        fun toolGroup(root: String): ToolGroup = object : FileTools, SelfToolGroup {
             override val root: String = root
+            override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
+            override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
+
         }
     }
 

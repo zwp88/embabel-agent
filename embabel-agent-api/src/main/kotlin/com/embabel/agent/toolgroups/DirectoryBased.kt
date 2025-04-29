@@ -15,6 +15,10 @@
  */
 package com.embabel.agent.toolgroups
 
+/**
+ * Represents a directory-based tool group
+ * that works on the host machine.
+ */
 interface DirectoryBased {
 
     /**
