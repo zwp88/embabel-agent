@@ -384,3 +384,45 @@ class OneTransformerActionWith2Tools {
     fun toolWithArg(location: String) = "bar"
 
 }
+
+@Agentic
+class ToolMethodsOnDomainObject {
+
+    @Action
+    fun toPerson(
+        wumpty: Wumpus,
+    ): Person {
+        return Person(wumpty.name)
+    }
+
+    @Action
+    fun toFrog(
+        noTools: NoTools,
+    ): Frog {
+        return Frog("Kermit")
+    }
+
+}
+
+class Wumpus(val name: String) {
+
+    @Tool
+    fun toolWithoutArg(): String = "The wumpus's name is $name"
+
+    @Tool
+    fun toolWithArg(location: String) = "bar"
+}
+
+@Agentic
+class ToolMethodsOnDomainObjects {
+
+    @Action
+    fun toFrog(
+        wumpty: Wumpus, person: Person,
+    ): Frog {
+        return Frog(wumpty.name)
+    }
+
+}
+
+data class NoTools(val x: Int)

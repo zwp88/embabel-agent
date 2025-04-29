@@ -25,6 +25,7 @@ import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.core.util.DummyInstanceCreator
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
@@ -32,7 +33,6 @@ import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
 import com.embabel.agent.core.Goal as AgentCoreGoal
-
 
 /**
  * Agentic info about a type
@@ -119,10 +119,10 @@ class AgentMetadataReader {
             )
             return null
         }
-        val toolCallbacks = ToolCallbacks.from(instance).toList()
+        val toolCallbacksOnInstance = ToolCallbacks.from(instance).toList()
 
         val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
-        val actions = actionMethods.map { createAction(it, instance, toolCallbacks) }
+        val actions = actionMethods.map { createAction(it, instance, toolCallbacksOnInstance) }
 
         if (agenticInfo.agentAnnotation != null) {
             return com.embabel.agent.core.Agent(
@@ -228,12 +228,16 @@ class AgentMetadataReader {
         }
     }
 
+    /**
+     * Create an Action from a method
+     */
     private fun createAction(
         method: Method,
         instance: Any,
-        toolCallbacks: List<ToolCallback>,
+        toolCallbacksOnInstance: List<ToolCallback>,
     ): MultiTransformer<Any> {
         val actionAnnotation = method.getAnnotation(Action::class.java)
+        val allToolCallbacks = toolCallbacksOnInstance.toMutableList()
         val inputClasses = method.parameters
             .map { it.type }
         val inputs = method.parameters
@@ -245,6 +249,15 @@ class AgentMetadataReader {
                 expandInputBindings(if (nameMatchAnnotation != null) it.name else IoBinding.DEFAULT_BINDING, it.type)
             }
             .flatten()
+        method.parameters
+            .filterNot {
+                OperationPayload::class.java.isAssignableFrom(it.type)
+            }
+            .forEach {
+                // Dummy tools to drive metadata. Will not be invoked.
+                val parameterInstance = DummyInstanceCreator.LoremIpsum.createDummyInstance(it.type)
+                allToolCallbacks += ToolCallbacks.from(parameterInstance)
+            }
         return MultiTransformer(
             name = generateName(instance, method.name),
             description = actionAnnotation.description.ifBlank { method.name },
@@ -256,14 +269,14 @@ class AgentMetadataReader {
             inputClasses = inputClasses,
             outputClass = method.returnType as Class<Any>,
             outputVarName = actionAnnotation.outputBinding,
-            toolCallbacks = toolCallbacks,
+            toolCallbacks = allToolCallbacks.toList(),
             toolGroups = actionAnnotation.toolGroups.asList(),
         ) { payload ->
             invokeActionMethod(
                 method = method,
                 instance = instance,
                 payload = payload,
-                toolCallbacks = toolCallbacks,
+                toolCallbacks = toolCallbacksOnInstance,
             )
         }
     }
@@ -276,6 +289,9 @@ class AgentMetadataReader {
     ): O {
         logger.debug("Invoking action method {} with payload {}", method.name, payload.input)
         val toolCallbacksOnDomainObjects = ToolCallbacks.from(*payload.input.toTypedArray())
+        val actionToolCallbacks = toolCallbacksOnDomainObjects.toMutableList()
+        // Replace dummy tools
+        actionToolCallbacks += toolCallbacks.filterNot { tc -> toolCallbacksOnDomainObjects.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
         var args = payload.input.toTypedArray()
         if (method.parameters.any { OperationPayload::class.java.isAssignableFrom(it.type) }) {
             // We need to add the payload as the last argument
@@ -289,7 +305,7 @@ class AgentMetadataReader {
 
             // TODO or default options
             val toolCallbacks =
-                (toolCallbacks + toolCallbacksOnDomainObjects + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
+                (actionToolCallbacks + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
             val promptContributors = e.promptContributors
 
             val promptRunner = payload.promptRunner(
@@ -316,7 +332,6 @@ class AgentMetadataReader {
             result,
             payload.input
         )
-
         return result as O
     }
 

@@ -25,6 +25,7 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
+import org.springframework.ai.tool.ToolCallbacks
 
 /**
  * Payload for any operation
@@ -41,15 +42,21 @@ interface OperationPayload : Blackboard {
         llm: LlmOptions,
         toolCallbacks: List<ToolCallback> = emptyList(),
         promptContributors: List<PromptContributor?> = emptyList(),
-    ): PromptRunner =
-        OperationPayloadPromptRunner(
+    ): PromptRunner {
+        val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
+        // Add any tool callbacks that are not already in the list
+        updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
+        return OperationPayloadPromptRunner(
             this,
             llm = llm,
-            toolCallbacks = toolCallbacks,
+            toolCallbacks = updatedToolCallbacks,
             promptContributors = promptContributors.filterNotNull(),
         )
+    }
 
     fun agentPlatform() = processContext.platformServices.agentPlatform
+
+    fun toolCallbacksOnDomainObjects(): List<ToolCallback>
 
 }
 
@@ -116,6 +123,16 @@ private class OperationPayloadPromptRunner(
 
 interface InputPayload<I> : OperationPayload {
     val input: I
+
+    override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
+        val inp = input
+        val instances: Collection<*> = when (inp) {
+            is Array<*> -> inp.toList()
+            is Collection<*> -> input as Collection<*>
+            else -> listOf(input)
+        }
+        return ToolCallbacks.from(*instances.toTypedArray()).toList()
+    }
 
 }
 
