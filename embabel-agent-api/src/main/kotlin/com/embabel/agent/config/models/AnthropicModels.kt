@@ -19,34 +19,109 @@ import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
-import com.embabel.common.util.kotlin.loggerFor
+import org.slf4j.LoggerFactory
 import org.springframework.ai.anthropic.AnthropicChatModel
 import org.springframework.ai.anthropic.AnthropicChatOptions
 import org.springframework.ai.anthropic.api.AnthropicApi
+import org.springframework.ai.retry.NonTransientAiException
+import org.springframework.ai.retry.TransientAiException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.retry.RetryCallback
+import org.springframework.retry.RetryContext
+import org.springframework.retry.RetryListener
+import org.springframework.retry.support.RetryTemplate
+import java.time.Duration
 import java.time.LocalDate
 
+@ConfigurationProperties(prefix = "anthropic")
+data class AnthropicProperties(
+    val maxAttempts: Int = 2,
+)
+
+/**
+ * Anthropic models are often overloaded, so we fall back to OpenAI if it's available.
+ */
 @Configuration
 @ConditionalOnProperty("ANTHROPIC_API_KEY")
 @ExcludeFromJacocoGeneratedReport(reason = "Anthropic configuration can't be unit tested")
-class AnthropicModels {
+class AnthropicModels(
+    llms: List<Llm>,
+    private val properties: AnthropicProperties,
+) {
+    private val logger = LoggerFactory.getLogger(AnthropicModels::class.java)
+
+    // Don't try too hard
+    private val retryTemplate = RetryTemplate.builder()
+        .maxAttempts(properties.maxAttempts)
+        .retryOn(TransientAiException::class.java)
+        .exponentialBackoff(Duration.ofMillis(2000L), 5.0, Duration.ofMillis(180000L))
+        .withListener(object : RetryListener {
+            override fun <T : Any?, E : Throwable?> onError(
+                context: RetryContext?,
+                callback: RetryCallback<T?, E?>?,
+                throwable: Throwable?
+            ) {
+                logger.warn("Retry error. Retry count:" + context?.retryCount, throwable);
+            }
+        })
+        .build()
+
+
+    val gpt4o = llms.find { it.name == OpenAiModels.GPT_4o }
+    val gpt4oMini = llms.find { it.name == OpenAiModels.GPT_4o_MINI }
 
     init {
-        loggerFor<AnthropicModels>().info("Anthropic models are available")
+        logger.info("Anthropic models are available: $properties")
+        if (gpt4o != null) {
+            logger.info("✅ Using GPT-4o fallback")
+        } else {
+            logger.info("❌ GPT-4o fallback not available")
+        }
+        if (gpt4oMini != null) {
+            logger.info("✅ Using GPT-4o mini fallback")
+        } else {
+            logger.info("❌ GPT-4o mini fallback not available")
+        }
+    }
+
+    private val keywords = listOf(
+        "overloaded",
+        "busy",
+        "rate limit",
+        "throttled",
+        "quota",
+        "organization",
+    )
+
+    private val flipTrigger: ((Throwable) -> Boolean) = { t ->
+        when (t) {
+            is NonTransientAiException -> true
+            is TransientAiException -> {
+                val msg = t.message?.lowercase() ?: ""
+                keywords.any { msg.contains(it) }
+            }
+
+            else -> true
+        }
     }
 
     @Bean
     fun claudeSonnet(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf(CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
+    ): Llm {
+        return anthropicModelOf(CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
+            .withFallback(llm = gpt4o, whenError = flipTrigger)
+    }
 
     @Bean
     fun claudeHaiku(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
+        .withFallback(llm = gpt4oMini, whenError = flipTrigger)
 
     private fun anthropicModelOf(
         name: String,
@@ -56,8 +131,8 @@ class AnthropicModels {
 
         val chatModel = AnthropicChatModel
             .builder()
-
             .anthropicApi(AnthropicApi(apiKey))
+            .retryTemplate(retryTemplate)
             .defaultOptions(
                 AnthropicChatOptions.builder()
                     .model(name)

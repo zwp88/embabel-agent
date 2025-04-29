@@ -2,6 +2,7 @@ package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.Autonomy
 import com.embabel.agent.api.common.DynamicExecutionResult
+import com.embabel.agent.api.common.GoalChoiceApprover
 import com.embabel.agent.core.support.LocalPerson
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.MessageSavingMessageListener
@@ -23,8 +24,12 @@ class LastMessageIntentAgentPlatformChatSessionTest {
         val output = LocalPerson("Gordon")
         every { der.output } returns output
 
-        every { mockAutonomy.chooseAndAccomplishGoal(capture(intent), any()) } returns der
-        val chatSession = LastMessageIntentAgentPlatformChatSession(mockAutonomy, {})
+        every { mockAutonomy.chooseAndAccomplishGoal(capture(intent), any(), any()) } returns der
+        val chatSession = LastMessageIntentAgentPlatformChatSession(
+            mockAutonomy,
+            GoalChoiceApprover.APPROVE_ALL,
+            messageListener = {},
+        )
         val userMessage = UserMessage("Hello, world!")
         val l = MessageSavingMessageListener()
         chatSession.send(userMessage, l)
