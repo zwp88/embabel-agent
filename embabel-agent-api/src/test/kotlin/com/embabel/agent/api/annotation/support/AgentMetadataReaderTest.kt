@@ -613,6 +613,90 @@ class AgentMetadataReaderTest {
         }
 
         @Nested
+        inner class TestToolMethodsOnDomainObject {
+
+            @Test
+            fun `tools are added from single domain object used in this action`() {
+                val reader = AgentMetadataReader()
+                val metadata = reader.createAgentMetadata(ToolMethodsOnDomainObject())
+                assertNotNull(metadata)
+                assertEquals(2, metadata!!.actions.size)
+                val action = metadata.actions.single { it.name.contains("toPerson") }
+                assertEquals(
+                    2,
+                    action.toolCallbacks.size,
+                    "Should have two tools from domain object: have ${action.toolCallbacks.map { it.toolDefinition.name() }}",
+                )
+                assertEquals(
+                    setOf("toolWithoutArg", "toolWithArg"),
+                    action.toolCallbacks.map { it.toolDefinition.name() }.toSet(),
+                )
+            }
+
+            @Test
+            fun `tools are added from multiple domain objects used in this action`() {
+                val reader = AgentMetadataReader()
+                val metadata = reader.createAgentMetadata(ToolMethodsOnDomainObjects())
+                assertNotNull(metadata)
+                assertEquals(1, metadata!!.actions.size)
+                val action = metadata.actions.single()
+                assertEquals(
+                    3,
+                    action.toolCallbacks.size,
+                    "Should have three tools from domain object: have ${action.toolCallbacks.map { it.toolDefinition.name() }}",
+                )
+                assertEquals(
+                    setOf("toolWithoutArg", "toolWithArg", "reverse"),
+                    action.toolCallbacks.map { it.toolDefinition.name() }.toSet(),
+                )
+            }
+
+            @Test
+            @Disabled("not yet implemented")
+            fun `handles conflicting tool definitions in multiple domain objects`() {
+
+            }
+
+            @Test
+            fun `tools are not added from tooled domain object not used in this action`() {
+                val reader = AgentMetadataReader()
+                val metadata = reader.createAgentMetadata(ToolMethodsOnDomainObject())
+                assertNotNull(metadata)
+                assertEquals(2, metadata!!.actions.size)
+                val action = metadata.actions.single { it.name.contains("toFrog") }
+                assertEquals(
+                    0,
+                    action.toolCallbacks.size,
+                    "Should have no tools from domain object: have ${action.toolCallbacks.map { it.toolDefinition.name() }}",
+                )
+            }
+
+            @Test
+            @Disabled("test not implemented")
+            fun `invoke tool callback on domain object`() {
+                val reader = AgentMetadataReader()
+                val metadata = reader.createAgentMetadata(ToolMethodsOnDomainObject())
+                assertNotNull(metadata)
+                assertEquals(2, metadata!!.actions.size)
+                val action = metadata.actions.single { it.name.contains("toPerson") }
+                assertEquals(
+                    2,
+                    action.toolCallbacks.size,
+                    "Should have two tools from domain object: have ${action.toolCallbacks.map { it.toolDefinition.name() }}",
+                )
+                assertEquals(
+                    setOf("toolWithoutArg", "toolWithArg"),
+                    action.toolCallbacks.map { it.toolDefinition.name() }.toSet(),
+                )
+                TODO()
+                val toolWithoutArg = action.toolCallbacks.single { it.toolDefinition.name() == "toolWithoutArg" }
+                val result = toolWithoutArg.call("")
+                assertEquals(result, "The wumpus's name is Wumpus")
+            }
+
+        }
+
+        @Nested
         inner class CustomBinding {
 
             @Test
@@ -816,7 +900,11 @@ class AgentMetadataReaderTest {
                 assertEquals(ActionStatusCode.SUCCEEDED, result.status)
                 assertTrue(pc.blackboard.lastResult() is UserInput)
                 assertEquals("John Doe", (pc.blackboard.lastResult() as UserInput).content)
-                assertEquals(1, llmo.captured.toolCallbacks.size)
+                assertEquals(
+                    1,
+                    llmo.captured.toolCallbacks.size,
+                    "Should have one callback, had ${llmo.captured.toolCallbacks.map { it.toolDefinition.name() }}",
+                )
                 assertEquals("reverse", llmo.captured.toolCallbacks.single().toolDefinition.name())
                 assertEquals(byName(LlmOptions.DEFAULT_MODEL), llmo.captured.llm.criteria)
             }

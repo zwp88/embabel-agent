@@ -46,7 +46,7 @@ interface FileTools : DirectoryBased, SelfToolGroup {
         val resolvedPath = basePath.resolve(path).normalize().toAbsolutePath()
 
         if (!resolvedPath.startsWith(basePath)) {
-            throw SecurityException("Path traversal attempt detected: $path")
+            throw SecurityException("Path traversal attempt detected: $path, root=$root")
         }
         return resolvedPath
     }
@@ -82,10 +82,10 @@ interface FileTools : DirectoryBased, SelfToolGroup {
     fun readFile(path: String): String {
         val resolvedPath = resolvePath(path)
         if (!Files.exists(resolvedPath)) {
-            throw IllegalArgumentException("File does not exist: $path")
+            throw IllegalArgumentException("File does not exist: $path, root=$root")
         }
         if (!Files.isRegularFile(resolvedPath)) {
-            throw IllegalArgumentException("Path is not a regular file: $path")
+            throw IllegalArgumentException("Path is not a regular file: $path, root=$root")
         }
         return Files.readString(resolvedPath)
     }
@@ -94,10 +94,10 @@ interface FileTools : DirectoryBased, SelfToolGroup {
     fun listFiles(path: String): List<String> {
         val resolvedPath = resolvePath(path)
         if (!Files.exists(resolvedPath)) {
-            throw IllegalArgumentException("Directory does not exist: $path")
+            throw IllegalArgumentException("Directory does not exist: $path, root=$root")
         }
         if (!Files.isDirectory(resolvedPath)) {
-            throw IllegalArgumentException("Path is not a directory: $path")
+            throw IllegalArgumentException("Path is not a directory: $path, root=$root")
         }
 
         return Files.list(resolvedPath).use { stream ->
@@ -129,10 +129,10 @@ interface FileTools : DirectoryBased, SelfToolGroup {
         loggerFor<FileTools>().info("Editing file at path: $path: $oldContent -> $newContent")
         val resolvedPath = resolvePath(path)
         if (!Files.exists(resolvedPath)) {
-            throw IllegalArgumentException("File does not exist: $path")
+            throw IllegalArgumentException("File does not exist: $path, root=$root")
         }
         if (!Files.isRegularFile(resolvedPath)) {
-            throw IllegalArgumentException("Path is not a regular file: $path")
+            throw IllegalArgumentException("Path is not a regular file: $path, root=$root")
         }
 
         val currentContent = Files.readString(resolvedPath)

@@ -19,7 +19,6 @@ import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.OperationPayload
 import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels
-import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.lastOrNull
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
@@ -44,9 +43,6 @@ object Conditions {
 
 @Agent(
     description = "Explain code or perform changes to a software project or directory structure",
-    toolGroups = [
-        ToolGroup.FILE,
-    ],
 )
 @Profile("!test")
 class CodeHelper(
@@ -103,11 +99,7 @@ class CodeHelper(
         return toMavenBuildResult(buildOutput)
     }
 
-    @Action(
-        toolGroups = [
-            ToolGroup.FILE,
-        ],
-    )
+    @Action
     @AchievesGoal(description = "Code has been explained to the user")
     fun explainCode(
         userInput: UserInput,
@@ -136,7 +128,7 @@ class CodeHelper(
 
     @Action(pre = [Conditions.BuildSucceeded])
     @AchievesGoal(description = "Modify project code as per user request")
-    fun done(codeModificationReport: CodeModificationReport): CodeModificationReport {
+    fun codeModificationComplete(codeModificationReport: CodeModificationReport): CodeModificationReport {
         return codeModificationReport
     }
 
