@@ -15,10 +15,21 @@
  */
 package com.embabel.agent.event
 
+/**
+ * Listen to events related to processes and the platform itself
+ */
 interface AgenticEventListener {
 
+    /**
+     * An event relating to the platform or leading to the creation
+     * of an AgentProcess, such as the choice of a goal.
+     * No process is available at this point.
+     */
     fun onPlatformEvent(event: AgentPlatformEvent) {}
 
+    /**
+     * Listen to an event during the execution of an AgentProcess
+     */
     fun onProcessEvent(event: AgentProcessEvent) {}
 
     companion object {
@@ -28,9 +39,10 @@ interface AgenticEventListener {
         fun from(listeners: List<AgenticEventListener>): AgenticEventListener =
             MulticastAgenticEventListener(listeners)
 
+        /**
+         * EventListener that does nothing
+         */
         val DevNull: AgenticEventListener = object : AgenticEventListener {
-            override fun onPlatformEvent(event: AgentPlatformEvent) {}
-            override fun onProcessEvent(event: AgentProcessEvent) {}
         }
     }
 

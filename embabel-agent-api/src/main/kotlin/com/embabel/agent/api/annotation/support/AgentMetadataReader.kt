@@ -85,6 +85,13 @@ class AgentMetadataReader {
      * otherwise the AgentMetadata superinterface
      */
     fun createAgentMetadata(instance: Any): AgentScope? {
+        if (instance is Class<*>) {
+            logger.warn(
+                "❓Call to createAgentMetadata with class {}. Pass an instance",
+                instance.name,
+            )
+            return null
+        }
         val agenticInfo = AgenticInfo(instance.javaClass)
         if (!agenticInfo.agentic()) {
             logger.debug(
@@ -112,10 +119,10 @@ class AgentMetadataReader {
 
         if (actionMethods.isEmpty() && goals.isEmpty() && conditionMethods.isEmpty()) {
             logger.warn(
-                "No methods annotated with @{} or @{} and no goals defined on {}",
+                "❓No methods annotated with @{} or @{} and no goals defined on {}",
                 Action::class.simpleName,
                 Condition::class.simpleName,
-                agenticInfo.type.simpleName,
+                agenticInfo.type.name,
             )
             return null
         }

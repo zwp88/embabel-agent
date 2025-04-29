@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.e2e
 
+import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.common.*
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
@@ -30,8 +31,10 @@ import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.common.test.ai.config.FakeAiConfiguration
 import com.embabel.examples.simple.horoscope.HoroscopeService
+import com.embabel.examples.simple.horoscope.java.StarNewsFinder
 import com.embabel.examples.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -66,14 +69,14 @@ class FakeConfig {
         ): Rankings<T> where T : Named, T : Described {
             when (description) {
                 "agent" -> {
-                    val a = rankables.find { it.name.contains("Star") }!!
+                    val a = rankables.single { it.name.contains("Star") }!!
                     return Rankings(
                         rankings = listOf(Ranking(a, .9))
                     )
                 }
 
                 "goal" -> {
-                    val g = rankables.find { it.description.contains("horoscope") }!!
+                    val g = rankables.single { it.description.contains("horoscope") }!!
                     return Rankings(
                         rankings = listOf(Ranking(g, .9))
                     )
@@ -100,11 +103,24 @@ class FakeConfig {
 class AgentPlatformIntegrationTest(
     @Autowired
     private val autonomy: Autonomy,
+    @Autowired
+    private val agentMetadataReader: AgentMetadataReader,
+    @Autowired
+    private val horoscopeService: HoroscopeService,
 ) {
 
-    @Autowired
-    private lateinit var agentPlatform: AgentPlatform
+    private val agentPlatform: AgentPlatform = autonomy.agentPlatform
+
     private val typedOps: TypedOps = AgentPlatformTypedOps(autonomy.agentPlatform)
+
+    @BeforeEach
+    fun setup() {
+        val amd = agentMetadataReader.createAgentMetadata(
+            StarNewsFinder(horoscopeService, 5)
+        )
+        assertNotNull(amd)
+        agentPlatform.deploy(amd)
+    }
 
     @Nested
     inner class SmokeTest {

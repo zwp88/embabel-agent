@@ -18,28 +18,40 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.annotation.support.AgenticInfo
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.support.DefaultAgentPlatformProperties
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Profile
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 
 /**
- * Autoregister beans with @Agentic annotation
+ * Scanning properties
+ * @param auto whether to auto register beans with
+ * @Agent and @Agentic annotation
+ */
+@ConfigurationProperties("embabel.agent-platform.scanning")
+data class AgentScanningProperties(
+    val auto: Boolean = true,
+)
+
+/**
+ * Autoregister beans with @Agent or @Agentic annotations
  */
 @Service
+@Profile("!test")
 @Order(Ordered.LOWEST_PRECEDENCE)
 internal class AgentScanningBeanPostProcessor(
     private val agentMetadataReader: AgentMetadataReader,
     private val agentPlatform: AgentPlatform,
-    private val properties: DefaultAgentPlatformProperties,
+    private val properties: AgentScanningProperties,
 ) : BeanPostProcessor {
 
     private val logger = LoggerFactory.getLogger(AgentScanningBeanPostProcessor::class.java)
 
     override fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
-        if (properties.autoRegister) {
+        if (properties.auto) {
             val agentMetadata = agentMetadataReader.createAgentMetadata(bean)
             if (agentMetadata != null) {
                 val agenticInfo = AgenticInfo(bean.javaClass)

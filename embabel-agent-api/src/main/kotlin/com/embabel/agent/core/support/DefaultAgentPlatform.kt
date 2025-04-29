@@ -24,21 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.slf4j.LoggerFactory
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.stereotype.Service
+import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Agent platform properties
- * @param autoRegister whether to auto register beans with
- * @Agentic annotation
- */
-@ConfigurationProperties("embabel.agent-platform")
-data class DefaultAgentPlatformProperties(
-    val autoRegister: Boolean = true,
-)
 
 @Service
 internal class DefaultAgentPlatform(
@@ -46,16 +37,15 @@ internal class DefaultAgentPlatform(
     override val toolGroupResolver: ToolGroupResolver,
     eventListeners: List<AgenticEventListener>,
     private val processIdGenerator: ProcessIdGenerator,
-    val properties: DefaultAgentPlatformProperties,
     private val agentProcessRepository: AgentProcessRepository,
     private val operationScheduler: OperationScheduler,
 ) : AgentPlatform {
 
     private val logger = LoggerFactory.getLogger(DefaultAgentPlatform::class.java)
 
-    private val yom = ObjectMapper(YAMLFactory()).registerKotlinModule()
+    private val yamlObjectMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
 
-    private val agents = mutableMapOf<String, Agent>()
+    private val agents: MutableMap<String, Agent> = ConcurrentHashMap()
 
     override val name: String = javaClass.name
 
@@ -82,14 +72,14 @@ internal class DefaultAgentPlatform(
         agents.values.toSet()
 
     override fun deploy(agent: Agent): DefaultAgentPlatform {
-        logger.info("Deploying agent {}", agent.name)
         agents[agent.name] = agent
+        logger.info("✅ Deployed agent {}", agent.name)
         return this
     }
 
     fun deploy(resource: Resource): DefaultAgentPlatform {
         logger.info("Loading agent from {}", resource)
-        val agent = yom.readValue<Agent>(resource.inputStream, Agent::class.java)
+        val agent = yamlObjectMapper.readValue<Agent>(resource.inputStream, Agent::class.java)
         return deploy(agent)
     }
 
