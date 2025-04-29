@@ -16,7 +16,6 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.ExecutePromptException
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
@@ -302,7 +301,7 @@ class AgentMetadataReader {
         // Replace dummy tools
         actionToolCallbacks += toolCallbacks.filterNot { tc -> toolCallbacksOnDomainObjects.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
         var args = context.input.toTypedArray()
-        if (method.parameters.any { ActionContext::class.java.isAssignableFrom(it.type) }) {
+        if (method.parameters.any { OperationContext::class.java.isAssignableFrom(it.type) }) {
             // We need to add the payload as the last argument
             args += context
         }

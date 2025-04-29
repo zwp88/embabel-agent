@@ -45,23 +45,23 @@ class CodingProperties(
     companion object {
         private val logger = LoggerFactory.getLogger(javaClass)
 
-        fun createTempDir(seed: String): String {
+        fun createTempDir(seed: String): File {
             val tempDir = Files.createTempDirectory(seed).toFile()
             val tempDirPath = tempDir.absolutePath
             loggerFor<CodingProperties>().info("Created temporary directory at {}", tempDirPath)
-            return tempDirPath
+            return tempDir
         }
 
         /**
          * Extract zip file to a temporary directory
+         * @return the path to the extracted file
          */
         fun extractZipFile(
             zipFile: File,
-            tempDirPath: String,
-            projectName: String,
+            tempDir: File,
+            delete: Boolean = false,
         ): File {
-            val projectDir = File(tempDirPath, projectName)
-            projectDir.mkdir()
+            val projectDir = tempDir
 
             // Use Java's ZipInputStream to extract the zip file
             ZipInputStream(FileInputStream(zipFile)).use { zipInputStream ->
@@ -89,9 +89,10 @@ class CodingProperties(
 
             logger.info("Extracted zip file project to {}", projectDir.absolutePath)
 
-            // Delete the zip file
-            zipFile.delete()
-            return projectDir
+            if (delete) {
+                zipFile.delete()
+            }
+            return File(projectDir, zipFile.nameWithoutExtension)
         }
     }
 }

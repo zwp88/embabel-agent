@@ -22,7 +22,7 @@ package com.embabel.agent.toolgroups
 interface DirectoryBased {
 
     /**
-     * Root on local machine
+     * Root on host machine
      */
     val root: String
 }

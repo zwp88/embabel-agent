@@ -87,7 +87,6 @@ class SpringCoder(
         val projectDir = CodingProperties.extractZipFile(
             zipFile,
             tempDirPath,
-            springRecipe.artifactId,
         )
         logger.info("Extracted Spring Initialzr project to {}", projectDir.absolutePath)
 

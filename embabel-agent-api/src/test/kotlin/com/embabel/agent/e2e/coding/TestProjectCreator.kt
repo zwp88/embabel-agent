@@ -41,6 +41,8 @@ class TestProjectCreator {
 
     private val logger = LoggerFactory.getLogger(TestProjectCreator::class.java)
 
+    val zipFilePath = "/Users/rjohnson/Downloads/bot.zip"
+
     @Action(
         post = [TestCoderConditions.TestProjectCreated]
     )
@@ -53,8 +55,8 @@ class TestProjectCreator {
         val tempDirPath = CodingProperties.createTempDir("thing")
 
         // TODO should not be hard coded
-        val zipFile = File("/Users/rjohnson/Downloads/demo.zip")
-        val projectDir = CodingProperties.extractZipFile(zipFile, tempDirPath, projectRecipe.projectName)
+        val zipFile = File(zipFilePath)
+        val projectDir = CodingProperties.extractZipFile(zipFile, tempDirPath)
 
         // Return the project coordinates
         context.setCondition(TestCoderConditions.TestProjectCreated, true)

@@ -20,11 +20,7 @@ import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolCallbackPublisher
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
-import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.util.kotlin.loggerFor
-import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
-import java.nio.file.Paths
 
 interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
 
@@ -44,88 +40,4 @@ interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
 
         }
     }
-}
-
-/**
- * CI support
- */
-class Ci(override val root: String) : DirectoryBased {
-
-    private val logger = LoggerFactory.getLogger(Ci::class.java)
-
-    fun buildAndParse(command: String): BuildResult {
-        val rawOutput = build(command)
-        return parseBuildOutput(rawOutput)
-    }
-
-    fun parseBuildOutput(rawOutput: String): BuildResult {
-        return when {
-            // TODO this is messy
-            rawOutput.contains("from pom.xml") -> parseMavenBuildResult(rawOutput)
-            else -> TODO("Support non Maven build systems")
-        }
-    }
-
-    fun build(command: String): String {
-        logger.info("Running build command in root directory: $command")
-
-        val processBuilder = ProcessBuilder()
-
-        // Set the working directory to the root
-        processBuilder.directory(Paths.get(root).toFile())
-
-        // Configure the command
-        val commandParts = command.split("\\s+".toRegex())
-        processBuilder.command(commandParts)
-
-        // Redirect error stream to output stream
-        processBuilder.redirectErrorStream(true)
-
-        try {
-            val process = processBuilder.start()
-            val output = process.inputStream.bufferedReader().use { it.readText() }
-            val exitCode = process.waitFor()
-
-            return if (exitCode == 0) {
-                "Command executed successfully:\n$output"
-            } else {
-                "Command failed with exit code $exitCode:\n$output"
-            }
-        } catch (e: Exception) {
-            loggerFor<CiTools>().error("Error executing command: $command", e)
-            return "Error executing command: ${e.message}"
-        }
-    }
-
-}
-
-private fun parseMavenBuildResult(
-    rawOutput: String,
-): BuildResult {
-    val success = rawOutput.contains("BUILD SUCCESS")
-    val relevantOutput = rawOutput.lines().filter { it.contains("[ERROR]") }.joinToString("\n")
-    return BuildResult(
-        success = success,
-        rawOutput = rawOutput,
-        relevantOutput = relevantOutput,
-    )
-}
-
-/**
- * Result of a build command
- * @param relevantOutput only relevant error messages
- *
- */
-data class BuildResult(
-    val success: Boolean,
-    val rawOutput: String,
-    val relevantOutput: String,
-) : PromptContributor {
-
-    override fun contribution(): String =
-        """
-            |Build result: success=$success
-            |Relevant output:
-            |$relevantOutput
-        """.trimIndent()
 }

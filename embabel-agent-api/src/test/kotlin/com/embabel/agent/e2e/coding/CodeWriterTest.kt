@@ -26,6 +26,7 @@ import com.embabel.examples.dogfood.coding.CodeExplanation
 import com.embabel.examples.dogfood.coding.Coder
 import com.embabel.examples.dogfood.coding.CodingProperties
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -57,7 +58,7 @@ class CodeWriterTest(
     }
 
     @Test
-//    @Disabled("not yet working")
+    @Disabled("not yet working")
     fun `create and build`() {
         val codeExplanation = agentPlatform.typedOps().transform<ProjectRecipe, CodeExplanation>(
             input = ProjectRecipe("foo"),
