@@ -17,6 +17,7 @@ package com.embabel.examples.dogfood.coding
 
 import com.embabel.agent.api.annotation.Agentic
 import com.embabel.agent.api.common.ActionContext
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
 data class SpringRecipe(
@@ -31,12 +32,17 @@ data class SpringRecipe(
     val dependencies: String = "web,actuator,devtools",
 )
 
+object SpringCoderConditions {
+    const val SpringProjectCreated = "springProjectCreated"
+}
+
 @Agentic
 @Profile("!test")
 class SpringCodeHelper(
-    projectRepository: ProjectRepository,
-    defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
-) : CodeHelperSupport(projectRepository, defaultLocation) {
+    private val codingProperties: CodingProperties,
+) {
+
+    private val logger = LoggerFactory.getLogger(SpringCodeHelper::class.java)
 
     //    @Action(
 ////        post = [Conditions.SpringProjectCreated]

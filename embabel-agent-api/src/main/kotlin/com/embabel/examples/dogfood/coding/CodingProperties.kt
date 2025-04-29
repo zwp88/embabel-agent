@@ -17,21 +17,21 @@ package com.embabel.examples.dogfood.coding
 
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.common.ai.model.LlmOptions
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
+import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * Superclass for code helpers
+ * Common configuration
  */
-abstract class CodeHelperSupport(
-    val projectRepository: ProjectRepository,
-    val defaultLocation: String,
+@ConfigurationProperties(prefix = "embabel.coding")
+data class CodingProperties(
+    private val model: String = AnthropicModels.CLAUDE_37_SONNET,
 ) {
 
-    protected val logger: Logger = LoggerFactory.getLogger(javaClass)
-
-    protected val claudeSonnet = LlmOptions(
-        AnthropicModels.CLAUDE_37_SONNET
+    /**
+     * Primary coding Llm
+     */
+    val primaryCodingLlm = LlmOptions(
+        criteria = byName(model),
     )
-
 }

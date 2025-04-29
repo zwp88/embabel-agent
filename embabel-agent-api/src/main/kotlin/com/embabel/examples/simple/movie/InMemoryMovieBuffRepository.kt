@@ -16,6 +16,7 @@
 package com.embabel.examples.simple.movie
 
 import com.embabel.common.util.RandomFromFileMessageGenerator
+import com.embabel.examples.common.InMemoryCrudRepository
 import org.springframework.stereotype.Service
 
 @Service

@@ -28,17 +28,13 @@ import com.embabel.agent.toolgroups.code.BuildResult
 import com.embabel.agent.toolgroups.code.toMavenBuildResult
 import org.springframework.context.annotation.Profile
 
-data class Explanation(
-    override val text: String,
-) : HasContent
 
 data class CodeModificationReport(
     override val text: String,
 ) : HasContent
 
-object Conditions {
+object CodeWriterConditions {
     const val BuildSucceeded = "buildSucceeded"
-    const val SpringProjectCreated = "springProjectCreated"
 }
 
 @Agent(
@@ -46,21 +42,20 @@ object Conditions {
 )
 @Profile("!test")
 class CodeWriter(
-    projectRepository: ProjectRepository,
-    defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
-) : CodeHelperSupport(projectRepository, defaultLocation) {
+    private val codingProperties: CodingProperties,
+) {
 
     @Action(
         cost = 1000.0,
         canRerun = true,
-        post = [Conditions.BuildSucceeded],
+        post = [CodeWriterConditions.BuildSucceeded],
     )
     fun build(
         project: SoftwareProject,
         context: ActionContext,
     ): BuildResult {
         val buildOutput = context.promptRunner(
-            llm = claudeSonnet,
+            llm = codingProperties.primaryCodingLlm,
             promptContributors = listOf(project),
         ).generateText(
             """
@@ -71,17 +66,16 @@ class CodeWriter(
         return toMavenBuildResult(buildOutput)
     }
 
-
-    @Condition(name = Conditions.BuildSucceeded)
+    @Condition(name = CodeWriterConditions.BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success
 
-    @Action(pre = [Conditions.BuildSucceeded])
+    @Action(pre = [CodeWriterConditions.BuildSucceeded])
     @AchievesGoal(description = "Modify project code as per user request")
     fun codeModificationComplete(codeModificationReport: CodeModificationReport): CodeModificationReport {
         return codeModificationReport
     }
 
-    @Action(canRerun = true, post = [Conditions.BuildSucceeded])
+    @Action(canRerun = true, post = [CodeWriterConditions.BuildSucceeded])
     fun modifyCode(
         userInput: UserInput,
         project: SoftwareProject,
@@ -89,7 +83,7 @@ class CodeWriter(
     ): CodeModificationReport {
         val buildFailure = context.lastOrNull<BuildResult> { !it.success }
         val report: String = context.promptRunner(
-            llm = claudeSonnet,
+            llm = codingProperties.primaryCodingLlm,
             promptContributors = listOf(project, buildFailure),
         ).create(
             """

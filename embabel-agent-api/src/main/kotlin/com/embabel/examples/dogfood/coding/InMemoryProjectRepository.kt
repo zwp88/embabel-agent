@@ -15,7 +15,7 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.examples.simple.movie.InMemoryCrudRepository
+import com.embabel.examples.common.InMemoryCrudRepository
 import org.springframework.stereotype.Service
 
 @Service
