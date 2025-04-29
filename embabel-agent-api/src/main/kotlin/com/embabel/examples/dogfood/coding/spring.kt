@@ -130,7 +130,7 @@ class SpringCodeHelper(
 //        payload.setCondition(Conditions.SpringProjectCreated, true)
         payload += springRecipe
         return SoftwareProject(
-            location = projectDir.absolutePath,
+            root = projectDir.absolutePath,
             tech = "Kotlin, Spring Boot, Maven, Spring Web, Spring Actuator, Spring DevTools",
             codingStyle = "Modern Kotlin with Spring Boot conventions. Clean architecture with separation of concerns."
         )
@@ -143,7 +143,7 @@ class SpringCodeHelper(
     fun describeShinyNewSpringProject(softwareProject: SoftwareProject, springRecipe: SpringRecipe): Explanation =
         Explanation(
             text = """
-                Project location: ${softwareProject.location}
+                Project root: ${softwareProject.root}
                 Technologies used: ${softwareProject.tech}
                 Coding style: ${softwareProject.codingStyle}
             """.trimIndent()

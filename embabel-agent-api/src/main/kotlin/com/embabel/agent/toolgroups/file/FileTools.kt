@@ -19,7 +19,8 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolGroup
-import org.slf4j.LoggerFactory
+import com.embabel.agent.toolgroups.DirectoryBased
+import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.annotation.Tool
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -30,14 +31,11 @@ import java.nio.file.Paths
  * Use at your own risk: This makes changes!!
  * @param root local files
  */
-class FileTools(
-    override val description: ToolGroupDescription = ToolGroup.FILE_DESCRIPTION,
-    val root: String,
-) : SelfToolGroup {
+interface FileTools : DirectoryBased, SelfToolGroup {
 
-    private val logger = LoggerFactory.getLogger(FileTools::class.java)
+    override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
 
-    override val permissions = setOf(ToolGroupPermission.HOST_ACCESS)
+    override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
 
     /**
      * Resolves a relative path against the root directory
@@ -114,7 +112,7 @@ class FileTools(
     fun createFile(path: String, content: String): String {
         val resolvedPath = resolvePath(path)
         if (Files.exists(resolvedPath)) {
-            logger.warn("File already exists at {}", path)
+            loggerFor<FileTools>().warn("File already exists at {}", path)
             throw IllegalArgumentException("File already exists: $path")
         }
 
@@ -128,7 +126,7 @@ class FileTools(
 
     @Tool(description = "Edit the file at the given location. Replace oldContent with newContent. oldContent is typically just a part of the file. e.g. use it to replace a particular method to add another method")
     fun editFile(path: String, oldContent: String, newContent: String): String {
-        logger.info("Editing file at path: $path: $oldContent -> $newContent")
+        loggerFor<FileTools>().info("Editing file at path: $path: $oldContent -> $newContent")
         val resolvedPath = resolvePath(path)
         if (!Files.exists(resolvedPath)) {
             throw IllegalArgumentException("File does not exist: $path")
@@ -138,13 +136,10 @@ class FileTools(
         }
 
         val currentContent = Files.readString(resolvedPath)
-//        if (currentContent != oldContent) {
-//            throw IllegalStateException("Current file content does not match the expected old content")
-//        }
         val newFileContent = currentContent.replace(oldContent, newContent)
 
         Files.writeString(resolvedPath, newFileContent)
-        logger.info("Edited file at path: $path")
+        loggerFor<FileTools>().info("Edited file at path: $path")
         return "file edited"
     }
 
@@ -161,8 +156,14 @@ class FileTools(
         }
 
         Files.createDirectories(resolvedPath)
-        logger.info("Created directory at path: $path")
+        loggerFor<FileTools>().info("Created directory at path: $path")
         return "directory created"
+    }
+
+    companion object {
+        operator fun invoke(root: String): FileTools = object : FileTools {
+            override val root: String = root
+        }
     }
 
 }

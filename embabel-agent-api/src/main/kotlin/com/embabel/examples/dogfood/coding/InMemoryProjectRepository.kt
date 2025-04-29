@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service
 @Service
 class InMemoryMovieProjectRepository : ProjectRepository,
     InMemoryCrudRepository<SoftwareProject>(
-        idGetter = { it.location },
+        idGetter = { it.root },
         idSetter = { _, _ -> TODO("shouldn't be called") },
     ) {
 
@@ -31,7 +31,7 @@ class InMemoryMovieProjectRepository : ProjectRepository,
 }
 
 val EmbabelAgentApi = SoftwareProject(
-    location = System.getProperty("user.dir") + "/embabel-agent-api",
+    root = System.getProperty("user.dir") + "/embabel-agent-api",
     tech = """
         |Kotlin, Spring Boot, Maven, Jacoco, Spring AI
         |JUnit 5, mockk

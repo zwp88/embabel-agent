@@ -18,24 +18,22 @@ package com.embabel.agent.toolgroups.code
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolGroup
+import com.embabel.agent.toolgroups.DirectoryBased
 import com.embabel.common.ai.prompt.PromptContributor
-import org.slf4j.LoggerFactory
+import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.annotation.Tool
 import java.nio.file.Paths
 
-class CiTools(
-    val root: String,
-) : SelfToolGroup {
+interface CiTools : SelfToolGroup, DirectoryBased {
 
-    private val logger = LoggerFactory.getLogger(CiTools::class.java)
+    override val description
+        get() = ToolGroup.CI_DESCRIPTION
 
-    override val description = ToolGroup.CI_DESCRIPTION
-
-    override val permissions = setOf(ToolGroupPermission.HOST_ACCESS)
+    override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
 
     @Tool(description = "build the project using the given command in the root")
     fun buildProject(command: String): String {
-        logger.info("Running build command in root directory: $command")
+        loggerFor<CiTools>().info("Running build command in root directory: $command")
 
         val processBuilder = ProcessBuilder()
 
@@ -60,8 +58,14 @@ class CiTools(
                 "Command failed with exit code $exitCode:\n$output"
             }
         } catch (e: Exception) {
-            logger.error("Error executing command: $command", e)
+            loggerFor<CiTools>().error("Error executing command: $command", e)
             return "Error executing command: ${e.message}"
+        }
+    }
+
+    companion object {
+        operator fun invoke(root: String): CiTools = object : CiTools {
+            override val root: String = root
         }
     }
 
