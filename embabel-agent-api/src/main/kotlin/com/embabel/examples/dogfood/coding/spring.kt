@@ -15,10 +15,8 @@
  */
 package com.embabel.examples.dogfood.coding
 
+import com.embabel.agent.api.annotation.Agentic
 import com.embabel.agent.api.common.ActionContext
-import com.embabel.agent.config.models.AnthropicModels
-import com.embabel.common.ai.model.LlmOptions
-import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
 data class SpringRecipe(
@@ -33,24 +31,12 @@ data class SpringRecipe(
     val dependencies: String = "web,actuator,devtools",
 )
 
-//@Agentic(
-//    description = "Explain code or perform changes to a software project or directory structure",
-//    toolGroups = [
-//        ToolGroup.FILE,
-//    ],
-//)
+@Agentic
 @Profile("!test")
 class SpringCodeHelper(
-    val projectRepository: ProjectRepository,
-    val defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
-) {
-
-    private val logger = LoggerFactory.getLogger(CodeHelper::class.java)
-
-    private val claudeSonnet = LlmOptions(
-        AnthropicModels.CLAUDE_37_SONNET
-    )
-
+    projectRepository: ProjectRepository,
+    defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
+) : CodeHelperSupport(projectRepository, defaultLocation) {
 
     //    @Action(
 ////        post = [Conditions.SpringProjectCreated]
@@ -140,13 +126,14 @@ class SpringCodeHelper(
 ////        pre = [Conditions.SpringProjectCreated]
 //    )
 //    @AchievesGoal("Create a new Spring project")
-    fun describeShinyNewSpringProject(softwareProject: SoftwareProject, springRecipe: SpringRecipe): Explanation =
-        Explanation(
+    fun describeShinyNewSpringProject(softwareProject: SoftwareProject, springRecipe: SpringRecipe): CodeExplanation =
+        CodeExplanation(
             text = """
                 Project root: ${softwareProject.root}
                 Technologies used: ${softwareProject.tech}
                 Coding style: ${softwareProject.codingStyle}
-            """.trimIndent()
+            """.trimIndent(),
+            links = emptyList(),
         )
 
 }

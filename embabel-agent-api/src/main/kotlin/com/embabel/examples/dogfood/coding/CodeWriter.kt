@@ -15,17 +15,17 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.annotation.AchievesGoal
+import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.Condition
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.create
-import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.core.lastOrNull
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.code.BuildResult
 import com.embabel.agent.toolgroups.code.toMavenBuildResult
-import com.embabel.common.ai.model.LlmOptions
-import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
 data class Explanation(
@@ -45,48 +45,20 @@ object Conditions {
     description = "Explain code or perform changes to a software project or directory structure",
 )
 @Profile("!test")
-class CodeHelper(
-    val projectRepository: ProjectRepository,
-    val defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
-) {
-
-    private val logger = LoggerFactory.getLogger(CodeHelper::class.java)
-
-    private val claudeSonnet = LlmOptions(
-        AnthropicModels.CLAUDE_37_SONNET
-    )
-
-    @Action
-    fun loadExistingProject(): SoftwareProject? {
-        val found = projectRepository.findById(defaultLocation)
-        if (found.isPresent) {
-            logger.info("Found existing project at $defaultLocation")
-        }
-        return found.orElse(null)
-    }
-
-    /**
-     * Use an LLM to analyze the project.
-     * This is expensive so we set cost high
-     */
-    @Action(cost = 10000.0)
-    fun analyzeProject(): SoftwareProject =
-        using(claudeSonnet).create<SoftwareProject>(
-            """
-                Analyze the project at $defaultLocation
-                Use the file tools to read code and directories before analyzing it
-            """.trimIndent(),
-        ).also { project ->
-            // So we don't need to do this again
-            projectRepository.save(project)
-        }
-
+class CodeWriter(
+    projectRepository: ProjectRepository,
+    defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
+) : CodeHelperSupport(projectRepository, defaultLocation) {
 
     @Action(
         cost = 1000.0,
         canRerun = true,
+        post = [Conditions.BuildSucceeded],
     )
-    fun build(project: SoftwareProject, context: ActionContext): BuildResult {
+    fun build(
+        project: SoftwareProject,
+        context: ActionContext,
+    ): BuildResult {
         val buildOutput = context.promptRunner(
             llm = claudeSonnet,
             promptContributors = listOf(project),
@@ -98,30 +70,7 @@ class CodeHelper(
         // TODO shouldn't be had coded
         return toMavenBuildResult(buildOutput)
     }
-
-    @Action
-    @AchievesGoal(description = "Code has been explained to the user")
-    fun explainCode(
-        userInput: UserInput,
-        project: SoftwareProject,
-        context: ActionContext,
-    ): Explanation {
-        val explanation: String = context.promptRunner(
-            llm = claudeSonnet,
-            promptContributors = listOf(project)
-        ).create(
-            """
-                Execute the following user request to explain something about the given project.
-                Use the file tools to read code and directories.
-                Use the project information to help you understand the code.
-
-                User request:
-                "${userInput.content}"
-            }
-            """.trimIndent(),
-        )
-        return Explanation(explanation)
-    }
+    
 
     @Condition(name = Conditions.BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success

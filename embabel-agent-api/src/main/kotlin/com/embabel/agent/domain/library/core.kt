@@ -15,12 +15,29 @@
  */
 package com.embabel.agent.domain.library
 
+import com.fasterxml.jackson.annotation.JsonClassDescription
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+
 /**
  * Interface when an object has a single important text component.
  */
 interface HasContent {
 
     val text: String
+}
+
+@JsonClassDescription("Internet resource")
+data class InternetResource(
+    @get:JsonPropertyDescription("url of the resource")
+    val url: String,
+    @get: JsonPropertyDescription("concise summary of the resource")
+    val summary: String,
+)
+
+interface InternetResources {
+
+    @get:JsonPropertyDescription("internet resources")
+    val links: List<InternetResource>
 }
 
 

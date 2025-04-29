@@ -65,7 +65,7 @@ class AnthropicModels(
                 callback: RetryCallback<T?, E?>?,
                 throwable: Throwable?
             ) {
-                logger.warn("Retry error. Retry count:" + context?.retryCount, throwable);
+                logger.debug("Retry error. Retry count:" + context?.retryCount, throwable);
             }
         })
         .build()
