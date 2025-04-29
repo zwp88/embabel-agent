@@ -89,21 +89,17 @@ class CodeHelper(
     @Action(
         cost = 1000.0,
         canRerun = true,
-        toolGroups = [
-            ToolGroup.FILE,
-            ToolGroup.CI,
-        ],
     )
     fun build(project: SoftwareProject, payload: OperationPayload): BuildResult {
         val buildOutput = payload.promptRunner(
             llm = claudeSonnet,
-            promptContributors = listOf(project)
+            promptContributors = listOf(project),
         ).generateText(
             """
-                Build the project at $defaultLocation
-                Using the appropriate tool
+                Build the project
             """.trimIndent(),
         )
+        // TODO shouldn't be had coded
         return toMavenBuildResult(buildOutput)
     }
 

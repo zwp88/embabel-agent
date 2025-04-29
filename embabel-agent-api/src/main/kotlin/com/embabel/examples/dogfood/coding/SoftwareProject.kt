@@ -15,9 +15,11 @@
  */
 package com.embabel.examples.dogfood.coding
 
+import com.embabel.agent.toolgroups.code.CiTools
 import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import org.springframework.ai.tool.annotation.Tool
 import org.springframework.data.repository.CrudRepository
 
 @JsonClassDescription("Analysis of a technology project")
@@ -39,6 +41,10 @@ data class SoftwareProject(
         """.trimMargin()
 
 
+    @Tool(description = "build the project using the given command in the root")
+    fun build(command: String): String {
+        return CiTools(location).buildProject(command)
+    }
 }
 
 interface ProjectRepository : CrudRepository<SoftwareProject, String>

@@ -180,7 +180,7 @@ class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
     }
 
     override fun approve(goalChoiceApprovalRequest: GoalChoiceApprovalRequest): GoalChoiceApprovalResponse {
-        val approved = confirm("Do you approve this goal: ${goalChoiceApprovalRequest.goal.name}?")
+        val approved = confirm("Do you approve this goal: ${goalChoiceApprovalRequest.goal.description}?")
         return if (approved) {
             GoalChoiceApproved(
                 request = goalChoiceApprovalRequest,
