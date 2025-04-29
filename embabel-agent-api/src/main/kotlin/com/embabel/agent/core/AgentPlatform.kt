@@ -34,6 +34,16 @@ enum class Delay {
 }
 
 /**
+ *  @param maxActions maximum number of actions to run.
+ *  Prevents infinite loops
+ */
+data class ProcessControl(
+    val toolDelay: Delay = Delay.NONE,
+    val operationDelay: Delay = Delay.NONE,
+    val maxActions: Int = 40,
+)
+
+/**
  * How to run an AgentProcess
  * @param contextId context id to use for this process. Can be null.
  * If set it can enable connection to external resources and persistence
@@ -45,8 +55,6 @@ enum class Delay {
  * @param test whether to run in test mode. In test mode, the agent platform
  * will not use any external resources such as LLMs, and will not persist any state.
  * @param verbosity detailed verbosity settings for logging etc.
- * @param maxActions max number of actions after which to stop even if a goal has not been achieved.
- * Prevents infinite loops.
  */
 data class ProcessOptions(
     val contextId: ContextId? = null,
@@ -54,9 +62,7 @@ data class ProcessOptions(
     val test: Boolean = false,
     val verbosity: Verbosity = Verbosity(),
     val allowGoalChange: Boolean = true,
-    val maxActions: Int = 40,
-    val toolDelay: Delay = Delay.NONE,
-    val operationDelay: Delay = Delay.NONE,
+    val control: ProcessControl = ProcessControl(),
 )
 
 class NoSuchAgentException(

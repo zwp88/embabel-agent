@@ -115,8 +115,8 @@ abstract class AbstractAgentProcess(
         tick()
         var actions = 0
         while (status == AgentProcessStatusCode.RUNNING) {
-            if (++actions > processOptions.maxActions) {
-                logger.info("Process {} exceeded max actions: {}", this.id, processOptions.maxActions)
+            if (++actions > processOptions.control.maxActions) {
+                logger.info("Process {} exceeded max actions: {}", this.id, processOptions.control.maxActions)
                 _status = AgentProcessStatusCode.FAILED
                 return this
             }

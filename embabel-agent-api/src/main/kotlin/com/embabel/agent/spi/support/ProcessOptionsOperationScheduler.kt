@@ -43,7 +43,7 @@ class ProcessOptionsOperationScheduler(
     override fun scheduleAction(actionExecutionStartEvent: ActionExecutionStartEvent): ActionExecutionSchedule {
         return DelayedActionExecutionSchedule(
             Duration.ofMillis(
-                operationDelays[actionExecutionStartEvent.agentProcess.processContext.processOptions.operationDelay]
+                operationDelays[actionExecutionStartEvent.agentProcess.processContext.processOptions.control.operationDelay]
                     ?: 0L,
             )
         )
@@ -52,7 +52,7 @@ class ProcessOptionsOperationScheduler(
     override fun scheduleToolCall(functionCallRequestEvent: AgentProcessFunctionCallRequestEvent): ToolCallSchedule {
         return ToolCallSchedule(
             delay = Duration.ofMillis(
-                toolDelays[functionCallRequestEvent.agentProcess.processContext.processOptions.operationDelay]
+                toolDelays[functionCallRequestEvent.agentProcess.processContext.processOptions.control.operationDelay]
                     ?: 0L,
             )
         )

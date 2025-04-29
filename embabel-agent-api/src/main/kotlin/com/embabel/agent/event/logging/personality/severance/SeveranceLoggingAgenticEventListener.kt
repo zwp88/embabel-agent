@@ -51,6 +51,8 @@ val CompletionMessages = listOf(
     """.trimIndent()
 )
 
+fun highlight(text: String) = "<$text>".color(LumonColors.MEMBRANE)
+
 /**
  * Thanks to Kier
  */
@@ -73,7 +75,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ▐▙▄▄▖▝▚▄▞▘▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌
 
     """.trimIndent().color(hexToRgb(LumonColors.MEMBRANE)),
-    agentDeploymentEventMessage = "WILES: Deployed agent {}\n\tdescription: {}",
+    agentDeploymentEventMessage = "${highlight("WILES")}: Deployed agent {}\n\tdescription: {}",
     rankingChoiceRequestEventMessage = kier("Choosing {} based on {}"),
     rankingChoiceMadeEventMessage = kier(
         """
@@ -81,16 +83,16 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
             May my cunning acument slice through the fog of small minds, guiding them to their great purpose in labor.
         """.trimIndent()
     ),
-    rankingChoiceNotMadeEventMessage = "WOE: Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
-    dynamicAgentCreationMessage = "WILES: Created agent {}",
+    rankingChoiceNotMadeEventMessage = "${highlight("WOE")}: Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
+    dynamicAgentCreationMessage = "${highlight("WILES")}: Created agent {}",
     agentProcessCreationEventMessage = kier(
         """
         May my gaze be singularly placed upon the path, may the words of virtue guide me in the daily labor of my great undertaking.
             [{}] created
                     """.trimIndent()
     ),
-    agentProcessReadyToPlanEventMessage = "[{}] WIT  ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "[{}] WILES: formulated plan {} from {}".color(LumonColors.MEMBRANE),
+    agentProcessReadyToPlanEventMessage = "[{}] ${highlight("WIT")}  ready to plan from {}",
+    agentProcessPlanFormulatedEventMessage = "[{}] ${highlight("WILES")}: formulated plan {} from {}".color(LumonColors.MEMBRANE),
     processCompletionMessage = """
         [{}] completed in {}
         ${CompletionMessages.random()}
@@ -98,11 +100,11 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ${"The Board has concluded the call.".color(LumonColors.MEMBRANE)}
 
         """.trimIndent(),
-    processFailureMessage = "[{}] WOE: failed",
+    processFailureMessage = "[{}] ${highlight("WOE")}: failed",
     objectAddedMessage = "[{}] Perpetuity wing: object added: {}",
     objectBoundMessage = "[{}] Perpetuity wing: object bound: {} to {}",
-    functionCallRequestEventMessage = "[{}] VERVE: tool {}({})",
-    functionCallResponseEventMessage = "[{}] VISION: tool {} -> {} in {}ms with payload {}",
+    functionCallRequestEventMessage = "[{}] ${highlight("VERVE")}: tool {}({})",
+    functionCallResponseEventMessage = "[{}] ${highlight("VISION")}: tool {} -> {} in {}ms with payload {}",
     llmRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM transform {} from {} -> {} using {}",
     llmResponseEventMessage = {
         """
@@ -110,7 +112,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ${TransformSuccessResponses.random()}
         """.trimIndent()
     },
-    actionExecutionStartMessage = "[{}] VERVE: executing action {}",
-    actionExecutionResultMessage = "[{}] CHEER: completed action {} in {}",
+    actionExecutionStartMessage = "[{}] ${highlight("VERVE")}: executing action {}",
+    actionExecutionResultMessage = "[{}] ${highlight("CHEER")}: completed action {} in {}",
     progressUpdateEventMessage = "[{}] Industry: {}",
 )

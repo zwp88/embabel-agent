@@ -224,10 +224,12 @@ class ShellCommands(
                 blackboard = if (state) blackboard else null,
                 verbosity = verbosity,
                 allowGoalChange = true,
-                maxActions = 40,
-                toolDelay = if (toolDelay) Delay.LONG else Delay.NONE,
-                operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
-            )
+                control = ProcessControl(
+                    maxActions = 40,
+                    toolDelay = if (toolDelay) Delay.LONG else Delay.NONE,
+                    operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
+                )
+            ),
         )
     }
 
