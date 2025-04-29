@@ -16,7 +16,7 @@
 package com.embabel.examples.dogfood.coding
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.OperationPayload
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.core.lastOrNull
@@ -86,8 +86,8 @@ class CodeHelper(
         cost = 1000.0,
         canRerun = true,
     )
-    fun build(project: SoftwareProject, payload: OperationPayload): BuildResult {
-        val buildOutput = payload.promptRunner(
+    fun build(project: SoftwareProject, context: ActionContext): BuildResult {
+        val buildOutput = context.promptRunner(
             llm = claudeSonnet,
             promptContributors = listOf(project),
         ).generateText(
@@ -104,9 +104,9 @@ class CodeHelper(
     fun explainCode(
         userInput: UserInput,
         project: SoftwareProject,
-        payload: OperationPayload,
+        context: ActionContext,
     ): Explanation {
-        val explanation: String = payload.promptRunner(
+        val explanation: String = context.promptRunner(
             llm = claudeSonnet,
             promptContributors = listOf(project)
         ).create(
@@ -136,10 +136,10 @@ class CodeHelper(
     fun modifyCode(
         userInput: UserInput,
         project: SoftwareProject,
-        payload: OperationPayload,
+        context: ActionContext,
     ): CodeModificationReport {
-        val buildFailure = payload.lastOrNull<BuildResult> { !it.success }
-        val report: String = payload.promptRunner(
+        val buildFailure = context.lastOrNull<BuildResult> { !it.success }
+        val report: String = context.promptRunner(
             llm = claudeSonnet,
             promptContributors = listOf(project, buildFailure),
         ).create(

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.asTransformation
 import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition
@@ -23,12 +24,15 @@ import com.embabel.plan.goap.ConditionDetermination
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-data class ConditionPayload(
-    val processContext: ProcessContext,
-) : Blackboard by processContext.blackboard
+/**
+ * Context for the condition evaluation.
+ */
+data class ConditionContext(
+    override val processContext: ProcessContext,
+) : OperationContext, Blackboard by processContext.blackboard
 
 typealias ConditionPredicate = (
-    payload: ConditionPayload,
+    context: ConditionContext,
 ) -> Boolean?
 
 /**
@@ -136,7 +140,7 @@ class AgentBuilder(
                     override val name = it
                     override val cost = cost
                     override fun evaluate(processContext: ProcessContext): ConditionDetermination =
-                        ConditionDetermination(block(ConditionPayload(processContext)))
+                        ConditionDetermination(block(ConditionContext(processContext)))
                 }
             },
             this.conditions

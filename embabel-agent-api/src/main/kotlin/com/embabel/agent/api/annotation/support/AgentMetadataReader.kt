@@ -16,9 +16,9 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.ExecutePromptException
-import com.embabel.agent.api.common.OperationPayload
-import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
@@ -242,7 +242,7 @@ class AgentMetadataReader {
             .map { it.type }
         val inputs = method.parameters
             .filterNot {
-                OperationPayload::class.java.isAssignableFrom(it.type)
+                ActionContext::class.java.isAssignableFrom(it.type)
             }
             .map {
                 val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
@@ -251,7 +251,7 @@ class AgentMetadataReader {
             .flatten()
         method.parameters
             .filterNot {
-                OperationPayload::class.java.isAssignableFrom(it.type)
+                ActionContext::class.java.isAssignableFrom(it.type)
             }
             .forEach {
                 // Dummy tools to drive metadata. Will not be invoked.
@@ -271,11 +271,11 @@ class AgentMetadataReader {
             outputVarName = actionAnnotation.outputBinding,
             toolCallbacks = allToolCallbacks.toList(),
             toolGroups = actionAnnotation.toolGroups.asList(),
-        ) { payload ->
+        ) { context ->
             invokeActionMethod(
                 method = method,
                 instance = instance,
-                payload = payload,
+                context = context,
                 toolCallbacks = toolCallbacksOnInstance,
             )
         }
@@ -284,18 +284,18 @@ class AgentMetadataReader {
     private fun <O> invokeActionMethod(
         method: Method,
         instance: Any,
-        payload: TransformationPayload<List<Any>, O>,
+        context: TransformationActionContext<List<Any>, O>,
         toolCallbacks: List<ToolCallback>,
     ): O {
-        logger.debug("Invoking action method {} with payload {}", method.name, payload.input)
-        val toolCallbacksOnDomainObjects = ToolCallbacks.from(*payload.input.toTypedArray())
+        logger.debug("Invoking action method {} with payload {}", method.name, context.input)
+        val toolCallbacksOnDomainObjects = ToolCallbacks.from(*context.input.toTypedArray())
         val actionToolCallbacks = toolCallbacksOnDomainObjects.toMutableList()
         // Replace dummy tools
         actionToolCallbacks += toolCallbacks.filterNot { tc -> toolCallbacksOnDomainObjects.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
-        var args = payload.input.toTypedArray()
-        if (method.parameters.any { OperationPayload::class.java.isAssignableFrom(it.type) }) {
+        var args = context.input.toTypedArray()
+        if (method.parameters.any { ActionContext::class.java.isAssignableFrom(it.type) }) {
             // We need to add the payload as the last argument
-            args += payload
+            args += context
         }
         val result = try {
             ReflectionUtils.invokeMethod(method, instance, *args)
@@ -308,7 +308,7 @@ class AgentMetadataReader {
                 (actionToolCallbacks + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
             val promptContributors = e.promptContributors
 
-            val promptRunner = payload.promptRunner(
+            val promptRunner = context.promptRunner(
                 llm = e.llm ?: LlmOptions(),
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
@@ -322,7 +322,7 @@ class AgentMetadataReader {
             } else {
                 promptRunner.createObjectIfPossible(
                     prompt = e.prompt,
-                    outputClass = payload.outputClass as Class<Any>,
+                    outputClass = context.outputClass as Class<Any>,
                 )
             }
         }
@@ -330,7 +330,7 @@ class AgentMetadataReader {
             "Result of invoking action method {} was {}: payload {}",
             method.name,
             result,
-            payload.input
+            context.input
         )
         return result as O
     }

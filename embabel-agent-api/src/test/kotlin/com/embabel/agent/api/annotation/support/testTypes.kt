@@ -16,8 +16,8 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.OperationPayload
-import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.ActionContext
+import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.Goal
@@ -190,7 +190,7 @@ class OneTransformerActionTakingPayloadOnly {
     @Action(cost = 500.0)
     fun toPerson(
         userInput: UserInput,
-        payload: TransformationPayload<UserInput, Person>,
+        payload: TransformationActionContext<UserInput, Person>,
     ): Person {
         return Person(userInput.content)
     }
@@ -203,7 +203,7 @@ class OneTransformerActionTakingOperationPayload {
     @Action(cost = 500.0)
     fun toPerson(
         userInput: UserInput,
-        payload: OperationPayload,
+        payload: ActionContext,
     ): Person {
         return Person(userInput.content)
     }

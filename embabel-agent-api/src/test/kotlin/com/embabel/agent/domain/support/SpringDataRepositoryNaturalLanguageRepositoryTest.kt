@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.domain.support
 
-import com.embabel.agent.api.common.OperationPayload
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
 import io.mockk.every
@@ -52,10 +52,10 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
                 FinderInvocations::class.java,
             )
         } answers { result }
-        val mockPayload = mockk<OperationPayload>()
+        val mockPayload = mockk<ActionContext>()
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
-            payload = mockPayload,
+            context = mockPayload,
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -78,10 +78,10 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
                 FinderInvocations::class.java,
             )
         } answers { result }
-        val mockPayload = mockk<OperationPayload>()
+        val mockPayload = mockk<ActionContext>()
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
-            payload = mockPayload,
+            context = mockPayload,
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -107,10 +107,10 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
                 FinderInvocations::class.java,
             )
         } answers { result }
-        val mockPayload = mockk<OperationPayload>()
+        val mockPayload = mockk<ActionContext>()
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
-            payload = mockPayload,
+            context = mockPayload,
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -137,10 +137,10 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
                 FinderInvocations::class.java,
             )
         } answers { result }
-        val mockPayload = mockk<OperationPayload>()
+        val mockPayload = mockk<ActionContext>()
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
-            payload = mockPayload,
+            context = mockPayload,
         )
         val matches = nlr.find(FindEntitiesRequest("Description"))
         val found = matches.matches.single()

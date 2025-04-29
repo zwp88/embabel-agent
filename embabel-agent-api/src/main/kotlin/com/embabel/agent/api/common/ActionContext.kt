@@ -28,13 +28,21 @@ import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 
 /**
- * Payload for any operation
+ * Context for any operation. Exposes blackboard and process context.
+ * @param processContext the process context
+ */
+interface OperationContext : Blackboard {
+    val processContext: ProcessContext
+}
+
+/**
+ * Context for actions
  * @param processContext the process context
  * @param action the action being executed, if one is executing.
  * This is useful for getting tools etc.
  */
-interface OperationPayload : Blackboard {
-    val processContext: ProcessContext
+interface ActionContext : OperationContext {
+    override val processContext: ProcessContext
     val action: Action?
 
     // TODO default LLM options from action
@@ -46,7 +54,7 @@ interface OperationPayload : Blackboard {
         val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
         // Add any tool callbacks that are not already in the list
         updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
-        return OperationPayloadPromptRunner(
+        return ActionContextPromptRunner(
             this,
             llm = llm,
             toolCallbacks = updatedToolCallbacks,
@@ -64,22 +72,22 @@ interface OperationPayload : Blackboard {
  * Uses the platform's LlmOperations to execute the prompt
  * Merely a convenience.
  */
-private class OperationPayloadPromptRunner(
-    private val payload: OperationPayload,
+private class ActionContextPromptRunner(
+    private val context: ActionContext,
     override val llm: LlmOptions,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
 
     private fun idForPrompt(prompt: String, outputClass: Class<*>): InteractionId {
-        return InteractionId("${payload.action?.name}-${outputClass.name}")
+        return InteractionId("${context.action?.name}-${outputClass.name}")
     }
 
     override fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,
     ): T {
-        return payload.processContext.createObject<T>(
+        return context.processContext.createObject<T>(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
@@ -88,8 +96,8 @@ private class OperationPayloadPromptRunner(
                 id = idForPrompt(prompt, outputClass),
             ),
             outputClass = outputClass,
-            agentProcess = payload.processContext.agentProcess,
-            action = payload.action,
+            agentProcess = context.processContext.agentProcess,
+            action = context.action,
         )
     }
 
@@ -97,7 +105,7 @@ private class OperationPayloadPromptRunner(
         prompt: String,
         outputClass: Class<T>,
     ): T? {
-        val result = payload.processContext.createObjectIfPossible<T>(
+        val result = context.processContext.createObjectIfPossible<T>(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
@@ -106,11 +114,11 @@ private class OperationPayloadPromptRunner(
                 id = idForPrompt(prompt, outputClass),
             ),
             outputClass = outputClass,
-            agentProcess = payload.processContext.agentProcess,
-            action = payload.action,
+            agentProcess = context.processContext.agentProcess,
+            action = context.action,
         )
         if (result.isFailure) {
-            loggerFor<OperationPayloadPromptRunner>().warn(
+            loggerFor<ActionContextPromptRunner>().warn(
                 "Failed to create object of type {} with prompt {}: {}",
                 outputClass.name,
                 prompt,
@@ -121,7 +129,7 @@ private class OperationPayloadPromptRunner(
     }
 }
 
-interface InputPayload<I> : OperationPayload {
+interface InputActionContext<I> : ActionContext {
     val input: I
 
     override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
@@ -136,11 +144,11 @@ interface InputPayload<I> : OperationPayload {
 
 }
 
-data class TransformationPayload<I, O>(
+data class TransformationActionContext<I, O>(
     override val input: I,
     override val processContext: ProcessContext,
     override val action: Action?,
     val inputClass: Class<I>,
     val outputClass: Class<O>,
-) : InputPayload<I>, Blackboard by processContext.agentProcess,
+) : InputActionContext<I>, Blackboard by processContext.agentProcess,
     AgenticEventListener by processContext

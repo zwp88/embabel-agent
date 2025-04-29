@@ -16,7 +16,7 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.common.Transformation
-import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import org.springframework.ai.tool.ToolCallback
@@ -72,7 +72,7 @@ internal class MultiTransformer<O : Any>(
         }
         logger.debug("Resolved action {} inputs {}", name, inputValues)
         val output = block.transform(
-            TransformationPayload(
+            TransformationActionContext(
                 input = inputValues,
                 processContext = processContext,
                 inputClass = List::class.java as Class<List<Any>>,
@@ -88,7 +88,7 @@ internal class MultiTransformer<O : Any>(
                     """
                 Output of action $name is not of type ${outputClass.name}.
                 Did you incorrectly obtain a PromptRunner via 'using' before the end of an action method?
-                Take a payload object as the last signature of your method signature.
+                Take a context object as the last signature of your method signature.
                 Return was $output
                 """.trimIndent()
                 )

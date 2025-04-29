@@ -15,7 +15,7 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.agent.api.common.OperationPayload
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
@@ -55,7 +55,7 @@ class SpringCodeHelper(
     //    @Action(
 ////        post = [Conditions.SpringProjectCreated]
 //    )
-    fun createSpringInitialzrProject(payload: OperationPayload): SoftwareProject {
+    fun createSpringInitialzrProject(context: ActionContext): SoftwareProject {
         logger.info("Creating Spring Initialzr project")
 
         // Create a temporary directory to store the project
@@ -128,7 +128,7 @@ class SpringCodeHelper(
 
         // Return the project coordinates
 //        payload.setCondition(Conditions.SpringProjectCreated, true)
-        payload += springRecipe
+        context += springRecipe
         return SoftwareProject(
             root = projectDir.absolutePath,
             tech = "Kotlin, Spring Boot, Maven, Spring Web, Spring Actuator, Spring DevTools",

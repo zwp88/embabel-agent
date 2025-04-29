@@ -16,7 +16,7 @@
 package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.Transformation
-import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import org.springframework.ai.tool.ToolCallback
@@ -127,7 +127,7 @@ class Transformer<I, O>(
     ): ActionStatus = ActionRunner.execute(processContext) {
         val input = processContext.getValue(inputVarName, inputClass.name) as I
         val output = block.transform(
-            TransformationPayload(
+            TransformationActionContext(
                 input = input,
                 processContext = processContext,
                 action = this,

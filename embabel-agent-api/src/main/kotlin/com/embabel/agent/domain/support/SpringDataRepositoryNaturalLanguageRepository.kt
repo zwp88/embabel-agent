@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.domain.support
 
-import com.embabel.agent.api.common.OperationPayload
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.domain.persistence.EntityMatch
@@ -28,12 +28,12 @@ import org.springframework.data.repository.CrudRepository
 import java.util.*
 
 inline fun <reified T, ID> CrudRepository<T, ID>.naturalLanguageRepository(
-    payload: OperationPayload,
+    context: ActionContext,
 ): NaturalLanguageRepository<T> =
     SpringDataRepositoryNaturalLanguageRepository(
         repository = this,
         entityType = T::class.java,
-        payload = payload,
+        context = context,
     )
 
 /**
@@ -43,7 +43,7 @@ inline fun <reified T, ID> CrudRepository<T, ID>.naturalLanguageRepository(
 class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     val repository: CrudRepository<T, ID>,
     val entityType: Class<T>,
-    val payload: OperationPayload,
+    val context: ActionContext,
 ) : NaturalLanguageRepository<T> {
 
     private val logger = LoggerFactory.getLogger(this.javaClass)
@@ -67,7 +67,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
             finderMethodsOnRepositoryTakingOneArg.sorted()
         )
 
-        val referencedFinderInvocations = payload.promptRunner(llm).createObject<FinderInvocations>(
+        val referencedFinderInvocations = context.promptRunner(llm).createObject<FinderInvocations>(
             """
             Given the following description, what finder methods could help resolve an entity of type ${entityType.simpleName}
             You can choose from the following finders:

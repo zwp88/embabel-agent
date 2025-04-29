@@ -35,5 +35,5 @@ inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformatio
  * Transformation function signature
  */
 fun interface Transformation<I, O> {
-    fun transform(payload: TransformationPayload<I, O>): O?
+    fun transform(context: TransformationActionContext<I, O>): O?
 }

@@ -16,8 +16,7 @@
 package com.embabel.examples.simple.movie
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.OperationPayload
-import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ProcessContext
@@ -137,11 +136,11 @@ class MovieFinder(
     }
 
     @Action(description = "Retrieve a MovieBuff based on the user input")
-    fun findMovieBuff(userInput: UserInput, payload: OperationPayload): MovieBuff? {
+    fun findMovieBuff(userInput: UserInput, context: ActionContext): MovieBuff? {
         return movieBuffRepository.findAll().firstOrNull()
 
         // TODO Standard action helper that can bind
-        val fer = movieBuffRepository.naturalLanguageRepository(payload).find(
+        val fer = movieBuffRepository.naturalLanguageRepository(context).find(
             FindEntitiesRequest(description = userInput.content),
         )
         // TODO present a choices form
@@ -165,9 +164,9 @@ class MovieFinder(
     @Action
     fun analyzeTasteProfile(
         movieBuff: MovieBuff,
-        payload: TransformationPayload<*, DecoratedMovieBuff>,
+        context: ActionContext,
     ): DecoratedMovieBuff {
-        val tasteProfile = payload.promptRunner(llm) generateText
+        val tasteProfile = context.promptRunner(llm) generateText
                 """
             ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
             They have rated the following movies out of 10:
@@ -218,9 +217,9 @@ class MovieFinder(
     fun suggestMovies(
         userInput: UserInput,
         dmb: DecoratedMovieBuff,
-        payload: TransformationPayload<*, SuggestedMovieTitles>,
+        context: ActionContext,
     ): StreamableMovies {
-        val suggestedMovieTitles = payload.promptRunner(
+        val suggestedMovieTitles = context.promptRunner(
             llm.withTemperature(1.3),
             promptContributors = listOf(config.suggesterPersona),
         ).createObject<SuggestedMovieTitles>(
@@ -244,13 +243,13 @@ class MovieFinder(
                     }
             }
             Don't include these movies we've already suggested:
-            ${excludedTitles(payload.processContext).joinToString("\n")}
+            ${excludedTitles(context.processContext).joinToString("\n")}
 
             Consider also the following news stories for topical inspiration:
             """.trimIndent(),
         )
         // Be sure to bind the suggested movie titles to the blackboard
-        payload += suggestedMovieTitles
+        context += suggestedMovieTitles
         val suggestedMovies = lookUpMovies(suggestedMovieTitles)
         return streamableMovies(
             movieBuff = dmb.movieBuff,
@@ -362,9 +361,9 @@ class MovieFinder(
     fun writeUpSuggestions(
         dmb: DecoratedMovieBuff,
         streamableMovies: StreamableMovies,
-        payload: TransformationPayload<*, SuggestionWriteup>,
+        context: ActionContext,
     ): SuggestionWriteup {
-        val text = payload.promptRunner(
+        val text = context.promptRunner(
             llm = llm,
             promptContributors = listOf(config.suggesterPersona)
         ) generateText
@@ -378,7 +377,7 @@ class MovieFinder(
 
                 The streamable movie recommendations are:
                 ${
-                    allStreamableMovies(payload.processContext).joinToString("\n\n") {
+                    allStreamableMovies(context.processContext).joinToString("\n\n") {
                         """
                         ${it.movie.Title} (${it.movie.Year}): ${it.movie.imdbID}
                         Director: ${it.movie.Director}

@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.api.common.TransformationPayload
+import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.Transition
@@ -41,7 +41,7 @@ inline fun <reified I, reified O : Any> promptTransformer(
     expectation: Condition? = null,
     canRerun: Boolean = false,
     toolCallbacks: List<ToolCallback> = emptyList(),
-    noinline prompt: (payload: TransformationPayload<I, O>) -> String,
+    noinline prompt: (actionContext: TransformationActionContext<I, O>) -> String,
 ): Transformer<I, O> {
     val expectationTransition = expectation?.let {
         Transition(
