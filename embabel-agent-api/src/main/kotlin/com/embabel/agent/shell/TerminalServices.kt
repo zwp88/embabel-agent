@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.shell
 
-import com.embabel.agent.api.common.ProcessWaitingException
+import com.embabel.agent.api.common.*
 import com.embabel.agent.core.hitl.*
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.chat.ChatSession
@@ -29,11 +29,13 @@ import com.embabel.ux.form.TextField
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.Terminal
+import org.springframework.stereotype.Component
 
 /**
  * Provide interaction and form support
  */
-class TerminalServices(private val terminal: Terminal) {
+@Component
+class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
     /**
      * Get further input
      */
@@ -83,14 +85,15 @@ class TerminalServices(private val terminal: Terminal) {
             }
         }
 
+    fun confirm(message: String) = doWithReader {
+        it.readLine("$message (y/n): ".color(AnsiColor.YELLOW))
+            .equals("y", ignoreCase = true)
+    }
 
     private fun confirmationResponseFromUserInput(
         confirmationRequest: ConfirmationRequest<*>,
     ): ConfirmationResponse {
-        val confirmed = doWithReader {
-            it.readLine("${confirmationRequest.message} (y/n): ".color(AnsiColor.YELLOW))
-                .equals("y", ignoreCase = true)
-        }
+        val confirmed = confirm(confirmationRequest.message)
         return ConfirmationResponse(
             awaitableId = confirmationRequest.id,
             accepted = confirmed,
@@ -174,6 +177,21 @@ class TerminalServices(private val terminal: Terminal) {
                 )
             }
         }
+    }
+
+    override fun approve(goalChoiceApprovalRequest: GoalChoiceApprovalRequest): GoalChoiceApprovalResponse {
+        val approved = confirm("Do you approve this goal: ${goalChoiceApprovalRequest.goal.name}?")
+        return if (approved) {
+            GoalChoiceApproved(
+                request = goalChoiceApprovalRequest,
+            )
+        } else {
+            GoalChoiceNotApproved(
+                request = goalChoiceApprovalRequest,
+                reason = "User said now",
+            )
+        }
+
     }
 
 }

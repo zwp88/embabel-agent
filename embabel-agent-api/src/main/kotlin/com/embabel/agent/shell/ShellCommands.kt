@@ -24,7 +24,6 @@ import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.lang3.text.WordUtils
-import org.jline.terminal.Terminal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.env.ConfigurableEnvironment
@@ -36,8 +35,8 @@ import org.springframework.shell.standard.ShellOption
 @ShellComponent
 class ShellCommands(
     private val autonomy: Autonomy,
+    private val terminalServices: TerminalServices,
     private val environment: ConfigurableEnvironment,
-    terminal: Terminal,
     private val objectMapper: ObjectMapper,
     private val colorPalette: ColorPalette,
 ) {
@@ -45,8 +44,6 @@ class ShellCommands(
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
 
     private val agentPlatform = autonomy.agentPlatform
-
-    private val terminalServices = TerminalServices(terminal)
 
     private val agentProcesses = mutableListOf<AgentProcess>()
 
@@ -79,6 +76,7 @@ class ShellCommands(
             messageListener = { },
             autonomy = autonomy,
             processOptions = processOptions,
+            goalChoiceApprover = terminalServices,
         )
         return terminalServices.chat(chatSession, colorPalette)
     }
@@ -250,7 +248,8 @@ class ShellCommands(
                 logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
                 autonomy.chooseAndAccomplishGoal(
                     intent = intent,
-                    processOptions = processOptions
+                    processOptions = processOptions,
+                    goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
                 )
             } else {
                 logger.info("Executing in closed mode: Trying to find appropriate agent")
@@ -304,6 +303,16 @@ class ShellCommands(
                 )
             }
             return "I'm sorry. I don't know how to do that.\n"
+        } catch (gna: GoalNotApproved) {
+            if (verbosity.debug) {
+                logger.info(
+                    """
+                    Goal not approved:
+                        Rankings were: [${gna.goalRankings.infoString()}]
+                    """.trimIndent().color(0xbfb8b8)
+                )
+            }
+            return "I'm sorry. I don't know how to do that.\n"
         } catch (naf: NoAgentFound) {
             if (verbosity.debug) {
                 logger.info(
@@ -331,6 +340,5 @@ class ShellCommands(
             }
         }
     }
-
 
 }

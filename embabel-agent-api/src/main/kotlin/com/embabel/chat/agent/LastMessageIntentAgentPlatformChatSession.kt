@@ -16,6 +16,8 @@
 package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.Autonomy
+import com.embabel.agent.api.common.GoalChoiceApprover
+import com.embabel.agent.api.common.GoalNotApproved
 import com.embabel.agent.api.common.NoGoalFound
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.chat.*
@@ -26,6 +28,7 @@ import com.embabel.chat.*
  */
 class LastMessageIntentAgentPlatformChatSession(
     private val autonomy: Autonomy,
+    private val goalChoiceApprover: GoalChoiceApprover,
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
     override val conversation: Conversation = InMemoryConversation(),
@@ -41,7 +44,8 @@ class LastMessageIntentAgentPlatformChatSession(
         try {
             val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
                 intent = message.content,
-                processOptions = processOptions
+                processOptions = processOptions,
+                goalChoiceApprover = goalChoiceApprover,
             )
             val result = dynamicExecutionResult.output
             return AssistantMessage(
@@ -55,6 +59,10 @@ class LastMessageIntentAgentPlatformChatSession(
                     |Things I CAN do:
                     |${autonomy.agentPlatform.goals.joinToString("\n") { "- ${it.description}" }}
                 """.trimMargin(),
+            )
+        } catch (_: GoalNotApproved) {
+            return AssistantMessage(
+                content = "I obey. That action will not be executed.",
             )
         }
     }

@@ -19,6 +19,7 @@ import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.Awaitable
 import com.embabel.agent.core.hitl.AwaitableResponse
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.event.AgentPlatformEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.RankingChoiceRequestEvent
@@ -30,6 +31,7 @@ import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
+import java.time.Instant
 import kotlin.Throws
 
 /**
@@ -104,6 +106,18 @@ class NoGoalFound(
     val goalRankings: Rankings<Goal>,
 ) : ProcessExecutionException(null, "Goal not found: ${goalRankings.rankings.joinToString(",")}")
 
+class GoalNotApproved(
+    val basis: Any,
+    val goalRankings: Rankings<Goal>,
+    val reason: String,
+    override val agentPlatform: AgentPlatform,
+) : AgentPlatformEvent,
+    ProcessExecutionException(null, "Goal not approved because $reason: ${goalRankings.rankings.joinToString(",")}") {
+
+    override val timestamp: Instant = Instant.now()
+
+}
+
 class NoAgentFound(
     val basis: Any,
     val agentRankings: Rankings<Agent>,
@@ -139,6 +153,45 @@ data class AutonomyProperties(
     val agentConfidenceCutOff: ZeroToOne = 0.6,
 )
 
+data class GoalChoiceApprovalRequest(
+    val goal: Goal,
+    val intent: String,
+    val rankings: Rankings<Goal>,
+)
+
+sealed interface GoalChoiceApprovalResponse {
+    val request: GoalChoiceApprovalRequest
+    val approved: Boolean
+}
+
+data class GoalChoiceApproved(
+    override val request: GoalChoiceApprovalRequest,
+) : GoalChoiceApprovalResponse {
+    override val approved: Boolean = true
+}
+
+data class GoalChoiceNotApproved(
+    override val request: GoalChoiceApprovalRequest,
+    val reason: String,
+) : GoalChoiceApprovalResponse {
+    override val approved: Boolean = false
+}
+
+fun interface GoalChoiceApprover {
+
+    /**
+     * Approve a goal choice.
+     */
+    fun approve(
+        goalChoiceApprovalRequest: GoalChoiceApprovalRequest
+    ): GoalChoiceApprovalResponse
+
+    companion object {
+        val APPROVE_ALL = GoalChoiceApprover { GoalChoiceApproved(it) }
+    }
+
+}
+
 /**
  * Adds autonomy to an AgentPlatform, with the ability to choose
  * goals and agents dynamically, given user input.
@@ -162,6 +215,7 @@ class Autonomy(
     fun chooseAndAccomplishGoal(
         intent: String,
         processOptions: ProcessOptions = ProcessOptions(),
+        goalChoiceApprover: GoalChoiceApprover,
     ): DynamicExecutionResult {
         val userInput = UserInput(intent)
 
@@ -213,6 +267,26 @@ class Autonomy(
                 rankings = goalRankings,
             )
         )
+
+        // Check if the goal is approved
+        val approval =
+            goalChoiceApprover.approve(
+                GoalChoiceApprovalRequest(
+                    goal = goalChoice.match,
+                    intent = intent,
+                    rankings = goalRankings,
+                )
+            )
+        if (approval is GoalChoiceNotApproved) {
+            val goalNotApproved = GoalNotApproved(
+                basis = userInput,
+                goalRankings = goalRankings,
+                reason = approval.reason,
+                agentPlatform = agentPlatform,
+            )
+            eventListener.onPlatformEvent(goalNotApproved)
+            throw goalNotApproved
+        }
 
         val goalAgent = agentPlatform.createAgent(
             name = "goal-${goalChoice.match.name}",

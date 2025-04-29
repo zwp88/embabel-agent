@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.e2e
 
-import com.embabel.agent.api.common.AgentPlatformTypedOps
-import com.embabel.agent.api.common.Autonomy
-import com.embabel.agent.api.common.TypedOps
-import com.embabel.agent.api.common.asFunction
+import com.embabel.agent.api.common.*
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.NoSuchAgentException
@@ -190,8 +187,9 @@ class AgentPlatformIntegrationTest(
         @Test
         fun `run star finder agent`() {
             val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
-                "Lynda is a Scorpio, find some news for her",
-                ProcessOptions(test = true),
+                intent = "Lynda is a Scorpio, find some news for her",
+                processOptions = ProcessOptions(test = true),
+                goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
             )
             assertNotNull(dynamicExecutionResult.output)
             assertTrue(
