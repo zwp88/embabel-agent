@@ -22,6 +22,7 @@ import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.util.kotlin.loggerFor
+import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
 import java.nio.file.Paths
 
@@ -29,7 +30,44 @@ interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
 
     @Tool(description = "build the project using the given command in the root")
     fun buildProject(command: String): String {
-        loggerFor<CiTools>().info("Running build command in root directory: $command")
+        return Ci(root).build(command)
+    }
+
+    companion object {
+        fun toolGroup(root: String): ToolGroup = object : CiTools, SelfToolGroup {
+            override val root: String = root
+
+            override val description
+                get() = ToolGroup.CI_DESCRIPTION
+
+            override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
+
+        }
+    }
+}
+
+/**
+ * CI support
+ */
+class Ci(override val root: String) : DirectoryBased {
+
+    private val logger = LoggerFactory.getLogger(Ci::class.java)
+
+    fun buildAndParse(command: String): BuildResult {
+        val rawOutput = build(command)
+        return parseBuildOutput(rawOutput)
+    }
+
+    fun parseBuildOutput(rawOutput: String): BuildResult {
+        return when {
+            // TODO this is messy
+            rawOutput.contains("from pom.xml") -> parseMavenBuildResult(rawOutput)
+            else -> TODO("Support non Maven build systems")
+        }
+    }
+
+    fun build(command: String): String {
+        logger.info("Running build command in root directory: $command")
 
         val processBuilder = ProcessBuilder()
 
@@ -59,21 +97,9 @@ interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
         }
     }
 
-    companion object {
-        fun toolGroup(root: String): ToolGroup = object : CiTools, SelfToolGroup {
-            override val root: String = root
-
-            override val description
-                get() = ToolGroup.CI_DESCRIPTION
-
-            override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
-
-        }
-    }
-
 }
 
-fun toMavenBuildResult(
+private fun parseMavenBuildResult(
     rawOutput: String,
 ): BuildResult {
     val success = rawOutput.contains("BUILD SUCCESS")

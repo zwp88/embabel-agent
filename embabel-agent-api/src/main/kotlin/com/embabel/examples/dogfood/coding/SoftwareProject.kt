@@ -15,22 +15,38 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.agent.toolgroups.code.CiTools
+import com.embabel.agent.toolgroups.code.BuildResult
+import com.embabel.agent.toolgroups.code.Ci
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.data.repository.CrudRepository
 
+/**
+ * Open to allow extension
+ */
 @JsonClassDescription("Analysis of a technology project")
-data class SoftwareProject(
+open class SoftwareProject(
     override val root: String,
     val url: String? = null,
-    @get :JsonPropertyDescription("The technologies used in the project. List, comma separated. Include 10")
+    @get:JsonPropertyDescription("The technologies used in the project. List, comma separated. Include 10")
     val tech: String,
-    @get: JsonPropertyDescription("Notes on the coding style used in this project. 20 words.")
+    @get:JsonPropertyDescription("Notes on the coding style used in this project. 20 words.")
     val codingStyle: String,
-) : PromptContributor, FileTools, CiTools {
+    @get:JsonPropertyDescription("Build command, such as 'mvn clean test'")
+    val buildCommand: String,
+) : PromptContributor, FileTools /*CiTools*/ {
+
+    val ci = Ci(root)
+
+    fun build(): BuildResult {
+        return ci.buildAndParse(buildCommand)
+    }
+
+    override fun toString(): String {
+        return "SoftwareProject($root)"
+    }
 
     override fun contribution() =
         """

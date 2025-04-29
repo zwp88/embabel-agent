@@ -365,6 +365,18 @@ but will not require an internet connection or any external services.
   Kier!
 -
 
+## Testing
+
+A key goal of this framework is ease of testing.
+Just as Spring eased testing of early enterprise Java applications,
+this framework facilitates testing of AI applications.
+
+Types of testing:
+
+- Unit tests: All agents are unit testable, like any Spring-managed beans. Construct them with mock objects; call
+  individual action methods. The testing library facilitates testing prompts.
+- Integration tests: tbd
+
 ## Miscellaneous
 
 - _Why the name Embabel?_

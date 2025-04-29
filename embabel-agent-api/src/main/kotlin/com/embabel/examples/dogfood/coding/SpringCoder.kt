@@ -15,6 +15,8 @@
  */
 package com.embabel.examples.dogfood.coding
 
+import com.embabel.agent.api.annotation.AchievesGoal
+import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agentic
 import com.embabel.agent.api.common.ActionContext
 import org.slf4j.LoggerFactory
@@ -36,24 +38,21 @@ object SpringCoderConditions {
     const val SpringProjectCreated = "springProjectCreated"
 }
 
-@Agentic
+@Agentic(scan = false)
 @Profile("!test")
-class SpringCodeHelper(
+class SpringCoder(
     private val codingProperties: CodingProperties,
 ) {
 
-    private val logger = LoggerFactory.getLogger(SpringCodeHelper::class.java)
+    private val logger = LoggerFactory.getLogger(SpringCoder::class.java)
 
-    //    @Action(
-////        post = [Conditions.SpringProjectCreated]
-//    )
+    @Action(
+        post = [SpringCoderConditions.SpringProjectCreated]
+    )
     fun createSpringInitialzrProject(context: ActionContext): SoftwareProject {
         logger.info("Creating Spring Initialzr project")
 
-        // Create a temporary directory to store the project
-        val tempDir = java.nio.file.Files.createTempDirectory("spring-initialzr-").toFile()
-        val tempDirPath = tempDir.absolutePath
-        logger.info("Created temporary directory at {}", tempDirPath)
+        val tempDirPath = CodingProperties.createTempDir("spring-initializr")
 
         // Create RestClient to call Spring Initialzr
         val restClient = org.springframework.web.client.RestClient.builder()
@@ -85,38 +84,12 @@ class SpringCodeHelper(
         zipFile.writeBytes(response)
         logger.info("Downloaded Spring Initialzr project to {}", zipFile.absolutePath)
 
-        // Extract the zip file
-        val projectDir = java.io.File(tempDirPath, springRecipe.artifactId)
-        projectDir.mkdir()
-
-        // Use Java's ZipInputStream to extract the zip file
-        java.util.zip.ZipInputStream(java.io.FileInputStream(zipFile)).use { zipInputStream ->
-            var zipEntry = zipInputStream.nextEntry
-            while (zipEntry != null) {
-                val newFile = java.io.File(projectDir, zipEntry.name)
-
-                // Create directories if needed
-                if (zipEntry.isDirectory) {
-                    newFile.mkdirs()
-                } else {
-                    // Create parent directories if needed
-                    newFile.parentFile.mkdirs()
-
-                    // Extract file
-                    java.io.FileOutputStream(newFile).use { fileOutputStream ->
-                        zipInputStream.copyTo(fileOutputStream)
-                    }
-                }
-
-                zipInputStream.closeEntry()
-                zipEntry = zipInputStream.nextEntry
-            }
-        }
-
+        val projectDir = CodingProperties.extractZipFile(
+            zipFile,
+            tempDirPath,
+            springRecipe.artifactId,
+        )
         logger.info("Extracted Spring Initialzr project to {}", projectDir.absolutePath)
-
-        // Delete the zip file
-        zipFile.delete()
 
         // Return the project coordinates
 //        payload.setCondition(Conditions.SpringProjectCreated, true)
@@ -124,14 +97,16 @@ class SpringCodeHelper(
         return SoftwareProject(
             root = projectDir.absolutePath,
             tech = "Kotlin, Spring Boot, Maven, Spring Web, Spring Actuator, Spring DevTools",
-            codingStyle = "Modern Kotlin with Spring Boot conventions. Clean architecture with separation of concerns."
+            codingStyle = "Modern Kotlin with Spring Boot conventions. Clean architecture with separation of concerns.",
+            buildCommand = "mvn test",
         )
     }
 
-    //    @Action(
-////        pre = [Conditions.SpringProjectCreated]
-//    )
-//    @AchievesGoal("Create a new Spring project")
+    @Action(
+        pre = [SpringCoderConditions.SpringProjectCreated,
+            CodeWriterConditions.BuildSucceeded],
+    )
+    @AchievesGoal("Create a new Spring project")
     fun describeShinyNewSpringProject(softwareProject: SoftwareProject, springRecipe: SpringRecipe): CodeExplanation =
         CodeExplanation(
             text = """

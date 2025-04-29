@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.ExecutePromptException
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
@@ -32,6 +33,7 @@ import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
+import com.embabel.agent.core.Agent as CoreAgent
 import com.embabel.agent.core.Goal as AgentCoreGoal
 
 /**
@@ -132,7 +134,7 @@ class AgentMetadataReader {
         val actions = actionMethods.map { createAction(it, instance, toolCallbacksOnInstance) }
 
         if (agenticInfo.agentAnnotation != null) {
-            return com.embabel.agent.core.Agent(
+            return CoreAgent(
                 name = agenticInfo.agentAnnotation.name.ifBlank { agenticInfo.type.name },
                 description = agenticInfo.agentAnnotation.description,
                 version = agenticInfo.agentAnnotation.version,
@@ -249,7 +251,7 @@ class AgentMetadataReader {
             .map { it.type }
         val inputs = method.parameters
             .filterNot {
-                ActionContext::class.java.isAssignableFrom(it.type)
+                OperationContext::class.java.isAssignableFrom(it.type)
             }
             .map {
                 val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
@@ -258,7 +260,7 @@ class AgentMetadataReader {
             .flatten()
         method.parameters
             .filterNot {
-                ActionContext::class.java.isAssignableFrom(it.type)
+                OperationContext::class.java.isAssignableFrom(it.type)
             }
             .forEach {
                 // Dummy tools to drive metadata. Will not be invoked.
@@ -332,6 +334,14 @@ class AgentMetadataReader {
                     outputClass = context.outputClass as Class<Any>,
                 )
             }
+        } catch (t: Throwable) {
+            logger.warn(
+                "Error invoking action method {}.{}: {}",
+                instance.javaClass.name,
+                method.name,
+                t.message,
+            )
+            throw t
         }
         logger.debug(
             "Result of invoking action method {} was {}: payload {}",

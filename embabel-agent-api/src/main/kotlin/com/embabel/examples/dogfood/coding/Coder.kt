@@ -25,7 +25,6 @@ import com.embabel.agent.core.lastOrNull
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.code.BuildResult
-import com.embabel.agent.toolgroups.code.toMavenBuildResult
 import org.springframework.context.annotation.Profile
 
 
@@ -37,20 +36,23 @@ object CodeWriterConditions {
     const val BuildSucceeded = "buildSucceeded"
 }
 
+/**
+ * Generic coding support
+ */
 @Agent(
-    description = "Explain code or perform changes to a software project or directory structure",
+    description = "Perform changes to a software project or directory structure",
 )
 @Profile("!test")
-class CodeWriter(
+class Coder(
     private val codingProperties: CodingProperties,
 ) {
 
     @Action(
-        cost = 1000.0,
+        cost = 10000.0,
         canRerun = true,
         post = [CodeWriterConditions.BuildSucceeded],
     )
-    fun build(
+    fun buildWithCommand(
         project: SoftwareProject,
         context: ActionContext,
     ): BuildResult {
@@ -63,7 +65,18 @@ class CodeWriter(
             """.trimIndent(),
         )
         // TODO shouldn't be had coded
-        return toMavenBuildResult(buildOutput)
+        return project.ci.parseBuildOutput(buildOutput)
+    }
+
+    @Action(
+        cost = 10000.0,
+        canRerun = true,
+        post = [CodeWriterConditions.BuildSucceeded],
+    )
+    fun build(
+        project: SoftwareProject,
+    ): BuildResult {
+        return project.build()
     }
 
     @Condition(name = CodeWriterConditions.BuildSucceeded)

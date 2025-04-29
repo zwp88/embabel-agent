@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.satisfiesType
 import com.embabel.plan.goap.ConditionDetermination
@@ -90,18 +91,10 @@ class BlackboardWorldStateDeterminer(
             }
 
             // Well known conditions, defined for reuse, with their own evaluation function
-            knownConditions.any { knownCondition -> knownCondition == condition } -> {
-                // Match FQN condition
-                val condition = processContext.agentProcess.agent.conditions.find {
-                    it.name == condition || it.name.endsWith(
-                        ".$condition"
-                    )
-                }
-                    ?: throw IllegalArgumentException(
-                        "Condition $condition not found in agent ${processContext.agentProcess.agent.name}: Agent known conditions are ${
-                            processContext.agentProcess.agent.conditions.map { it.name }.sorted()
-                        }"
-                    )
+            knownConditions.any { knownCondition -> knownCondition == condition } &&
+                    resolveAsAgentCondition(condition) != null -> {
+                val condition = resolveAsAgentCondition(condition)!!
+
                 val determination = condition.evaluate(processContext)
                 logger.debug(
                     "Determined known condition {}={}, bindings={}",
@@ -134,5 +127,14 @@ class BlackboardWorldStateDeterminer(
             )
         }
         return conditionDetermination
+    }
+
+    private fun resolveAsAgentCondition(condition: String): Condition? {
+        // Match FQN condition
+        return processContext.agentProcess.agent.conditions.find {
+            it.name == condition || it.name.endsWith(
+                ".$condition"
+            )
+        }
     }
 }

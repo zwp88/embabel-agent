@@ -18,6 +18,8 @@ package com.embabel.agent.api.common
 import com.embabel.agent.core.*
 import org.slf4j.LoggerFactory
 
+fun AgentPlatform.typedOps() = AgentPlatformTypedOps(this)
+
 /**
  * Typed operations over an agent platform
  */
