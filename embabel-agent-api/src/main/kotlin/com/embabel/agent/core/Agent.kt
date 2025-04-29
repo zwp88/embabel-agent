@@ -65,11 +65,6 @@ data class Agent(
     fun withSingleGoal(goal: Goal): Agent =
         copy(goals = setOf(goal))
 
-    fun findDataType(name: String): SchemaType {
-        return schemaTypes.find { it.name == name }
-            ?: error("Data type $name not found in agent $name")
-    }
-
     @JsonIgnore
     val goapSystem: GoapSystem = run {
         val actions = actions.toSet()

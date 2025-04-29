@@ -55,7 +55,6 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
             domainTypes.map { it.simpleName }.distinct().sorted(),
         )
 
-
     /**
      * Create a new agent from the given scope
      * @param name Name of the agent to create
@@ -83,6 +82,11 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
             conditions = conditions,
         )
         return newAgent
+    }
+
+    fun resolveSchemaType(name: String): SchemaType {
+        return schemaTypes.find { it.name == name }
+            ?: error("Schema type '$name' not found in agent $name")
     }
 
     companion object {
