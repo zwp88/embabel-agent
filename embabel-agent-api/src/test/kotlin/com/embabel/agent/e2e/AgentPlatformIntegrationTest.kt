@@ -18,6 +18,7 @@ package com.embabel.agent.e2e
 import com.embabel.agent.api.common.*
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
+import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.NoSuchAgentException
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.library.HasContent
@@ -101,6 +102,8 @@ class AgentPlatformIntegrationTest(
     private val autonomy: Autonomy,
 ) {
 
+    @Autowired
+    private lateinit var agentPlatform: AgentPlatform
     private val typedOps: TypedOps = AgentPlatformTypedOps(autonomy.agentPlatform)
 
     @Nested
@@ -190,6 +193,7 @@ class AgentPlatformIntegrationTest(
                 intent = "Lynda is a Scorpio, find some news for her",
                 processOptions = ProcessOptions(test = true),
                 goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
+                agentScope = agentPlatform,
             )
             assertNotNull(dynamicExecutionResult.output)
             assertTrue(

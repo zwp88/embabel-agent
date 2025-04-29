@@ -250,6 +250,7 @@ class ShellCommands(
                     intent = intent,
                     processOptions = processOptions,
                     goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
+                    agentScope = agentPlatform,
                 )
             } else {
                 logger.info("Executing in closed mode: Trying to find appropriate agent")

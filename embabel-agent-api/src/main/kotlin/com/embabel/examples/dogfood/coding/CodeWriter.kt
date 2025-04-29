@@ -70,7 +70,7 @@ class CodeWriter(
         // TODO shouldn't be had coded
         return toMavenBuildResult(buildOutput)
     }
-    
+
 
     @Condition(name = Conditions.BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success

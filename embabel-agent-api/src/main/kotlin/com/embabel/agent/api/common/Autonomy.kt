@@ -35,8 +35,9 @@ import java.time.Instant
 import kotlin.Throws
 
 /**
- * Result of directly trying to execute a goal
- * Forcing client to discriminate
+ * Successful result of directly trying to execute a goal
+ * and forcing client to discriminate between possible goals.
+ * Failure results in an exception being thrown.
  */
 class DynamicExecutionResult private constructor(
 
@@ -45,7 +46,14 @@ class DynamicExecutionResult private constructor(
      */
     val basis: Any,
 
+    /**
+     * Output object
+     */
     val output: Any,
+
+    /**
+     * Process that executed and is now complete
+     */
     val agentProcess: AgentProcess,
 ) {
 
@@ -106,6 +114,9 @@ class NoGoalFound(
     val goalRankings: Rankings<Goal>,
 ) : ProcessExecutionException(null, "Goal not found: ${goalRankings.rankings.joinToString(",")}")
 
+/**
+ * The Ranker chose a goal, but it was rejected by the GoalApprover
+ */
 class GoalNotApproved(
     val basis: Any,
     val goalRankings: Rankings<Goal>,
@@ -132,7 +143,6 @@ class ProcessExecutionStuckException(
     agentProcess: AgentProcess,
     val detail: String,
 ) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} stuck: $detail")
-
 
 class ProcessWaitingException(
     agentProcess: AgentProcess,
@@ -177,10 +187,13 @@ data class GoalChoiceNotApproved(
     override val approved: Boolean = false
 }
 
+/**
+ * Implemented by objects that can veto goal choice
+ */
 fun interface GoalChoiceApprover {
 
     /**
-     * Approve a goal choice.
+     * Respond to a goal choice.
      */
     fun approve(
         goalChoiceApprovalRequest: GoalChoiceApprovalRequest
@@ -207,15 +220,20 @@ class Autonomy(
 
     /**
      * Choose a goal based on the user input and try to achieve it.
-     * Open execution model:
+     * Open execution model.
      * May bring in actions and conditions from multiple agents to help achieve the goal.
      * Doesn't need reified types because we don't know the type yet.
+     * @param intent user intent
+     * @param processOptions process options
+     * @param goalChoiceApprover goal choice approver allowing goal choice to be rejected
+     * @param agentScope scope to look for the agent
      */
     @Throws(ProcessExecutionException::class)
     fun chooseAndAccomplishGoal(
         intent: String,
         processOptions: ProcessOptions = ProcessOptions(),
         goalChoiceApprover: GoalChoiceApprover,
+        agentScope: AgentScope,
     ): DynamicExecutionResult {
         val userInput = UserInput(intent)
 
@@ -231,14 +249,14 @@ class Autonomy(
             agentPlatform = agentPlatform,
             type = Goal::class.java,
             basis = userInput,
-            choices = agentPlatform.goals,
+            choices = agentScope.goals,
         )
         eventListener.onPlatformEvent(goalChoiceEvent)
         val goalRankings = rankerToUse
             .rank(
                 description = "goal",
                 userInput = userInput.content,
-                rankables = agentPlatform.goals
+                rankables = agentScope.goals
             )
         val credibleGoals = goalRankings
             .rankings
@@ -259,7 +277,7 @@ class Autonomy(
             goalChoice.match.name,
             goalChoice.score,
             intent,
-            agentPlatform.goals.joinToString("\n") { it.name },
+            agentScope.goals.joinToString("\n") { it.name },
         )
         eventListener.onPlatformEvent(
             goalChoiceEvent.determinationEvent(
@@ -288,7 +306,7 @@ class Autonomy(
             throw goalNotApproved
         }
 
-        val goalAgent = agentPlatform.createAgent(
+        val goalAgent = agentScope.createAgent(
             name = "goal-${goalChoice.match.name}",
             description = goalChoice.match.description,
         )
@@ -308,7 +326,10 @@ class Autonomy(
             )
         )
 
-        return DynamicExecutionResult.fromProcessStatus(basis = userInput, agentProcess = agentProcess)
+        return DynamicExecutionResult.fromProcessStatus(
+            basis = userInput,
+            agentProcess = agentProcess,
+        )
     }
 
 

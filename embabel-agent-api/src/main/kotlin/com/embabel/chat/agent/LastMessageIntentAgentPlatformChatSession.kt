@@ -46,6 +46,7 @@ class LastMessageIntentAgentPlatformChatSession(
                 intent = message.content,
                 processOptions = processOptions,
                 goalChoiceApprover = goalChoiceApprover,
+                agentScope = autonomy.agentPlatform,
             )
             val result = dynamicExecutionResult.output
             return AssistantMessage(
