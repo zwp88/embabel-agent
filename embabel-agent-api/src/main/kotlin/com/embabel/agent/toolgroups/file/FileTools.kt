@@ -21,16 +21,20 @@ import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolCallbackPublisher
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
-import com.embabel.common.util.kotlin.loggerFor
+import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.zip.ZipInputStream
 
 /**
- * Use at your own risk: This makes changes!!
- * @param root local files
+ * LLM-ready ToolCallbacks and convenience methods for file operations.
+ * Use at your own risk: This makes changes to your host machine!!
  */
 interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
 
@@ -109,7 +113,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
     fun createFile(path: String, content: String): String {
         val resolvedPath = resolvePath(path)
         if (Files.exists(resolvedPath)) {
-            loggerFor<FileTools>().warn("File already exists at {}", path)
+            logger.warn("File already exists at {}", path)
             throw IllegalArgumentException("File already exists: $path")
         }
 
@@ -123,7 +127,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
 
     @Tool(description = "Edit the file at the given location. Replace oldContent with newContent. oldContent is typically just a part of the file. e.g. use it to replace a particular method to add another method")
     fun editFile(path: String, oldContent: String, newContent: String): String {
-        loggerFor<FileTools>().info("Editing file at path: $path: $oldContent -> $newContent")
+        logger.info("Editing file at path: $path: $oldContent -> $newContent")
         val resolvedPath = resolvePath(path)
         if (!Files.exists(resolvedPath)) {
             throw IllegalArgumentException("File does not exist: $path, root=$root")
@@ -136,7 +140,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
         val newFileContent = currentContent.replace(oldContent, newContent)
 
         Files.writeString(resolvedPath, newFileContent)
-        loggerFor<FileTools>().info("Edited file at path: $path")
+        logger.info("Edited file at path: $path")
         return "file edited"
     }
 
@@ -153,7 +157,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
         }
 
         Files.createDirectories(resolvedPath)
-        loggerFor<FileTools>().info("Created directory at path: $path")
+        logger.info("Created directory at path: $path")
         return "directory created"
     }
 
@@ -164,6 +168,59 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
             override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
             override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
 
+        }
+
+        private val logger = LoggerFactory.getLogger(FileTools::class.java)
+
+        fun createTempDir(seed: String): File {
+            val tempDir = Files.createTempDirectory(seed).toFile()
+            val tempDirPath = tempDir.absolutePath
+            logger.info("Created temporary directory at {}", tempDirPath)
+            return tempDir
+        }
+
+        /**
+         * Extract zip file to a temporary directory
+         * @param zipFile the zip file to extract
+         * @param tempDir directory to extract it under
+         * @param delete if true, delete the zip file after extraction
+         * @return the path to the extracted file
+         */
+        fun extractZipFile(
+            zipFile: File,
+            tempDir: File,
+            delete: Boolean,
+        ): File {
+            val projectDir = tempDir
+            ZipInputStream(FileInputStream(zipFile)).use { zipInputStream ->
+                var zipEntry = zipInputStream.nextEntry
+                while (zipEntry != null) {
+                    val newFile = File(projectDir, zipEntry.name)
+
+                    // Create directories if needed
+                    if (zipEntry.isDirectory) {
+                        newFile.mkdirs()
+                    } else {
+                        // Create parent directories if needed
+                        newFile.parentFile.mkdirs()
+
+                        // Extract file
+                        FileOutputStream(newFile).use { fileOutputStream ->
+                            zipInputStream.copyTo(fileOutputStream)
+                        }
+                    }
+
+                    zipInputStream.closeEntry()
+                    zipEntry = zipInputStream.nextEntry
+                }
+            }
+
+            logger.info("Extracted zip file project to {}", projectDir.absolutePath)
+
+            if (delete) {
+                zipFile.delete()
+            }
+            return File(projectDir, zipFile.nameWithoutExtension)
         }
     }
 

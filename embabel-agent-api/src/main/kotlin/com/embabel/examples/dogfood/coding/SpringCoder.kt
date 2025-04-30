@@ -18,7 +18,9 @@ package com.embabel.examples.dogfood.coding
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agentic
+import com.embabel.agent.api.annotation.fromForm
 import com.embabel.agent.api.common.ActionContext
+import com.embabel.agent.toolgroups.file.FileTools
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
@@ -38,30 +40,34 @@ object SpringCoderConditions {
     const val SpringProjectCreated = "springProjectCreated"
 }
 
-@Agentic(scan = false)
+@Agentic
 @Profile("!test")
-class SpringCoder(
-    private val codingProperties: CodingProperties,
-) {
+class SpringCoder {
 
     private val logger = LoggerFactory.getLogger(SpringCoder::class.java)
+
+    @Action
+    fun askUserForSpringRecipe(): SpringRecipe =
+        fromForm("Spring recipe")
 
     @Action(
         post = [SpringCoderConditions.SpringProjectCreated]
     )
-    fun createSpringInitialzrProject(context: ActionContext): SoftwareProject {
+    fun createSpringInitialzrProject(
+        springRecipe: SpringRecipe,
+        context: ActionContext,
+    ): SoftwareProject {
         logger.info("Creating Spring Initialzr project")
 
-        val tempDirPath = CodingProperties.createTempDir("spring-initializr")
+        val tempDir = FileTools.createTempDir("spring-initializr")
 
         // Create RestClient to call Spring Initialzr
         val restClient = org.springframework.web.client.RestClient.builder()
             .baseUrl("https://start.spring.io")
             .build()
 
-        val springRecipe = SpringRecipe()
         // Make the request to Spring Initialzr and save the response to a zip file
-        val zipFile = java.io.File("$tempDirPath/${springRecipe.artifactId}.zip")
+        val zipFile = java.io.File("$tempDir/${springRecipe.artifactId}.zip")
         val response = restClient.get()
             .uri { uriBuilder ->
                 uriBuilder.path("/starter.zip")
@@ -84,14 +90,15 @@ class SpringCoder(
         zipFile.writeBytes(response)
         logger.info("Downloaded Spring Initialzr project to {}", zipFile.absolutePath)
 
-        val projectDir = CodingProperties.extractZipFile(
-            zipFile,
-            tempDirPath,
+        val projectDir = FileTools.extractZipFile(
+            zipFile = zipFile,
+            tempDir = tempDir,
+            delete = true,
         )
         logger.info("Extracted Spring Initialzr project to {}", projectDir.absolutePath)
 
         // Return the project coordinates
-//        payload.setCondition(Conditions.SpringProjectCreated, true)
+        context.setCondition(SpringCoderConditions.SpringProjectCreated, true)
         context += springRecipe
         return SoftwareProject(
             root = projectDir.absolutePath,
@@ -106,7 +113,10 @@ class SpringCoder(
             CodeWriterConditions.BuildSucceeded],
     )
     @AchievesGoal("Create a new Spring project")
-    fun describeShinyNewSpringProject(softwareProject: SoftwareProject, springRecipe: SpringRecipe): CodeExplanation =
+    fun describeShinyNewSpringProject(
+        softwareProject: SoftwareProject,
+        springRecipe: SpringRecipe,
+    ): CodeExplanation =
         CodeExplanation(
             text = """
                 Project root: ${softwareProject.root}

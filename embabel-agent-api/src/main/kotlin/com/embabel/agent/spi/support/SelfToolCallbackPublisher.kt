@@ -20,8 +20,8 @@ import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 
 /**
- * Convenient interface a class can implement to publish any tools
- * it possesses automatically.
+ * Convenient interface a class can implement to publish any @Tool
+ * functions automatically.
  */
 interface SelfToolCallbackPublisher : ToolCallbackPublisher {
 

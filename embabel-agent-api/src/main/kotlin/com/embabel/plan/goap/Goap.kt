@@ -23,6 +23,14 @@ import com.embabel.plan.*
 enum class ConditionDetermination {
     TRUE, FALSE, UNKNOWN;
 
+    /**
+     * Treat UNKNOWN as false
+     */
+    fun asTrueOrFalse(): ConditionDetermination = when (this) {
+        TRUE -> TRUE
+        else -> FALSE
+    }
+
     // Was it calculated?
 
     companion object {

@@ -18,14 +18,7 @@ package com.embabel.examples.dogfood.coding
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
-import com.embabel.common.util.kotlin.loggerFor
-import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.nio.file.Files
-import java.util.zip.ZipInputStream
 
 /**
  * Common configuration and utilities
@@ -41,58 +34,4 @@ class CodingProperties(
     val primaryCodingLlm = LlmOptions(
         criteria = byName(primaryCodingModel),
     )
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(javaClass)
-
-        fun createTempDir(seed: String): File {
-            val tempDir = Files.createTempDirectory(seed).toFile()
-            val tempDirPath = tempDir.absolutePath
-            loggerFor<CodingProperties>().info("Created temporary directory at {}", tempDirPath)
-            return tempDir
-        }
-
-        /**
-         * Extract zip file to a temporary directory
-         * @return the path to the extracted file
-         */
-        fun extractZipFile(
-            zipFile: File,
-            tempDir: File,
-            delete: Boolean = false,
-        ): File {
-            val projectDir = tempDir
-
-            // Use Java's ZipInputStream to extract the zip file
-            ZipInputStream(FileInputStream(zipFile)).use { zipInputStream ->
-                var zipEntry = zipInputStream.nextEntry
-                while (zipEntry != null) {
-                    val newFile = File(projectDir, zipEntry.name)
-
-                    // Create directories if needed
-                    if (zipEntry.isDirectory) {
-                        newFile.mkdirs()
-                    } else {
-                        // Create parent directories if needed
-                        newFile.parentFile.mkdirs()
-
-                        // Extract file
-                        FileOutputStream(newFile).use { fileOutputStream ->
-                            zipInputStream.copyTo(fileOutputStream)
-                        }
-                    }
-
-                    zipInputStream.closeEntry()
-                    zipEntry = zipInputStream.nextEntry
-                }
-            }
-
-            logger.info("Extracted zip file project to {}", projectDir.absolutePath)
-
-            if (delete) {
-                zipFile.delete()
-            }
-            return File(projectDir, zipFile.nameWithoutExtension)
-        }
-    }
 }

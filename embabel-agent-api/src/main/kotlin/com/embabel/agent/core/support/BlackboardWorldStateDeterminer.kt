@@ -106,9 +106,12 @@ class BlackboardWorldStateDeterminer(
             }
 
             // Maybe the condition was explicitly set
+            // In this case if it isn't set, we assume it is false
+            // rather than unknown
             else -> {
                 val determination = ConditionDetermination(processContext.blackboard.getCondition(condition))
-                logger.info(
+                    .asTrueOrFalse()
+                logger.debug(
                     "Looked for explicitly set condition: determined condition {}={}: known conditions={}, bindings={}",
                     condition,
                     determination,

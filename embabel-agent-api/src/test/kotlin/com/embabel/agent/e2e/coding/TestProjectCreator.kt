@@ -19,9 +19,9 @@ import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agentic
 import com.embabel.agent.api.common.OperationContext
+import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.examples.dogfood.coding.CodeExplanation
 import com.embabel.examples.dogfood.coding.CodeWriterConditions
-import com.embabel.examples.dogfood.coding.CodingProperties
 import com.embabel.examples.dogfood.coding.SoftwareProject
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -52,11 +52,11 @@ class TestProjectCreator {
     ): SoftwareProject {
         logger.info("Creating test project")
 
-        val tempDirPath = CodingProperties.createTempDir("thing")
+        val tempDir = FileTools.createTempDir("thing")
 
         // TODO should not be hard coded
         val zipFile = File(zipFilePath)
-        val projectDir = CodingProperties.extractZipFile(zipFile, tempDirPath)
+        val projectDir = FileTools.extractZipFile(zipFile = zipFile, tempDir = tempDir, delete = false)
 
         // Return the project coordinates
         context.setCondition(TestCoderConditions.TestProjectCreated, true)
