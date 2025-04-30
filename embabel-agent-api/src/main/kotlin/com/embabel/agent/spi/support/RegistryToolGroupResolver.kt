@@ -38,7 +38,7 @@ class RegistryToolGroupResolver(
             "{}: {} available tool groups: {}",
             name,
             availableToolGroups().size,
-            "\n\t" + availableToolGroups().joinToString("\n"),
+            "\n\t" + availableToolGroups().sortedBy { it.role }.joinToString("\n\t") { it.infoString(verbose = false) },
         )
     }
 

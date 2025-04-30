@@ -53,6 +53,9 @@ val CompletionMessages = listOf(
 
 fun highlight(text: String) = "<$text>".color(LumonColors.MEMBRANE)
 
+const val BANNER_CHAR = "."
+const val BANNER_WIDTH = 100
+
 /**
  * Thanks to Kier
  */
@@ -62,12 +65,15 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     url = "https://www.imdb.com/title/tt11280740/",
     logger = LoggerFactory.getLogger("MDR"),
     welcomeMessage = """
-
+        
+        
+        ${BANNER_CHAR.repeat(BANNER_WIDTH)}
         Kier, chosen one, Kier.
         Kier, brilliant one, Kier.
         Brings the bounty to the plain through the torment, through the rains,
         Progress, knowledge show no fear,
         Kier, chosen one, Kier.
+        ${BANNER_CHAR.repeat(BANNER_WIDTH)}
 
         ▗▖   ▗▖ ▗▖▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖
         ▐▌   ▐▌ ▐▌▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌

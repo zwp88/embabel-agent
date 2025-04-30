@@ -32,6 +32,7 @@ interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
     companion object {
         fun toolGroup(root: String): ToolGroup = object : CiTools, SelfToolGroup {
             override val root: String = root
+            override val artifact: String = "pluggable-ci"
 
             override val description
                 get() = ToolGroup.CI_DESCRIPTION

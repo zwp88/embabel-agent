@@ -16,6 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.kotlin.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
@@ -70,7 +71,7 @@ enum class ToolGroupPermission {
  * Metadata about a tool group. Interface as platforms
  * may extend it
  */
-interface ToolGroupMetadata : ToolGroupDescription {
+interface ToolGroupMetadata : ToolGroupDescription, HasInfoString {
 
     /**
      * Name of the tool group
@@ -134,7 +135,12 @@ private data class MinimalToolGroupMetadata(
     override val provider: String,
     override val permissions: Set<ToolGroupPermission>,
     override val version: String = DEFAULT_VERSION,
-) : ToolGroupMetadata
+) : ToolGroupMetadata {
+
+    override fun infoString(verbose: Boolean?): String {
+        return "role:$role, artifact:$artifact, version:$version, provider:$provider - $description"
+    }
+}
 
 
 interface ToolCallbackSpec {

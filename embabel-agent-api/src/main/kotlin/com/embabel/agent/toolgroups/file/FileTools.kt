@@ -160,6 +160,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
     companion object {
         fun toolGroup(root: String): ToolGroup = object : FileTools, SelfToolGroup {
             override val root: String = root
+            override val artifact: String = "io-file"
             override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
             override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
 
