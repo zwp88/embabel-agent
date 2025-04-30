@@ -24,6 +24,7 @@ import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.support.HAS_RUN_CONDITION_PREFIX
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.util.DummyInstanceCreator
 import org.slf4j.LoggerFactory
@@ -429,8 +430,8 @@ class AgentMetadataReader {
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,
-            // Add action precondition
-//            pre = setOf(HAS_RUN_CONDITION_PREFIX + action.name),
+            // Add precondition of the action having run
+            pre = setOf(HAS_RUN_CONDITION_PREFIX + action.name),
         )
     }
 }

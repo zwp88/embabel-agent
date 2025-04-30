@@ -22,6 +22,7 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
+import com.embabel.agent.core.support.HAS_RUN_CONDITION_PREFIX
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
@@ -115,17 +116,23 @@ class AgentMetadataReaderTest {
         }
 
         @Test
-        @Disabled("this is probably not required")
-        fun `action goal requires input(s) of action method`() {
+        fun `action goal requires action method to have run`() {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(ActionGoal())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
+            val action = metadata.actions.single()
             val g = metadata.goals.single()
             assertEquals("Creating a person", g.description)
+            val expected = mapOf(
+                "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                HAS_RUN_CONDITION_PREFIX + action.name to ConditionDetermination.TRUE
+            )
             assertTrue(
-                g.preconditions.containsAll(mapOf("it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE)),
-                "Should have precondition for input to the action method",
+                g.preconditions.containsAll(
+                    expected,
+                ),
+                "Should have precondition for input to the action method: have\n${g.preconditions}, expected\n$expected",
             )
         }
 

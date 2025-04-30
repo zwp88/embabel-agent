@@ -84,6 +84,7 @@ abstract class AbstractAction(
         outputs.forEach { output ->
             conditions[output.value] = ConditionDetermination(true)
         }
+        conditions += (HAS_RUN_CONDITION_PREFIX + this.name) to ConditionDetermination(true)
         conditions
     }
 }
