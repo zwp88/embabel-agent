@@ -16,7 +16,7 @@
 package com.embabel.agent.core.hitl
 
 import com.embabel.agent.core.ProcessContext
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import com.embabel.ux.form.DefaultFormProcessor
 import com.embabel.ux.form.Form
 import com.embabel.ux.form.FormBinder

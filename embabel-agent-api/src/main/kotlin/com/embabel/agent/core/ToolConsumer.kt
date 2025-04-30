@@ -17,7 +17,7 @@ package com.embabel.agent.core
 
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.common.core.types.HasInfoString
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
 interface ToolGroupDescription {

@@ -17,7 +17,7 @@ package com.embabel.agent.core
 
 import com.embabel.agent.core.support.SerializableAction
 import com.embabel.common.core.types.Described
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.*
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes

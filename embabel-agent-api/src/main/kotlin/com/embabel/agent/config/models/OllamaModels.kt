@@ -17,7 +17,7 @@ package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.ollama.OllamaChatModel
 import org.springframework.ai.ollama.api.OllamaApi
 import org.springframework.ai.ollama.api.OllamaOptions

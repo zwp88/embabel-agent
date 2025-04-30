@@ -18,7 +18,7 @@ package com.embabel.agent.toolgroups.web.domain
 
 import com.embabel.agent.toolgroups.web.crawl.ContentSavingPageHandler
 import com.embabel.agent.toolgroups.web.crawl.WebCrawler
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.stereotype.Service
 import java.net.InetAddress
