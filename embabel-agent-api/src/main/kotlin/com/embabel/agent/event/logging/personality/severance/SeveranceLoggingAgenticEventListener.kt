@@ -65,8 +65,8 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     url = "https://www.imdb.com/title/tt11280740/",
     logger = LoggerFactory.getLogger("MDR"),
     welcomeMessage = """
-        
-        
+
+
         ${BANNER_CHAR.repeat(BANNER_WIDTH)}
         Kier, chosen one, Kier.
         Kier, brilliant one, Kier.
