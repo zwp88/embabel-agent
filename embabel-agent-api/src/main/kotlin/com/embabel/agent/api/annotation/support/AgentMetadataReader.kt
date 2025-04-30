@@ -32,6 +32,7 @@ import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
+import com.embabel.agent.core.Action as CoreAction
 import com.embabel.agent.core.Agent as CoreAgent
 import com.embabel.agent.core.Goal as AgentCoreGoal
 
@@ -115,8 +116,16 @@ class AgentMetadataReader {
         val getterGoals = findGoalGetters(agenticInfo.type).map { getGoal(it, instance) }
         val actionMethods = findActionMethods(agenticInfo.type)
         val conditionMethods = findConditionMethods(agenticInfo.type)
-        val actionGoals = actionMethods.mapNotNull { createGoalFromActionMethod(it, instance) }
-        val goals = getterGoals + actionGoals
+
+        val toolCallbacksOnInstance = ToolCallbacks.from(instance).toList()
+
+        val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
+        val (actions, actionGoals) = actionMethods.map { actionMethod ->
+            val action = createAction(actionMethod, instance, toolCallbacksOnInstance)
+            Pair(action, createGoalFromActionMethod(actionMethod, action, instance))
+        }.unzip()
+
+        val goals = getterGoals + actionGoals.filterNotNull()
 
         if (actionMethods.isEmpty() && goals.isEmpty() && conditionMethods.isEmpty()) {
             logger.warn(
@@ -127,10 +136,6 @@ class AgentMetadataReader {
             )
             return null
         }
-        val toolCallbacksOnInstance = ToolCallbacks.from(instance).toList()
-
-        val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
-        val actions = actionMethods.map { createAction(it, instance, toolCallbacksOnInstance) }
 
         if (agenticInfo.agentAnnotation != null) {
             return CoreAgent(
@@ -407,6 +412,7 @@ class AgentMetadataReader {
      */
     private fun createGoalFromActionMethod(
         method: Method,
+        action: CoreAction,
         instance: Any,
     ): AgentCoreGoal? {
         val actionAnnotation = method.getAnnotation(Action::class.java)
@@ -423,6 +429,8 @@ class AgentMetadataReader {
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,
+            // Add action preconditions
+//            pre = action.preconditions.keys.toSet(),
         )
     }
 }

@@ -28,6 +28,7 @@ import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.support.containsAll
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.plan.goap.ConditionDetermination
@@ -100,17 +101,30 @@ class AgentMetadataReaderTest {
         }
 
         @Test
-        fun `action goal`() {
+        fun `action goal requires output of action method`() {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(ActionGoal())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
             val g = metadata.goals.single()
             assertEquals("Creating a person", g.description)
-            assertEquals(
-                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
-                g.preconditions,
+            assertTrue(
+                g.preconditions.containsAll(mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE)),
                 "Should have precondition for Person",
+            )
+        }
+
+        @Test
+        fun `action goal requires input(s) of action method`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(ActionGoal())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.goals.size)
+            val g = metadata.goals.single()
+            assertEquals("Creating a person", g.description)
+            assertTrue(
+                g.preconditions.containsAll(mapOf("it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE)),
+                "Should have precondition for input to the action method",
             )
         }
 
@@ -126,15 +140,20 @@ class AgentMetadataReaderTest {
                 ?: fail("Should have toFrog goal: " + metadata.goals.map { it.name })
 
             assertEquals("Creating a person", personGoal.description)
-            assertEquals(
-                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
-                personGoal.preconditions,
+            assertTrue(
+                personGoal.preconditions.containsAll(
+                    mapOf(
+                        "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                        "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE
+                    )
+                ),
                 "Should have precondition for Person",
             )
             assertEquals("Creating a frog", frogGoal.description)
-            assertEquals(
-                mapOf("it:${Frog::class.qualifiedName}" to ConditionDetermination.TRUE),
-                frogGoal.preconditions,
+            assertTrue(
+                frogGoal.preconditions.containsAll(
+                    mapOf("it:${Frog::class.qualifiedName}" to ConditionDetermination.TRUE),
+                ),
                 "Should have precondition for Frog",
             )
         }
@@ -156,15 +175,20 @@ class AgentMetadataReaderTest {
                     ?: fail("Should have alsoToPerson goal: " + metadata.goals.map { it.name })
 
             assertEquals("Creating a person", personGoal.description)
-            assertEquals(
-                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
-                personGoal.preconditions,
+            assertTrue(
+                personGoal.preconditions.containsAll(
+                    mapOf(
+                        "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                        "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
+                    )
+                ),
                 "Should have precondition for Person",
             )
             assertEquals("Also to person", alsoGoal.description)
-            assertEquals(
-                mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE),
-                alsoGoal.preconditions,
+            assertTrue(
+                alsoGoal.preconditions.containsAll(
+                    mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE)
+                ),
                 "Should have precondition for alsoPerson",
             )
         }

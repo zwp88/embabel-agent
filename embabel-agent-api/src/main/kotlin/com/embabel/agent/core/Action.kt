@@ -71,7 +71,7 @@ value class IoBinding(val value: String) {
 data class Goal(
     override val name: String,
     override val description: String,
-    val pre: List<String> = emptyList(),
+    val pre: Set<String> = emptySet(),
     override val inputs: Set<IoBinding> = emptySet(),
     override val value: Double = 0.0,
 ) : GoapGoal, AgentSystemStep {
@@ -136,7 +136,7 @@ data class Goal(
                 name = name,
                 description = description,
                 inputs = inputs,
-                pre = pre.map { it.name },
+                pre = pre.map { it.name }.toSet(),
                 value = value
             )
         }

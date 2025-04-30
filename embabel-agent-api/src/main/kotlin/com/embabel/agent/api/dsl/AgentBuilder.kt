@@ -100,7 +100,7 @@ class AgentBuilder(
                 name = name,
                 description = description,
                 inputs = inputs,
-                pre = pre.map { it.name },
+                pre = pre.map { it.name }.toSet(),
                 value = value
             )
         )
