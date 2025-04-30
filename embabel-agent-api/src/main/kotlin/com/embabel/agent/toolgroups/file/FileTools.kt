@@ -21,7 +21,7 @@ import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolCallbackPublisher
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
-import org.slf4j.LoggerFactory
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.annotation.Tool
 import java.io.File
 import java.io.FileInputStream

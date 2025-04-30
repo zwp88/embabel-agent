@@ -18,7 +18,7 @@ package com.embabel.agent.core
 import com.embabel.agent.domain.special.Aggregation
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.findAllSupertypes
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
 import kotlin.reflect.KType

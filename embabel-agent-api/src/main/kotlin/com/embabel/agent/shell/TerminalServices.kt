@@ -22,7 +22,7 @@ import com.embabel.chat.ChatSession
 import com.embabel.chat.UserMessage
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import com.embabel.ux.form.Button
 import com.embabel.ux.form.FormSubmission
 import com.embabel.ux.form.TextField

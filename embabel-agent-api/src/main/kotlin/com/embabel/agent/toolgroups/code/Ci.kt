@@ -17,7 +17,7 @@ package com.embabel.agent.toolgroups.code
 
 import com.embabel.agent.toolgroups.DirectoryBased
 import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import java.nio.file.Paths
 

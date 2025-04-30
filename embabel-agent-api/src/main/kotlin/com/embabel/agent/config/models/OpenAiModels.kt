@@ -19,7 +19,7 @@ import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.ai.model.config.OpenAiConfiguration
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions

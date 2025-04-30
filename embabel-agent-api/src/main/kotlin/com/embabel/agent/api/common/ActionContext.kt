@@ -23,7 +23,7 @@ import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 

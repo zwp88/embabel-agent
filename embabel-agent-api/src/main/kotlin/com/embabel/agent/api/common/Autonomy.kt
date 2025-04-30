@@ -28,7 +28,7 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.agent.testing.RandomRanker
 import com.embabel.common.core.types.ZeroToOne
-import com.embabel.common.util.kotlin.loggerFor
+import com.embabel.common.util.loggerFor
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 import java.time.Instant
