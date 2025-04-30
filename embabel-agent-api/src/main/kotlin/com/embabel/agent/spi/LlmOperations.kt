@@ -33,6 +33,10 @@ value class InteractionId(val value: String) {
     override fun toString(): String = value
 }
 
+/**
+ * Spec for calling an LLM. Optional LlmOptions,
+ * plus tool callbacks and prompt contributors.
+ */
 interface LlmCall : PromptContributorConsumer {
     val llm: LlmOptions?
     val toolCallbacks: List<ToolCallback>
@@ -41,10 +45,18 @@ interface LlmCall : PromptContributorConsumer {
 
 /**
  * Encapsulates an interaction with an LLM.
- * @param id Unique identifier for the interaction.
+ * An LlmInteraction is a specific instance of an LlmCall.
+ * The LLM must have been chosen and the call has a unique identifier.
+ * @param id Unique identifier for the interaction. Note that this is NOT
+ * the id of this particular LLM call, but of the interaction in general.
+ * For example, it might be the "analyzeProject" call within the "Analyze"
+ * action. Every such call with have the same id, but many calls may be made
+ * across different AgentProcesses, or even within the same AgentProcess
+ * if the action can be rerun.
  * This is per action, not per process.
  * @param llm LLM options to use, specifying model and hyperparameters
  * @param toolCallbacks Tool callbacks to use for this interaction
+ * @param promptContributors Prompt contributors to use for this interaction
  */
 data class LlmInteraction(
     val id: InteractionId,
@@ -66,7 +78,7 @@ data class LlmInteraction(
 interface LlmOperations {
 
     /**
-     * Generate text
+     * Generate text in the context of an AgentProcess.
      * @param prompt Prompt to generate text from
      * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param agentProcess Agent process we are running within
@@ -80,7 +92,7 @@ interface LlmOperations {
     ): String
 
     /**
-     * Create an output object
+     * Create an output object, in the context of an AgentProcess.
      * @param prompt Function to generate the prompt from the input object
      * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param outputClass Class of the output object
@@ -96,8 +108,9 @@ interface LlmOperations {
     ): O
 
     /**
-     * Try to create an output object.
-     * @param prompt Function to generate the prompt from the input object
+     * Try to create an output object in the context of an AgentProcess.
+     * Return a failure result if the LLM does not have enough information to create the object.
+     * @param prompt User prompt
      * @param interaction Llm options and tool callbacks to use, plus unique identifier
      * @param outputClass Class of the output object
      * @param agentProcess Agent process we are running within
@@ -112,8 +125,8 @@ interface LlmOperations {
     ): Result<O>
 
     /**
-     * Low level transform
-     * @param prompt
+     * Low level transform, not necessarily aware of platform
+     * @param prompt user prompt
      * @param interaction The LLM call options
      * @param outputClass Class of the output object
      * @param llmRequestEvent Event already published for this request if one has been

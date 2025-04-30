@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.api.annotation.support.Wumpus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.spi.InteractionId
@@ -40,16 +41,29 @@ import org.springframework.ai.chat.model.Generation
 import org.springframework.ai.chat.prompt.ChatOptions
 import org.springframework.ai.chat.prompt.DefaultChatOptions
 import org.springframework.ai.chat.prompt.Prompt
+import org.springframework.ai.model.tool.ToolCallingChatOptions
+import org.springframework.ai.tool.ToolCallbacks
 import kotlin.test.assertEquals
 
+/**
+ * Fake ChatModel with fixed response that captures prompts
+ * and tools passed to it.
+ */
 class FakeChatModel(
     val response: String,
     private val options: ChatOptions = DefaultChatOptions()
 ) : ChatModel {
 
+    val promptsPassed = mutableListOf<Prompt>()
+    val optionsPassed = mutableListOf<ToolCallingChatOptions>()
+
     override fun getDefaultOptions(): ChatOptions = options
 
-    override fun call(prompt: Prompt?): ChatResponse? {
+    override fun call(prompt: Prompt): ChatResponse? {
+        promptsPassed.add(prompt)
+        val options = prompt.options as? ToolCallingChatOptions
+            ?: throw IllegalArgumentException("Expected ToolCallingChatOptions")
+        optionsPassed.add(options)
         return ChatResponse(
             listOf(
                 Generation(AssistantMessage(response))
@@ -95,6 +109,31 @@ class ChatClientLlmOperationsTest {
 
     @Nested
     inner class CreateObject {
+
+        @Test
+        fun `passes correct prompt`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))
+
+            val prompt =
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            setup.llmOperations.createObject(
+                prompt = prompt,
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+
+            val promptText = fakeChatModel.promptsPassed[0].toString()
+            assertTrue(promptText.contains("\$schema"), "Prompt contains JSON schema")
+            assertTrue(promptText.contains(promptText), "Prompt contains user prompt:\n$promptText")
+        }
+
         @Test
         fun `returns string`() {
             val fakeChatModel = FakeChatModel("fake response")
@@ -130,10 +169,85 @@ class ChatClientLlmOperationsTest {
             )
             assertEquals(duke, result)
         }
+
+        @Test
+        fun `presents no tools to ChatModel`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObject(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result)
+            assertEquals(1, fakeChatModel.promptsPassed.size)
+            val tools = fakeChatModel.optionsPassed[0].toolCallbacks
+            assertEquals(0, tools.size)
+        }
+
+        @Test
+        fun `presents tools to ChatModel`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))
+
+            // Wumpus's have tools
+            val toolCallbacks = ToolCallbacks.from(Wumpus("wumpy")).toList()
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObject(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"),
+                    llm = LlmOptions(),
+                    toolCallbacks = toolCallbacks,
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result)
+            assertEquals(1, fakeChatModel.promptsPassed.size)
+            val tools = fakeChatModel.optionsPassed[0].toolCallbacks
+            assertEquals(toolCallbacks.size, tools.size, "Must have passed same number of tools")
+            assertEquals(toolCallbacks.map { it.toolDefinition.name() }, tools.map { it.toolDefinition.name() })
+        }
     }
 
     @Nested
     inner class CreateObjectIfPossible {
+
+        @Test
+        fun `should have correct prompt with success and failure`() {
+            val fakeChatModel =
+                FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn<Dog>(failure = "didn't work")))
+
+            val prompt = "The quick brown fox jumped over the lazy dog"
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObjectIfPossible(
+                prompt = prompt,
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertTrue(result.isFailure)
+            val promptText = fakeChatModel.promptsPassed[0].toString()
+            assertTrue(promptText.contains("\$schema"), "Prompt contains JSON schema")
+            assertTrue(promptText.contains(promptText), "Prompt contains user prompt:\n$promptText")
+
+            assertTrue(promptText.contains("possible"), "Prompt mentions possible")
+            assertTrue(promptText.contains("success"), "Prompt mentions success")
+            assertTrue(promptText.contains("failure"), "Prompt mentions failure")
+        }
 
         @Test
         fun `returns data class - success`() {
@@ -170,6 +284,32 @@ class ChatClientLlmOperationsTest {
                 agentProcess = setup.mockAgentProcess,
             )
             assertTrue(result.isFailure)
+        }
+
+        @Test
+        fun `presents tools to ChatModel`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))
+
+            // Wumpus's have tools
+            val toolCallbacks = ToolCallbacks.from(Wumpus("wumpy")).toList()
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            setup.llmOperations.createObjectIfPossible(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"),
+                    llm = LlmOptions(),
+                    toolCallbacks = toolCallbacks,
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(1, fakeChatModel.promptsPassed.size)
+            val tools = fakeChatModel.optionsPassed[0].toolCallbacks
+            assertEquals(toolCallbacks.size, tools.size, "Must have passed same number of tools")
+            assertEquals(toolCallbacks.map { it.toolDefinition.name() }, tools.map { it.toolDefinition.name() })
         }
     }
 

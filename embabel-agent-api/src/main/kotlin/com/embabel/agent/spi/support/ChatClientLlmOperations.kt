@@ -29,12 +29,19 @@ import org.springframework.ai.chat.messages.SystemMessage
 import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.openai.OpenAiChatOptions
+import org.springframework.ai.tool.ToolCallback
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
 
 /**
  * LlmOperations implementation that uses the Spring AI ChatClient
+ * @param modelProvider ModelProvider to get the LLM model
+ * @param toolDecorator ToolDecorator to decorate tools to make them aware of platform
+ * @param templateRenderer TemplateRenderer to render templates
+ * @param maybePromptTemplate Template to use for the "maybe" prompt, which
+ * can enable a failure result if the LLM does not have enough information to
+ * create the desired output structure.
  */
 @Service
 internal class ChatClientLlmOperations(
@@ -55,7 +62,7 @@ internal class ChatClientLlmOperations(
             error("Output class must not be a List")
         }
 
-        val resources = getResources(interaction.llm)
+        val resources = getLlmInvocationResources(interaction.llm)
         val promptContributions =
             (interaction.promptContributors + resources.llm.promptContributors).joinToString("\n") { it.contribution() }
 
@@ -75,12 +82,13 @@ internal class ChatClientLlmOperations(
 
         val callResponse = resources.chatClient
             .prompt(springAiPrompt)
-            .tools(interaction.toolCallbacks)
+            // Try to lock to correct overload. Method overloading is evil.
+            .tools(makeSafeForStupidJavaOverloads(interaction.toolCallbacks))
             .call()
-        if (outputClass == String::class.java) {
-            return callResponse.content() as O
+        return if (outputClass == String::class.java) {
+            callResponse.content() as O
         } else {
-            return callResponse.entity<O>(outputClass)!!
+            callResponse.entity<O>(outputClass)!!
         }
     }
 
@@ -95,7 +103,7 @@ internal class ChatClientLlmOperations(
             emptyMap(),
         )
 
-        val resources = getResources(interaction.llm)
+        val resources = getLlmInvocationResources(interaction.llm)
         val promptContributions =
             (interaction.promptContributors + resources.llm.promptContributors).joinToString("\n") { it.contribution() }
         val springAiPrompt = Prompt(
@@ -116,14 +124,14 @@ internal class ChatClientLlmOperations(
         )
         val output = resources.chatClient
             .prompt(springAiPrompt)
-            .tools(interaction.toolCallbacks)
+            .tools(makeSafeForStupidJavaOverloads(interaction.toolCallbacks))
             .call()
             .entity(typeReference)!! as MaybeReturn<O>
         return output.toResult()
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> createParameterizedTypeReference(
+    private fun <T> createParameterizedTypeReference(
         rawType: Class<*>,
         typeArgument: Class<*>
     ): ParameterizedTypeReference<T> {
@@ -140,14 +148,17 @@ internal class ChatClientLlmOperations(
         }
     }
 
-    private data class Resources(
+    /**
+     * LLM we're calling and Spring AI ChatClient we'll use
+     */
+    private data class LlmInvocationResources(
         val llm: Llm,
         val chatClient: ChatClient,
     )
 
-    private fun getResources(
+    private fun getLlmInvocationResources(
         llmOptions: LlmOptions,
-    ): Resources {
+    ): LlmInvocationResources {
         val llm = modelProvider.getLlm(llmOptions.criteria ?: byRole(ModelProvider.BEST_ROLE))
         val chatClient = ChatClient
             .builder(llm.model)
@@ -159,13 +170,14 @@ internal class ChatClientLlmOperations(
                     .build()
             )
             .build()
-        return Resources(chatClient = chatClient, llm = llm)
+        return LlmInvocationResources(chatClient = chatClient, llm = llm)
     }
 }
 
-
 /**
- * Allows the user to return a result or an error
+ * Structure to be returned by the LLM.
+ * Allows the LLM to return a result structure, under success, or an error message
+ * One of success or failure must be set, but not both.
  */
 internal data class MaybeReturn<T>(
     val success: T? = null,
@@ -179,4 +191,8 @@ internal data class MaybeReturn<T>(
             Result.failure(Exception(failure))
         }
     }
+}
+
+private fun makeSafeForStupidJavaOverloads(toolCallbacks: List<ToolCallback>): MutableList<ToolCallback> {
+    return toolCallbacks.toMutableList()
 }
