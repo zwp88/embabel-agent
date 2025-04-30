@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 
 if [ -z "${OPENAI_API_KEY}" ]; then
-    echo "Error: OPENAI_API_KEY environment variable is not set"
-    echo "OpenAI will not be available"
+    echo "OPENAI_API_KEY environment variable is not set"
+    echo "OpenAI models will not be available"
+    echo "Get an API key at https://platform.openai.com/api-keys"
     echo "Please set it with: export OPENAI_API_KEY=your_api_key"
-    exit 1
 else
     echo "OPENAI_API_KEY set: OpenAI models are available"
+fi
+
+if [ -z "${ANTHROPIC_API_KEY}" ]; then
+    echo "ANTHROPIC_API_KEY environment variable is not set"
+    echo "Claude models will not be available"
+    echo "Get an API key at https://www.anthropic.com/api"
+    echo "Please set it with: export ANTHROPIC_API_KEY=your_api_key"
+else
+    echo "ANTHROPIC_API_KEY set: Claude models are available"
 fi
 
 if [ -z "${BRAVE_API_KEY}" ]; then
