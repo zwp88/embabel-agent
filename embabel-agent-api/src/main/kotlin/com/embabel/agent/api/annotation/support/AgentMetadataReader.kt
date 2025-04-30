@@ -429,8 +429,8 @@ class AgentMetadataReader {
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,
-            // Add action preconditions
-//            pre = action.preconditions.keys.toSet(),
+            // Add action precondition
+//            pre = setOf(HAS_RUN_CONDITION_PREFIX + action.name),
         )
     }
 }
