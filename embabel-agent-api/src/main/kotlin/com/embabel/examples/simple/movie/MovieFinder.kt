@@ -33,6 +33,7 @@ import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.data.repository.CrudRepository
@@ -119,6 +120,7 @@ data class MovieFinderConfig(
 @Agent(
     description = "Find movies a person hasn't seen and may find interesting"
 )
+@ConditionalOnBean(OmdbClient::class, StreamingAvailabilityClient::class)
 class MovieFinder(
     private val omdbClient: OmdbClient,
     private val streamingAvailabilityClient: StreamingAvailabilityClient,

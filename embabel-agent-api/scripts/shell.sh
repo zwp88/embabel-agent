@@ -11,7 +11,7 @@ fi
 
 if [ -z "${BRAVE_API_KEY}" ]; then
     echo "Warning: BRAVE_API_KEY environment variable is not set."
-    echo "Search features will not work properly without it."
+    echo "Search features will not work without it."
     echo "You can get an API key at https://brave.com/search/api/"
     echo "You can set it with: export BRAVE_API_KEY=your_api_key"
 else

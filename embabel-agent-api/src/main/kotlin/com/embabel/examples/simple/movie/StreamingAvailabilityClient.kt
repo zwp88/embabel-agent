@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
 /**
- * Client for the Streaming Availability API
+ * Client for the Streaming Availability API on Rapid API.
  * See https://docs.movieofthenight.com/
  */
 @Service
