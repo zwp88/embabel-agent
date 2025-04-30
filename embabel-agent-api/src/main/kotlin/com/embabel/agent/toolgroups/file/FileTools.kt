@@ -22,6 +22,7 @@ import com.embabel.agent.spi.support.SelfToolCallbackPublisher
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
 import com.embabel.common.util.loggerFor
+import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
 import java.io.File
 import java.io.FileInputStream
