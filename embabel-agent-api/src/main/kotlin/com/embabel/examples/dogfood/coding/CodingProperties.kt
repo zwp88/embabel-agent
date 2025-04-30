@@ -18,7 +18,6 @@ package com.embabel.examples.dogfood.coding
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
-import com.embabel.common.util.loggerFor
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
