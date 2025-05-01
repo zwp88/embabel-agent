@@ -43,8 +43,9 @@ open class SoftwareProject(
     val ci = Ci(root)
 
     @Tool(description = "Build the project using the given command in the root")
-    fun build(command: String): BuildResult {
-        return ci.buildAndParse(BuildOptions(command, true))
+    fun build(command: String): String {
+        val br = ci.buildAndParse(BuildOptions(command, true))
+        return br.relevantOutput()
     }
 
     fun build(): BuildResult {

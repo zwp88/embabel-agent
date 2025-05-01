@@ -22,7 +22,6 @@ import com.embabel.agent.api.annotation.Condition
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
-import com.embabel.agent.core.lastOrNull
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.code.BuildResult
@@ -30,6 +29,7 @@ import com.embabel.common.util.time
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import java.time.Duration
+import kotlin.jvm.optionals.getOrNull
 
 
 data class CodeModificationReport(
@@ -40,7 +40,6 @@ object CoderConditions {
     const val BuildNeeded = "buildNeeded"
     const val BuildFailed = "buildFailed"
     const val BuildSucceeded = "buildSucceeded"
-
 }
 
 /**
@@ -58,13 +57,9 @@ class Coder(
     private val logger = LoggerFactory.getLogger(Coder::class.java)
 
     @Action
-    fun loadExistingProject(): SoftwareProject? {
-        val found = projectRepository.findById(codingProperties.defaultLocation)
-        if (found.isPresent) {
-            logger.info("Found existing project at ${codingProperties.defaultLocation}")
-        }
-        return found.orElse(null)
-    }
+    fun loadExistingProject(): SoftwareProject? =
+        projectRepository.findById(codingProperties.defaultLocation).getOrNull()
+
 
     /**
      * Llm will determine the command to use to build the project.
@@ -101,9 +96,7 @@ class Coder(
     )
     fun build(
         project: SoftwareProject,
-    ): BuildResult {
-        return project.build()
-    }
+    ): BuildResult = project.build()
 
     // The last thing we did was code modification
     @Condition(name = CoderConditions.BuildNeeded)
@@ -141,7 +134,6 @@ class Coder(
             }
             """.trimIndent(),
         )
-//        context.setCondition(CoderConditions.BuildNeeded, true)
         return CodeModificationReport(report)
     }
 
@@ -153,9 +145,9 @@ class Coder(
     fun fixBrokenBuild(
         userInput: UserInput,
         project: SoftwareProject,
+        buildFailure: BuildResult,
         context: ActionContext,
     ): CodeModificationReport {
-        val buildFailure = context.lastOrNull<BuildResult> { it.status?.success == false }
         val report: String = context.promptRunner(
             llm = codingProperties.primaryCodingLlm,
             promptContributors = listOf(project, buildFailure),
@@ -166,25 +158,18 @@ class Coder(
                 Use the project information to help you understand the code.
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
-                Consider any build failure report.
-
+                Consider the build failure report.
+                
+                DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
                 Consider the following user request for the necessary functionality:
                 "${userInput.content}"
-
-                ${
-                buildFailure?.let {
-                    "Build failure:\n" + it.contribution()
-                }
-            }
             """.trimIndent(),
         )
-//        context.setCondition(CoderConditions.BuildNeeded, true)
         return CodeModificationReport(report)
     }
 
     @Action(pre = [CoderConditions.BuildSucceeded])
     @AchievesGoal(description = "Modify project code as per user request")
-    fun codeModificationComplete(codeModificationReport: CodeModificationReport): CodeModificationReport {
-        return codeModificationReport
-    }
+    fun codeModificationComplete(codeModificationReport: CodeModificationReport) = codeModificationReport
+
 }

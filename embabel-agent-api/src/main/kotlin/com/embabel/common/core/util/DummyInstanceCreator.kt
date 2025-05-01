@@ -18,6 +18,7 @@ package com.embabel.common.core.util
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.ParameterizedType
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -59,6 +60,7 @@ open class DummyInstanceCreator(
             clazz == LocalDateTime::class.java -> return LocalDateTime.now()
             clazz == Instant::class.java -> return Instant.now()
             clazz == Date::class.java -> return Date()
+            clazz == Duration::class.java -> return Duration.ofMillis(random.nextLong())
         }
 
         // Handle List<T> with reflection
