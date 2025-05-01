@@ -24,7 +24,7 @@ import com.embabel.plan.Planner
  */
 abstract class OptimizingGoapPlanner(
     val worldStateDeterminer: WorldStateDeterminer,
-) : Planner {
+) : Planner<GoapPlanningSystem, GoapPlan> {
 
     final override fun planToGoal(
         actions: Collection<Action>,
@@ -56,6 +56,17 @@ abstract class OptimizingGoapPlanner(
 
         // Just use direct plan
         return directPlan
+    }
+
+    override fun prune(planningSystem: GoapPlanningSystem): GoapPlanningSystem {
+        val allPlans = plansToGoals(planningSystem)
+        return planningSystem.copy(
+            actions = planningSystem.actions.filter { action ->
+                allPlans.any { plan ->
+                    plan.actions.contains(action)
+                }
+            }.toSet(),
+        )
     }
 
     protected abstract fun planToGoalFrom(

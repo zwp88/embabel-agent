@@ -31,18 +31,18 @@ interface PlanningSystem {
  * the GOAP WorldStateDeterminer. The representation of state
  * can differ between planners.
  */
-interface Planner {
+interface Planner<S : PlanningSystem, P : Plan> {
 
     /**
-     * Plan from here to the given goal
+     * Plan from here to the given goal. Planner is assumed to world state.
      */
-    fun planToGoal(actions: Collection<Action>, goal: Goal): Plan?
+    fun planToGoal(actions: Collection<Action>, goal: Goal): P?
 
     /**
-     * Return the best plan to each goal
+     * Return the best plan to each goal. Planner is assumed to world state.
      */
-    fun plansToGoals(system: PlanningSystem): List<Plan> {
-        val plans = mutableListOf<Plan>()
+    fun plansToGoals(system: S): List<P> {
+        val plans = mutableListOf<P>()
         for (goal in system.goals) {
             val plan = planToGoal(system.actions, goal)
             if (plan != null) {
@@ -55,6 +55,13 @@ interface Planner {
     /**
      * Return the best plan to any goal
      */
-    fun bestValuePlanToAnyGoal(system: PlanningSystem): Plan? =
+    fun bestValuePlanToAnyGoal(system: S): P? =
         plansToGoals(system).firstOrNull()
+
+    /**
+     * Return a PlanningSystem that excludes all actions that cannot
+     * help achieve one of the goals from the present world state.
+     */
+    fun prune(planningSystem: S): S
+
 }

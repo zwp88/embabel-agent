@@ -18,6 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.*
 import com.embabel.agent.event.*
 import com.embabel.agent.spi.*
+import com.embabel.plan.Planner
 import com.embabel.plan.goap.WorldState
 import com.embabel.plan.goap.WorldStateDeterminer
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -62,7 +63,7 @@ abstract class AbstractAgentProcess(
     /**
      * Get the planner for this process
      */
-    protected abstract val planner: Any
+    protected abstract val planner: Planner<*, *>
 
     override val status: AgentProcessStatusCode
         get() = _status

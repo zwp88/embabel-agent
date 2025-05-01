@@ -47,13 +47,13 @@ internal class SimpleAgentProcess(
     override val planner = AStarGoapPlanner(worldStateDeterminer)
 
     override fun executePlan(worldState: WorldState): AgentProcess {
-        val plan = planner.bestValuePlanToAnyGoal(system = agent.goapSystem)
+        val plan = planner.bestValuePlanToAnyGoal(system = agent.goapPlanningSystem)
         if (plan == null) {
             logger.info(
                 "❌ Process {} stuck: No plan from {} in {}, context={}",
                 id,
                 worldState.state,
-                agent.goapSystem.infoString(),
+                agent.goapPlanningSystem.infoString(),
                 blackboard,
             )
             _status = AgentProcessStatusCode.STUCK

@@ -33,7 +33,7 @@ class BlackboardWorldStateDeterminer(
 
     private val logger = LoggerFactory.getLogger(BlackboardWorldStateDeterminer::class.java)
 
-    private val knownConditions = processContext.agentProcess.agent.goapSystem.knownConditions()
+    private val knownConditions = processContext.agentProcess.agent.goapPlanningSystem.knownConditions()
 
     override fun determineWorldState(): WorldState {
         val map = mutableMapOf<String, ConditionDetermination>()

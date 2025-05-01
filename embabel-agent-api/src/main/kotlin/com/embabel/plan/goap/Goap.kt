@@ -149,7 +149,7 @@ private data class GoapGoalImpl(
     override val value: Double = 0.0,
 ) : GoapGoal
 
-data class GoapSystem(
+data class GoapPlanningSystem(
     override val actions: Set<GoapAction>,
     override val goals: Set<GoapGoal>,
 ) : PlanningSystem {

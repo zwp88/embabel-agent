@@ -127,7 +127,7 @@ class GoapPlannerTest {
         fun `should find 2 plans`() {
             val planner = AStarGoapPlanner(EmptyWorldStateDeterminer)
             val hasGunGoal = GoapGoal("hasGun", value = 1.0)
-            val goapSystem = GoapSystem(actions, setOf(getAwayWithMurderGoal, hasGunGoal))
+            val goapSystem = GoapPlanningSystem(actions, setOf(getAwayWithMurderGoal, hasGunGoal))
             val plans = planner.plansToGoals(goapSystem)
             assertEquals(plans.size, 2)
             val best = plans.first()
@@ -142,7 +142,7 @@ class GoapPlannerTest {
         fun `best plan to any goal`() {
             val planner = AStarGoapPlanner(EmptyWorldStateDeterminer)
             val hasGunGoal = GoapGoal(name = "hasGun", value = 1.0)
-            val goapSystem = GoapSystem(actions, setOf(getAwayWithMurderGoal, hasGunGoal))
+            val goapSystem = GoapPlanningSystem(actions, setOf(getAwayWithMurderGoal, hasGunGoal))
             val plan = planner.bestValuePlanToAnyGoal(goapSystem)
             assertNotNull(plan)
             assertEquals(
@@ -319,6 +319,16 @@ class GoapPlannerTest {
         )
 
         @Test
+        fun `should distinguish relevant conditions`() {
+            val goapSystem = GoapPlanningSystem(actions, goal)
+            val pruned = planner.prune(goapSystem)
+            assertEquals(
+                setOf("toBeliever", "findNewsStories"),
+                pruned.actions.map { it.name }.toSet()
+            )
+        }
+
+        @Test
         fun `should not be distracted by irrelevant actions running planToGoal`() {
             val plan = planner.planToGoal(actions, goal)
             assertNotNull(plan)
@@ -330,7 +340,7 @@ class GoapPlannerTest {
 
         @Test
         fun `should not be distracted by irrelevant actions running plans`() {
-            val plans = planner.plansToGoals(system = GoapSystem(actions, goal))
+            val plans = planner.plansToGoals(system = GoapPlanningSystem(actions, goal))
             val plan = plans.single()
             assertEquals(
                 listOf("toBeliever", "findNewsStories"),
