@@ -21,7 +21,7 @@ import com.embabel.agent.api.annotation.Agentic
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.examples.dogfood.coding.CodeExplanation
-import com.embabel.examples.dogfood.coding.CodeWriterConditions
+import com.embabel.examples.dogfood.coding.CoderConditions
 import com.embabel.examples.dogfood.coding.SoftwareProject
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -71,7 +71,7 @@ class TestProjectCreator {
 
     @Action(
         pre = [TestCoderConditions.TestProjectCreated,
-            CodeWriterConditions.BuildSucceeded
+            CoderConditions.BuildSucceeded
         ]
     )
     @AchievesGoal("Create a new test project")

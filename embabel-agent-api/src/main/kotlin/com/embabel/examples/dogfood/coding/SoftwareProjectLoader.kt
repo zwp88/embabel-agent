@@ -16,20 +16,18 @@
 package com.embabel.examples.dogfood.coding
 
 import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.using
 import com.embabel.agent.api.common.create
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
 
-@Agent(
-    description = "Explain code or perform changes to a software project or directory structure",
-)
+//@Agent(
+//    description = "Explain code or perform changes to a software project or directory structure",
+//)
 @Profile("!test")
 class SoftwareProjectLoader(
     private val projectRepository: ProjectRepository,
-    private val defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
     private val codingProperties: CodingProperties,
 ) {
 
@@ -37,9 +35,9 @@ class SoftwareProjectLoader(
 
     @Action
     fun loadExistingProject(): SoftwareProject? {
-        val found = projectRepository.findById(defaultLocation)
+        val found = projectRepository.findById(codingProperties.defaultLocation)
         if (found.isPresent) {
-            logger.info("Found existing project at $defaultLocation")
+            logger.info("Found existing project at ${codingProperties.defaultLocation}")
         }
         return found.orElse(null)
     }
@@ -52,7 +50,7 @@ class SoftwareProjectLoader(
     fun analyzeProject(): SoftwareProject =
         using(codingProperties.primaryCodingLlm).create<SoftwareProject>(
             """
-                Analyze the project at $defaultLocation
+                Analyze the project at ${codingProperties.defaultLocation}
                 Use the file tools to read code and directories before analyzing it
             """.trimIndent(),
         ).also { project ->

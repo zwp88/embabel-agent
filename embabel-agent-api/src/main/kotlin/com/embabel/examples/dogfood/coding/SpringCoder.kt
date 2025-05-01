@@ -40,7 +40,9 @@ object SpringCoderConditions {
     const val SpringProjectCreated = "springProjectCreated"
 }
 
-@Agentic
+@Agentic(
+    scan = false
+)
 @Profile("!test")
 class SpringCoder {
 
@@ -110,7 +112,7 @@ class SpringCoder {
 
     @Action(
         pre = [SpringCoderConditions.SpringProjectCreated,
-            CodeWriterConditions.BuildSucceeded],
+            CoderConditions.BuildSucceeded],
     )
     @AchievesGoal("Create a new Spring project")
     fun describeShinyNewSpringProject(

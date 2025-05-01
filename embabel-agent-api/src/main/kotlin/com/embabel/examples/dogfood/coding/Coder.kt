@@ -20,11 +20,13 @@ import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.Condition
 import com.embabel.agent.api.common.ActionContext
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
 import com.embabel.agent.core.lastOrNull
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.code.BuildResult
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
 
@@ -32,7 +34,8 @@ data class CodeModificationReport(
     override val text: String,
 ) : HasContent
 
-object CodeWriterConditions {
+object CoderConditions {
+    const val BuildNeeded = "buildNeeded"
     const val BuildSucceeded = "buildSucceeded"
 }
 
@@ -44,13 +47,26 @@ object CodeWriterConditions {
 )
 @Profile("!test")
 class Coder(
+    private val projectRepository: ProjectRepository,
     private val codingProperties: CodingProperties,
 ) {
+
+    private val logger = LoggerFactory.getLogger(Coder::class.java)
+
+    @Action
+    fun loadExistingProject(): SoftwareProject? {
+        val found = projectRepository.findById(codingProperties.defaultLocation)
+        if (found.isPresent) {
+            logger.info("Found existing project at ${codingProperties.defaultLocation}")
+        }
+        return found.orElse(null)
+    }
 
     @Action(
         cost = 10000.0,
         canRerun = true,
-        post = [CodeWriterConditions.BuildSucceeded],
+        pre = [CoderConditions.BuildNeeded],
+        post = [CoderConditions.BuildSucceeded],
     )
     fun buildWithCommand(
         project: SoftwareProject,
@@ -64,14 +80,14 @@ class Coder(
                 Build the project
             """.trimIndent(),
         )
-        // TODO shouldn't be had coded
         return project.ci.parseBuildOutput(buildOutput)
     }
 
     @Action(
-        cost = 10000.0,
+        cost = 500.0,
         canRerun = true,
-        post = [CodeWriterConditions.BuildSucceeded],
+        pre = [CoderConditions.BuildNeeded],
+        post = [CoderConditions.BuildSucceeded],
     )
     fun build(
         project: SoftwareProject,
@@ -79,16 +95,15 @@ class Coder(
         return project.build()
     }
 
-    @Condition(name = CodeWriterConditions.BuildSucceeded)
+    // The last thing we did was code modification
+    @Condition(name = CoderConditions.BuildSucceeded)
+    fun buildNeeded(context: OperationContext): Boolean =
+        context.lastResult() is CodeModificationReport
+
+    @Condition(name = CoderConditions.BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success
 
-    @Action(pre = [CodeWriterConditions.BuildSucceeded])
-    @AchievesGoal(description = "Modify project code as per user request")
-    fun codeModificationComplete(codeModificationReport: CodeModificationReport): CodeModificationReport {
-        return codeModificationReport
-    }
-
-    @Action(canRerun = true, post = [CodeWriterConditions.BuildSucceeded])
+    @Action(canRerun = true, post = [CoderConditions.BuildNeeded])
     fun modifyCode(
         userInput: UserInput,
         project: SoftwareProject,
@@ -117,6 +132,13 @@ class Coder(
             }
             """.trimIndent(),
         )
+        context.setCondition(CoderConditions.BuildNeeded, true)
         return CodeModificationReport(report)
+    }
+
+    @Action(pre = [CoderConditions.BuildSucceeded])
+    @AchievesGoal(description = "Modify project code as per user request")
+    fun codeModificationComplete(codeModificationReport: CodeModificationReport): CodeModificationReport {
+        return codeModificationReport
     }
 }
