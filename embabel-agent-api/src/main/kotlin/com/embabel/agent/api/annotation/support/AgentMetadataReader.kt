@@ -364,10 +364,17 @@ class AgentMetadataReader {
     ): Boolean {
         logger.debug("Invoking condition method {}", method.name)
         val args = mutableListOf<Any>()
+        val operationContext = OperationContext(
+            processContext = processContext,
+        )
         for (m in method.parameters) {
             when {
                 ProcessContext::class.java.isAssignableFrom(m.type) -> {
                     args += processContext
+                }
+
+                OperationContext::class.java.isAssignableFrom(m.type) -> {
+                    args += operationContext
                 }
                 // TODO required match binding: Consistent with actions
 
@@ -402,7 +409,7 @@ class AgentMetadataReader {
         return try {
             ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray()) as Boolean
         } catch (t: Throwable) {
-            logger.warn("Error invoking condition method ${method.name}", t)
+            logger.warn("Error invoking condition method ${method.name} with args $args", t)
             false
         }
     }

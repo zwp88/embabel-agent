@@ -33,6 +33,19 @@ import org.springframework.ai.tool.ToolCallbacks
  */
 interface OperationContext : Blackboard {
     val processContext: ProcessContext
+
+    companion object {
+        operator fun invoke(processContext: ProcessContext): OperationContext =
+            SimpleOperationContext(processContext)
+    }
+}
+
+private class SimpleOperationContext(
+    override val processContext: ProcessContext,
+) : OperationContext, Blackboard by processContext.agentProcess {
+    override fun toString(): String {
+        return "SimpleOperationContext(processContext=$processContext)"
+    }
 }
 
 /**

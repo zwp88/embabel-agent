@@ -240,7 +240,9 @@ class AgentMetadataReaderTest {
             assertNotNull(metadata)
             assertEquals(1, metadata!!.conditions.size)
             val condition = metadata.conditions.first()
-            assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockk()))
+            val mockProcessContext = mockk<ProcessContext>()
+            every { mockProcessContext.agentProcess } returns mockk()
+            assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
         }
 
         @Test

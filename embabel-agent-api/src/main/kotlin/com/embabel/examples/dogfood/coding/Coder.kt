@@ -36,7 +36,9 @@ data class CodeModificationReport(
 
 object CoderConditions {
     const val BuildNeeded = "buildNeeded"
+    const val BuildFailed = "buildFailed"
     const val BuildSucceeded = "buildSucceeded"
+
 }
 
 /**
@@ -103,16 +105,18 @@ class Coder(
     @Condition(name = CoderConditions.BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success
 
+    @Condition(name = CoderConditions.BuildSucceeded)
+    fun buildFailed(buildResult: BuildResult): Boolean = buildResult.success
+
     @Action(canRerun = true, post = [CoderConditions.BuildNeeded])
     fun modifyCode(
         userInput: UserInput,
         project: SoftwareProject,
         context: ActionContext,
     ): CodeModificationReport {
-        val buildFailure = context.lastOrNull<BuildResult> { !it.success }
         val report: String = context.promptRunner(
             llm = codingProperties.primaryCodingLlm,
-            promptContributors = listOf(project, buildFailure),
+            promptContributors = listOf(project),
         ).create(
             """
                 Execute the following user request to modify code in the given project.
@@ -124,10 +128,42 @@ class Coder(
 
                 User request:
                 "${userInput.content}"
+            }
+            """.trimIndent(),
+        )
+        context.setCondition(CoderConditions.BuildNeeded, true)
+        return CodeModificationReport(report)
+    }
+
+    @Action(
+        canRerun = true,
+        pre = [CoderConditions.BuildFailed],
+        post = [CoderConditions.BuildSucceeded]
+    )
+    fun fixBrokenBuild(
+        userInput: UserInput,
+        project: SoftwareProject,
+        context: ActionContext,
+    ): CodeModificationReport {
+        val buildFailure = context.lastOrNull<BuildResult> { !it.success }
+        val report: String = context.promptRunner(
+            llm = codingProperties.primaryCodingLlm,
+            promptContributors = listOf(project, buildFailure),
+        ).create(
+            """
+                Modify code in the given project to fix the broken build.
+                Use the file tools to read code and directories.
+                Use the project information to help you understand the code.
+                The project will be in git so you can safely modify content without worrying about backups.
+                Return an explanation of what you did and why.
+                Consider any build failure report.
+
+                Consider the following user request for the necessary functionality:
+                "${userInput.content}"
 
                 ${
                 buildFailure?.let {
-                    "Previous build failed:\n" + it.contribution()
+                    "Build failure:\n" + it.contribution()
                 }
             }
             """.trimIndent(),
