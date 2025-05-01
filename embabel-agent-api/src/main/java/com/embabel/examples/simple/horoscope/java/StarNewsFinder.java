@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Agent(
         description = "Find news based on a person's star sign",
         beanName = "javaStarNewsFinder",
-        scan = true)
+        scan = false)
 public class StarNewsFinder {
 
     private final HoroscopeService horoscopeService;

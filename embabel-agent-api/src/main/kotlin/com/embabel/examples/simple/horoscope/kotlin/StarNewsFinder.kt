@@ -59,7 +59,7 @@ data class Writeup(
  */
 @Agent(
     description = "Find news based on a person's star sign",
-    scan = false,
+    scan = true,
     beanName = "KotlinStarNewsFinder",
 )
 class StarNewsFinder(
