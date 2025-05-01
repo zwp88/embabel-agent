@@ -17,9 +17,53 @@ package com.embabel.agent.toolgroups.code
 
 import com.embabel.agent.toolgroups.DirectoryBased
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.core.types.Timed
+import com.embabel.common.core.types.Timestamped
 import com.embabel.common.util.loggerFor
+import com.embabel.common.util.time
 import org.slf4j.LoggerFactory
 import java.nio.file.Paths
+import java.time.Duration
+import java.time.Instant
+
+/**
+ * Options for build
+ * @param buildCommand command to run such as "mvn test"
+ * @param streamOutput if true, the output will be streamed to the console
+ */
+data class BuildOptions(
+    val buildCommand: String,
+    val streamOutput: Boolean = false,
+)
+
+data class BuildStatus(
+    val success: Boolean,
+    val relevantOutput: String,
+)
+
+/**
+ * Result of a build command
+ * @param status status of the build if we could parse it
+ */
+data class BuildResult(
+    val status: BuildStatus?,
+    val rawOutput: String,
+    override val timestamp: Instant = Instant.now(),
+    override val runningTime: Duration,
+) : Timestamped, Timed, PromptContributor {
+
+    override fun contribution(): String =
+        """
+            |Build result: success=${status?.success ?: "unknown"}
+            |Relevant output:
+            |${relevantOutput()}
+        """.trimIndent()
+
+    fun relevantOutput(): String {
+        return status?.relevantOutput ?: rawOutput
+    }
+}
+
 
 /**
  * CI support with pluggable build systems
@@ -31,23 +75,52 @@ class Ci(
 
     private val logger = LoggerFactory.getLogger(Ci::class.java)
 
-    fun buildAndParse(command: String): BuildResult {
-        val rawOutput = build(command)
-        return parseBuildOutput(rawOutput)
+    /**
+     * Build the project with the given command and parse the output
+     * Parse status if known
+     */
+    fun buildAndParse(buildOptions: BuildOptions): BuildResult {
+        val (rawOutput, ms) = time {
+            build(buildOptions)
+        }
+        val buildResult = BuildResult(
+            status = null,
+            rawOutput = rawOutput,
+            runningTime = Duration.ofMillis(ms),
+        )
+        val buildStatus = parseOutput(buildResult.rawOutput)
+        return buildResult.copy(status = buildStatus)
     }
 
-    fun parseBuildOutput(rawOutput: String): BuildResult {
+    fun parseBuildOutput(
+        rawOutput: String,
+        runningTime: Duration,
+    ): BuildResult {
+        val buildResult = BuildResult(
+            status = null,
+            rawOutput = rawOutput,
+            runningTime = runningTime,
+        )
+        val buildStatus = parseOutput(buildResult.rawOutput)
+        return buildResult.copy(status = buildStatus)
+    }
+
+    private fun parseOutput(rawOutput: String): BuildStatus? {
         for (b in buildSystems) {
-            val br = b.parseBuildOutput(root, rawOutput)
-            if (br != null) {
-                return br
+            val status = b.parseBuildOutput(root, rawOutput)
+            if (status != null) {
+                return status
             }
         }
-        error("No build system understands this output")
+        logger.warn("No build system understands this output")
+        return null
     }
 
-    fun build(command: String): String {
-        logger.info("Running build command in root directory: $command")
+    /**
+     * Build the project using the given command
+     */
+    fun build(buildOptions: BuildOptions): String {
+        logger.info("Running build command {} in root directory", buildOptions.buildCommand)
 
         val processBuilder = ProcessBuilder()
 
@@ -55,7 +128,7 @@ class Ci(
         processBuilder.directory(Paths.get(root).toFile())
 
         // Configure the command
-        val commandParts = command.split("\\s+".toRegex())
+        val commandParts = buildOptions.buildCommand.split("\\s+".toRegex())
         processBuilder.command(commandParts)
 
         // Redirect error stream to output stream
@@ -72,7 +145,7 @@ class Ci(
                 "Command failed with exit code $exitCode:\n$output"
             }
         } catch (e: Exception) {
-            loggerFor<CiTools>().error("Error executing command: $command", e)
+            loggerFor<CiTools>().error("Error executing command: ${buildOptions.buildCommand}", e)
             return "Error executing command: ${e.message}"
         }
     }
@@ -87,11 +160,13 @@ interface BuildSystem {
     fun parseBuildOutput(
         root: String,
         rawOutput: String,
-    ): BuildResult?
+    ): BuildStatus?
 }
 
 object MavenBuildSystem : BuildSystem {
-    override fun parseBuildOutput(root: String, rawOutput: String): BuildResult? {
+
+    override fun parseBuildOutput(root: String, rawOutput: String): BuildStatus? {
+
         // TODO messy test
         if (!rawOutput.contains("[INFO]")) {
             // Not a Maven build
@@ -99,29 +174,9 @@ object MavenBuildSystem : BuildSystem {
         }
         val success = rawOutput.contains("BUILD SUCCESS")
         val relevantOutput = rawOutput.lines().filter { it.contains("[ERROR]") }.joinToString("\n")
-        return BuildResult(
+        return BuildStatus(
             success = success,
-            rawOutput = rawOutput,
             relevantOutput = relevantOutput,
         )
     }
-}
-
-/**
- * Result of a build command
- * @param relevantOutput only relevant error messages
- *
- */
-data class BuildResult(
-    val success: Boolean,
-    val rawOutput: String,
-    val relevantOutput: String,
-) : PromptContributor {
-
-    override fun contribution(): String =
-        """
-            |Build result: success=$success
-            |Relevant output:
-            |$relevantOutput
-        """.trimIndent()
 }

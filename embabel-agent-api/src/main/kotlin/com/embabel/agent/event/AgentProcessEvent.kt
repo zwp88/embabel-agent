@@ -22,6 +22,7 @@ import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timed
 import com.embabel.common.util.VisualizableTask
+import com.embabel.plan.Goal
 import com.embabel.plan.Plan
 import com.embabel.plan.goap.WorldState
 import org.springframework.ai.chat.prompt.Prompt
@@ -59,6 +60,12 @@ class AgentProcessPlanFormulatedEvent(
     agentProcess: AgentProcess,
     val worldState: WorldState,
     val plan: Plan,
+) : AbstractAgentProcessEvent(agentProcess)
+
+class GoalAchievedEvent(
+    agentProcess: AgentProcess,
+    val worldState: WorldState,
+    val goal: Goal,
 ) : AbstractAgentProcessEvent(agentProcess)
 
 class ActionExecutionStartEvent(

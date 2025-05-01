@@ -17,6 +17,7 @@ package com.embabel.agent.core.support
 
 import com.embabel.agent.core.*
 import com.embabel.agent.event.AgentProcessPlanFormulatedEvent
+import com.embabel.agent.event.GoalAchievedEvent
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.plan.goap.AStarGoapPlanner
 import com.embabel.plan.goap.WorldState
@@ -73,6 +74,13 @@ internal class SimpleAgentProcess(
                 this.id,
                 plan.goal.name,
                 this.runningTime.seconds,
+            )
+            platformServices.eventListener.onProcessEvent(
+                GoalAchievedEvent(
+                    agentProcess = this,
+                    worldState = worldState,
+                    goal = plan.goal,
+                )
             )
             logger.debug("Final blackboard: {}", blackboard.infoString())
             _status = AgentProcessStatusCode.COMPLETED

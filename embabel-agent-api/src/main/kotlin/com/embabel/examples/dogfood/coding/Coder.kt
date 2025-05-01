@@ -26,8 +26,10 @@ import com.embabel.agent.core.lastOrNull
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.code.BuildResult
+import com.embabel.common.util.time
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import java.time.Duration
 
 
 data class CodeModificationReport(
@@ -74,15 +76,17 @@ class Coder(
         project: SoftwareProject,
         context: ActionContext,
     ): BuildResult {
-        val buildOutput = context.promptRunner(
-            llm = codingProperties.primaryCodingLlm,
-            promptContributors = listOf(project),
-        ).generateText(
-            """
+        val (rawOutput, ms) = time {
+            context.promptRunner(
+                llm = codingProperties.primaryCodingLlm,
+                promptContributors = listOf(project),
+            ).generateText(
+                """
                 Build the project
             """.trimIndent(),
-        )
-        return project.ci.parseBuildOutput(buildOutput)
+            )
+        }
+        return project.ci.parseBuildOutput(rawOutput, Duration.ofMillis(ms))
     }
 
     @Action(
@@ -103,10 +107,10 @@ class Coder(
         context.lastResult() is CodeModificationReport
 
     @Condition(name = CoderConditions.BuildSucceeded)
-    fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.success
+    fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.status?.success == true
 
     @Condition(name = CoderConditions.BuildSucceeded)
-    fun buildFailed(buildResult: BuildResult): Boolean = buildResult.success
+    fun buildFailed(buildResult: BuildResult): Boolean = buildResult.status?.success == false
 
     @Action(canRerun = true, post = [CoderConditions.BuildNeeded])
     fun modifyCode(
@@ -125,6 +129,8 @@ class Coder(
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
                 Consider any build failure report.
+                
+                DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
 
                 User request:
                 "${userInput.content}"
@@ -145,7 +151,7 @@ class Coder(
         project: SoftwareProject,
         context: ActionContext,
     ): CodeModificationReport {
-        val buildFailure = context.lastOrNull<BuildResult> { !it.success }
+        val buildFailure = context.lastOrNull<BuildResult> { it.status?.success == false }
         val report: String = context.promptRunner(
             llm = codingProperties.primaryCodingLlm,
             promptContributors = listOf(project, buildFailure),

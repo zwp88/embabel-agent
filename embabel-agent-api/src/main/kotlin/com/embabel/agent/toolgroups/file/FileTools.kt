@@ -127,7 +127,8 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
 
     @Tool(description = "Edit the file at the given location. Replace oldContent with newContent. oldContent is typically just a part of the file. e.g. use it to replace a particular method to add another method")
     fun editFile(path: String, oldContent: String, newContent: String): String {
-        logger.info("Editing file at path: $path: $oldContent -> $newContent")
+        logger.info("Editing file at path {}", path)
+        logger.debug("File edit at path {}: {} -> {}", path, oldContent, newContent)
         val resolvedPath = resolvePath(path)
         if (!Files.exists(resolvedPath)) {
             throw IllegalArgumentException("File does not exist: $path, root=$root")

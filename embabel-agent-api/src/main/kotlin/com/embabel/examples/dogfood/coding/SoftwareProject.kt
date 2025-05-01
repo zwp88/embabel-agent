@@ -15,12 +15,14 @@
  */
 package com.embabel.examples.dogfood.coding
 
+import com.embabel.agent.toolgroups.code.BuildOptions
 import com.embabel.agent.toolgroups.code.BuildResult
 import com.embabel.agent.toolgroups.code.Ci
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import org.springframework.ai.tool.annotation.Tool
 import org.springframework.data.repository.CrudRepository
 
 /**
@@ -40,8 +42,13 @@ open class SoftwareProject(
 
     val ci = Ci(root)
 
+    @Tool(description = "Build the project using the given command in the root")
+    fun build(command: String): BuildResult {
+        return ci.buildAndParse(BuildOptions(command, true))
+    }
+
     fun build(): BuildResult {
-        return ci.buildAndParse(buildCommand)
+        return ci.buildAndParse(BuildOptions(buildCommand, true))
     }
 
     override fun toString(): String {

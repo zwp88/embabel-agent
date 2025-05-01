@@ -26,7 +26,7 @@ interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
 
     @Tool(description = "build the project using the given command in the root")
     fun buildProject(command: String): String {
-        return Ci(root).build(command)
+        return Ci(root).build(BuildOptions(command, true))
     }
 
     companion object {

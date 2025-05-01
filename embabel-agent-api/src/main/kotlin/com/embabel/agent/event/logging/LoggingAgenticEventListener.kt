@@ -132,6 +132,15 @@ open class LoggingAgenticEventListener(
                 )
             }
 
+            is GoalAchievedEvent -> {
+                logger.info(
+                    "[{}] goal {} achieved in {}",
+                    event.processId,
+                    event.goal.name,
+                    event.agentProcess.runningTime,
+                )
+            }
+
             is AgentProcessFunctionCallRequestEvent -> {
                 logger.info(
                     functionCallRequestEventMessage,
