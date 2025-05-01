@@ -18,7 +18,6 @@ package com.embabel.agent.core
 import com.embabel.agent.spi.StuckHandler
 import com.embabel.common.core.types.Described
 import com.embabel.plan.goap.GoapPlanningSystem
-import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 
@@ -65,12 +64,12 @@ data class Agent(
     fun withSingleGoal(goal: Goal): Agent =
         copy(goals = setOf(goal))
 
-    @JsonIgnore
-    val goapPlanningSystem: GoapPlanningSystem = run {
-        val actions = actions.toSet()
-        logger.debug(infoString())
-        GoapPlanningSystem(actions, goals)
-    }
+    val planningSystem: GoapPlanningSystem
+        get() {
+            val actions = actions.toSet()
+            logger.debug(infoString())
+            return GoapPlanningSystem(actions, goals)
+        }
 
     override fun infoString(verbose: Boolean?): String {
         return "description: ${description}\n\tname: " + super.infoString(verbose)

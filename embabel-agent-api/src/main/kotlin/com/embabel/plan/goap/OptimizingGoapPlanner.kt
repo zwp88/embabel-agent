@@ -19,12 +19,14 @@ import com.embabel.plan.Action
 import com.embabel.plan.Goal
 import com.embabel.plan.Planner
 
+interface GoapPlanner : Planner<GoapPlanningSystem, GoapPlan>
+
 /**
  * Abstract class for a Goap planner with common optimization.
  */
 abstract class OptimizingGoapPlanner(
     val worldStateDeterminer: WorldStateDeterminer,
-) : Planner<GoapPlanningSystem, GoapPlan> {
+) : GoapPlanner {
 
     final override fun planToGoal(
         actions: Collection<Action>,

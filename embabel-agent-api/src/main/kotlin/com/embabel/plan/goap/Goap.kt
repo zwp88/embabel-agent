@@ -54,6 +54,8 @@ interface GoapStep : Step {
      */
     val preconditions: EffectSpec
 
+    val knownConditions: Set<String>
+
     /**
      * Whether the step is available in the current world state
      */
@@ -74,6 +76,9 @@ interface GoapAction : GoapStep, Action {
      * have been achieved
      */
     val effects: EffectSpec
+
+    override val knownConditions: Set<String>
+        get() = preconditions.keys + effects.keys
 
     override fun infoString(verbose: Boolean?): String =
         "$name - pre=${preconditions} cost=$cost value=${value}"
@@ -114,6 +119,9 @@ private data class SimpleGoapAction(
  * Goal in a GOAP system.
  */
 interface GoapGoal : GoapStep, Goal {
+
+    override val knownConditions: Set<String>
+        get() = preconditions.keys
 
     override fun infoString(verbose: Boolean?): String =
         "$name - pre=${preconditions} value=${value}"
