@@ -29,7 +29,6 @@ import org.springframework.ai.chat.messages.SystemMessage
 import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.openai.OpenAiChatOptions
-import org.springframework.ai.tool.ToolCallback
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
@@ -83,7 +82,7 @@ internal class ChatClientLlmOperations(
         val callResponse = resources.chatClient
             .prompt(springAiPrompt)
             // Try to lock to correct overload. Method overloading is evil.
-            .tools(makeSafeForStupidJavaOverloads(interaction.toolCallbacks))
+            .toolCallbacks(interaction.toolCallbacks)
             .call()
         return if (outputClass == String::class.java) {
             callResponse.content() as O
@@ -124,7 +123,7 @@ internal class ChatClientLlmOperations(
         )
         val output = resources.chatClient
             .prompt(springAiPrompt)
-            .tools(makeSafeForStupidJavaOverloads(interaction.toolCallbacks))
+            .toolCallbacks(interaction.toolCallbacks)
             .call()
             .entity(typeReference)!! as MaybeReturn<O>
         return output.toResult()
@@ -191,8 +190,4 @@ internal data class MaybeReturn<T>(
             Result.failure(Exception(failure))
         }
     }
-}
-
-private fun makeSafeForStupidJavaOverloads(toolCallbacks: List<ToolCallback>): MutableList<ToolCallback> {
-    return toolCallbacks.toMutableList()
 }

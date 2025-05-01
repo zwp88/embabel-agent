@@ -32,7 +32,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.ai.chat.messages.AssistantMessage
@@ -194,7 +193,6 @@ class ChatClientLlmOperationsTest {
         }
 
         @Test
-        @Disabled("TODO: Fix for this valid test case")
         fun `presents tools to ChatModel`() {
             val duke = Dog("Duke")
 
@@ -289,7 +287,6 @@ class ChatClientLlmOperationsTest {
         }
 
         @Test
-        @Disabled("TODO: Fix for this valid test case")
         fun `presents tools to ChatModel`() {
             val duke = Dog("Duke")
 
