@@ -30,12 +30,12 @@ import java.util.List;
  * Java syntax sugar for running prompts.
  * We use lower case to create a DSL style.
  */
-public class using implements PromptRunner {
+public class Using implements PromptRunner {
 
-    public static using DEFAULT_LLM = new using();
+    public static Using DEFAULT_LLM = new Using();
 
-    public static using llm(@NonNull LlmOptions llmOptions) {
-        return new using(llmOptions);
+    public static Using llm(@NonNull LlmOptions llmOptions) {
+        return new Using(llmOptions);
     }
 
     private final LlmOptions llmOptions;
@@ -49,20 +49,20 @@ public class using implements PromptRunner {
      *
      * @param llmOptions the LLM options to use
      */
-    private using(@NonNull LlmOptions llmOptions) {
+    private Using(@NonNull LlmOptions llmOptions) {
         this.llmOptions = llmOptions;
     }
 
-    private using() {
+    private Using() {
         this(new BuildableLlmOptions());
     }
 
-    public using withToolCallbacks(@NonNull List<ToolCallback> toolCallbacks) {
+    public Using withToolCallbacks(@NonNull List<ToolCallback> toolCallbacks) {
         this.toolCallbacks.addAll(toolCallbacks);
         return this;
     }
 
-    public using withPromptContributors(@NonNull List<PromptContributor> promptContributors) {
+    public Using withPromptContributors(@NonNull List<PromptContributor> promptContributors) {
         this.promptContributors.addAll(promptContributors);
         return this;
     }
