@@ -25,11 +25,11 @@ import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.HAS_RUN_CONDITION_PREFIX
+import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.util.DummyInstanceCreator
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
@@ -118,7 +118,7 @@ class AgentMetadataReader {
         val actionMethods = findActionMethods(agenticInfo.type)
         val conditionMethods = findConditionMethods(agenticInfo.type)
 
-        val toolCallbacksOnInstance = ToolCallbacks.from(instance).toList()
+        val toolCallbacksOnInstance = safelyGetToolCallbacksFrom(instance)
 
         val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
         val (actions, actionGoals) = actionMethods.map { actionMethod ->
@@ -270,7 +270,7 @@ class AgentMetadataReader {
             .forEach {
                 // Dummy tools to drive metadata. Will not be invoked.
                 val parameterInstance = DummyInstanceCreator.LoremIpsum.createDummyInstance(it.type)
-                allToolCallbacks += ToolCallbacks.from(parameterInstance)
+                allToolCallbacks += safelyGetToolCallbacksFrom(parameterInstance)
             }
         return MultiTransformer(
             name = generateName(instance, method.name),
@@ -302,7 +302,7 @@ class AgentMetadataReader {
         toolCallbacks: List<ToolCallback>,
     ): O {
         logger.debug("Invoking action method {} with payload {}", method.name, context.input)
-        val toolCallbacksOnDomainObjects = ToolCallbacks.from(*context.input.toTypedArray())
+        val toolCallbacksOnDomainObjects = context.input.flatMap { safelyGetToolCallbacksFrom(it) }
         val actionToolCallbacks = toolCallbacksOnDomainObjects.toMutableList()
         // Replace dummy tools
         actionToolCallbacks += toolCallbacks.filterNot { tc -> toolCallbacksOnDomainObjects.any { it.toolDefinition.name() == tc.toolDefinition.name() } }

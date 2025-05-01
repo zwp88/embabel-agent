@@ -123,6 +123,7 @@ internal class DefaultAgentPlatform(
         blackboard: Blackboard,
     ): AgentProcess {
         val platformServicesToUse = if (processOptions.test) {
+            logger.warn("Using test LLM operations: {}", processOptions)
             platformServices.copy(llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum)
         } else {
             platformServices

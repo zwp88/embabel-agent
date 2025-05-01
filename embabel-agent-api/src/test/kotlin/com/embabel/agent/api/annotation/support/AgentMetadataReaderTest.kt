@@ -706,7 +706,6 @@ class AgentMetadataReaderTest {
             }
 
             @Test
-            @Disabled("test not implemented")
             fun `invoke tool callback on domain object`() {
                 val reader = AgentMetadataReader()
                 val metadata = reader.createAgentMetadata(ToolMethodsOnDomainObject())
@@ -722,10 +721,15 @@ class AgentMetadataReaderTest {
                     setOf("toolWithoutArg", "toolWithArg"),
                     action.toolCallbacks.map { it.toolDefinition.name() }.toSet(),
                 )
-                TODO()
-                val toolWithoutArg = action.toolCallbacks.single { it.toolDefinition.name() == "toolWithoutArg" }
-                val result = toolWithoutArg.call("")
-                assertEquals(result, "The wumpus's name is Wumpus")
+                val toolWithArg = action.toolCallbacks.single { it.toolDefinition.name() == "toolWithArg" }
+                val result = toolWithArg.call(
+                    """
+                    {
+                        "location": "foo"
+                    }
+                """.trimIndent()
+                )
+                assertEquals(result, "\"foo\"")
             }
 
         }

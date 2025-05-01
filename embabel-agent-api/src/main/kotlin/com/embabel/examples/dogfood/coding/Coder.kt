@@ -66,6 +66,10 @@ class Coder(
         return found.orElse(null)
     }
 
+    /**
+     * Llm will determine the command to use to build the project.
+     * Only use as a last resort, so we mark it as expensive.
+     */
     @Action(
         cost = 10000.0,
         canRerun = true,
@@ -102,14 +106,14 @@ class Coder(
     }
 
     // The last thing we did was code modification
-    @Condition(name = CoderConditions.BuildSucceeded)
+    @Condition(name = CoderConditions.BuildNeeded)
     fun buildNeeded(context: OperationContext): Boolean =
         context.lastResult() is CodeModificationReport
 
     @Condition(name = CoderConditions.BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.status?.success == true
 
-    @Condition(name = CoderConditions.BuildSucceeded)
+    @Condition(name = CoderConditions.BuildFailed)
     fun buildFailed(buildResult: BuildResult): Boolean = buildResult.status?.success == false
 
     @Action(canRerun = true, post = [CoderConditions.BuildNeeded])
@@ -129,7 +133,7 @@ class Coder(
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
                 Consider any build failure report.
-                
+
                 DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
 
                 User request:
@@ -137,7 +141,7 @@ class Coder(
             }
             """.trimIndent(),
         )
-        context.setCondition(CoderConditions.BuildNeeded, true)
+//        context.setCondition(CoderConditions.BuildNeeded, true)
         return CodeModificationReport(report)
     }
 
@@ -174,7 +178,7 @@ class Coder(
             }
             """.trimIndent(),
         )
-        context.setCondition(CoderConditions.BuildNeeded, true)
+//        context.setCondition(CoderConditions.BuildNeeded, true)
         return CodeModificationReport(report)
     }
 

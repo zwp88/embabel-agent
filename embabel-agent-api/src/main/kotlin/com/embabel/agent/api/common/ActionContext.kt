@@ -18,6 +18,7 @@ package com.embabel.agent.api.common
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
@@ -25,7 +26,6 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.ai.tool.ToolCallbacks
 
 /**
  * Context for any operation. Exposes blackboard and process context.
@@ -152,7 +152,7 @@ interface InputActionContext<I> : ActionContext {
             is Collection<*> -> input as Collection<*>
             else -> listOf(input)
         }
-        return ToolCallbacks.from(*instances.toTypedArray()).toList()
+        return safelyGetToolCallbacks(instances as Collection<Any>)
     }
 
 }

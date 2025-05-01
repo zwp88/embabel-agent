@@ -410,7 +410,7 @@ class Wumpus(val name: String) {
     fun toolWithoutArg(): String = "The wumpus's name is $name"
 
     @Tool
-    fun toolWithArg(location: String) = "bar"
+    fun toolWithArg(location: String) = location
 }
 
 @Agentic

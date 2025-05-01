@@ -196,11 +196,22 @@ open class LoggingAgenticEventListener(
             }
 
             is ObjectAddedEvent -> {
-                logger.info(objectAddedMessage, event.processId, event.value)
+                logger.info(
+                    objectAddedMessage,
+                    event.processId,
+                    if (event.agentProcess.processContext.processOptions.verbosity.debug)
+                        event.value else event.value::class.java.simpleName,
+                )
             }
 
             is ObjectBoundEvent -> {
-                logger.info(objectBoundMessage, event.processId, event.name, event.value)
+                logger.info(
+                    objectBoundMessage,
+                    event.processId,
+                    event.name,
+                    if (event.agentProcess.processContext.processOptions.verbosity.debug)
+                        event.value else event.value::class.java.simpleName,
+                )
             }
 
             is LlmRequestEvent<*> -> {
