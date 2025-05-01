@@ -120,7 +120,7 @@ class Ci(
      * Build the project using the given command
      */
     fun build(buildOptions: BuildOptions): String {
-        logger.info("Running build command {} in root directory", buildOptions.buildCommand)
+        logger.info("Running build command <{}> in root directory {}", buildOptions.buildCommand, root)
 
         val processBuilder = ProcessBuilder()
 
@@ -136,8 +136,27 @@ class Ci(
 
         try {
             val process = processBuilder.start()
-            val output = process.inputStream.bufferedReader().use { it.readText() }
+
+            val outputBuilder = StringBuilder()
+
+            // Handle the output differently based on streamOutput flag
+            if (buildOptions.streamOutput) {
+                // Stream the output to the console while also capturing it
+                process.inputStream.bufferedReader().use { reader ->
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        println(line)
+                        outputBuilder.append(line).append("\n")
+                    }
+                }
+            } else {
+                // Original behavior - just capture the output
+                val output = process.inputStream.bufferedReader().use { it.readText() }
+                outputBuilder.append(output)
+            }
+
             val exitCode = process.waitFor()
+            val output = outputBuilder.toString()
 
             return if (exitCode == 0) {
                 "Command executed successfully:\n$output"
