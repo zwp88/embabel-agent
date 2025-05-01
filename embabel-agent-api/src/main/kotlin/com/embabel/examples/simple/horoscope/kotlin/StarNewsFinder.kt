@@ -16,6 +16,7 @@
 package com.embabel.examples.simple.horoscope.kotlin
 
 import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
 import com.embabel.agent.config.models.OpenAiModels
@@ -25,6 +26,7 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.toolgroups.osx.AppleScriptTools
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
 import com.embabel.examples.simple.horoscope.HoroscopeService
@@ -144,15 +146,16 @@ class StarNewsFinder(
         person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
-    ): Writeup =
+        context: ActionContext,
+    ): Writeup {
         // Customize LLM call
-        using(
+        val writeup = context.promptRunner(
             LlmOptions(
                 ModelSelectionCriteria.firstOf(
                     OpenAiModels.GPT_4o_MINI,
                 )
             ).withTemperature(.9)
-        ).createObject(
+        ).createObject<Writeup>(
             """
             Take the following news stories and write up something
             amusing for the target person.
@@ -169,5 +172,12 @@ class StarNewsFinder(
             Format it as Markdown with links.
         """.trimIndent()
         )
+        AppleScriptTools().runAppleScript(
+            "open location \"${relevantNewsStories.items[0].url}\""
+        )
+        return Writeup(
+            text = writeup.text,
+        )
+    }
 
 }
