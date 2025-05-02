@@ -37,13 +37,16 @@ interface Ranker {
     ): Rankings<T> where T : Named, T : Described
 }
 
+/**
+ * Rankings, sorted by score descending
+ */
 data class Rankings<T>(
     val rankings: List<Ranking<T>>
 ) : HasInfoString where T : Named, T : Described {
 
     override fun infoString(verbose: Boolean?): String =
         rankings.joinToString("\n") { ranking ->
-            "${ranking.match.name}: ${ranking.score}"
+            ranking.infoString(verbose)
         }
 }
 
@@ -56,4 +59,13 @@ data class Rankings<T>(
 data class Ranking<T>(
     override val match: T,
     override val score: ZeroToOne,
-) : SimilarityResult<T> where T : Named, T : Described
+) : HasInfoString, SimilarityResult<T> where T : Named, T : Described {
+
+    override fun infoString(verbose: Boolean?): String {
+        var s = "${match.name}: ${"%.2f".format(score)}"
+        if (verbose == true) {
+            s += " - ${match.description}"
+        }
+        return s
+    }
+}

@@ -201,6 +201,20 @@ fun interface GoalChoiceApprover {
 
     companion object {
         val APPROVE_ALL = GoalChoiceApprover { GoalChoiceApproved(it) }
+
+        /**
+         * Approve if the score is greater than this value
+         */
+        infix fun approveWithScoreOver(score: ZeroToOne) = GoalChoiceApprover { request ->
+            if ((request.rankings.rankings.firstOrNull()?.score ?: 0.0) > score) {
+                GoalChoiceApproved(request)
+            } else {
+                GoalChoiceNotApproved(
+                    request = request,
+                    reason = "Score ${request.rankings.rankings.firstOrNull()?.score} is not over $score",
+                )
+            }
+        }
     }
 
 }
@@ -236,91 +250,16 @@ class Autonomy(
         agentScope: AgentScope,
     ): DynamicExecutionResult {
         val userInput = UserInput(intent)
-
-        // Use a fake goal ranker if we are in test mode and don't already have a fake one
-        // Enables running under integration tests and in test mode otherwise with production config
-        val rankerToUse = if (processOptions.test && ranker !is FakeRanker) {
-            RandomRanker()
-        } else {
-            ranker
-        }
-
-        val goalChoiceEvent = RankingChoiceRequestEvent<Goal>(
-            agentPlatform = agentPlatform,
-            type = Goal::class.java,
-            basis = userInput,
-            choices = agentScope.goals,
-        )
-        eventListener.onPlatformEvent(goalChoiceEvent)
-        val goalRankings = rankerToUse
-            .rank(
-                description = "goal",
-                userInput = userInput.content,
-                rankables = agentScope.goals
-            )
-        val credibleGoals = goalRankings
-            .rankings
-            .filter { it.score > properties.goalConfidenceCutOff }
-        val goalChoice = credibleGoals.firstOrNull()
-        if (goalChoice == null) {
-            eventListener.onPlatformEvent(
-                goalChoiceEvent.noDeterminationEvent(
-                    rankings = goalRankings,
-                    confidenceCutoff = properties.goalConfidenceCutOff
-                )
-            )
-            throw NoGoalFound(goalRankings = goalRankings, basis = userInput)
-        }
-
-        loggerFor<AgentPlatform>().debug(
-            "Goal choice {} with confidence {} for user intent {}: Choices were {}",
-            goalChoice.match.name,
-            goalChoice.score,
-            intent,
-            agentScope.goals.joinToString("\n") { it.name },
-        )
-        eventListener.onPlatformEvent(
-            goalChoiceEvent.determinationEvent(
-                choice = goalChoice,
-                rankings = goalRankings,
-            )
-        )
-
-        // Check if the goal is approved
-        val approval =
-            goalChoiceApprover.approve(
-                GoalChoiceApprovalRequest(
-                    goal = goalChoice.match,
-                    intent = intent,
-                    rankings = goalRankings,
-                )
-            )
-        if (approval is GoalChoiceNotApproved) {
-            val goalNotApproved = GoalNotApproved(
-                basis = userInput,
-                goalRankings = goalRankings,
-                reason = approval.reason,
-                agentPlatform = agentPlatform,
-            )
-            eventListener.onPlatformEvent(goalNotApproved)
-            throw goalNotApproved
-        }
-
-        val goalAgent = agentScope.createAgent(
-            name = "goal-${goalChoice.match.name}",
-            description = goalChoice.match.description,
-        )
-            .withSingleGoal(goalChoice.match)
-        eventListener.onPlatformEvent(
-            DynamicAgentCreationEvent(
-                agent = goalAgent,
-                agentPlatform = agentPlatform,
-                basis = userInput,
-            )
+        val goalRun = createGoalSeeker(
+            userInput = userInput,
+            processOptions = processOptions,
+            goalChoiceApprover = goalChoiceApprover,
+            agentScope = agentScope,
+            emitEvents = true,
         )
         val agentProcess = agentPlatform.runAgentFrom(
             processOptions = processOptions,
-            agent = goalAgent,
+            agent = goalRun.agent,
             bindings = mapOf(
                 "it" to userInput
             )
@@ -332,6 +271,13 @@ class Autonomy(
         )
     }
 
+    /**
+     * Preparation to run a goal
+     */
+    data class GoalSeeker(
+        val agent: Agent,
+        val rankings: Rankings<Goal>,
+    )
 
     /**
      * Choose an agent based on the user input and run it.
@@ -413,18 +359,115 @@ class Autonomy(
     }
 
     /**
-     * Indicate which goal we'd resolve for this intent
-     * Dry run capability.
+     * Indicate which goal we'd use for this intent, and what agent we'd create.
+     * Dry run capability available externally.
      */
-    fun goalRankingsFor(
+    fun createGoalSeeker(
         intent: String,
-    ): Rankings<Goal> {
-        val goalRankings = ranker
+        goalChoiceApprover: GoalChoiceApprover,
+        agentScope: AgentScope,
+    ): GoalSeeker = createGoalSeeker(
+        userInput = UserInput(intent),
+        processOptions = ProcessOptions(),
+        goalChoiceApprover = goalChoiceApprover,
+        emitEvents = false,
+        agentScope = agentScope,
+    )
+
+    /**
+     * Choose a goal, showing workings and create an agent.
+     * @param emitEvents whether to emit events. If we're just
+     * doing a dry run, we don't want to emit events
+     */
+    private fun createGoalSeeker(
+        userInput: UserInput,
+        processOptions: ProcessOptions,
+        goalChoiceApprover: GoalChoiceApprover,
+        emitEvents: Boolean,
+        agentScope: AgentScope,
+    ): GoalSeeker {
+        // Use a fake goal ranker if we are in test mode and don't already have a fake one
+        // Enables running under integration tests and in test mode otherwise with production config
+        val rankerToUse = if (processOptions.test && ranker !is FakeRanker) {
+            RandomRanker()
+        } else {
+            ranker
+        }
+
+        val goalChoiceEvent = RankingChoiceRequestEvent<Goal>(
+            agentPlatform = agentPlatform,
+            type = Goal::class.java,
+            basis = userInput,
+            choices = agentScope.goals,
+        )
+        if (emitEvents) eventListener.onPlatformEvent(goalChoiceEvent)
+        val goalRankings = rankerToUse
             .rank(
                 description = "goal",
-                userInput = intent,
-                rankables = agentPlatform.goals
+                userInput = userInput.content,
+                rankables = agentScope.goals
             )
-        return goalRankings
+        val credibleGoals = goalRankings
+            .rankings
+            .filter { it.score > properties.goalConfidenceCutOff }
+        val goalChoice = credibleGoals.firstOrNull()
+        if (goalChoice == null) {
+            eventListener.onPlatformEvent(
+                goalChoiceEvent.noDeterminationEvent(
+                    rankings = goalRankings,
+                    confidenceCutoff = properties.goalConfidenceCutOff
+                )
+            )
+            throw NoGoalFound(goalRankings = goalRankings, basis = userInput)
+        }
+
+        loggerFor<AgentPlatform>().debug(
+            "Goal choice {} with confidence {} for user intent {}: Choices were {}",
+            goalChoice.match.name,
+            goalChoice.score,
+            userInput.content,
+            agentScope.goals.joinToString("\n") { it.name },
+        )
+        if (emitEvents) eventListener.onPlatformEvent(
+            goalChoiceEvent.determinationEvent(
+                choice = goalChoice,
+                rankings = goalRankings,
+            )
+        )
+
+        // Check if the goal is approved
+        val approval =
+            goalChoiceApprover.approve(
+                GoalChoiceApprovalRequest(
+                    goal = goalChoice.match,
+                    intent = userInput.content,
+                    rankings = goalRankings,
+                )
+            )
+        if (approval is GoalChoiceNotApproved) {
+            val goalNotApproved = GoalNotApproved(
+                basis = userInput,
+                goalRankings = goalRankings,
+                reason = approval.reason,
+                agentPlatform = agentPlatform,
+            )
+            if (emitEvents) eventListener.onPlatformEvent(goalNotApproved)
+            throw goalNotApproved
+        }
+
+        val goalAgent = agentScope.createAgent(
+            name = "goal-${goalChoice.match.name}",
+            description = goalChoice.match.description,
+        )
+            .withSingleGoal(goalChoice.match)
+        if (emitEvents) eventListener.onPlatformEvent(
+            DynamicAgentCreationEvent(
+                agent = goalAgent,
+                agentPlatform = agentPlatform,
+                basis = userInput,
+            )
+        )
+        return GoalSeeker(agent = goalAgent, rankings = goalRankings)
     }
+
 }

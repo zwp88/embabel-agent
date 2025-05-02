@@ -127,18 +127,25 @@ class ShellCommands(
         }"
     }
 
-    @ShellMethod("Goal rankings")
-    fun goalRankings(
+    @ShellMethod("Try to choose a goal for a given intent. Show all goal rankings")
+    fun chooseGoal(
         @ShellOption(help = "what the agent system should do") intent: String,
     ): String {
-        val rankings = autonomy.goalRankingsFor(intent = intent)
-        if (rankings.rankings.isEmpty()) {
-            return "No goals found for intent: \"$intent\"".color(colorPalette.color2)
+        try {
+            val goalSeeker = autonomy.createGoalSeeker(
+                intent = intent,
+                agentScope = agentPlatform,
+                goalChoiceApprover = GoalChoiceApprover approveWithScoreOver .8,
+            )
+            val fmt = goalSeeker.rankings.rankings.joinToString("\n") {
+                it.infoString(verbose = true)
+            }
+            return fmt.color(colorPalette.color2) + "\n" + goalSeeker.agent.infoString(verbose = true)
+        } catch (gna: GoalNotApproved) {
+            return "Goal not approved. Rankings were:\n${gna.goalRankings.infoString(verbose = true)}"
+        } catch (ngf: NoGoalFound) {
+            return "No goal found. Rankings were:\n${ngf.goalRankings.infoString(verbose = true)}"
         }
-        val fmt = rankings.rankings.joinToString("\n") { ranking ->
-            "${ranking.match.name}: ${ranking.score} - ${ranking.match.description}"
-        }
-        return fmt.color(colorPalette.color2)
     }
 
     @ShellMethod("Information about the AgentPlatform")
