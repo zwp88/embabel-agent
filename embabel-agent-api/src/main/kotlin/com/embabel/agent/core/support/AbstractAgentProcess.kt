@@ -20,8 +20,6 @@ import com.embabel.agent.event.*
 import com.embabel.agent.spi.*
 import com.embabel.plan.Planner
 import com.embabel.plan.WorldState
-import com.embabel.plan.goap.GoapPlanner
-import com.embabel.plan.goap.GoapPlanningSystem
 import com.embabel.plan.goap.WorldStateDeterminer
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.Logger
@@ -107,20 +105,6 @@ abstract class AbstractAgentProcess(
 
     override operator fun plusAssign(value: Any) {
         addObject(value)
-    }
-
-    /**
-     * Agent with only relevant actions
-     */
-    private fun prunedAgent(): Agent {
-        // TODO this cast is messy
-        val pruned = (planner as GoapPlanner).prune(agent.planningSystem as GoapPlanningSystem)
-        return agent.copy(
-            actions = agent.actions.filter { action -> pruned.actions.any { it.name == action.name } },
-            conditions = agent.conditions.filter { condition ->
-                pruned.actions.any { it.knownConditions.contains(condition.name) }
-            }.toSet(),
-        )
     }
 
     override fun run(): AgentProcess {
@@ -210,18 +194,15 @@ abstract class AbstractAgentProcess(
         )
 
         // Let subclasses handle the planning and execution
-        return formulateAndExecutePlan(worldState, prunedAgent())
+        return formulateAndExecutePlan(worldState)
     }
 
     /**
      * Execute the plan based on the current world state
      * @param worldState The current world state
-     * @param agentToUse The agent to use. This may be pruned to include
-     * only relevant actions
      */
     protected abstract fun formulateAndExecutePlan(
         worldState: WorldState,
-        agentToUse: Agent
     ): AgentProcess
 
     /**
