@@ -127,7 +127,10 @@ class Coder(
                 Return an explanation of what you did and why.
                 Consider any build failure report.
 
-                DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
+                DO NOT BUILD THE PROJECT UNLESS THE USER HAS REQUESTED IT
+                AND IT IS NECESSARY TO DECIDE WHAT TO MODIFY.
+                IF BUILDING IS NEEDED, BE SURE TO RUN UNIT TESTS.
+                DO NOT BUILD *AFTER* MODIFYING CODE.
 
                 User request:
                 "${userInput.content}"

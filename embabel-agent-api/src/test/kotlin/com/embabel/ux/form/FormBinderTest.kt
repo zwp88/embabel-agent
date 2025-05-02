@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel
+package com.embabel.ux.form
 
-import com.embabel.ux.form.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -268,6 +267,50 @@ class FormBinderTest {
             }
         }
     }
+
+//    @Nested
+//    @DisplayName("Java Binding Tests")
+//    inner class JavaBindingTests {
+//
+//        @Test
+//        fun `bind record`() {
+//            // Given
+//            val submission = createSimpleSubmission()
+//
+//            // When
+//            val user: JavaPersonRecord = submission.bindTo()
+//
+//            // Then
+//            assertEquals("John Doe", user.name)
+//            assertEquals(30, user.age)
+//        }
+//
+//        @Test
+//        fun `bind bean`() {
+//            // Given
+//            val submission = createSimpleSubmission()
+//
+//            // When
+//            val user: JavaPersonBean = submission.bindTo()
+//
+//            // Then
+//            assertEquals("John Doe", user.name)
+//            assertEquals(30, user.age)
+//        }
+//
+//        @Test
+//        fun `bind immutable class`() {
+//            // Given
+//            val submission = createSimpleSubmission()
+//
+//            // When
+//            val user: JavaPersonImmutable = submission.bindTo()
+//
+//            // Then
+//            assertEquals("John Doe", user.getName())
+//            assertEquals(30, user.getAge())
+//        }
+//    }
 
     @Nested
     @DisplayName("Error Handling Tests")
