@@ -272,7 +272,7 @@ class Autonomy(
     }
 
     /**
-     * Preparation to run a goal
+     * Agent to seek a goal and the goal rankings that we used to choose the goal.
      */
     data class GoalSeeker(
         val agent: Agent,
