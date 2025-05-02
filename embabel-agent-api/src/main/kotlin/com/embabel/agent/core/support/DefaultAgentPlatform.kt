@@ -54,7 +54,7 @@ internal class DefaultAgentPlatform(
         eventListeners,
     )
 
-    private val platformServices = PlatformServices(
+    override val platformServices = PlatformServices(
         llmOperations = llmOperations,
         agentPlatform = this,
         eventListener = eventListener,

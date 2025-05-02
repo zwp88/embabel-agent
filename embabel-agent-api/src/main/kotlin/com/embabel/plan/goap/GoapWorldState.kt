@@ -43,7 +43,7 @@ interface WorldStateDeterminer {
     companion object {
 
         fun fromMap(
-            map: Map<String, ConditionDetermination>,
+            map: Map<String, ConditionDetermination> = emptyMap(),
         ): WorldStateDeterminer =
             FromMapWorldStateDeterminer(map)
 

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ToolGroupResolver
 
 /**
@@ -76,6 +77,8 @@ class NoSuchAgentException(
  * See TypedOps for a higher level API with typed I/O.
  */
 interface AgentPlatform : AgentScope {
+
+    val platformServices: PlatformServices
 
     val toolGroupResolver: ToolGroupResolver
 

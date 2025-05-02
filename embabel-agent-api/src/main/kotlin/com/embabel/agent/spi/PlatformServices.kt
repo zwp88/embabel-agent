@@ -17,11 +17,13 @@ package com.embabel.agent.spi
 
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.event.AgenticEventListener
+import org.springframework.stereotype.Component
 
 /**
  * Services used by the platform and available to user-authored code.
  * @param agentPlatform agent platform executing this agent
  */
+@Component
 data class PlatformServices(
     val agentPlatform: AgentPlatform,
     val llmOperations: LlmOperations,
