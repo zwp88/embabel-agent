@@ -17,56 +17,28 @@ package com.embabel.agent.config
 
 
 import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.core.ToolGroupDescription
-import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.toolgroups.code.CiTools
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.agent.toolgroups.mcp.McpToolGroup
-import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
-import com.embabel.agent.toolgroups.web.domain.WebScraperTools
-import com.embabel.agent.toolgroups.web.search.brave.BraveNewsSearchService
-import com.embabel.agent.toolgroups.web.search.brave.BraveVideoSearchService
-import com.embabel.agent.toolgroups.web.search.brave.BraveWebSearchService
-import com.embabel.agent.toolgroups.web.search.brave.braveSearchTools
 import io.modelcontextprotocol.client.McpSyncClient
 import org.slf4j.LoggerFactory
-import org.springframework.ai.tool.ToolCallbacks
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 
 @Configuration
 class ToolGroupsConfiguration(
+    private val mcpSyncClients: List<McpSyncClient>,
 ) {
 
     private val logger = LoggerFactory.getLogger(ToolGroupsConfiguration::class.java)
 
-    @ConditionalOnBean(BraveWebSearchService::class)
-    @Bean
-    fun webtoolsGroup(
-        braveWebSearchService: BraveWebSearchService,
-        braveNewsSearchService: BraveNewsSearchService,
-        braveVideoSearchService: BraveVideoSearchService,
-    ): ToolGroup {
-        logger.info("Brave search is available. Creating web tools group.")
-        val braveSearchTools = braveSearchTools(
-            braveWebSearchService,
-            braveNewsSearchService,
-            braveVideoSearchService,
-        )
-        val scraper = ToolCallbacks.from(WebScraperTools(JSoupWebCrawler(maxDepth = 3))).toList()
-        return ToolGroup(
-            metadata = ToolGroupMetadata(
-                description = ToolGroup.WEB_DESCRIPTION,
-                artifact = "embabel-web",
-                provider = "Embabel",
-                permissions = setOf(
-                    ToolGroupPermission.INTERNET_ACCESS,
-                )
-            ),
-            toolCallbacks = scraper + braveSearchTools
+    init {
+        logger.info(
+            "MCP is available. Found {} clients \t{}",
+            mcpSyncClients.size,
+            mcpSyncClients.map { it.serverInfo }.joinToString("\n")
         )
     }
 
@@ -79,23 +51,17 @@ class ToolGroupsConfiguration(
         CiTools.toolGroup(root = System.getProperty("user.dir") + "/embabel-agent-api")
 
     @Bean
-    fun mcpToolsGroup(
-        mcpSyncClients: List<McpSyncClient>
-    ): ToolGroup {
-        logger.info("MCP is available. Found {} clients", mcpSyncClients.size)
+    fun mcpWebToolsGroup(): ToolGroup {
         return McpToolGroup(
-            metadata = ToolGroupMetadata(
-                description = ToolGroupDescription(
-                    role = "github",
-                    description = "whatever blah blah"
-                ),
-                artifact = "embabel-mcp",
-                provider = "Embabel",
-                permissions = setOf(
-                    ToolGroupPermission.INTERNET_ACCESS,
-                )
+            description = ToolGroup.WEB_DESCRIPTION,
+            artifact = "docker-web",
+            provider = "Docker",
+            permissions = setOf(
+                ToolGroupPermission.INTERNET_ACCESS
             ),
             clients = mcpSyncClients,
+            filter = { it.toolDefinition.name().contains("brave") || it.toolDefinition.name().contains("fetch") },
         )
     }
+
 }

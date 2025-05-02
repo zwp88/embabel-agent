@@ -199,7 +199,7 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
 
 interface ToolCallbackPublisher : ToolCallbackSpec
 
-interface ToolGroup : ToolCallbackPublisher {
+interface ToolGroup : ToolCallbackPublisher, HasInfoString {
 
     val metadata: ToolGroupMetadata
 
@@ -234,6 +234,19 @@ interface ToolGroup : ToolCallbackPublisher {
             description = "Tools for running CI on a project",
             role = CI,
         )
+    }
+
+    override fun infoString(verbose: Boolean?): String {
+        return when (verbose) {
+            true -> metadata.infoString(verbose = true) + "\n\t\t" +
+                    toolCallbacks
+                        .sortedBy { it.toolDefinition.name() }
+                        .joinToString { it.toolDefinition.name() }
+
+            else -> {
+                metadata.infoString(verbose = false)
+            }
+        }
     }
 }
 

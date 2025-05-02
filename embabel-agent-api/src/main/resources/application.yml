@@ -14,5 +14,17 @@ spring:
         #            server2:
         #              url: http://otherserver:8081
         stdio:
-          root-change-notification: false
-          servers-configuration: classpath:mcp/mcp-servers.json
+          #          root-change-notification: false
+          #          servers-configuration: classpath:mcp/mcp-servers.json
+          connections:
+
+            docker-mcp:
+              command: docker
+              args:
+                - run
+                - -i
+                - --rm
+                - alpine/socat
+                - STDIO
+                - TCP:host.docker.internal:8811
+
