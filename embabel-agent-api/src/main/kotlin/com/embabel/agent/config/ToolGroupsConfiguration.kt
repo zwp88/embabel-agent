@@ -17,16 +17,19 @@ package com.embabel.agent.config
 
 
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.toolgroups.code.CiTools
 import com.embabel.agent.toolgroups.file.FileTools
+import com.embabel.agent.toolgroups.mcp.McpToolGroup
 import com.embabel.agent.toolgroups.web.crawl.JSoupWebCrawler
 import com.embabel.agent.toolgroups.web.domain.WebScraperTools
 import com.embabel.agent.toolgroups.web.search.brave.BraveNewsSearchService
 import com.embabel.agent.toolgroups.web.search.brave.BraveVideoSearchService
 import com.embabel.agent.toolgroups.web.search.brave.BraveWebSearchService
 import com.embabel.agent.toolgroups.web.search.brave.braveSearchTools
+import io.modelcontextprotocol.client.McpSyncClient
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -75,4 +78,24 @@ class ToolGroupsConfiguration(
     fun ciToolsGroup(): ToolGroup =
         CiTools.toolGroup(root = System.getProperty("user.dir") + "/embabel-agent-api")
 
+    @Bean
+    fun mcpToolsGroup(
+        mcpSyncClients: List<McpSyncClient>
+    ): ToolGroup {
+        logger.info("MCP is available. Found {} clients", mcpSyncClients.size)
+        return McpToolGroup(
+            metadata = ToolGroupMetadata(
+                description = ToolGroupDescription(
+                    role = "github",
+                    description = "whatever blah blah"
+                ),
+                artifact = "embabel-mcp",
+                provider = "Embabel",
+                permissions = setOf(
+                    ToolGroupPermission.INTERNET_ACCESS,
+                )
+            ),
+            clients = mcpSyncClients,
+        )
+    }
 }
