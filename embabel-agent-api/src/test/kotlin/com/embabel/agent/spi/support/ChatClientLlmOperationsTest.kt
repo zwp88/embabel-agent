@@ -171,6 +171,31 @@ class ChatClientLlmOperationsTest {
         }
 
         @Test
+        fun `passes JSON few shot example`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObject(
+                prompt = """
+                    Return a dog. Dogs look like this:
+                {
+                    "name": "Duke",
+                    "type": "Dog"
+                }
+                """.trimIndent(),
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result)
+        }
+
+        @Test
         fun `presents no tools to ChatModel`() {
             val duke = Dog("Duke")
 
