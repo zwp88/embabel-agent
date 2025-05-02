@@ -49,6 +49,20 @@ class ShellCommands(
 
     private var blackboard: Blackboard? = null
 
+    /**
+     * Whether to look for any goal
+     */
+    private var openMode: Boolean = false
+
+    private var defaultProcessOptions: ProcessOptions = ProcessOptions(
+        verbosity = Verbosity(
+            debug = false,
+            showPrompts = false,
+            showLlmResponses = false,
+            showPlanning = true,
+        )
+    )
+
     @ShellMethod(value = "Clear blackboard")
     fun clear(): String {
         blackboard = null
@@ -147,7 +161,6 @@ class ShellCommands(
         )
         val output = executeIntent(
             intent = intent,
-            open = false,
             processOptions = ProcessOptions(
                 test = false,
                 verbosity = verbosity,
@@ -186,6 +199,62 @@ class ShellCommands(
             )
     }
 
+    @ShellMethod("Show options")
+    fun showOptions(): String {
+        // Don't show the blackboard as it's long
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
+            defaultProcessOptions.copy(blackboard = null)
+        ).replace(
+            """
+            "blackboard" : null
+        """.trimIndent(), """
+            "blackboard" : <${blackboard?.let { "${it.objects.size} entries" } ?: "empty"}>
+        """.trimIndent())
+            .color(colorPalette.color2)
+    }
+
+    @ShellMethod(
+        "Set options",
+    )
+    fun setOptions(
+        @ShellOption(
+            value = ["-o", "--open"],
+            help = "run in open mode, choosing a goal and using all actions that can help achieve it",
+        ) open: Boolean = false,
+        @ShellOption(value = ["-t", "--test"], help = "run in help mode") test: Boolean = false,
+        @ShellOption(value = ["-p", "--showPrompts"], help = "show prompts to LLMs") showPrompts: Boolean,
+        @ShellOption(value = ["-r", "--showResponses"], help = "show LLM responses") showLlmResponses: Boolean = false,
+        @ShellOption(value = ["-d", "--debug"], help = "show debug info") debug: Boolean = false,
+        @ShellOption(value = ["-s", "--state"], help = "Use existing blackboard") state: Boolean = false,
+        @ShellOption(value = ["-td", "--toolDelay"], help = "Tool delay") toolDelay: Boolean = false,
+        @ShellOption(value = ["-od", "--operationDelay"], help = "Operation delay") operationDelay: Boolean = false,
+        @ShellOption(
+            value = ["-s", "--showPlanning"],
+            help = "show detailed planning info",
+            defaultValue = "true",
+        ) showPlanning: Boolean = true,
+    ): String {
+        this.openMode = open
+        val verbosity = Verbosity(
+            debug = debug,
+            showPrompts = showPrompts,
+            showLlmResponses = showLlmResponses,
+            showPlanning = showPlanning,
+        )
+        this.defaultProcessOptions = ProcessOptions(
+            test = test,
+            blackboard = if (state) blackboard else null,
+            verbosity = verbosity,
+            allowGoalChange = true,
+            control = ProcessControl(
+                maxActions = 40,
+                toolDelay = if (toolDelay) Delay.LONG else Delay.NONE,
+                operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
+            )
+        )
+        return "Options updated:\nOpen mode:$openMode\n${showOptions()}".color(colorPalette.color2)
+    }
+
     @ShellMethod(
         "Execute a task. Put the task in double quotes. For example:\n\tx \"Lynda is a scorpio. Find news for her\" -p",
         key = ["execute", "x"],
@@ -203,42 +272,34 @@ class ShellCommands(
         @ShellOption(value = ["-s", "--state"], help = "Use existing blackboard") state: Boolean = false,
         @ShellOption(value = ["-td", "--toolDelay"], help = "Tool delay") toolDelay: Boolean = false,
         @ShellOption(value = ["-od", "--operationDelay"], help = "Operation delay") operationDelay: Boolean = false,
-
         @ShellOption(
             value = ["-s", "--showPlanning"],
             help = "show detailed planning info",
             defaultValue = "true",
         ) showPlanning: Boolean = true,
     ): String {
-        val verbosity = Verbosity(
-            debug = debug,
+        // Override any options
+        setOptions(
+            open = open,
+            test = test,
             showPrompts = showPrompts,
             showLlmResponses = showLlmResponses,
+            debug = debug,
+            state = state,
+            toolDelay = toolDelay,
+            operationDelay = operationDelay,
             showPlanning = showPlanning,
         )
         return executeIntent(
-            open = open,
             intent = intent,
-            processOptions = ProcessOptions(
-                test = test,
-                blackboard = if (state) blackboard else null,
-                verbosity = verbosity,
-                allowGoalChange = true,
-                control = ProcessControl(
-                    maxActions = 40,
-                    toolDelay = if (toolDelay) Delay.LONG else Delay.NONE,
-                    operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
-                )
-            ),
+            processOptions = defaultProcessOptions,
         )
     }
 
     private fun executeIntent(
-        open: Boolean,
         processOptions: ProcessOptions,
         intent: String,
     ): String {
-//        logger.info("Created process options: $processOptions".color(LumonColors.MEMBRANE))
         logger.info(
             "Created process options: ${
                 objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(processOptions)
@@ -246,7 +307,7 @@ class ShellCommands(
         )
 
         return runProcess(verbosity = processOptions.verbosity, basis = intent) {
-            if (open) {
+            if (openMode) {
                 logger.info("Executing in open mode: Trying to find appropriate goal and using all actions known to platform that can help achieve it")
                 autonomy.chooseAndAccomplishGoal(
                     intent = intent,
@@ -270,7 +331,7 @@ class ShellCommands(
         blackboard = agentProcess.processContext.blackboard
     }
 
-    fun runProcess(
+    private fun runProcess(
         verbosity: Verbosity,
         basis: Any,
         run: () -> DynamicExecutionResult

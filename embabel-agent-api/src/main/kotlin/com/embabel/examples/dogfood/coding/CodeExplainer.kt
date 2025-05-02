@@ -35,6 +35,7 @@ data class CodeExplanation(
 
 @Agent(
     description = "Explain code in a software project or directory structure",
+    scan = false,
 )
 @Profile("!test")
 class CodeExplainer(

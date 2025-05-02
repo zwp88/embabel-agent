@@ -26,6 +26,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.code.BuildResult
 import com.embabel.common.util.time
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import java.time.Duration
@@ -33,6 +34,7 @@ import kotlin.jvm.optionals.getOrNull
 
 
 data class CodeModificationReport(
+    @get:JsonPropertyDescription("Report of the modifications made to code")
     override val text: String,
 ) : HasContent
 
