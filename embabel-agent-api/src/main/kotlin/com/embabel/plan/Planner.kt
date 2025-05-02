@@ -15,6 +15,8 @@
  */
 package com.embabel.plan
 
+import com.embabel.common.core.types.HasInfoString
+
 /**
  * A planning system is a set of actions and goals.
  */
@@ -26,12 +28,23 @@ interface PlanningSystem {
 }
 
 /**
+ * Tag interface for WorldState
+ * Different planners have different world state.
+ */
+interface WorldState : HasInfoString
+
+/**
  * A planner is a system that can plan from a set of actions to a set of goals.
  * A planner should have a way of determining present state, such as
  * the GOAP WorldStateDeterminer. The representation of state
  * can differ between planners.
  */
-interface Planner<S : PlanningSystem, P : Plan> {
+interface Planner<S : PlanningSystem, W : WorldState, P : Plan> {
+
+    /**
+     * Current world state
+     */
+    fun worldState(): W
 
     /**
      * Plan from here to the given goal. Planner is assumed to world state.

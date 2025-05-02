@@ -24,7 +24,7 @@ import com.embabel.common.core.types.Timed
 import com.embabel.common.util.VisualizableTask
 import com.embabel.plan.Goal
 import com.embabel.plan.Plan
-import com.embabel.plan.goap.WorldState
+import com.embabel.plan.WorldState
 import org.springframework.ai.chat.prompt.Prompt
 import java.time.Duration
 import java.time.Instant

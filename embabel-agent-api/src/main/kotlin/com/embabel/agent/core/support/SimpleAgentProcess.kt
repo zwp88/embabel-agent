@@ -19,8 +19,8 @@ import com.embabel.agent.core.*
 import com.embabel.agent.event.AgentProcessPlanFormulatedEvent
 import com.embabel.agent.event.GoalAchievedEvent
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.plan.WorldState
 import com.embabel.plan.goap.AStarGoapPlanner
-import com.embabel.plan.goap.WorldState
 import com.embabel.plan.goap.WorldStateDeterminer
 import java.time.Instant
 
@@ -52,7 +52,7 @@ internal class SimpleAgentProcess(
             logger.info(
                 "❌ Process {} stuck: No plan from {} in {}, context={}",
                 id,
-                worldState.state,
+                worldState,
                 agentToUse.planningSystem.infoString(),
                 blackboard,
             )

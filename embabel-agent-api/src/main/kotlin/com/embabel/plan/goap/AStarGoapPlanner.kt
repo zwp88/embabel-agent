@@ -41,13 +41,13 @@ class AStarGoapPlanner(worldStateDeterminer: WorldStateDeterminer) :
     OptimizingGoapPlanner(worldStateDeterminer) {
 
     override fun planToGoalFrom(
-        startState: WorldState,
+        startState: GoapWorldState,
         actions: Collection<GoapAction>,
         goal: GoapGoal,
     ): GoapPlan? {
         val openList = PriorityQueue<SearchNode>()
-        val closedList = mutableSetOf<WorldState>()
-        val gScores = mutableMapOf<WorldState, Double>().withDefault { Double.MAX_VALUE }
+        val closedList = mutableSetOf<GoapWorldState>()
+        val gScores = mutableMapOf<GoapWorldState, Double>().withDefault { Double.MAX_VALUE }
 
         // Initialize with start node
         gScores[startState] = 0.0
@@ -92,17 +92,17 @@ class AStarGoapPlanner(worldStateDeterminer: WorldStateDeterminer) :
         return null
     }
 
-    private fun heuristic(state: WorldState, goal: GoapGoal): Double {
+    private fun heuristic(state: GoapWorldState, goal: GoapGoal): Double {
         // Convert to double for more accurate comparisons
         return goal.preconditions.count { (key, value) -> state.state[key] != value }.toDouble()
     }
 
-    private fun applyAction(currentState: WorldState, action: GoapAction): WorldState {
+    private fun applyAction(currentState: GoapWorldState, action: GoapAction): GoapWorldState {
         val newState = currentState.state.toMutableMap()
         action.effects.forEach { (key, value) ->
             newState[key] = value
         }
-        return WorldState(newState as HashMap<String, ConditionDetermination>)
+        return GoapWorldState(newState as HashMap<String, ConditionDetermination>)
     }
 
     private fun constructPlan(node: SearchNode): List<GoapAction> {
@@ -117,7 +117,7 @@ class AStarGoapPlanner(worldStateDeterminer: WorldStateDeterminer) :
 }
 
 private class SearchNode(
-    val state: WorldState,
+    val state: GoapWorldState,
     val parent: SearchNode?,
     val action: GoapAction?,
     val cost: Double,

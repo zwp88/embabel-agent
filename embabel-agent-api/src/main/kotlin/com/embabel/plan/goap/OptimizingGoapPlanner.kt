@@ -17,9 +17,6 @@ package com.embabel.plan.goap
 
 import com.embabel.plan.Action
 import com.embabel.plan.Goal
-import com.embabel.plan.Planner
-
-interface GoapPlanner : Planner<GoapPlanningSystem, GoapPlan>
 
 /**
  * Abstract class for a Goap planner with common optimization.
@@ -28,12 +25,16 @@ abstract class OptimizingGoapPlanner(
     val worldStateDeterminer: WorldStateDeterminer,
 ) : GoapPlanner {
 
+    override fun worldState(): GoapWorldState {
+        return worldStateDeterminer.determineWorldState()
+    }
+
     final override fun planToGoal(
         actions: Collection<Action>,
         goal: Goal,
     ): GoapPlan? {
         goal as GoapGoal
-        val startState = worldStateDeterminer.determineWorldState()
+        val startState = worldState()
         val directPlan = planToGoalFrom(startState, actions.filterIsInstance<GoapAction>(), goal)
 
         val goapActions = actions.filterIsInstance<GoapAction>()
@@ -72,7 +73,7 @@ abstract class OptimizingGoapPlanner(
     }
 
     protected abstract fun planToGoalFrom(
-        startState: WorldState,
+        startState: GoapWorldState,
         actions: Collection<GoapAction>,
         goal: GoapGoal,
     ): GoapPlan?

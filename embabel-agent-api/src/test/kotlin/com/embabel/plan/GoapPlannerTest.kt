@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test
 import java.util.*
 
 object EmptyWorldStateDeterminer : WorldStateDeterminer {
-    override fun determineWorldState(): WorldState {
-        return WorldState()
+    override fun determineWorldState(): GoapWorldState {
+        return GoapWorldState()
     }
 
     override fun determineCondition(condition: String): ConditionDetermination =
@@ -153,8 +153,8 @@ class GoapPlannerTest {
         @Test
         fun `find path from unknown`() {
             val touchyWorldStateDeterminer = object : WorldStateDeterminer {
-                override fun determineWorldState(): WorldState {
-                    return WorldState(
+                override fun determineWorldState(): GoapWorldState {
+                    return GoapWorldState(
                         state = mapOf(
                             "hasMoney" to ConditionDetermination(true),
                             "enemyDead" to ConditionDetermination.UNKNOWN,
@@ -179,8 +179,8 @@ class GoapPlannerTest {
             val forceEvaluated = mutableListOf<String>()
             val touchyWorldStateDeterminer = object : WorldStateDeterminer {
 
-                override fun determineWorldState(): WorldState {
-                    return WorldState(
+                override fun determineWorldState(): GoapWorldState {
+                    return GoapWorldState(
                         state = mapOf(
                             "legalPeril" to ConditionDetermination.FALSE,
                             "enemyDead" to ConditionDetermination.UNKNOWN,

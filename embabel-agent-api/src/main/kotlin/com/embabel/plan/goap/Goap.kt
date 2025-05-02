@@ -17,6 +17,8 @@ package com.embabel.plan.goap
 
 import com.embabel.plan.*
 
+interface GoapPlanner : Planner<GoapPlanningSystem, GoapWorldState, GoapPlan>
+
 /**
  * Conditions may be true, false or unknown
  */
@@ -59,7 +61,7 @@ interface GoapStep : Step {
     /**
      * Whether the step is available in the current world state
      */
-    fun isAchievable(currentState: WorldState): Boolean {
+    fun isAchievable(currentState: GoapWorldState): Boolean {
         return preconditionsSatisfied(preconditions, currentState.state)
     }
 
@@ -189,7 +191,7 @@ data class GoapPlanningSystem(
 class GoapPlan(
     actions: List<Action>,
     goal: Goal,
-    val worldState: WorldState,
+    val worldState: GoapWorldState,
 ) : Plan(actions, goal) {
 
     override fun toString(): String {

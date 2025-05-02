@@ -120,7 +120,11 @@ open class LoggingAgenticEventListener(
             }
 
             is AgentProcessReadyToPlanEvent -> {
-                logger.info(agentProcessReadyToPlanEventMessage, event.processId, event.worldState.state)
+                logger.info(
+                    agentProcessReadyToPlanEventMessage,
+                    event.processId,
+                    event.worldState.infoString(),
+                )
             }
 
             is AgentProcessPlanFormulatedEvent -> {
@@ -128,7 +132,7 @@ open class LoggingAgenticEventListener(
                     agentProcessPlanFormulatedEventMessage,
                     event.processId,
                     event.plan.infoString(verbose = event.agentProcess.processContext.processOptions.verbosity.showLongPlans),
-                    event.worldState.state,
+                    event.worldState.infoString(),
                 )
             }
 

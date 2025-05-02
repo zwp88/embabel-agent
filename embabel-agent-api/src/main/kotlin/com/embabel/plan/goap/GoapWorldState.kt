@@ -15,6 +15,8 @@
  */
 package com.embabel.plan.goap
 
+import com.embabel.plan.WorldState
+
 typealias GoapState = Map<String, ConditionDetermination>
 
 /**
@@ -30,7 +32,7 @@ interface WorldStateDeterminer {
      * Implementations may choose to return UNKNOWN for expensive conditions,
      * which the planner should invoke lazily
      */
-    fun determineWorldState(): WorldState
+    fun determineWorldState(): GoapWorldState
 
     /**
      * Determine an individual condition, disabling any caching.
@@ -53,7 +55,7 @@ private class FromMapWorldStateDeterminer(
     private val map: Map<String, ConditionDetermination>,
 ) : WorldStateDeterminer {
 
-    override fun determineWorldState(): WorldState = WorldState(map)
+    override fun determineWorldState(): GoapWorldState = GoapWorldState(map)
 
     override fun determineCondition(condition: String): ConditionDetermination {
         return map[condition] ?: ConditionDetermination.UNKNOWN
@@ -64,9 +66,9 @@ private class FromMapWorldStateDeterminer(
  * Represents the state of the world at any time.
  * World state is just a map. This class exposes operations on the state.
  */
-data class WorldState(
+data class GoapWorldState(
     val state: GoapState = emptyMap(),
-) {
+) : WorldState {
 
     fun unknownConditions(): Collection<String> =
         state.entries
@@ -76,7 +78,7 @@ data class WorldState(
     /**
      * Generate variants with different definite values for the given condition
      */
-    internal fun variants(unknownCondition: String): Collection<WorldState> {
+    internal fun variants(unknownCondition: String): Collection<GoapWorldState> {
         return setOf(ConditionDetermination.TRUE, ConditionDetermination.FALSE).map {
             this + (unknownCondition to it)
         }
@@ -87,25 +89,25 @@ data class WorldState(
      * For each existing condition, generate variants where that condition is flipped to the other values
      * (TRUE -> FALSE and UNKNOWN, FALSE -> TRUE and UNKNOWN, UNKNOWN -> TRUE and FALSE)
      */
-    fun withOneChange(): Collection<WorldState> {
-        val result = mutableListOf<WorldState>()
+    fun withOneChange(): Collection<GoapWorldState> {
+        val result = mutableListOf<GoapWorldState>()
 
         for ((condition, currentValue) in state) {
             // Generate variants where this condition has a different value
             when (currentValue) {
                 ConditionDetermination.TRUE -> {
-                    result.add(WorldState(state + (condition to ConditionDetermination.FALSE)))
-                    result.add(WorldState(state + (condition to ConditionDetermination.UNKNOWN)))
+                    result.add(GoapWorldState(state + (condition to ConditionDetermination.FALSE)))
+                    result.add(GoapWorldState(state + (condition to ConditionDetermination.UNKNOWN)))
                 }
 
                 ConditionDetermination.FALSE -> {
-                    result.add(WorldState(state + (condition to ConditionDetermination.TRUE)))
-                    result.add(WorldState(state + (condition to ConditionDetermination.UNKNOWN)))
+                    result.add(GoapWorldState(state + (condition to ConditionDetermination.TRUE)))
+                    result.add(GoapWorldState(state + (condition to ConditionDetermination.UNKNOWN)))
                 }
 
                 ConditionDetermination.UNKNOWN -> {
-                    result.add(WorldState(state + (condition to ConditionDetermination.TRUE)))
-                    result.add(WorldState(state + (condition to ConditionDetermination.FALSE)))
+                    result.add(GoapWorldState(state + (condition to ConditionDetermination.TRUE)))
+                    result.add(GoapWorldState(state + (condition to ConditionDetermination.FALSE)))
                 }
             }
         }
@@ -113,6 +115,10 @@ data class WorldState(
         return result
     }
 
-    operator fun plus(pair: Pair<String, ConditionDetermination>): WorldState =
-        WorldState(this.state + pair)
+    override fun infoString(verbose: Boolean?): String {
+        return state.toString()
+    }
+
+    operator fun plus(pair: Pair<String, ConditionDetermination>): GoapWorldState =
+        GoapWorldState(this.state + pair)
 }
