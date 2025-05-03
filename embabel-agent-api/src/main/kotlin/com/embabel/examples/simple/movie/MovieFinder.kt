@@ -107,7 +107,7 @@ val Roger = Persona(
             """.trimIndent(),
 )
 
-@ConfigurationProperties(prefix = "moviefinder")
+@ConfigurationProperties(prefix = "embabel.examples.moviefinder")
 data class MovieFinderConfig(
     val suggestionCount: Int = 5,
     val tasteProfileWordCount: Int = 40,

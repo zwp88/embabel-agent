@@ -18,6 +18,7 @@ package com.embabel.agent.shell
 import com.embabel.agent.api.common.*
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.library.HasContent
+import com.embabel.agent.domain.library.InternetResources
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.chat.agent.LastMessageIntentAgentPlatformChatSession
 import com.embabel.common.util.bold
@@ -347,22 +348,35 @@ class ShellCommands(
             val result = run()
             logger.debug("Result: {}\n", result)
             recordAgentProcess(result.agentProcess)
+            var output = ""
             if (result.output is HasContent) {
                 // TODO naive Markdown test
-                if (result.output.text.contains("#")) {
-                    return "\n" + markdownToConsole(result.output.text)
-                        .color(colorPalette.color2) + "\n"
+                output += if (result.output.text.contains("#")) {
+                    "\n" + markdownToConsole(result.output.text)
+                        .color(colorPalette.color2)
+                } else {
+                    WordUtils.wrap(result.output.text, 140).color(
+                        colorPalette.color2,
+                    )
                 }
-                return WordUtils.wrap(result.output.text, 140).color(
-                    colorPalette.color2,
-                ) + "\n"
-            }
 
-            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-                result.output
-            ).color(
+                if (result.output is InternetResources) {
+                    output += "\n\n" + result.output.links.joinToString("\n") {
+                        "- ${it.url}: ${
+                            it.summary.color(
+                                colorPalette.color2
+                            )
+                        }"
+                    }
+                }
+            } else {
+                output = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
+                    output
+                )
+            }
+            return output.color(
                 colorPalette.color2,
-            )
+            ) + "\n"
         } catch (ngf: NoGoalFound) {
             if (verbosity.debug) {
                 logger.info(

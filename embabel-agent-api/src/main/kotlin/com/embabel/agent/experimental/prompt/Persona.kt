@@ -22,18 +22,38 @@ import com.embabel.common.ai.prompt.PromptContributor
  * the best way to structure team members, but it's helpful to
  * show
  */
-data class Persona(
-    val name: String,
-    val persona: String,
-    val voice: String,
-    val objective: String,
-) : PromptContributor {
+interface Persona : PromptContributor {
 
-    override fun contribution() = """
+    val name: String
+    val persona: String
+    val voice: String
+    val objective: String
+
+    override fun contribution(): String {
+        return """
             You are $name.
             Your persona: $persona.
             Your objective is $objective.
             Your voice: $voice.
         """.trimIndent()
+    }
+
+    companion object {
+        operator fun invoke(
+            name: String,
+            persona: String,
+            voice: String,
+            objective: String,
+        ): Persona {
+            return PersonaImpl(name, persona, voice, objective)
+        }
+    }
 
 }
+
+private data class PersonaImpl(
+    override val name: String,
+    override val persona: String,
+    override val voice: String,
+    override val objective: String,
+) : Persona
