@@ -254,7 +254,7 @@ class ShellCommands(
             verbosity = verbosity,
             allowGoalChange = true,
             control = ProcessControl(
-                maxActions = 40,
+                earlyTerminationPolicy = EarlyTerminationPolicy.maxActions(40),
                 toolDelay = if (toolDelay) Delay.LONG else Delay.NONE,
                 operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
             )

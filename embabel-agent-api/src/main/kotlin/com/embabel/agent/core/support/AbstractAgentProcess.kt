@@ -114,10 +114,16 @@ abstract class AbstractAgentProcess(
         }
 
         tick()
-        var actions = 0
         while (status == AgentProcessStatusCode.RUNNING) {
-            if (++actions > processOptions.control.maxActions) {
-                logger.info("Process {} exceeded max actions: {}", this.id, processOptions.control.maxActions)
+            val earlyTermination = processOptions.control.earlyTerminationPolicy.shouldTerminate(this)
+            if (earlyTermination != null) {
+                logger.debug(
+                    "Process {} terminated by {} because {}",
+                    this.id,
+                    earlyTermination.policy,
+                    earlyTermination.reason,
+                )
+                platformServices.eventListener.onProcessEvent(earlyTermination)
                 _status = AgentProcessStatusCode.FAILED
                 return this
             }
@@ -134,6 +140,10 @@ abstract class AbstractAgentProcess(
 
             AgentProcessStatusCode.FAILED -> {
                 platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
+            }
+
+            AgentProcessStatusCode.KILLED -> {
+                // Event will have been raised at the point of termination
             }
 
             AgentProcessStatusCode.WAITING -> {

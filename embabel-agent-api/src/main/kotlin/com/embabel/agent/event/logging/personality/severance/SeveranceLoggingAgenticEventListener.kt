@@ -107,6 +107,11 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
 
         """.trimIndent(),
     processFailureMessage = "[{}] ${highlight("WOE")}: failed",
+    earlyTerminationMessage = """"
+        [{}] early termination by {} for {}
+        Please refrain from any further speech, as you are no longer authorized to consort with any severed employee, nor they with you.
+        """
+        .trimIndent(),
     objectAddedMessage = "[{}] Perpetuity wing: object added: {}",
     objectBoundMessage = "[{}] Perpetuity wing: object bound: {} to {}",
     functionCallRequestEventMessage = "[{}] ${highlight("VERVE")}: tool {}({})",

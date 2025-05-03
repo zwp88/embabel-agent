@@ -20,7 +20,6 @@ import com.embabel.agent.api.common.*
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.NoSuchAgentException
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput

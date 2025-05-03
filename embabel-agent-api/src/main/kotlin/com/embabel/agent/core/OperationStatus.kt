@@ -31,6 +31,9 @@ enum class AgentProcessStatusCode {
     /** Game over. The process has failed */
     FAILED,
 
+    /** The process has been killed by an early termination policy */
+    KILLED,
+
     /** The process cannot formulate a plan to progress. This does not necessarily mean failure. Something might change */
     STUCK,
 

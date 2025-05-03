@@ -16,6 +16,7 @@
 package com.embabel.agent.event.logging
 
 import com.embabel.agent.core.AgentProcessStatusCode
+import com.embabel.agent.core.EarlyTermination
 import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.personality.severance.LumonColors
 import com.embabel.common.util.AnsiColor
@@ -43,6 +44,7 @@ open class LoggingAgenticEventListener(
     private val agentProcessPlanFormulatedEventMessage: String = "[{}] formulated plan {} from {}",
     private val processCompletionMessage: String = "[{}] completed in {}",
     private val processFailureMessage: String = "[{}] failed",
+    private val earlyTerminationMessage: String = "[{}] early termination by {} for {}",
     private val objectAddedMessage: String = "[{}] object added: {}",
     private val objectBoundMessage: String = "[{}] object bound: {} to {}",
     private val functionCallRequestEventMessage: String = "[{}] tool {}({})",
@@ -134,6 +136,15 @@ open class LoggingAgenticEventListener(
                     event.processId,
                     event.plan.infoString(verbose = event.agentProcess.processContext.processOptions.verbosity.showLongPlans),
                     event.worldState.infoString(),
+                )
+            }
+
+            is EarlyTermination -> {
+                logger.info(
+                    earlyTerminationMessage,
+                    event.processId,
+                    event.policy,
+                    event.reason,
                 )
             }
 

@@ -20,6 +20,11 @@ import org.slf4j.LoggerFactory
 
 fun AgentPlatform.typedOps() = AgentPlatformTypedOps(this)
 
+class NoSuchAgentException(
+    agentName: String,
+) : IllegalArgumentException("No such agent: $agentName")
+
+
 /**
  * Typed operations over an agent platform
  */
