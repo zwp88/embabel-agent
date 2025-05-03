@@ -42,6 +42,7 @@ object CoderConditions {
     const val BuildNeeded = "buildNeeded"
     const val BuildFailed = "buildFailed"
     const val BuildSucceeded = "buildSucceeded"
+    const val BuildWasLastAction = "buildWasLastAction"
 }
 
 /**
@@ -105,6 +106,10 @@ class Coder(
     fun buildNeeded(context: OperationContext): Boolean =
         context.lastResult() is CodeModificationReport
 
+    @Condition(name = CoderConditions.BuildWasLastAction)
+    fun buildWasLastAction(context: OperationContext): Boolean =
+        context.lastResult() is BuildResult
+
     @Condition(name = CoderConditions.BuildSucceeded)
     fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.status?.success == true
 
@@ -112,7 +117,8 @@ class Coder(
     fun buildFailed(buildResult: BuildResult): Boolean = buildResult.status?.success == false
 
     @Action(
-        canRerun = true, post = [CoderConditions.BuildNeeded],
+        canRerun = true,
+        post = [CoderConditions.BuildNeeded],
         toolGroups = ["github"]
     )
     fun modifyCode(
@@ -149,7 +155,7 @@ class Coder(
 
     @Action(
         canRerun = true,
-        pre = [CoderConditions.BuildFailed],
+        pre = [CoderConditions.BuildFailed, CoderConditions.BuildWasLastAction],
         post = [CoderConditions.BuildSucceeded]
     )
     fun fixBrokenBuild(
