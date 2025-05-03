@@ -199,7 +199,7 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
 
 interface ToolCallbackPublisher : ToolCallbackSpec
 
-interface ToolGroup : ToolCallbackPublisher {
+interface ToolGroup : ToolCallbackPublisher, HasInfoString {
 
     val metadata: ToolGroupMetadata
 
@@ -223,6 +223,20 @@ interface ToolGroup : ToolCallbackPublisher {
             role = WEB,
         )
 
+        const val GITHUB = "github"
+
+        val GITHUB_DESCRIPTION = ToolGroupDescription(
+            description = "Integration with GitHub APIs",
+            role = GITHUB,
+        )
+
+        const val BROWSER_AUTOMATION = "browser_automation"
+
+        val BROWSER_AUTOMATION_DESCRIPTION = ToolGroupDescription(
+            description = "Browser automation tools",
+            role = BROWSER_AUTOMATION,
+        )
+
         const val FILE = "file"
         val FILE_DESCRIPTION = ToolGroupDescription(
             description = "Tools for file and directory operations",
@@ -234,6 +248,19 @@ interface ToolGroup : ToolCallbackPublisher {
             description = "Tools for running CI on a project",
             role = CI,
         )
+    }
+
+    override fun infoString(verbose: Boolean?): String {
+        return when (verbose) {
+            true -> metadata.infoString(verbose = true) + "\n\t\t" +
+                    toolCallbacks
+                        .sortedBy { it.toolDefinition.name() }
+                        .joinToString { it.toolDefinition.name() }
+
+            else -> {
+                metadata.infoString(verbose = false)
+            }
+        }
     }
 }
 

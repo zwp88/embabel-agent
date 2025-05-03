@@ -32,6 +32,7 @@ class InMemoryMovieProjectRepository : ProjectRepository,
 
 val EmbabelAgentApi = SoftwareProject(
     root = System.getProperty("user.dir") + "/embabel-agent-api",
+    url = "https://github.com/embabel/embabel-agent",
     buildCommand = "mvn test",
     tech = """
         |Kotlin, Spring Boot, Maven, Jacoco, Spring AI

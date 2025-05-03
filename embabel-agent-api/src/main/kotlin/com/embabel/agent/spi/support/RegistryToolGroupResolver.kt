@@ -37,8 +37,8 @@ class RegistryToolGroupResolver(
         logger.info(
             "{}: {} available tool groups: {}",
             name,
-            availableToolGroups().size,
-            "\n\t" + availableToolGroups().sortedBy { it.role }.joinToString("\n\t") { it.infoString(verbose = false) },
+            toolGroups.size,
+            "\n\t" + toolGroups.sortedBy { it.metadata.role }.joinToString("\n\t") { it.infoString(verbose = true) },
         )
     }
 

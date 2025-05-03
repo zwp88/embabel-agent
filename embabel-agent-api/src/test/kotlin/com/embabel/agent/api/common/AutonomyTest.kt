@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.api.common
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Disabled
 
 class AutonomyTest {
 
@@ -58,14 +58,9 @@ class AutonomyTest {
 
         @Test
         @Disabled
-        fun `test create goal seeker with valid input`() {
+        fun `test create goal seeker excludes irrelevant goals`() {
             // TODO: Implement test
         }
 
-        @Test
-        @Disabled
-        fun `test create goal seeker with invalid input`() {
-            // TODO: Implement test
-        }
     }
 }

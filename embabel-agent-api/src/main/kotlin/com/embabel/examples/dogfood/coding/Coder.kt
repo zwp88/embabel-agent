@@ -111,7 +111,10 @@ class Coder(
     @Condition(name = CoderConditions.BuildFailed)
     fun buildFailed(buildResult: BuildResult): Boolean = buildResult.status?.success == false
 
-    @Action(canRerun = true, post = [CoderConditions.BuildNeeded])
+    @Action(
+        canRerun = true, post = [CoderConditions.BuildNeeded],
+        toolGroups = ["github"]
+    )
     fun modifyCode(
         userInput: UserInput,
         project: SoftwareProject,
@@ -122,6 +125,8 @@ class Coder(
             promptContributors = listOf(project),
         ).create(
             """
+                First check if the there's a github repo at the ${project.url}
+
                 Execute the following user request to modify code in the given project.
                 Use the file tools to read code and directories.
                 Use the project information to help you understand the code.
