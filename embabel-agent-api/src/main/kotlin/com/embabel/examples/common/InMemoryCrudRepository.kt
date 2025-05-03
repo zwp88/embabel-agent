@@ -20,7 +20,10 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Spring Data CrudRepository with in memory storage
+ * Spring Data CrudRepository with in memory storage.
+ * Not itself intended for production usage, but can be used
+ * in demos to minimize dependencies, and ultimately swapped out
+ * for serious use.
  */
 open class InMemoryCrudRepository<T : Any>(
     private val idGetter: (T) -> String?,

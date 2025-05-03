@@ -20,6 +20,7 @@ import java.time.Instant
 
 /**
  * Special class that represents a single user input
+ * Starting point for many flows.
  */
 data class UserInput(
     val content: String,
