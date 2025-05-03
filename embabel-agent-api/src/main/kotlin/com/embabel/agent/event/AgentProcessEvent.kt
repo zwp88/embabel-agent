@@ -18,6 +18,7 @@ package com.embabel.agent.event
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timed
@@ -85,17 +86,18 @@ class ActionExecutionResultEvent(
 class AgentProcessFunctionCallRequestEvent(
     agentProcess: AgentProcess,
     val function: String,
+    val toolGroupMetadata: ToolGroupMetadata?,
     val toolInput: String,
     val llmOptions: LlmOptions,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
-    fun responseEvent(response: String, runningTime: Duration): AgentProcessFunctionCallResponseEvent {
+    fun responseEvent(result: Result<String>, runningTime: Duration): AgentProcessFunctionCallResponseEvent {
         return AgentProcessFunctionCallResponseEvent(
             agentProcess = agentProcess,
             function = function,
             toolInput = toolInput,
             llmOptions = llmOptions,
-            response = response,
+            result = result,
             runningTime = runningTime
         )
     }
@@ -106,7 +108,7 @@ class AgentProcessFunctionCallResponseEvent internal constructor(
     val function: String,
     val toolInput: String,
     val llmOptions: LlmOptions,
-    val response: String,
+    val result: Result<String>,
     override val runningTime: Duration,
 ) : AbstractAgentProcessEvent(agentProcess), Timed
 

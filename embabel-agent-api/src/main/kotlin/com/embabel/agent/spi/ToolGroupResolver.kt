@@ -28,4 +28,6 @@ interface ToolGroupResolver {
      * Resolve tool group from the role
      */
     fun resolveToolGroup(role: String): ToolGroupResolution
+
+    fun findToolGroupForTool(toolName: String): ToolGroupResolution
 }

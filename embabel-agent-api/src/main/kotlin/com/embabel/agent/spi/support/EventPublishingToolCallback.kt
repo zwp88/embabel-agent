@@ -16,23 +16,31 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
 import com.embabel.agent.spi.ToolDecorator
+import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.time
-import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
 
-class DefaultToolDecorator : ToolDecorator {
+class DefaultToolDecorator(
+    private val toolGroupResolver: ToolGroupResolver? = null,
+) : ToolDecorator {
 
     override fun decorate(
         tool: ToolCallback,
         agentProcess: AgentProcess,
         llmOptions: LlmOptions,
     ): ToolCallback {
-        return ExceptionLoggingToolCallback(tool.withEventPublication(agentProcess, llmOptions))
+        val toolGroup = toolGroupResolver?.findToolGroupForTool(toolName = tool.toolDefinition.name())
+        return MetadataEnrichedToolCallback(
+            toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
+            delegate = tool,
+        )
+            .withEventPublication(agentProcess, llmOptions)
     }
 }
 
@@ -55,44 +63,40 @@ class EventPublishingToolCallback(
             agentProcess = agentProcess,
             llmOptions = llmOptions,
             function = delegate.toolDefinition.name(),
+            toolGroupMetadata = (delegate as? MetadataEnrichedToolCallback)?.toolGroupMetadata,
             toolInput = toolInput,
         )
         val toolCallSchedule =
             agentProcess.processContext.platformServices.operationScheduler.scheduleToolCall(functionCallRequestEvent)
         Thread.sleep(toolCallSchedule.delay.toMillis())
         agentProcess.processContext.onProcessEvent(functionCallRequestEvent)
-        val (response, millis) = time {
-            delegate.call(toolInput)
+        val (result: Result<String>, millis) = time {
+            try {
+                Result.success(delegate.call(toolInput))
+            } catch (t: Throwable) {
+                Result.failure(t)
+            }
         }
         agentProcess.processContext.onProcessEvent(
             functionCallRequestEvent.responseEvent(
-                response = response,
+                result = result,
                 runningTime = Duration.ofMillis(millis),
             )
         )
-        return response
+        return if (result.isFailure) {
+            throw result.exceptionOrNull() ?: IllegalStateException("Unknown error")
+        } else {
+            result.getOrThrow()
+        }
     }
 }
 
-class ExceptionLoggingToolCallback(
+class MetadataEnrichedToolCallback(
+    val toolGroupMetadata: ToolGroupMetadata?,
     private val delegate: ToolCallback,
 ) : ToolCallback {
 
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
 
-    override fun call(toolInput: String): String =
-        try {
-            delegate.call(toolInput)
-        } catch (t: Throwable) {
-            // TODO publish tool call failure event,
-            // maybe conflate with above
-            logger.warn(
-                "Tool call failed: {}",
-                delegate.toolDefinition.name(),
-                t,
-            )
-            "Tool failure: ${t.message}"
-        }
+    override fun call(toolInput: String): String = delegate.call(toolInput)
 }

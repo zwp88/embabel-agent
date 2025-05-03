@@ -110,7 +110,8 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     objectAddedMessage = "[{}] Perpetuity wing: object added: {}",
     objectBoundMessage = "[{}] Perpetuity wing: object bound: {} to {}",
     functionCallRequestEventMessage = "[{}] ${highlight("VERVE")}: tool {}({})",
-    functionCallResponseEventMessage = "[{}] ${highlight("VISION")}: tool {} -> {} in {}ms with payload {}",
+    functionCallSuccessResponseEventMessage = "[{}] ${highlight("VISION")}: tool {} -> {} in {}ms with payload {}",
+    functionCallFailureResponseEventMessage = "[{}] ${highlight("WOE")}: tool {} failed {} in {}ms with payload {}",
     llmRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM transform {} from {} -> {} using {}",
     llmResponseEventMessage = {
         """

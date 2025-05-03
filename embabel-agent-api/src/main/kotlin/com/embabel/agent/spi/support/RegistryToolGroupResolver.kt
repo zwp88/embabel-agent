@@ -57,4 +57,18 @@ class RegistryToolGroupResolver(
             )
         }
     }
+
+    override fun findToolGroupForTool(toolName: String): ToolGroupResolution {
+        val group = toolGroups.find { it.toolCallbacks.map { it.toolDefinition.name() }.contains(toolName) }
+        return if (group == null) {
+            ToolGroupResolution(
+                resolvedToolGroup = null,
+                failureMessage = "No tool group matching tool '$toolName'",
+            )
+        } else {
+            ToolGroupResolution(
+                resolvedToolGroup = group,
+            )
+        }
+    }
 }

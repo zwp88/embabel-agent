@@ -51,7 +51,9 @@ class AgentPlatformConfiguration(
     fun nameGenerator(): NameGenerator = MobyNameGenerator
 
     @Bean
-    fun toolDecorator(): ToolDecorator = DefaultToolDecorator()
+    fun toolDecorator(toolGroupResolver: ToolGroupResolver): ToolDecorator = DefaultToolDecorator(
+        toolGroupResolver,
+    )
 
     @Bean
     fun templateRenderer(): TemplateRenderer = JinjavaTemplateRenderer()

@@ -46,7 +46,8 @@ open class LoggingAgenticEventListener(
     private val objectAddedMessage: String = "[{}] object added: {}",
     private val objectBoundMessage: String = "[{}] object bound: {} to {}",
     private val functionCallRequestEventMessage: String = "[{}] tool {}({})",
-    private val functionCallResponseEventMessage: String = "[{}] tool {} -> {} in {}ms with payload {}",
+    private val functionCallSuccessResponseEventMessage: String = "[{}] tool {} -> {} in {}ms with payload {}",
+    private val functionCallFailureResponseEventMessage: String = "[{}] failed tool {} -> {} in {}ms with payload {}",
     private val llmRequestEventMessage: String = "[{}] requesting LLM transform {} from {} -> {} using {}",
     private val llmResponseEventMessage: () -> String = { "[{}] received LLM response {} of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
@@ -155,14 +156,35 @@ open class LoggingAgenticEventListener(
             }
 
             is AgentProcessFunctionCallResponseEvent -> {
-                logger.info(
-                    functionCallResponseEventMessage,
-                    event.processId,
-                    event.function,
-                    event.response,
-                    event.runningTime.toMillis(),
-                    event.toolInput,
-                )
+                when (event.result.isSuccess) {
+                    true -> logger.info(
+                        functionCallSuccessResponseEventMessage,
+                        event.processId,
+                        event.function,
+                        event.result.getOrThrow(),
+                        event.runningTime.toMillis(),
+                        event.toolInput,
+                    )
+
+                    false -> {
+                        val throwable = event.result.exceptionOrNull()
+                        logger.info(
+                            functionCallFailureResponseEventMessage,
+                            event.processId,
+                            event.function,
+                            throwable,
+                            event.runningTime.toMillis(),
+                            event.toolInput,
+                        )
+                        throwable?.let {
+                            logger.debug(
+                                "Error in function call {}",
+                                event.processId,
+                                it,
+                            )
+                        }
+                    }
+                }
             }
 
             is AgentProcessFinishedEvent -> {
