@@ -64,4 +64,24 @@ class ToolGroupsConfiguration(
         )
     }
 
+
+    private val githubTools = listOf(
+        "add_issue_comment",
+    )
+
+    @Bean
+    fun browserAutomationWebToolsGroup(): ToolGroup {
+        return McpToolGroup(
+            description = ToolGroup.BROWSER_AUTOMATION_DESCRIPTION,
+            artifact = "docker-puppeteer",
+            provider = "Docker",
+            permissions = setOf(
+                ToolGroupPermission.INTERNET_ACCESS
+            ),
+            clients = mcpSyncClients,
+            // TODO : add filter for GitHub tools
+            filter = { it.toolDefinition.name().contains("puppeteer") },
+        )
+    }
+
 }

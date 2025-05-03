@@ -223,6 +223,20 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
             role = WEB,
         )
 
+        const val GITHUB = "github"
+
+        val GITHUB_DESCRIPTION = ToolGroupDescription(
+            description = "Integration with GitHub APIs",
+            role = GITHUB,
+        )
+
+        const val BROWSER_AUTOMATION = "browser_automation"
+
+        val BROWSER_AUTOMATION_DESCRIPTION = ToolGroupDescription(
+            description = "Browser automation tools",
+            role = BROWSER_AUTOMATION,
+        )
+
         const val FILE = "file"
         val FILE_DESCRIPTION = ToolGroupDescription(
             description = "Tools for file and directory operations",
