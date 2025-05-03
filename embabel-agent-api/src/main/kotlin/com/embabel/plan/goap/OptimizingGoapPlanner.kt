@@ -15,6 +15,7 @@
  */
 package com.embabel.plan.goap
 
+import com.embabel.common.util.loggerFor
 import com.embabel.plan.Action
 import com.embabel.plan.Goal
 
@@ -63,6 +64,10 @@ abstract class OptimizingGoapPlanner(
 
     override fun prune(planningSystem: GoapPlanningSystem): GoapPlanningSystem {
         val allPlans = plansToGoals(planningSystem)
+        loggerFor<OptimizingGoapPlanner>().info(
+            "Plans to consider in pruning: {}",
+            allPlans.joinToString("\n") { it.infoString(false) }
+        )
         return planningSystem.copy(
             actions = planningSystem.actions.filter { action ->
                 allPlans.any { plan ->

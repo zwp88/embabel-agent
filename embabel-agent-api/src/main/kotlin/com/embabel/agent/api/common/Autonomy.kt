@@ -31,7 +31,6 @@ import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.AStarGoapPlanner
 import com.embabel.plan.goap.ConditionDetermination
-import com.embabel.plan.goap.GoapAction
 import com.embabel.plan.goap.WorldStateDeterminer
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
@@ -480,17 +479,15 @@ class Autonomy(
      */
     private fun Agent.prune(userInput: UserInput): Agent {
 
-        // TODO this is not working yet so we should circuit it
-        return this
-
         loggerFor<Autonomy>().info(
             "Raw agent: {}",
             infoString(),
         )
         val map = mutableMapOf<String, ConditionDetermination>()
-        for (condition in conditions) {
-            map[condition.name] = ConditionDetermination.FALSE
+        for (condition in this.planningSystem.knownConditions()) {
+            map[condition] = ConditionDetermination.FALSE
         }
+        loggerFor<Autonomy>().info("Doing pruning from {}", map)
         map += ("it:${userInput::class.qualifiedName}" to ConditionDetermination.TRUE)
 
         val planner = AStarGoapPlanner(
@@ -503,14 +500,7 @@ class Autonomy(
             "Pruned planning system: {}",
             pruned.infoString(),
         )
-        return this
-            .copy(
-                actions = actions.filter { action -> pruned.actions.any { it.name == action.name } },
-                conditions = conditions.filter { condition ->
-                    // TODO ugly cast
-                    pruned.actions.any { (it as GoapAction).knownConditions.contains(condition.name) }
-                }.toSet(),
-            )
+        return pruneTo(pruned)
     }
 
 }

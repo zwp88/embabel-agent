@@ -64,6 +64,17 @@ data class Agent(
     fun withSingleGoal(goal: Goal): Agent =
         copy(goals = setOf(goal))
 
+    /**
+     * Return a version of the agent with actions and conditions pruned to the given pruned planning system.
+     */
+    fun pruneTo(pruned: GoapPlanningSystem): Agent =
+        copy(
+            actions = actions.filter { action -> pruned.actions.any { it.name == action.name } },
+            conditions = conditions.filter { condition ->
+                pruned.actions.any { it.knownConditions.contains(condition.name) }
+            }.toSet(),
+        )
+
     val planningSystem: GoapPlanningSystem
         get() {
             val actions = actions.toSet()
