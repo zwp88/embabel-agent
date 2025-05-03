@@ -52,6 +52,21 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
         return resolvedPath
     }
 
+    /**
+     * Resolves a path and validates that it exists and is a regular file
+     * @throws IllegalArgumentException if the file doesn't exist or isn't a regular file
+     */
+    private fun resolveAndValidateFile(path: String): Path {
+        val resolvedPath = resolvePath(path)
+        if (!Files.exists(resolvedPath)) {
+            throw IllegalArgumentException("File does not exist: $path, root=$root")
+        }
+        if (!Files.isRegularFile(resolvedPath)) {
+            throw IllegalArgumentException("Path is not a regular file: $path, root=$root")
+        }
+        return resolvedPath
+    }
+
     @Tool(description = "Find files using glob patterns. Return absolute paths")
     fun findFiles(glob: String): List<String> {
         val basePath = Paths.get(root).toAbsolutePath().normalize()
@@ -81,13 +96,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
 
     @Tool(description = "Read a file at the relative path")
     fun readFile(path: String): String {
-        val resolvedPath = resolvePath(path)
-        if (!Files.exists(resolvedPath)) {
-            throw IllegalArgumentException("File does not exist: $path, root=$root")
-        }
-        if (!Files.isRegularFile(resolvedPath)) {
-            throw IllegalArgumentException("Path is not a regular file: $path, root=$root")
-        }
+        val resolvedPath = resolveAndValidateFile(path)
         return Files.readString(resolvedPath)
     }
 
@@ -129,13 +138,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
     fun editFile(path: String, oldContent: String, newContent: String): String {
         logger.info("Editing file at path {}", path)
         logger.debug("File edit at path {}: {} -> {}", path, oldContent, newContent)
-        val resolvedPath = resolvePath(path)
-        if (!Files.exists(resolvedPath)) {
-            throw IllegalArgumentException("File does not exist: $path, root=$root")
-        }
-        if (!Files.isRegularFile(resolvedPath)) {
-            throw IllegalArgumentException("Path is not a regular file: $path, root=$root")
-        }
+        val resolvedPath = resolveAndValidateFile(path)
 
         val currentContent = Files.readString(resolvedPath)
         val newFileContent = currentContent.replace(oldContent, newContent)
@@ -160,6 +163,14 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
         Files.createDirectories(resolvedPath)
         logger.info("Created directory at path: $path")
         return "directory created"
+    }
+
+    @Tool(description = "Append content to an existing file")
+    fun appendFile(path: String, content: String): String {
+        val resolvedPath = resolveAndValidateFile(path)
+        Files.write(resolvedPath, content.toByteArray(), java.nio.file.StandardOpenOption.APPEND)
+        logger.info("Appended content to file at path: $path")
+        return "content appended to file"
     }
 
     companion object {
