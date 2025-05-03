@@ -33,39 +33,27 @@ import java.nio.file.Paths
 import java.util.zip.ZipInputStream
 
 /**
+ * File tools. Extend FileReadTools for safe read only use
+ */
+interface FileTools : FileReadTools, FileWriteTools {
+
+    companion object {
+
+        fun toolGroup(root: String): ToolGroup = object : FileTools, SelfToolGroup {
+            override val root: String = root
+            override val artifact: String = "io-file"
+            override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
+            override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
+
+        }
+    }
+}
+
+/**
  * LLM-ready ToolCallbacks and convenience methods for file operations.
  * Use at your own risk: This makes changes to your host machine!!
  */
-interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
-
-    /**
-     * Resolves a relative path against the root directory
-     * Prevents path traversal attacks by ensuring the resolved path is within the root
-     */
-    private fun resolvePath(path: String): Path {
-        val basePath = Paths.get(root).toAbsolutePath().normalize()
-        val resolvedPath = basePath.resolve(path).normalize().toAbsolutePath()
-
-        if (!resolvedPath.startsWith(basePath)) {
-            throw SecurityException("Path traversal attempt detected: $path, root=$root")
-        }
-        return resolvedPath
-    }
-
-    /**
-     * Resolves a path and validates that it exists and is a regular file
-     * @throws IllegalArgumentException if the file doesn't exist or isn't a regular file
-     */
-    private fun resolveAndValidateFile(path: String): Path {
-        val resolvedPath = resolvePath(path)
-        if (!Files.exists(resolvedPath)) {
-            throw IllegalArgumentException("File does not exist: $path, root=$root")
-        }
-        if (!Files.isRegularFile(resolvedPath)) {
-            throw IllegalArgumentException("Path is not a regular file: $path, root=$root")
-        }
-        return resolvedPath
-    }
+interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
 
     @Tool(description = "Find files using glob patterns. Return absolute paths")
     fun findFiles(glob: String): List<String> {
@@ -118,9 +106,25 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
         }
     }
 
+    fun resolvePath(path: String): Path {
+        return resolvePath(root, path)
+    }
+
+    fun resolveAndValidateFile(path: String): Path {
+        return resolveAndValidateFile(root, path)
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(FileReadTools::class.java)
+
+    }
+}
+
+interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
+
     @Tool(description = "Create a file with the given content")
     fun createFile(path: String, content: String): String {
-        val resolvedPath = resolvePath(path)
+        val resolvedPath = resolvePath(root, path)
         if (Files.exists(resolvedPath)) {
             logger.warn("File already exists at {}", path)
             throw IllegalArgumentException("File already exists: $path")
@@ -138,7 +142,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
     fun editFile(path: String, oldContent: String, newContent: String): String {
         logger.info("Editing file at path {}", path)
         logger.debug("File edit at path {}: {} -> {}", path, oldContent, newContent)
-        val resolvedPath = resolveAndValidateFile(path)
+        val resolvedPath = resolveAndValidateFile(root = root, path = path)
 
         val currentContent = Files.readString(resolvedPath)
         val newFileContent = currentContent.replace(oldContent, newContent)
@@ -152,7 +156,7 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
     // an Embabel project by an Embabel agent
     @Tool(description = "Create a directory at the given path")
     fun createDirectory(path: String): String {
-        val resolvedPath = resolvePath(path)
+        val resolvedPath = resolvePath(root = root, path = path)
         if (Files.exists(resolvedPath)) {
             if (Files.isDirectory(resolvedPath)) {
                 return "directory already exists"
@@ -167,20 +171,14 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
 
     @Tool(description = "Append content to an existing file")
     fun appendFile(path: String, content: String): String {
-        val resolvedPath = resolveAndValidateFile(path)
+        val resolvedPath = resolveAndValidateFile(root = root, path = path)
         Files.write(resolvedPath, content.toByteArray(), java.nio.file.StandardOpenOption.APPEND)
         logger.info("Appended content to file at path: $path")
         return "content appended to file"
     }
 
-    companion object {
-        fun toolGroup(root: String): ToolGroup = object : FileTools, SelfToolGroup {
-            override val root: String = root
-            override val artifact: String = "io-file"
-            override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
-            override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
 
-        }
+    companion object {
 
         private val logger = LoggerFactory.getLogger(FileTools::class.java)
 
@@ -236,4 +234,33 @@ interface FileTools : DirectoryBased, SelfToolCallbackPublisher {
         }
     }
 
+}
+
+/**
+ * Resolves a relative path against the root directory
+ * Prevents path traversal attacks by ensuring the resolved path is within the root
+ */
+private fun resolvePath(root: String, path: String): Path {
+    val basePath = Paths.get(root).toAbsolutePath().normalize()
+    val resolvedPath = basePath.resolve(path).normalize().toAbsolutePath()
+
+    if (!resolvedPath.startsWith(basePath)) {
+        throw SecurityException("Path traversal attempt detected: $path, root=$root")
+    }
+    return resolvedPath
+}
+
+/**
+ * Resolves a path and validates that it exists and is a regular file
+ * @throws IllegalArgumentException if the file doesn't exist or isn't a regular file
+ */
+private fun resolveAndValidateFile(root: String, path: String): Path {
+    val resolvedPath = resolvePath(root = root, path = path)
+    if (!Files.exists(resolvedPath)) {
+        throw IllegalArgumentException("File does not exist: $path, root=$root")
+    }
+    if (!Files.isRegularFile(resolvedPath)) {
+        throw IllegalArgumentException("Path is not a regular file: $path, root=$root")
+    }
+    return resolvedPath
 }

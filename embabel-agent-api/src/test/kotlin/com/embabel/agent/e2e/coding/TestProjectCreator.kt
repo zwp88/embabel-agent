@@ -20,6 +20,7 @@ import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agentic
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.toolgroups.file.FileTools
+import com.embabel.agent.toolgroups.file.FileWriteTools
 import com.embabel.examples.dogfood.coding.CodeExplanation
 import com.embabel.examples.dogfood.coding.CoderConditions
 import com.embabel.examples.dogfood.coding.SoftwareProject
@@ -52,11 +53,11 @@ class TestProjectCreator {
     ): SoftwareProject {
         logger.info("Creating test project")
 
-        val tempDir = FileTools.createTempDir("thing")
+        val tempDir = FileWriteTools.createTempDir("thing")
 
         // TODO should not be hard coded
         val zipFile = File(zipFilePath)
-        val projectDir = FileTools.extractZipFile(zipFile = zipFile, tempDir = tempDir, delete = false)
+        val projectDir = FileWriteTools.extractZipFile(zipFile = zipFile, tempDir = tempDir, delete = false)
 
         // Return the project coordinates
         context.setCondition(TestCoderConditions.TestProjectCreated, true)

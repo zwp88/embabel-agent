@@ -20,7 +20,7 @@ import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agentic
 import com.embabel.agent.api.annotation.fromForm
 import com.embabel.agent.api.common.ActionContext
-import com.embabel.agent.toolgroups.file.FileTools
+import com.embabel.agent.toolgroups.file.FileWriteTools
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
@@ -61,7 +61,7 @@ class SpringCoder {
     ): SoftwareProject {
         logger.info("Creating Spring Initialzr project")
 
-        val tempDir = FileTools.createTempDir("spring-initializr")
+        val tempDir = FileWriteTools.createTempDir("spring-initializr")
 
         // Create RestClient to call Spring Initialzr
         val restClient = org.springframework.web.client.RestClient.builder()
@@ -92,7 +92,7 @@ class SpringCoder {
         zipFile.writeBytes(response)
         logger.info("Downloaded Spring Initialzr project to {}", zipFile.absolutePath)
 
-        val projectDir = FileTools.extractZipFile(
+        val projectDir = FileWriteTools.extractZipFile(
             zipFile = zipFile,
             tempDir = tempDir,
             delete = true,
