@@ -15,8 +15,14 @@
  */
 package com.embabel.plan
 
+import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.support.AgentMetadataReader
+import com.embabel.agent.domain.library.PersonImpl
+import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.util.time
+import com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder
 import com.embabel.plan.goap.*
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -347,7 +353,118 @@ class GoapPlannerTest {
                 plan.actions.map { it.name }
             )
         }
+
+        @Test
+        fun `realistic irrelevant conditions representing agent platform`() {
+            val starFinderAgent =
+                AgentMetadataReader().createAgentMetadata(StarNewsFinder(mockk(), 5))!! as com.embabel.agent.core.Agent
+            val confusionAgent =
+                AgentMetadataReader().createAgentMetadata(CreateConfusionAgent())!! as com.embabel.agent.core.Agent
+
+            val noisyWorldState =
+                starFinderAgent.planningSystem.knownConditions().associate { it to ConditionDetermination.FALSE } +
+                        confusionAgent.planningSystem.knownConditions()
+                            .associate { it to ConditionDetermination.FALSE } + mapOf(
+                    "it:com.embabel.agent.domain.special.UserInput" to ConditionDetermination.TRUE,
+                )
+
+            val distractedPlanner = AStarGoapPlanner(
+                WorldStateDeterminer.fromMap(noisyWorldState)
+            )
+            val lonelyGoal = GoapGoal(
+                name = "lonely",
+                preconditions = mapOf(
+                    "hasRun_com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder.writeup" to ConditionDetermination.TRUE,
+                    "it:com.embabel.examples.simple.horoscope.kotlin.Writeup" to ConditionDetermination.TRUE
+                )
+            )
+
+            println(starFinderAgent.planningSystem.knownConditions() + confusionAgent.planningSystem.knownConditions())
+
+
+            val plan = distractedPlanner.planToGoal(starFinderAgent.actions + confusionAgent.actions, lonelyGoal)
+            assertNotNull(plan, "Should have found a plan")
+            assertEquals(
+                listOf("extractStarPerson", "retrieveHoroscope", "findNewsStories", "writeup"),
+                plan!!.actions.map { it.name.split(".").last() }
+            )
+        }
     }
 
+}
 
+data class Confusion1(val lots: Boolean)
+data class Confusion2(val lots: Boolean)
+
+data class Confusion3(val lots: Boolean)
+
+data class Confusion4(val lots: Boolean)
+data class Confusion5(val lots: Boolean)
+
+data class Confusion6(val lots: Boolean)
+
+data class Confusion7(val lots: Boolean)
+
+data class Confusion8(val lots: Boolean)
+data class Confusion9(val lots: Boolean)
+data class Confusion10(val lots: Boolean)
+
+
+@Agent(description = "test", scan = false)
+class CreateConfusionAgent {
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion(userInput: UserInput): Confusion1 {
+        return Confusion1(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion2(confusion1: Confusion1): Confusion2 {
+        return Confusion2(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion3(confusion2: Confusion2): Confusion3 {
+        return Confusion3(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion4(confusion3: Confusion3): Confusion4 {
+        return Confusion4(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion5(confusion4: Confusion4): Confusion5 {
+        return Confusion5(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion6(confusion5: Confusion5): Confusion6 {
+        return Confusion6(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion7(confusion6: Confusion6): Confusion7 {
+        return Confusion7(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion8(confusion7: Confusion7): Confusion8 {
+        return Confusion8(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion9(confusion8: Confusion8, person: PersonImpl): Confusion9 {
+        return Confusion9(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    fun createConfusion10(confusion9: Confusion9, userInput: UserInput): Confusion10 {
+        return Confusion10(true)
+    }
+
+    @com.embabel.agent.api.annotation.Action
+    @com.embabel.agent.api.annotation.AchievesGoal(description = "Confusion!")
+    fun utterConfusion(confusion10: Confusion10, confusion2: Confusion2, userInput: UserInput): String {
+        return "Confusion!"
+    }
 }

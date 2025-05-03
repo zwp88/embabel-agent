@@ -478,7 +478,6 @@ class Autonomy(
      * Agent with only relevant actions
      */
     private fun Agent.prune(userInput: UserInput): Agent {
-
         loggerFor<Autonomy>().info(
             "Raw agent: {}",
             infoString(),
@@ -487,7 +486,7 @@ class Autonomy(
         for (condition in this.planningSystem.knownConditions()) {
             map[condition] = ConditionDetermination.FALSE
         }
-        loggerFor<Autonomy>().info("Doing pruning from {}", map)
+        loggerFor<Autonomy>().info("Pruning agent instance from {}", map)
         map += ("it:${userInput::class.qualifiedName}" to ConditionDetermination.TRUE)
 
         val planner = AStarGoapPlanner(
