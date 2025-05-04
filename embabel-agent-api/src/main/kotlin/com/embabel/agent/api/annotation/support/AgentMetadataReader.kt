@@ -16,7 +16,8 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.ExecutePromptException
+import com.embabel.agent.api.common.CreateObjectPromptException
+import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.dsl.expandInputBindings
@@ -27,6 +28,7 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.HAS_RUN_CONDITION_PREFIX
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.core.types.Named
 import com.embabel.common.core.util.DummyInstanceCreator
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
@@ -77,7 +79,6 @@ data class AgenticInfo(
 class AgentMetadataReader {
 
     private val logger = LoggerFactory.getLogger(AgentMetadataReader::class.java)
-
 
     /**
      * Given this configured instance, find all the methods annotated with @Action and @Condition
@@ -313,7 +314,7 @@ class AgentMetadataReader {
         }
         val result = try {
             ReflectionUtils.invokeMethod(method, instance, *args)
-        } catch (e: ExecutePromptException) {
+        } catch (e: CreateObjectPromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
 
@@ -365,6 +366,9 @@ class AgentMetadataReader {
         logger.debug("Invoking condition method {}", method.name)
         val args = mutableListOf<Any>()
         val operationContext = OperationContext(
+            operation = object : Named {
+                override val name: String = method.name
+            },
             processContext = processContext,
         )
         for (m in method.parameters) {
@@ -408,6 +412,26 @@ class AgentMetadataReader {
         }
         return try {
             ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray()) as Boolean
+        } catch (e: EvaluateConditionPromptException) {
+            // This is our own exception to get typesafe prompt execution
+            // It is not a failure
+
+            // TODO or default options
+//            val toolCallbacks =
+//                (actionToolCallbacks + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
+//            val promptContributors = e.promptContributors
+//
+            val promptRunner = operationContext.promptRunner(
+                llm = e.llm ?: LlmOptions(),
+                toolCallbacks = emptyList(),
+                promptContributors = emptyList(),
+            )
+
+            promptRunner.evaluateCondition(
+                condition = e.condition,
+                context = e.context,
+                confidenceThreshold = e.confidenceThreshold,
+            )
         } catch (t: Throwable) {
             logger.warn("Error invoking condition method ${method.name} with args $args", t)
             false

@@ -20,10 +20,13 @@ import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
@@ -34,14 +37,40 @@ import org.springframework.ai.tool.ToolCallback
 interface OperationContext : Blackboard {
     val processContext: ProcessContext
 
+    /**
+     * Action or operation that is being executed.
+     */
+    val operation: Named
+
+    fun promptRunner(
+        llm: LlmOptions,
+        toolCallbacks: List<ToolCallback> = emptyList(),
+        promptContributors: List<PromptContributor?> = emptyList(),
+    ): PromptRunner {
+        // TODO consider getting tool callbacks from the domain model
+//        val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
+        // Add any tool callbacks that are not already in the list
+//        updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
+        return OperationContextPromptRunner(
+            this,
+            llm = llm,
+            toolCallbacks = toolCallbacks,
+            promptContributors = promptContributors.filterNotNull(),
+        )
+    }
+
     companion object {
-        operator fun invoke(processContext: ProcessContext): OperationContext =
-            SimpleOperationContext(processContext)
+        operator fun invoke(processContext: ProcessContext, operation: Named): OperationContext =
+            SimpleOperationContext(
+                processContext = processContext,
+                operation = operation,
+            )
     }
 }
 
 private class SimpleOperationContext(
     override val processContext: ProcessContext,
+    override val operation: Named,
 ) : OperationContext, Blackboard by processContext.agentProcess {
     override fun toString(): String {
         return "SimpleOperationContext(processContext=$processContext)"
@@ -59,15 +88,15 @@ interface ActionContext : OperationContext {
     val action: Action?
 
     // TODO default LLM options from action
-    fun promptRunner(
+    override fun promptRunner(
         llm: LlmOptions,
-        toolCallbacks: List<ToolCallback> = emptyList(),
-        promptContributors: List<PromptContributor?> = emptyList(),
+        toolCallbacks: List<ToolCallback>,
+        promptContributors: List<PromptContributor?>,
     ): PromptRunner {
         val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
         // Add any tool callbacks that are not already in the list
         updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
-        return ActionContextPromptRunner(
+        return OperationContextPromptRunner(
             this,
             llm = llm,
             toolCallbacks = updatedToolCallbacks,
@@ -85,15 +114,17 @@ interface ActionContext : OperationContext {
  * Uses the platform's LlmOperations to execute the prompt
  * Merely a convenience.
  */
-private class ActionContextPromptRunner(
-    private val context: ActionContext,
+private class OperationContextPromptRunner(
+    private val context: OperationContext,
     override val llm: LlmOptions,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
 
+    val action = (context as? ActionContext)?.action
+
     private fun idForPrompt(prompt: String, outputClass: Class<*>): InteractionId {
-        return InteractionId("${context.action?.name}-${outputClass.name}")
+        return InteractionId("${context.operation.name}-${outputClass.name}")
     }
 
     override fun <T> createObject(
@@ -110,7 +141,7 @@ private class ActionContextPromptRunner(
             ),
             outputClass = outputClass,
             agentProcess = context.processContext.agentProcess,
-            action = context.action,
+            action = action,
         )
     }
 
@@ -128,10 +159,10 @@ private class ActionContextPromptRunner(
             ),
             outputClass = outputClass,
             agentProcess = context.processContext.agentProcess,
-            action = context.action,
+            action = action,
         )
         if (result.isFailure) {
-            loggerFor<ActionContextPromptRunner>().warn(
+            loggerFor<OperationContextPromptRunner>().warn(
                 "Failed to create object of type {} with prompt {}: {}",
                 outputClass.name,
                 prompt,
@@ -139,6 +170,36 @@ private class ActionContextPromptRunner(
             )
         }
         return result.getOrNull()
+    }
+
+    override fun evaluateCondition(
+        condition: String,
+        context: String,
+        confidenceThreshold: ZeroToOne
+    ): Boolean {
+        val prompt =
+            """
+            Evaluate this condition given the context.
+            Return "result": whether you think it is true, your confidence level from 0-1,
+            and an explanation of what you base this on.
+
+            # Condition
+            $condition
+
+            # Context
+            $context
+            """.trimIndent()
+        val determination = createObject(
+            prompt = prompt,
+            outputClass = Determination::class.java,
+        )
+        loggerFor<OperationContextPromptRunner>().info(
+            "Condition {}: determination from {} was {}",
+            condition,
+            llm.criteria,
+            determination,
+        )
+        return determination.result && determination.confidence >= confidenceThreshold
     }
 }
 
@@ -164,4 +225,7 @@ data class TransformationActionContext<I, O>(
     val inputClass: Class<I>,
     val outputClass: Class<O>,
 ) : InputActionContext<I>, Blackboard by processContext.agentProcess,
-    AgenticEventListener by processContext
+    AgenticEventListener by processContext {
+
+    override val operation = action ?: error("No action in context")
+}

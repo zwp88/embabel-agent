@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.testing
 
-import com.embabel.agent.api.common.ExecutePromptException
+import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.LlmCallRequest
 
 /**
@@ -28,7 +28,7 @@ fun captureLlmCall(block: () -> Unit): LlmCallRequest {
     try {
         block()
         error("Expected an LLM call but none was made")
-    } catch (epe: ExecutePromptException) {
+    } catch (epe: CreateObjectPromptException) {
         return epe
     }
 }

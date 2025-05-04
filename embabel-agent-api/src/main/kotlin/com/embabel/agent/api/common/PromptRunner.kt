@@ -15,9 +15,11 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.spi.LlmCall
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
 
@@ -60,6 +62,12 @@ interface PromptRunner : LlmCall {
         outputClass: Class<T>,
     ): T?
 
+    fun evaluateCondition(
+        condition: String,
+        context: String,
+        confidenceThreshold: ZeroToOne = 0.8,
+    ): Boolean
+
 }
 
 inline infix fun <reified T> PromptRunner.createObject(prompt: String): T =
@@ -72,10 +80,13 @@ inline infix fun <reified T> PromptRunner.create(prompt: String): T =
 inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
     createObjectIfPossible(prompt, T::class.java)
 
-interface LlmCallRequest : LlmCall {
-    val prompt: String
+interface LlmObjectCreationRequest : LlmCall {
     val requireResult: Boolean
     val outputClass: Class<*>
+}
+
+interface LlmCallRequest : LlmObjectCreationRequest {
+    val prompt: String
 }
 
 /**
@@ -87,13 +98,43 @@ interface LlmCallRequest : LlmCall {
  * say that it cannot produce a result
  * @param llm llm to use. Contextual LLM will be used if not set
  */
-class ExecutePromptException(
-    override val prompt: String,
+sealed class ExecutePromptException(
     override val requireResult: Boolean,
     override val llm: LlmOptions? = null,
     override val outputClass: Class<*>,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>
-) : LlmCallRequest, RuntimeException(
-    "Not a real failure but meant to be intercepted by infrastructure: Generated prompt=[$prompt]"
+) : LlmObjectCreationRequest, RuntimeException(
+    "Not a real failure but meant to be intercepted by infrastructure"
+)
+
+class CreateObjectPromptException(
+    override val prompt: String,
+    requireResult: Boolean,
+    llm: LlmOptions? = null,
+    outputClass: Class<*>,
+    toolCallbacks: List<ToolCallback>,
+    promptContributors: List<PromptContributor>
+) : ExecutePromptException(
+    requireResult = requireResult,
+    llm = llm,
+    outputClass = outputClass,
+    toolCallbacks = toolCallbacks,
+    promptContributors = promptContributors
+), LlmCallRequest
+
+class EvaluateConditionPromptException(
+    val condition: String,
+    val context: String,
+    val confidenceThreshold: ZeroToOne,
+    requireResult: Boolean,
+    llm: LlmOptions? = null,
+    toolCallbacks: List<ToolCallback>,
+    promptContributors: List<PromptContributor>
+) : ExecutePromptException(
+    requireResult = requireResult,
+    llm = llm,
+    outputClass = Determination::class.java,
+    toolCallbacks = toolCallbacks,
+    promptContributors = promptContributors
 )

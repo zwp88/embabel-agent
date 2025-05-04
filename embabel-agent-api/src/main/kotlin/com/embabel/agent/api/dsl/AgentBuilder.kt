@@ -19,7 +19,8 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.asTransformation
 import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition
-import com.embabel.common.ai.model.LlmOptions
+import com.embabel.agent.spi.LlmCall
+import com.embabel.common.core.types.Named
 import com.embabel.plan.goap.ConditionDetermination
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -29,6 +30,7 @@ import kotlin.reflect.KProperty
  */
 data class ConditionContext(
     override val processContext: ProcessContext,
+    override val operation: Named,
 ) : OperationContext, Blackboard by processContext.blackboard
 
 typealias ConditionPredicate = (
@@ -140,7 +142,16 @@ class AgentBuilder(
                     override val name = it
                     override val cost = cost
                     override fun evaluate(processContext: ProcessContext): ConditionDetermination =
-                        ConditionDetermination(block(ConditionContext(processContext)))
+                        ConditionDetermination(
+                            block(
+                                ConditionContext(
+                                    processContext = processContext,
+                                    operation = object : Named {
+                                        override val name: String = it
+                                    }
+                                )
+                            )
+                        )
                 }
             },
             this.conditions
@@ -150,7 +161,7 @@ class AgentBuilder(
     fun condition(
         name: String? = null,
         prompt: (processContext: ProcessContext) -> String,
-        llm: LlmOptions = LlmOptions(),
+        llm: LlmCall = LlmCall(),
     ): ConditionDelegateProvider {
         return ConditionDelegateProvider(
             specifiedName = name,

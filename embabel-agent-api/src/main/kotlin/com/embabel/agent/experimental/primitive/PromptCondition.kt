@@ -18,11 +18,14 @@ package com.embabel.agent.experimental.primitive
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmInteraction
-import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
+import com.fasterxml.jackson.annotation.JsonClassDescription
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.slf4j.LoggerFactory
+
 
 /**
  * Prompt an LLM to evaluate a condition.
@@ -35,7 +38,7 @@ import org.slf4j.LoggerFactory
 data class PromptCondition(
     override val name: String,
     val prompt: (processContext: ProcessContext) -> String,
-    val llm: LlmOptions,
+    val llm: LlmCall,
 ) : Condition {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -53,25 +56,35 @@ data class PromptCondition(
             and an explanation of what you base this on.
             """.trimIndent()
         logger.info("Condition {}: making LLM call to evaluate using {}...", name, llm)
-
+        val interaction = LlmInteraction.from(
+            llm = llm,
+            id = InteractionId("condition-$name")
+        )
         val determination = processContext.createObject<Determination>(
             prompt = prompt,
-            interaction = LlmInteraction(
-                id = InteractionId("condition-$name"),
-                llm = llm,
-                toolCallbacks = emptyList(),
-            ),
+            interaction = interaction,
             outputClass = Determination::class.java,
             agentProcess = processContext.agentProcess,
             action = null,
         )
-        logger.info("Condition {}: determination from {} was {}", name, llm.criteria, determination)
+        logger.info(
+            "Condition {}: determination from {} was {}",
+            name,
+            interaction.llm.criteria,
+            determination,
+        )
         return ConditionDetermination(determination.result)
     }
 }
 
-private data class Determination(
+@JsonClassDescription("Determination of a condition")
+data class Determination(
+    @JsonPropertyDescription("Result of the condition: true or false")
     val result: Boolean,
-    val confidence: Double,
+
+    @JsonPropertyDescription("Confidence level of the result, from 0-1")
+    val confidence: ZeroToOne,
+
+    @JsonPropertyDescription("Explanation of your determination")
     val explanation: String,
 )

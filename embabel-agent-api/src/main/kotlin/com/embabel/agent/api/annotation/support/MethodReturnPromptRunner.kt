@@ -15,17 +15,19 @@
  */
 package com.embabel.agent.api.annotation.support
 
-import com.embabel.agent.api.common.ExecutePromptException
+import com.embabel.agent.api.common.CreateObjectPromptException
+import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
 /**
  * PromptRunner implementation that can be used to return a value
- * from an Action.
+ * from an @Action or @Condition method.
  */
-internal class ActionReturnPromptRunner(
+internal class MethodReturnPromptRunner(
     override val llm: LlmOptions?,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
@@ -35,7 +37,7 @@ internal class ActionReturnPromptRunner(
         prompt: String,
         outputClass: Class<T>,
     ): T {
-        throw ExecutePromptException(
+        throw CreateObjectPromptException(
             prompt = prompt,
             llm = llm,
             requireResult = true,
@@ -49,7 +51,7 @@ internal class ActionReturnPromptRunner(
         prompt: String,
         outputClass: Class<T>,
     ): T? {
-        throw ExecutePromptException(
+        throw CreateObjectPromptException(
             prompt = prompt,
             llm = llm,
             requireResult = false,
@@ -59,4 +61,19 @@ internal class ActionReturnPromptRunner(
         )
     }
 
+    override fun evaluateCondition(
+        condition: String,
+        context: String,
+        confidenceThreshold: ZeroToOne
+    ): Boolean {
+        throw EvaluateConditionPromptException(
+            condition = condition,
+            context = context,
+            confidenceThreshold = confidenceThreshold,
+            llm = llm,
+            requireResult = false,
+            toolCallbacks = toolCallbacks,
+            promptContributors = promptContributors,
+        )
+    }
 }

@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.api.annotation
 
-import com.embabel.agent.api.annotation.support.ActionReturnPromptRunner
+import com.embabel.agent.api.annotation.support.MethodReturnPromptRunner
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
@@ -30,8 +30,8 @@ fun using(
     toolCallbacks: List<ToolCallback> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
 ): PromptRunner =
-    ActionReturnPromptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = promptContributors)
+    MethodReturnPromptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = promptContributors)
 
 
 val usingDefaultLlm: PromptRunner =
-    ActionReturnPromptRunner(llm = null, toolCallbacks = emptyList(), promptContributors = emptyList())
+    MethodReturnPromptRunner(llm = null, toolCallbacks = emptyList(), promptContributors = emptyList())

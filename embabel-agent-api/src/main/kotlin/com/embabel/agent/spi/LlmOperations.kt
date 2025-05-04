@@ -41,6 +41,14 @@ interface LlmCall : PromptContributorConsumer {
     val llm: LlmOptions?
     val toolCallbacks: List<ToolCallback>
     override val promptContributors: List<PromptContributor>
+
+    companion object {
+        operator fun invoke(): LlmCall = object : LlmCall {
+            override val llm: LlmOptions? = null
+            override val toolCallbacks: List<ToolCallback> = emptyList()
+            override val promptContributors: List<PromptContributor> = emptyList()
+        }
+    }
 }
 
 /**
@@ -63,7 +71,17 @@ data class LlmInteraction(
     override val llm: LlmOptions = LlmOptions(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
-) : LlmCall
+) : LlmCall {
+
+    companion object {
+        fun from(llm: LlmCall, id: InteractionId) = LlmInteraction(
+            id = id,
+            llm = llm.llm ?: LlmOptions(),
+            toolCallbacks = llm.toolCallbacks,
+            promptContributors = llm.promptContributors,
+        )
+    }
+}
 
 /**
  * Wraps LLM operations.

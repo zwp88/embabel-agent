@@ -17,6 +17,7 @@ package com.embabel.examples.dogfood.research
 
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.create
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.InternetResource
@@ -82,7 +83,7 @@ class Researcher(
     ).create(
         """
         Categorize the following user input:
-        
+
         Topic:
         <${userInput.content}>
     """.trimIndent()
@@ -108,13 +109,13 @@ class Researcher(
     ).create(
         """
         Use the web and browser tools to answer the given question.
-        
+
         You must try to find the answer on the web, and be definite, not vague.
-        
+
         Write a detailed report in at most ${properties.maxWordCount} words.
         If you can answer the question more briefly, do so.
         Including a number of links that are relevant to the topic.
-        
+
         Question:
         <${userInput.content}>
     """.trimIndent()
@@ -129,10 +130,10 @@ class Researcher(
     ).create(
         """
         Use the web and browser tools to perform deep research on the given topic.
-        
+
         Write a detailed report in ${properties.maxWordCount} words,
         including a number of links that are relevant to the topic.
-        
+
         Topic:
         <${userInput.content}>
     """.trimIndent()
@@ -142,7 +143,14 @@ class Researcher(
     fun makesTheGrade(
         userInput: UserInput,
         report: ResearchReport,
-    ): Boolean = report.text.isNotBlank() && report.links.isNotEmpty()
+    ): Boolean = using(LlmOptions(OpenAiModels.GPT_4o)).evaluateCondition(
+        condition = """
+            Is this research report satisfactory? Consider the following question:
+            <${userInput.content}>
+            The report is satisfactory if it answers the question with adequate references.
+        """.trimIndent(),
+        context = report.text,
+    )
 
     @AchievesGoal(
         description = "Accepts a research report",

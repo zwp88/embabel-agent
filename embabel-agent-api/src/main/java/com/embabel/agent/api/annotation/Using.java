@@ -86,6 +86,11 @@ public class Using implements PromptRunner {
     }
 
     @Override
+    public boolean evaluateCondition(@NotNull String condition, @NotNull String context, double confidenceThreshold) {
+        return PromptsKt.using(llmOptions, toolCallbacks, promptContributors).evaluateCondition(condition, context, confidenceThreshold);
+    }
+
+    @Override
     @Nullable
     public LlmOptions getLlm() {
         return llmOptions;
