@@ -16,6 +16,7 @@
 package com.embabel.agent.domain.special
 
 import com.embabel.common.core.types.Timestamped
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import java.time.Instant
 
 /**
@@ -23,6 +24,7 @@ import java.time.Instant
  * Starting point for many flows.
  */
 data class UserInput(
+    @get:JsonPropertyDescription("user input")
     val content: String,
     override val timestamp: Instant = Instant.now(),
 ) : Timestamped
