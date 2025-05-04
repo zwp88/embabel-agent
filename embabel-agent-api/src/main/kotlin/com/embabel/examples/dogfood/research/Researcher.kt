@@ -152,6 +152,7 @@ class Researcher(
         userInput: UserInput,
         context: OperationContext,
     ): ResearchReport {
+        // TODO don't want merged ones
         val reports = context.all<ResearchReport>()
         return using(
             llm = LlmOptions(OpenAiModels.GPT_4o),
