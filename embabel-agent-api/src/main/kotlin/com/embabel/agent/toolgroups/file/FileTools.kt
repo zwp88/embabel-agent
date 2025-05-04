@@ -177,6 +177,14 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
         return "content appended to file"
     }
 
+    @Tool(description = "Delete a file at the given path")
+    fun delete(path: String): String {
+        val resolvedPath = resolveAndValidateFile(root = root, path = path)
+        Files.delete(resolvedPath)
+        logger.info("Deleted file at path: $path")
+        return "file deleted"
+    }
+
 
     companion object {
 
