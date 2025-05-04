@@ -190,6 +190,9 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
 
         private val logger = LoggerFactory.getLogger(FileTools::class.java)
 
+        /**
+         * Create a temporary directory using the given seed
+         */
         fun createTempDir(seed: String): File {
             val tempDir = Files.createTempDirectory(seed).toFile()
             val tempDirPath = tempDir.absolutePath
