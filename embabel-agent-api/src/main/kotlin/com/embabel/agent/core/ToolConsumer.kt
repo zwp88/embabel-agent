@@ -197,7 +197,15 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
     }
 }
 
-interface ToolCallbackPublisher : ToolCallbackSpec
+interface ToolCallbackPublisher : ToolCallbackSpec {
+
+    companion object {
+
+        operator fun invoke(toolCallbacks: Collection<ToolCallback> = emptyList()) = object : ToolCallbackPublisher {
+            override val toolCallbacks: Collection<ToolCallback> = toolCallbacks
+        }
+    }
+}
 
 interface ToolGroup : ToolCallbackPublisher, HasInfoString {
 

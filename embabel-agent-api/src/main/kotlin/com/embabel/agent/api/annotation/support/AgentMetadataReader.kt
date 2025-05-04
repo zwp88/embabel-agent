@@ -30,6 +30,7 @@ import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.util.DummyInstanceCreator
+import com.embabel.common.core.util.NameUtils
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.stereotype.Service
@@ -220,7 +221,7 @@ class AgentMetadataReader {
     ): AgentCoreGoal {
         // We need to change the name to be the property name
         val rawGoal = ReflectionUtils.invokeMethod(method, instance) as AgentCoreGoal
-        return rawGoal.copy(name = generateName(instance, getterToPropertyName(method.name)))
+        return rawGoal.copy(name = generateName(instance, NameUtils.beanMethodToPropertyName(method.name)))
     }
 
     private fun createCondition(
@@ -473,13 +474,5 @@ class AgentMetadataReader {
             // Add precondition of the action having run
             pre = setOf(HAS_RUN_CONDITION_PREFIX + action.name),
         )
-    }
-}
-
-private fun getterToPropertyName(name: String): String {
-    return if (name.startsWith("get")) {
-        name.substring(3).decapitalize()
-    } else {
-        name
     }
 }
