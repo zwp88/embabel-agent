@@ -24,6 +24,7 @@ import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.prompt.CurrentDate
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
@@ -51,11 +52,12 @@ interface OperationContext : Blackboard {
 //        val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
         // Add any tool callbacks that are not already in the list
 //        updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
+        val promptContributorsToUse = promptContributors + CurrentDate()
         return OperationContextPromptRunner(
             this,
             llm = llm,
             toolCallbacks = toolCallbacks,
-            promptContributors = promptContributors.filterNotNull(),
+            promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
         )
     }
 
@@ -96,11 +98,13 @@ interface ActionContext : OperationContext {
         val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
         // Add any tool callbacks that are not already in the list
         updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
+        val promptContributorsToUse = promptContributors + CurrentDate()
+
         return OperationContextPromptRunner(
             this,
             llm = llm,
             toolCallbacks = updatedToolCallbacks,
-            promptContributors = promptContributors.filterNotNull(),
+            promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
         )
     }
 
