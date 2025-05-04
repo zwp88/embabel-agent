@@ -371,38 +371,47 @@ class AgentMetadataReader {
             },
             processContext = processContext,
         )
-        for (m in method.parameters) {
+        for (parameter in method.parameters) {
             when {
-                ProcessContext::class.java.isAssignableFrom(m.type) -> {
+                ProcessContext::class.java.isAssignableFrom(parameter.type) -> {
                     args += processContext
                 }
 
-                OperationContext::class.java.isAssignableFrom(m.type) -> {
+                OperationContext::class.java.isAssignableFrom(parameter.type) -> {
                     args += operationContext
                 }
-                // TODO required match binding: Consistent with actions
 
                 else -> {
+                    val requireNameMatch = parameter.getAnnotation(RequireNameMatch::class.java)
                     val domainTypes = processContext.agentProcess.agent.domainTypes
+                    val variable = if (requireNameMatch != null) {
+                        parameter.name
+                    } else {
+                        IoBinding.DEFAULT_BINDING
+                    }
                     args += processContext.blackboard.getValue(
-                        type = m.type.name,
+                        variable = variable,
+                        type = parameter.type.name,
                         domainTypes = domainTypes,
                     )
                         ?: return run {
                             // TODO assignable?
-                            if (domainTypes.contains(m.type)) {
-                                logger.warn(
-                                    "Condition method {}.{} has no value for parameter {} of known type",
+                            if (domainTypes.contains(parameter.type)) {
+                                // This is not an error condition
+                                logger.debug(
+                                    "Condition method {}.{} has no value for parameter {} of known type {}: Returning false",
                                     instance.javaClass.name,
-                                    m.name,
-                                    m.type,
+                                    method.name,
+                                    variable,
+                                    parameter.type,
                                 )
                             } else {
-                                logger.info(
-                                    "Condition method {}.{} has unsupported argument type {}",
+                                logger.warn(
+                                    "Condition method {}.{} has unsupported argument {}. Unknown type {}",
                                     instance.javaClass.name,
-                                    m.name,
-                                    m.type,
+                                    method.name,
+                                    variable,
+                                    parameter.type,
                                 )
                             }
                             false

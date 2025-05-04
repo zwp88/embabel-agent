@@ -16,9 +16,12 @@
 package com.embabel.examples.dogfood.research
 
 import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
+import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.all
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.InternetResource
 import com.embabel.agent.domain.library.InternetResources
@@ -26,14 +29,19 @@ import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.agent.experimental.prompt.ResponseFormat
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelProvider.Companion.BEST_ROLE
 import com.embabel.common.ai.model.ModelProvider.Companion.CHEAPEST_ROLE
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
+import com.fasterxml.jackson.annotation.JsonClassDescription
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.boot.context.properties.ConfigurationProperties
 
+@JsonClassDescription("Research report, containing a text field and links")
 data class ResearchReport(
+    @get:JsonPropertyDescription(
+        "The text of the research report",
+    )
     override val text: String,
     override val links: List<InternetResource>,
 ) : HasContent, InternetResources
@@ -89,22 +97,71 @@ class Researcher(
     """.trimIndent()
     )
 
-    @Action(post = [MAKES_THE_GRADE])
-    fun doResearch(
+    // These need a different output binding or only one with run
+    @Action(post = [MAKES_THE_GRADE, ENOUGH_REPORTS], outputBinding = "gpt4Report")
+    fun researchWithGpt4(
         userInput: UserInput,
         categorization: Categorization,
+    ): ResearchReport = doResearchWith(
+        userInput = userInput,
+        categorization = categorization,
+        llm = LlmOptions(OpenAiModels.GPT_4o),
+    )
+
+    @Action(post = [MAKES_THE_GRADE, ENOUGH_REPORTS], outputBinding = "claudeReport")
+    fun researchWithClaude(
+        userInput: UserInput,
+        categorization: Categorization,
+    ): ResearchReport = doResearchWith(
+        userInput = userInput,
+        categorization = categorization,
+        llm = LlmOptions(AnthropicModels.CLAUDE_37_SONNET),
+    )
+
+    @Condition
+    fun enoughReports(
+        context: OperationContext,
+    ): Boolean = context.all<ResearchReport>().size > 1
+
+    @Action(
+        pre = [ENOUGH_REPORTS],
+        outputBinding = "mergedReport"
+    )
+    fun mergeReports(
+        userInput: UserInput,
+        context: OperationContext,
+    ): ResearchReport {
+        val reports = context.all<ResearchReport>()
+        return using(
+            llm = LlmOptions(OpenAiModels.GPT_4o),
+            promptContributors = properties.promptContributors,
+        ).create(
+            """
+        Merge the following research reports into a single report taking the best of each.
+        Consider the user direction: <${userInput.content}>
+
+        Reports:
+        ${reports.joinToString("\n") { it.text }}
+    """.trimIndent()
+        )
+    }
+
+    private fun doResearchWith(
+        userInput: UserInput,
+        categorization: Categorization,
+        llm: LlmOptions,
     ): ResearchReport = when (
         categorization.category
     ) {
-        Category.QUESTION -> answerQuestion(userInput, categorization)
-        Category.DISCUSSION -> research(userInput, categorization)
+        Category.QUESTION -> answerQuestion(userInput, llm)
+        Category.DISCUSSION -> research(userInput, llm)
     }
 
-    fun answerQuestion(
+    private fun answerQuestion(
         userInput: UserInput,
-        categorization: Categorization,
+        llm: LlmOptions,
     ): ResearchReport = using(
-        llm = LlmOptions(byRole(BEST_ROLE)),
+        llm = llm,
         promptContributors = properties.promptContributors,
     ).create(
         """
@@ -121,11 +178,11 @@ class Researcher(
     """.trimIndent()
     )
 
-    fun research(
+    private fun research(
         userInput: UserInput,
-        categorization: Categorization,
+        llm: LlmOptions,
     ): ResearchReport = using(
-        llm = LlmOptions(byRole(BEST_ROLE)),
+        llm = llm,
         promptContributors = properties.promptContributors,
     ).create(
         """
@@ -142,27 +199,30 @@ class Researcher(
     @Condition(name = MAKES_THE_GRADE)
     fun makesTheGrade(
         userInput: UserInput,
-        report: ResearchReport,
+        @RequireNameMatch mergedReport: ResearchReport,
     ): Boolean = using(LlmOptions(OpenAiModels.GPT_4o)).evaluateCondition(
         condition = """
             Is this research report satisfactory? Consider the following question:
             <${userInput.content}>
             The report is satisfactory if it answers the question with adequate references.
         """.trimIndent(),
-        context = report.text,
+        context = mergedReport.text,
     )
 
     @AchievesGoal(
         description = "Accepts a research report",
     )
-    @Action(pre = [MAKES_THE_GRADE])
+    // TODO this won't complete without the output binding to a new thing.
+    // This makes some sense but seems a bit surprising
+    @Action(pre = [MAKES_THE_GRADE], outputBinding = "finalResearchReport")
     fun acceptReport(
         userInput: UserInput,
-        report: ResearchReport,
-    ) = report
+        @RequireNameMatch mergedReport: ResearchReport,
+    ) = mergedReport
 
     companion object {
 
+        const val ENOUGH_REPORTS = "enoughReports"
         const val MAKES_THE_GRADE = "makesTheGrade"
     }
 }

@@ -52,8 +52,8 @@ internal class SimpleAgentProcess(
             logger.info(
                 "❌ Process {} stuck: No plan from {} in {}, context={}",
                 id,
-                worldState,
-                agent.planningSystem.infoString(),
+                worldState.infoString(verbose = true),
+                agent.planningSystem.infoString(verbose = true),
                 blackboard,
             )
             _status = AgentProcessStatusCode.STUCK

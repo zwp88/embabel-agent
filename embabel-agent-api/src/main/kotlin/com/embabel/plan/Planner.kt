@@ -20,7 +20,7 @@ import com.embabel.common.core.types.HasInfoString
 /**
  * A planning system is a set of actions and goals.
  */
-interface PlanningSystem {
+interface PlanningSystem : HasInfoString {
 
     val actions: Set<Action>
 

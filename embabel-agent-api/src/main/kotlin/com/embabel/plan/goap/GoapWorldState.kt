@@ -16,6 +16,7 @@
 package com.embabel.plan.goap
 
 import com.embabel.plan.WorldState
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 typealias GoapState = Map<String, ConditionDetermination>
 
@@ -116,7 +117,8 @@ data class GoapWorldState(
     }
 
     override fun infoString(verbose: Boolean?): String {
-        return state.toString()
+        return if (verbose == true) jacksonObjectMapper().writerWithDefaultPrettyPrinter()
+            .writeValueAsString(state) else state.toString()
     }
 
     operator fun plus(pair: Pair<String, ConditionDetermination>): GoapWorldState =

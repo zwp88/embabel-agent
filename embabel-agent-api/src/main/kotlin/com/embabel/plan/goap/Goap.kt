@@ -184,7 +184,7 @@ data class GoapPlanningSystem(
         return knownPreconditions() + knownEffects()
     }
 
-    fun infoString(): String =
+    override fun infoString(verbose: Boolean?): String =
         "GOAP system: actions=${actions.map { it.name }}, goals=${goals.map { it.name }}, knownPreconditions=${knownPreconditions()}, knownEffects=${knownEffects()}"
 }
 
