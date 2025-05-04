@@ -27,12 +27,14 @@ import com.embabel.agent.domain.library.InternetResource
 import com.embabel.agent.domain.library.InternetResources
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.experimental.prompt.Persona
+import com.embabel.agent.experimental.prompt.PromptUtils
 import com.embabel.agent.experimental.prompt.ResponseFormat
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider.Companion.CHEAPEST_ROLE
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
+import com.embabel.common.core.types.HasInfoString
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -44,7 +46,16 @@ data class ResearchReport(
     )
     override val text: String,
     override val links: List<InternetResource>,
-) : HasContent, InternetResources
+) : HasContent, InternetResources, HasInfoString {
+
+    override fun infoString(verbose: Boolean?): String {
+        return """
+            Report:
+            $text
+            Links: ${links.joinToString("\n") { it.url }}
+        """.trimIndent()
+    }
+}
 
 @ConfigurationProperties(prefix = "embabel.examples.researcher")
 data class ResearcherProperties(
@@ -98,7 +109,11 @@ class Researcher(
     )
 
     // These need a different output binding or only one with run
-    @Action(post = [MAKES_THE_GRADE, ENOUGH_REPORTS], outputBinding = "gpt4Report")
+    @Action(
+        post = [MAKES_THE_GRADE, ENOUGH_REPORTS],
+        canRerun = true,
+        outputBinding = "gpt4Report"
+    )
     fun researchWithGpt4(
         userInput: UserInput,
         categorization: Categorization,
@@ -108,7 +123,11 @@ class Researcher(
         llm = LlmOptions(OpenAiModels.GPT_4o),
     )
 
-    @Action(post = [MAKES_THE_GRADE, ENOUGH_REPORTS], outputBinding = "claudeReport")
+    @Action(
+        post = [MAKES_THE_GRADE, ENOUGH_REPORTS],
+        outputBinding = "claudeReport",
+        canRerun = true,
+    )
     fun researchWithClaude(
         userInput: UserInput,
         categorization: Categorization,
@@ -125,7 +144,9 @@ class Researcher(
 
     @Action(
         pre = [ENOUGH_REPORTS],
-        outputBinding = "mergedReport"
+        post = [MAKES_THE_GRADE],
+        outputBinding = "mergedReport",
+        canRerun = true,
     )
     fun mergeReports(
         userInput: UserInput,
@@ -141,7 +162,7 @@ class Researcher(
         Consider the user direction: <${userInput.content}>
 
         Reports:
-        ${reports.joinToString("\n") { it.text }}
+        ${reports.joinToString("\n") { it.infoString(verbose = true) }}
     """.trimIndent()
         )
     }
@@ -172,6 +193,9 @@ class Researcher(
         Write a detailed report in at most ${properties.maxWordCount} words.
         If you can answer the question more briefly, do so.
         Including a number of links that are relevant to the topic.
+
+        Example:
+        ${PromptUtils.jsonExampleOf<ResearchReport>()}
 
         Question:
         <${userInput.content}>
@@ -216,7 +240,6 @@ class Researcher(
     // This makes some sense but seems a bit surprising
     @Action(pre = [MAKES_THE_GRADE], outputBinding = "finalResearchReport")
     fun acceptReport(
-        userInput: UserInput,
         @RequireNameMatch mergedReport: ResearchReport,
     ) = mergedReport
 
