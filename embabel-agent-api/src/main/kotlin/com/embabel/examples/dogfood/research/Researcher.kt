@@ -21,7 +21,6 @@ import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.core.all
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.InternetResource
 import com.embabel.agent.domain.library.InternetResources
@@ -65,6 +64,11 @@ data class SingleLlmReport(
 ) : Timestamped {
     override val timestamp: Instant = Instant.now()
 }
+
+data class Critique(
+    val accepted: Boolean,
+    val reasoning: String,
+)
 
 
 @ConfigurationProperties(prefix = "embabel.examples.researcher")
@@ -118,9 +122,9 @@ class Researcher(
     """.trimIndent()
     )
 
-    // These need a different output binding or only one with run
+    // These need a different output binding or only one will run
     @Action(
-        post = [MAKES_THE_GRADE, ENOUGH_REPORTS],
+        post = [REPORT_SATISFACTORY],
         canRerun = true,
         outputBinding = "gpt4Report"
     )
@@ -128,15 +132,35 @@ class Researcher(
         userInput: UserInput,
         categorization: Categorization,
         context: OperationContext,
-    ): SingleLlmReport = doResearchWith(
+    ): SingleLlmReport = researchWith(
         userInput = userInput,
         categorization = categorization,
+        critique = null,
         llm = LlmOptions(OpenAiModels.GPT_4o),
         context = context,
     )
 
     @Action(
-        post = [MAKES_THE_GRADE, ENOUGH_REPORTS],
+        pre = [REPORT_UNSATISFACTORY],
+        post = [REPORT_SATISFACTORY],
+        canRerun = true,
+        outputBinding = "gpt4Report"
+    )
+    fun redoResearchWithGpt4(
+        userInput: UserInput,
+        categorization: Categorization,
+        critique: Critique,
+        context: OperationContext,
+    ): SingleLlmReport = researchWith(
+        userInput = userInput,
+        categorization = categorization,
+        critique = critique,
+        llm = LlmOptions(OpenAiModels.GPT_4o),
+        context = context,
+    )
+
+    @Action(
+        post = [REPORT_SATISFACTORY],
         outputBinding = "claudeReport",
         canRerun = true,
     )
@@ -144,54 +168,45 @@ class Researcher(
         userInput: UserInput,
         categorization: Categorization,
         context: OperationContext,
-    ): SingleLlmReport = doResearchWith(
+    ): SingleLlmReport = researchWith(
         userInput = userInput,
         categorization = categorization,
+        critique = null,
         llm = LlmOptions(AnthropicModels.CLAUDE_37_SONNET),
         context = context,
     )
 
-    @Condition
-    fun enoughReports(
-        context: OperationContext,
-    ): Boolean = context.all<SingleLlmReport>().size > 1
-
     @Action(
-        pre = [ENOUGH_REPORTS],
-        post = [MAKES_THE_GRADE],
-        outputBinding = "mergedReport",
+        pre = [REPORT_UNSATISFACTORY],
+        post = [REPORT_SATISFACTORY],
+        outputBinding = "claudeReport",
         canRerun = true,
     )
-    fun mergeReports(
-        userInput: UserInput,
-        context: OperationContext,
-    ): ResearchReport {
-        // TODO don't want merged ones
-        val reports = context.all<SingleLlmReport>()
-        return using(
-            llm = LlmOptions(OpenAiModels.GPT_4o),
-            promptContributors = properties.promptContributors,
-        ).create(
-            """
-        Merge the following research reports into a single report taking the best of each.
-        Consider the user direction: <${userInput.content}>
-
-        ${reports.joinToString("\n\n") { "Report from ${it.model}\n${it.report.infoString(verbose = true)}" }}
-    """.trimIndent()
-        )
-    }
-
-    private fun doResearchWith(
+    fun redoResearchWithClaude(
         userInput: UserInput,
         categorization: Categorization,
+        critique: Critique,
+        context: OperationContext,
+    ): SingleLlmReport = researchWith(
+        userInput = userInput,
+        categorization = categorization,
+        critique = critique,
+        llm = LlmOptions(AnthropicModels.CLAUDE_37_SONNET),
+        context = context,
+    )
+
+    private fun researchWith(
+        userInput: UserInput,
+        categorization: Categorization,
+        critique: Critique?,
         llm: LlmOptions,
         context: OperationContext,
     ): SingleLlmReport {
         val researchReport = when (
             categorization.category
         ) {
-            Category.QUESTION -> answerQuestion(userInput, llm, context)
-            Category.DISCUSSION -> research(userInput, llm, context)
+            Category.QUESTION -> answerQuestion(userInput, llm, critique, context)
+            Category.DISCUSSION -> research(userInput, llm, critique, context)
         }
         return SingleLlmReport(
             report = researchReport,
@@ -202,6 +217,7 @@ class Researcher(
     private fun answerQuestion(
         userInput: UserInput,
         llm: LlmOptions,
+        critique: Critique?,
         context: OperationContext,
     ): ResearchReport = context.promptRunner(
         llm = llm,
@@ -221,12 +237,19 @@ class Researcher(
 
         Question:
         <${userInput.content}>
+        
+        ${
+            critique?.reasoning?.let {
+                "Critique of previous answer:\n<$it>"
+            }
+        }
     """.trimIndent()
     )
 
     private fun research(
         userInput: UserInput,
         llm: LlmOptions,
+        critique: Critique?,
         context: OperationContext,
     ): ResearchReport = context.promptRunner(
         llm = llm,
@@ -240,37 +263,83 @@ class Researcher(
 
         Topic:
         <${userInput.content}>
+        
+         ${
+            critique?.reasoning?.let {
+                "Critique of previous answer:\n<$it>"
+            }
+        }
     """.trimIndent()
     )
 
-    @Condition(name = MAKES_THE_GRADE)
-    fun makesTheGrade(
+    @Action(post = [REPORT_SATISFACTORY], canRerun = true)
+    fun critiqueMergedReport(
         userInput: UserInput,
         @RequireNameMatch mergedReport: ResearchReport,
-    ): Boolean = using(LlmOptions(OpenAiModels.GPT_4o)).evaluateCondition(
-        condition = """
+    ): Critique = using(LlmOptions(OpenAiModels.GPT_4o)).create(
+        """
             Is this research report satisfactory? Consider the following question:
             <${userInput.content}>
             The report is satisfactory if it answers the question with adequate references.
             It is possible that the question does not have a clear answer, in which
             case the report is satisfactory if it provides a reasonable discussion of the topic.
+            
+            ${mergedReport.infoString(verbose = true)}
         """.trimIndent(),
-        context = mergedReport.text,
     )
+
+    @Action(
+        post = [REPORT_SATISFACTORY],
+        outputBinding = "mergedReport",
+        canRerun = true,
+    )
+    fun mergeReports(
+        userInput: UserInput,
+        @RequireNameMatch gpt4Report: SingleLlmReport,
+        @RequireNameMatch claudeReport: SingleLlmReport,
+    ): ResearchReport {
+        val reports = listOf(
+            gpt4Report,
+            claudeReport,
+        )
+        return using(
+            llm = LlmOptions(OpenAiModels.GPT_4o),
+            promptContributors = properties.promptContributors,
+        ).create(
+            """
+        Merge the following research reports into a single report taking the best of each.
+        Consider the user direction: <${userInput.content}>
+
+        ${reports.joinToString("\n\n") { "Report from ${it.model}\n${it.report.infoString(verbose = true)}" }}
+    """.trimIndent()
+        )
+    }
+
+    @Condition(name = REPORT_SATISFACTORY)
+    fun makesTheGrade(
+        critique: Critique,
+    ): Boolean = critique.accepted
+
+    // TODO should be able to use !
+    @Condition(name = REPORT_UNSATISFACTORY)
+    fun rejected(
+        critique: Critique,
+    ): Boolean = !critique.accepted
 
     @AchievesGoal(
         description = "Accepts a research report",
     )
     // TODO this won't complete without the output binding to a new thing.
     // This makes some sense but seems a bit surprising
-    @Action(pre = [MAKES_THE_GRADE], outputBinding = "finalResearchReport")
+    @Action(pre = [REPORT_SATISFACTORY], outputBinding = "finalResearchReport")
     fun acceptReport(
         @RequireNameMatch mergedReport: ResearchReport,
+        critique: Critique,
     ) = mergedReport
 
     companion object {
 
-        const val ENOUGH_REPORTS = "enoughReports"
-        const val MAKES_THE_GRADE = "makesTheGrade"
+        const val REPORT_SATISFACTORY = "reportSatisfactory"
+        const val REPORT_UNSATISFACTORY = "reportUnsatisfactory"
     }
 }
