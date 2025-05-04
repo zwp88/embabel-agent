@@ -35,9 +35,11 @@ import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.Timestamped
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.boot.context.properties.ConfigurationProperties
+import java.time.Instant
 
 @JsonClassDescription("Research report, containing a text field and links")
 data class ResearchReport(
@@ -56,6 +58,14 @@ data class ResearchReport(
         """.trimIndent()
     }
 }
+
+data class SingleLlmReport(
+    val report: ResearchReport,
+    val model: String,
+) : Timestamped {
+    override val timestamp: Instant = Instant.now()
+}
+
 
 @ConfigurationProperties(prefix = "embabel.examples.researcher")
 data class ResearcherProperties(
@@ -117,10 +127,12 @@ class Researcher(
     fun researchWithGpt4(
         userInput: UserInput,
         categorization: Categorization,
-    ): ResearchReport = doResearchWith(
+        context: OperationContext,
+    ): SingleLlmReport = doResearchWith(
         userInput = userInput,
         categorization = categorization,
         llm = LlmOptions(OpenAiModels.GPT_4o),
+        context = context,
     )
 
     @Action(
@@ -131,16 +143,18 @@ class Researcher(
     fun researchWithClaude(
         userInput: UserInput,
         categorization: Categorization,
-    ): ResearchReport = doResearchWith(
+        context: OperationContext,
+    ): SingleLlmReport = doResearchWith(
         userInput = userInput,
         categorization = categorization,
         llm = LlmOptions(AnthropicModels.CLAUDE_37_SONNET),
+        context = context,
     )
 
     @Condition
     fun enoughReports(
         context: OperationContext,
-    ): Boolean = context.all<ResearchReport>().size > 1
+    ): Boolean = context.all<SingleLlmReport>().size > 1
 
     @Action(
         pre = [ENOUGH_REPORTS],
@@ -153,7 +167,7 @@ class Researcher(
         context: OperationContext,
     ): ResearchReport {
         // TODO don't want merged ones
-        val reports = context.all<ResearchReport>()
+        val reports = context.all<SingleLlmReport>()
         return using(
             llm = LlmOptions(OpenAiModels.GPT_4o),
             promptContributors = properties.promptContributors,
@@ -162,8 +176,7 @@ class Researcher(
         Merge the following research reports into a single report taking the best of each.
         Consider the user direction: <${userInput.content}>
 
-        Reports:
-        ${reports.joinToString("\n") { it.infoString(verbose = true) }}
+        ${reports.joinToString("\n\n") { "Report from ${it.model}\n${it.report.infoString(verbose = true)}" }}
     """.trimIndent()
         )
     }
@@ -172,17 +185,25 @@ class Researcher(
         userInput: UserInput,
         categorization: Categorization,
         llm: LlmOptions,
-    ): ResearchReport = when (
-        categorization.category
-    ) {
-        Category.QUESTION -> answerQuestion(userInput, llm)
-        Category.DISCUSSION -> research(userInput, llm)
+        context: OperationContext,
+    ): SingleLlmReport {
+        val researchReport = when (
+            categorization.category
+        ) {
+            Category.QUESTION -> answerQuestion(userInput, llm, context)
+            Category.DISCUSSION -> research(userInput, llm, context)
+        }
+        return SingleLlmReport(
+            report = researchReport,
+            model = llm.criteria.toString(),
+        )
     }
 
     private fun answerQuestion(
         userInput: UserInput,
         llm: LlmOptions,
-    ): ResearchReport = using(
+        context: OperationContext,
+    ): ResearchReport = context.promptRunner(
         llm = llm,
         promptContributors = properties.promptContributors,
     ).create(
@@ -206,7 +227,8 @@ class Researcher(
     private fun research(
         userInput: UserInput,
         llm: LlmOptions,
-    ): ResearchReport = using(
+        context: OperationContext,
+    ): ResearchReport = context.promptRunner(
         llm = llm,
         promptContributors = properties.promptContributors,
     ).create(
@@ -230,6 +252,8 @@ class Researcher(
             Is this research report satisfactory? Consider the following question:
             <${userInput.content}>
             The report is satisfactory if it answers the question with adequate references.
+            It is possible that the question does not have a clear answer, in which
+            case the report is satisfactory if it provides a reasonable discussion of the topic.
         """.trimIndent(),
         context = mergedReport.text,
     )
