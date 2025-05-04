@@ -27,6 +27,7 @@ import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.agent.testing.RandomRanker
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.AStarGoapPlanner
@@ -58,7 +59,11 @@ class DynamicExecutionResult private constructor(
      * Process that executed and is now complete
      */
     val agentProcess: AgentProcess,
-) {
+) : HasInfoString {
+
+    override fun infoString(verbose: Boolean?): String {
+        return "DynamicExecutionResult(basis=$basis, output=$output, agentProcess=${agentProcess.infoString(verbose)})"
+    }
 
     companion object {
 

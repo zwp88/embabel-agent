@@ -32,6 +32,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.victools.jsonschema.generator.*
 import com.github.victools.jsonschema.module.jackson.JacksonModule
 import com.github.victools.jsonschema.module.jackson.JacksonOption
+import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbackProvider
@@ -94,6 +95,8 @@ class AutonomyTools(
     private val objectMapper: ObjectMapper,
 ) : ToolCallbackProvider {
 
+    private val logger = LoggerFactory.getLogger(AutonomyTools::class.java)
+
     override fun getToolCallbacks(): Array<out ToolCallback> {
         return autonomy.agentPlatform.goals.map { goal ->
             toolForGoal(goal)
@@ -146,6 +149,7 @@ class AutonomyTools(
                     processOptions = processOptions,
                     agent = agent,
                 )
+                logger.info("Goal response: {}", dynamicExecutionResult)
 
                 return when (val output = dynamicExecutionResult.output) {
                     is String -> output
