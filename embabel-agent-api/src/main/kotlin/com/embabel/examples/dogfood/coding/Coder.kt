@@ -22,6 +22,7 @@ import com.embabel.agent.api.annotation.Condition
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.code.BuildResult
@@ -119,7 +120,7 @@ class Coder(
     @Action(
         canRerun = true,
         post = [CoderConditions.BuildNeeded],
-        toolGroups = ["github"]
+        toolGroups = ["github", ToolGroup.WEB]
     )
     fun modifyCode(
         userInput: UserInput,
@@ -139,6 +140,8 @@ class Coder(
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
                 Consider any build failure report.
+
+                Use the web tools if you are asked to use a technology you don't know about.
 
                 DO NOT BUILD THE PROJECT UNLESS THE USER HAS REQUESTED IT
                 AND IT IS NECESSARY TO DECIDE WHAT TO MODIFY.
