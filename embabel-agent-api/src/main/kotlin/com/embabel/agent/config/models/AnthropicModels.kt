@@ -131,7 +131,9 @@ class AnthropicModels(
 
         val chatModel = AnthropicChatModel
             .builder()
-            .anthropicApi(AnthropicApi(apiKey))
+            .anthropicApi(AnthropicApi.builder()
+                .apiKey(apiKey)
+                .build())
             .retryTemplate(retryTemplate)
             .defaultOptions(
                 AnthropicChatOptions.builder()

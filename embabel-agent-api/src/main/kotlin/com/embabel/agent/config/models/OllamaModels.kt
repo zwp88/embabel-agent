@@ -37,7 +37,8 @@ class OllamaModels(
 
     private fun ollamaModelOf(name: String): Llm {
         val chatModel = OllamaChatModel.builder()
-            .ollamaApi(OllamaApi())
+            .ollamaApi(OllamaApi.builder()
+                .build())
             .defaultOptions(
                 OllamaOptions.builder()
                     .model(name)
