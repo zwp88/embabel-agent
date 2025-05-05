@@ -72,20 +72,20 @@ class AnthropicModels(
         .build()
 
 
-    val gpt4o = llms.find { it.name == OpenAiModels.GPT_41 }
-    val gpt4oMini = llms.find { it.name == OpenAiModels.GPT_41_MINI }
+    val gpt41 = llms.find { it.name == OpenAiModels.GPT_41 }
+    val gpt41mini = llms.find { it.name == OpenAiModels.GPT_41_MINI }
 
     init {
         logger.info("Anthropic models are available: $properties")
-        if (gpt4o != null) {
-            logger.info("✅ Using GPT-4o fallback")
+        if (gpt41 != null) {
+            logger.info("✅ Using ${gpt41!!.name} fallback")
         } else {
-            logger.info("❌ GPT-4o fallback not available")
+            logger.info("❌ ${gpt41!!.name} fallback not available")
         }
-        if (gpt4oMini != null) {
-            logger.info("✅ Using GPT-4o mini fallback")
+        if (gpt41mini != null) {
+            logger.info("✅ Using ${gpt41mini!!.name} fallback")
         } else {
-            logger.info("❌ GPT-4o mini fallback not available")
+            logger.info("❌ ${gpt41mini!!.name} fallback not available")
         }
     }
 
@@ -115,7 +115,7 @@ class AnthropicModels(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm {
         return anthropicModelOf(CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
-            .withFallback(llm = gpt4o, whenError = flipTrigger)
+            .withFallback(llm = gpt41, whenError = flipTrigger)
             .copy(
                 pricingModel = PerTokenPricingModel(
                     usdPer1mInputTokens = 3.0,
@@ -128,7 +128,7 @@ class AnthropicModels(
     fun claudeHaiku(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
-        .withFallback(llm = gpt4oMini, whenError = flipTrigger)
+        .withFallback(llm = gpt41mini, whenError = flipTrigger)
         .copy(
             pricingModel = PerTokenPricingModel(
                 usdPer1mInputTokens = .80,

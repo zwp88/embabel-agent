@@ -311,10 +311,13 @@ class ShellCommands(
         processOptions: ProcessOptions,
         intent: String,
     ): String {
+        val opt = if (processOptions.verbosity.debug) {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(processOptions)
+        } else {
+            objectMapper.writeValueAsString(processOptions)
+        }
         logger.info(
-            "Created process options: ${
-                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(processOptions)
-            }".color(colorPalette.highlight)
+            "Created process options: $opt".color(colorPalette.highlight)
         )
 
         return runProcess(verbosity = processOptions.verbosity, basis = intent) {
