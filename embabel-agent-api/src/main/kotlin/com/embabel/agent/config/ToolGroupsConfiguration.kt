@@ -36,9 +36,9 @@ class ToolGroupsConfiguration(
 
     init {
         logger.info(
-            "MCP is available. Found {} clients \t{}",
+            "MCP is available. Found {} clients: {}",
             mcpSyncClients.size,
-            mcpSyncClients.map { it.serverInfo }.joinToString("\n")
+            mcpSyncClients.map { it.serverInfo }.joinToString("\n"),
         )
     }
 
@@ -52,6 +52,12 @@ class ToolGroupsConfiguration(
 
     @Bean
     fun mcpWebToolsGroup(): ToolGroup {
+        val wikipediaTools = setOf(
+            "get_related_topics",
+            "get_summary",
+            "get_article",
+            "search_wikipedia",
+        )
         return McpToolGroup(
             description = ToolGroup.WEB_DESCRIPTION,
             artifact = "docker-web",
@@ -60,7 +66,10 @@ class ToolGroupsConfiguration(
                 ToolGroupPermission.INTERNET_ACCESS
             ),
             clients = mcpSyncClients,
-            filter = { it.toolDefinition.name().contains("brave") || it.toolDefinition.name().contains("fetch") },
+            filter = {
+                it.toolDefinition.name().contains("brave") || it.toolDefinition.name().contains("fetch") ||
+                        wikipediaTools.any { wt -> it.toolDefinition.name().contains(wt) }
+            },
         )
     }
 
