@@ -48,7 +48,7 @@ class StarNewsFinderTest {
             var starPerson = StarPerson(name = "Rod", sign = "Cancer")
             val relevantNewsStories = RelevantNewsStories(emptyList())
             val llmCall = captureLlmCall {
-                starNewsFinder.writeup(
+                starNewsFinder.newsWriteup(
                     person = starPerson,
                     relevantNewsStories = relevantNewsStories,
                     horoscope = Horoscope(horoscopeService.dailyHoroscope("Cancer")),
