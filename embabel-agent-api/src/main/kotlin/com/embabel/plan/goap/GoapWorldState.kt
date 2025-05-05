@@ -17,6 +17,7 @@ package com.embabel.plan.goap
 
 import com.embabel.plan.WorldState
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.time.Instant
 
 typealias GoapState = Map<String, ConditionDetermination>
 
@@ -70,6 +71,8 @@ private class FromMapWorldStateDeterminer(
 data class GoapWorldState(
     val state: GoapState = emptyMap(),
 ) : WorldState {
+
+    override val timestamp: Instant = Instant.now()
 
     fun unknownConditions(): Collection<String> =
         state.entries

@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
+import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.Modifier
 
@@ -30,7 +31,7 @@ inline fun <reified I, reified O : Any> transformer(
     post: List<Condition> = emptyList(),
     inputVarName: String = "it",
     outputVarName: String? = "it",
-    cost: Double = 0.0,
+    cost: ZeroToOne = 0.0,
     transitions: List<Transition> = emptyList(),
     toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Collection<String> = emptySet(),
@@ -88,8 +89,8 @@ class Transformer<I, O>(
     description: String = name,
     pre: List<String> = emptyList(),
     post: List<String> = emptyList(),
-    cost: Double = 0.0,
-    value: Double = 0.0,
+    cost: ZeroToOne = 0.0,
+    value: ZeroToOne = 0.0,
     transitions: List<Transition> = emptyList(),
     canRerun: Boolean = false,
     qos: ActionQos = ActionQos(),

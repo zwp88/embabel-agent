@@ -15,6 +15,7 @@
  */
 package com.embabel.plan.goap
 
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.*
 
 interface GoapPlanner : Planner<GoapPlanningSystem, GoapWorldState, GoapPlan>
@@ -56,6 +57,9 @@ interface GoapStep : Step {
      */
     val preconditions: EffectSpec
 
+    /**
+     * The names of all conditions that are referenced by this step
+     */
     val knownConditions: Set<String>
 
     /**
@@ -94,8 +98,8 @@ interface GoapAction : GoapStep, Action {
             preconditions: EffectSpec = pre.associateWith { ConditionDetermination.TRUE },
             post: Collection<String> = emptySet(),
             effects: EffectSpec = post.associateWith { ConditionDetermination.TRUE },
-            cost: Double = 0.0,
-            value: Double = 0.0,
+            cost: ZeroToOne = 0.0,
+            value: ZeroToOne = 0.0,
         ): GoapAction {
             return SimpleGoapAction(
                 name = name,
@@ -113,8 +117,8 @@ private data class SimpleGoapAction(
     override val name: String,
     override val preconditions: EffectSpec,
     override val effects: EffectSpec,
-    override val cost: Double,
-    override val value: Double,
+    override val cost: ZeroToOne,
+    override val value: ZeroToOne,
 ) : GoapAction
 
 /**
@@ -133,7 +137,7 @@ interface GoapGoal : GoapStep, Goal {
         operator fun invoke(
             name: String,
             preconditions: EffectSpec = mapOf(name to ConditionDetermination(true)),
-            value: Double = 0.0
+            value: ZeroToOne = 0.0
         ): GoapGoal {
             return GoapGoalImpl(name, preconditions, value)
         }
@@ -141,7 +145,7 @@ interface GoapGoal : GoapStep, Goal {
         operator fun invoke(
             name: String,
             pre: Collection<String>,
-            value: Double = 0.0
+            value: ZeroToOne = 0.0
         ): GoapGoal {
             return GoapGoalImpl(
                 name,
@@ -156,7 +160,7 @@ interface GoapGoal : GoapStep, Goal {
 private data class GoapGoalImpl(
     override val name: String,
     override val preconditions: EffectSpec,
-    override val value: Double = 0.0,
+    override val value: ZeroToOne = 0.0,
 ) : GoapGoal
 
 data class GoapPlanningSystem(

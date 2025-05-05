@@ -15,7 +15,7 @@
  */
 package com.embabel.plan
 
-import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.ZeroToOne
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -48,8 +48,8 @@ class PlanTest {
     // Simple implementation of Action for testing
     private class TestAction(
         override val name: String,
-        override val cost: Double = 0.0,
-        override val value: Double = 0.0
+        override val cost: ZeroToOne = 0.0,
+        override val value: ZeroToOne = 0.0
     ) : Action {
         override fun infoString(verbose: Boolean?): String = name
     }

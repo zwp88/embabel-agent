@@ -20,6 +20,7 @@ import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.Transition
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -32,7 +33,7 @@ inline fun <reified I, reified O : Any> promptTransformer(
     post: List<Condition> = emptyList(),
     inputVarName: String = "it",
     outputVarName: String = "it",
-    cost: Double = 0.0,
+    cost: ZeroToOne = 0.0,
     transitions: List<Transition> = emptyList(),
     toolGroups: Collection<String> = emptyList(),
     qos: ActionQos = ActionQos(),

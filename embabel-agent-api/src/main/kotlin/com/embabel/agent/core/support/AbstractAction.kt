@@ -19,6 +19,7 @@ import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.Transition
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -46,8 +47,8 @@ abstract class AbstractAction(
     override val description: String = name,
     val pre: List<String> = emptyList(),
     val post: List<String> = emptyList(),
-    override val cost: Double = 0.0,
-    override val value: Double = 0.0,
+    override val cost: ZeroToOne = 0.0,
+    override val value: ZeroToOne = 0.0,
     override val inputs: Set<IoBinding> = emptySet(),
     override val outputs: Set<IoBinding> = emptySet(),
     override val transitions: List<Transition> = emptyList(),

@@ -115,8 +115,8 @@ annotation class Action(
     val post: Array<String> = [],
     val canRerun: Boolean = false,
     val outputBinding: String = IoBinding.DEFAULT_BINDING,
-    val cost: Double = 0.0,
-    val value: Double = 0.0,
+    val cost: ZeroToOne = 0.0,
+    val value: ZeroToOne = 0.0,
     val toolGroups: Array<String> = [],
 )
 

@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
+import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -29,8 +30,8 @@ internal class MultiTransformer<O : Any>(
     description: String = name,
     pre: List<String> = emptyList(),
     post: List<String> = emptyList(),
-    cost: Double = 0.0,
-    value: Double = 0.0,
+    cost: ZeroToOne = 0.0,
+    value: ZeroToOne = 0.0,
     transitions: List<Transition> = emptyList(),
     canRerun: Boolean = false,
     qos: ActionQos = ActionQos(),

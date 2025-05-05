@@ -19,6 +19,7 @@ import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.ActionRunner
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.Transition
+import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -39,8 +40,8 @@ internal class SerializableAction(
     description: String = name,
     pre: List<String> = emptyList(),
     post: List<String> = emptyList(),
-    cost: Double = 0.0,
-    value: Double = 0.0,
+    cost: ZeroToOne = 0.0,
+    value: ZeroToOne = 0.0,
     input: IoBinding? = null,
     inputs: Set<IoBinding> = setOfNotNull(input),
     output: IoBinding? = null,

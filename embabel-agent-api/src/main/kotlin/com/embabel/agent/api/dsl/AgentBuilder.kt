@@ -21,6 +21,7 @@ import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.agent.spi.LlmCall
 import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -132,7 +133,7 @@ class AgentBuilder(
 
     fun condition(
         name: String? = null,
-        cost: Double = 0.0,
+        cost: ZeroToOne = 0.0,
         block: ConditionPredicate
     ): ConditionDelegateProvider {
         return ConditionDelegateProvider(

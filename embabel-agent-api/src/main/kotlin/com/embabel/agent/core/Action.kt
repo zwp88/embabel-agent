@@ -17,6 +17,7 @@ package com.embabel.agent.core
 
 import com.embabel.agent.core.support.SerializableAction
 import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.*
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -73,7 +74,7 @@ data class Goal(
     override val description: String,
     val pre: Set<String> = emptySet(),
     override val inputs: Set<IoBinding> = emptySet(),
-    override val value: Double = 0.0,
+    override val value: ZeroToOne = 0.0,
 ) : GoapGoal, AgentSystemStep {
 
     // These methods are for Java, to obviate the builder antipattern
@@ -174,7 +175,7 @@ interface AgentSystemStep : GoapStep, Described {
 )
 interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, ToolConsumer {
     val outputs: Set<IoBinding>
-    override val cost: Double get() = 0.0
+    override val cost: ZeroToOne get() = 0.0
 
     /**
      * Can this action be run again if it's already run?

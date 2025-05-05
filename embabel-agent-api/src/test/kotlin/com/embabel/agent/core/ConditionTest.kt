@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class ConditionTest {
     // Helper function to create test conditions
     private fun createTestCondition(
         name: String,
-        cost: Double,
+        cost: ZeroToOne,
         result: ConditionDetermination
     ): Condition {
         return object : Condition {

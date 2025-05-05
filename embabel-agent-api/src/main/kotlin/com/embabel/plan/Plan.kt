@@ -17,6 +17,7 @@ package com.embabel.plan
 
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.ZeroToOne
 
 /**
  * A step in a plan. Can be an action or a goal
@@ -30,16 +31,20 @@ interface Step : Named, HasInfoString {
 
     /**
      * Value of completing this step.
+     * From 0 (least valuable) to 1 (most valuable)
+     * Steps with 0 value will still be planned if necessary to achieve a result
      */
-    val value: Double
+    val value: ZeroToOne
 }
 
 interface Action : Step {
 
     /**
      * Cost of performing this action
+     * Must be between 0 and 1
+     * 1 is the most expensive imaginable.
      */
-    val cost: Double
+    val cost: ZeroToOne
 
 }
 
@@ -58,6 +63,10 @@ open class Plan(
 
     fun isComplete() = actions.isEmpty()
 
+    /**
+     * The cost of a plan may be greater than 1.0, even though
+     * action costs and all values are 0-1
+     */
     val cost: Double get() = actions.sumOf { it.cost }
 
     val actionsValue: Double get() = actions.sumOf { it.value }
