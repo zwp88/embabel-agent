@@ -70,7 +70,9 @@ data class BuildResult(
  */
 class Ci(
     override val root: String,
-    val buildSystems: List<BuildSystem> = listOf(MavenBuildSystem),
+    val buildSystemIntegrations: List<BuildSystemIntegration> = listOf(
+        MavenBuildSystemIntegration()
+    ),
 ) : DirectoryBased {
 
     private val logger = LoggerFactory.getLogger(Ci::class.java)
@@ -106,7 +108,7 @@ class Ci(
     }
 
     private fun parseOutput(rawOutput: String): BuildStatus? {
-        for (b in buildSystems) {
+        for (b in buildSystemIntegrations) {
             val status = b.parseBuildOutput(root, rawOutput)
             if (status != null) {
                 return status
@@ -171,7 +173,7 @@ class Ci(
 
 }
 
-interface BuildSystem {
+interface BuildSystemIntegration {
 
     /**
      * If possible, parse the build result
@@ -182,20 +184,3 @@ interface BuildSystem {
     ): BuildStatus?
 }
 
-object MavenBuildSystem : BuildSystem {
-
-    override fun parseBuildOutput(root: String, rawOutput: String): BuildStatus? {
-
-        // TODO messy test
-        if (!rawOutput.contains("[INFO]")) {
-            // Not a Maven build
-            return null
-        }
-        val success = rawOutput.contains("BUILD SUCCESS")
-        val relevantOutput = rawOutput.lines().filter { it.contains("[ERROR]") }.joinToString("\n")
-        return BuildStatus(
-            success = success,
-            relevantOutput = relevantOutput,
-        )
-    }
-}
