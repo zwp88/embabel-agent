@@ -77,7 +77,7 @@ class OpenAiModels(
     }
 
     @Bean
-    fun gpt41mano(): Llm {
+    fun gpt41nano(): Llm {
         val model = GPT_41_NANO
         return Llm(
             name = model,
