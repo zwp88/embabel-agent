@@ -27,6 +27,7 @@ import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.messages.SystemMessage
 import org.springframework.ai.chat.messages.UserMessage
+import org.springframework.ai.chat.model.ChatResponse
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.core.ParameterizedTypeReference
@@ -85,10 +86,18 @@ internal class ChatClientLlmOperations(
             .toolCallbacks(interaction.toolCallbacks)
             .call()
         return if (outputClass == String::class.java) {
-            callResponse.content() as O
+            val chatResponse = callResponse.chatResponse()
+            chatResponse?.let { withChatResponse(it) }
+            return chatResponse!!.result.output.text as O
         } else {
-            callResponse.entity<O>(outputClass)!!
+            val re = callResponse.responseEntity<O>(outputClass)!!
+            re.response?.let { withChatResponse(it) }
+            return re.entity!!
         }
+    }
+
+    private fun withChatResponse(chatResponse: ChatResponse) {
+        println("Usage is ${chatResponse.metadata.usage}")
     }
 
     override fun <O> doTransformIfPossible(
