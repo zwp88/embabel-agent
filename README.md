@@ -438,7 +438,6 @@ but will not require an internet connection or any external services.
 - `shell`: Runs agent in interactive shell.
 - `severance`: [Severance](https://www.youtube.com/watch?v=xEQP4VVuyrY&ab_channel=AppleTV) specific logging. Praise
   Kier!
--
 
 ## Testing
 
