@@ -114,7 +114,10 @@ class AnthropicModels(
     fun claudeSonnet(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm {
-        return anthropicModelOf(CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
+        return anthropicModelOf(
+            CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31),
+            maxTokens = 20000,
+        )
             .withFallback(llm = gpt41, whenError = flipTrigger)
             .copy(
                 pricingModel = PerTokenPricingModel(
@@ -127,7 +130,11 @@ class AnthropicModels(
     @Bean
     fun claudeHaiku(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
+    ): Llm = anthropicModelOf(
+        CLAUDE_35_HAIKU, apiKey,
+        knowledgeCutoffDate = LocalDate.of(2024, 10, 22),
+        maxTokens = 8192,
+    )
         .withFallback(llm = gpt41mini, whenError = flipTrigger)
         .copy(
             pricingModel = PerTokenPricingModel(
@@ -140,8 +147,9 @@ class AnthropicModels(
         name: String,
         apiKey: String,
         knowledgeCutoffDate: LocalDate?,
+        maxTokens: Int,
     ): Llm {
-
+        // Claude seems to need max tokens
         val chatModel = AnthropicChatModel
             .builder()
             .anthropicApi(
@@ -153,7 +161,7 @@ class AnthropicModels(
             .defaultOptions(
                 AnthropicChatOptions.builder()
                     .model(name)
-                    .maxTokens(20000)
+                    .maxTokens(maxTokens)
                     .build()
             )
             .build()
