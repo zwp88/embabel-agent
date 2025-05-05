@@ -77,11 +77,13 @@ class ChatClientLlmOperationsTest {
 
     data class Setup(
         val llmOperations: LlmOperations,
-        val mockAgentProcess: AgentProcess
+        val mockAgentProcess: AgentProcess,
+        val mutableLlmInvocationHistory: MutableLlmInvocationHistory,
     )
 
     private fun createChatClientLlmOperations(fakeChatModel: FakeChatModel): Setup {
         val ese = EventSavingAgenticEventListener()
+        val mutableLlmInvocationHistory = MutableLlmInvocationHistory()
         val mockProcessContext = mockk<ProcessContext>()
         every { mockProcessContext.platformServices } returns mockk()
         every { mockProcessContext.platformServices.agentPlatform } returns mockk()
@@ -91,6 +93,9 @@ class ChatClientLlmOperationsTest {
         )
         every { mockProcessContext.platformServices.eventListener } returns ese
         val mockAgentProcess = mockk<AgentProcess>()
+        every { mockAgentProcess.recordLlmInvocation(any()) } answers {
+            mutableLlmInvocationHistory.invocations.add(firstArg())
+        }
         every { mockProcessContext.onProcessEvent(any()) } answers { ese.onProcessEvent(firstArg()) }
         every { mockProcessContext.agentProcess } returns mockAgentProcess
 
@@ -102,7 +107,7 @@ class ChatClientLlmOperationsTest {
         val fakeLlm = Llm("fake", fakeChatModel)
         every { mockModelProvider.getLlm(capture(crit)) } returns fakeLlm
         val cco = ChatClientLlmOperations(mockModelProvider, DefaultToolDecorator(), JinjavaTemplateRenderer())
-        return Setup(cco, mockAgentProcess)
+        return Setup(cco, mockAgentProcess, mutableLlmInvocationHistory)
     }
 
     data class Dog(val name: String)

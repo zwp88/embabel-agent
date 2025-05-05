@@ -167,7 +167,7 @@ class Researcher(
         userInput = userInput,
         categorization = categorization,
         critique = null,
-        llm = LlmOptions(OpenAiModels.GPT_4o),
+        llm = LlmOptions(OpenAiModels.GPT_41),
         context = context,
     )
 
@@ -196,7 +196,7 @@ class Researcher(
         userInput = userInput,
         categorization = categorization,
         critique = critique,
-        llm = LlmOptions(OpenAiModels.GPT_4o),
+        llm = LlmOptions(OpenAiModels.GPT_41),
         context = context,
     )
 
@@ -375,7 +375,7 @@ class Researcher(
     fun critiqueMergedReport(
         userInput: UserInput,
         @RequireNameMatch mergedReport: ResearchReport,
-    ): Critique = using(LlmOptions(OpenAiModels.GPT_4o)).create(
+    ): Critique = using(LlmOptions(OpenAiModels.GPT_41)).create(
         """
             Is this research report satisfactory? Consider the following question:
             <${userInput.content}>
@@ -411,7 +411,7 @@ class Researcher(
             claudeReport,
         )
         return using(
-            llm = LlmOptions(OpenAiModels.GPT_4o),
+            llm = LlmOptions(OpenAiModels.GPT_41),
             promptContributors = properties.promptContributors,
         ).create(
             """

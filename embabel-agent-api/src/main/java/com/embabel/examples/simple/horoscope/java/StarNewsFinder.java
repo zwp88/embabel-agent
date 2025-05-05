@@ -50,7 +50,7 @@ public class StarNewsFinder {
 
     @Action
     public PersonImpl extractPerson(UserInput userInput) {
-        return Using.llm(LlmOptions.fromModel(OpenAiModels.GPT_4o)).createObjectIfPossible(
+        return Using.llm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name:
                         %s""".formatted(userInput.getContent()),
@@ -75,7 +75,7 @@ public class StarNewsFinder {
 
     @Action
     public StarPerson extractStarPerson(UserInput userInput) {
-        return Using.llm(LlmOptions.fromModel(OpenAiModels.GPT_4o)).createObjectIfPossible(
+        return Using.llm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name and star sign:
                         %s""".formatted(userInput.getContent()),
@@ -124,7 +124,7 @@ public class StarNewsFinder {
             Horoscope horoscope) {
         // Customize LLM call
         var llm = LlmOptions.fromCriteria(
-                ModelSelectionCriteria.firstOf(OpenAiModels.GPT_4o_MINI)
+                ModelSelectionCriteria.firstOf(OpenAiModels.GPT_41_MINI)
         ).withTemperature(0.9);
 
         var newsItems = relevantNewsStories.getItems().stream()

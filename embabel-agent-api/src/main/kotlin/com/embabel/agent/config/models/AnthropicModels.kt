@@ -18,6 +18,7 @@ package com.embabel.agent.config.models
 import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
+import com.embabel.common.ai.model.PerTokenPricingModel
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import org.slf4j.LoggerFactory
 import org.springframework.ai.anthropic.AnthropicChatModel
@@ -71,8 +72,8 @@ class AnthropicModels(
         .build()
 
 
-    val gpt4o = llms.find { it.name == OpenAiModels.GPT_4o }
-    val gpt4oMini = llms.find { it.name == OpenAiModels.GPT_4o_MINI }
+    val gpt4o = llms.find { it.name == OpenAiModels.GPT_41 }
+    val gpt4oMini = llms.find { it.name == OpenAiModels.GPT_41_MINI }
 
     init {
         logger.info("Anthropic models are available: $properties")
@@ -115,6 +116,12 @@ class AnthropicModels(
     ): Llm {
         return anthropicModelOf(CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
             .withFallback(llm = gpt4o, whenError = flipTrigger)
+            .copy(
+                pricingModel = PerTokenPricingModel(
+                    usdPer1mInputTokens = 3.0,
+                    usdPer1mOutputTokens = 15.0,
+                )
+            )
     }
 
     @Bean
@@ -122,6 +129,12 @@ class AnthropicModels(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
         .withFallback(llm = gpt4oMini, whenError = flipTrigger)
+        .copy(
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = .80,
+                usdPer1mOutputTokens = 4.0,
+            )
+        )
 
     private fun anthropicModelOf(
         name: String,
@@ -131,9 +144,11 @@ class AnthropicModels(
 
         val chatModel = AnthropicChatModel
             .builder()
-            .anthropicApi(AnthropicApi.builder()
-                .apiKey(apiKey)
-                .build())
+            .anthropicApi(
+                AnthropicApi.builder()
+                    .apiKey(apiKey)
+                    .build()
+            )
             .retryTemplate(retryTemplate)
             .defaultOptions(
                 AnthropicChatOptions.builder()
