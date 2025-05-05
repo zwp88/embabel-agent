@@ -1,4 +1,12 @@
 spring:
+  application:
+    name: agent-api
+  threads:
+    virtual:
+      enabled: true
+  output:
+    ansi:
+      enabled: ALWAYS
   ai:
     mcp:
       client:
@@ -17,7 +25,6 @@ spring:
           #          root-change-notification: false
           #          servers-configuration: classpath:mcp/mcp-servers.json
           connections:
-
             docker-mcp:
               command: docker
               args:
@@ -27,4 +34,51 @@ spring:
                 - alpine/socat
                 - STDIO
                 - TCP:host.docker.internal:8811
+    chat:
+      observations:
+        include-prompt: true
+        include-completion: true
+    ollama:
+      base-url: http://localhost:11434
+    openai:
+      api-key: ${OPENAI_API_KEY}
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+embabel:
+  agent-platform:
+    scanning:
+      auto: true
+  autonomy:
+    agent-confidence-cut-off: 0.6
+    goal-confidence-cut-off: 0.6
+  process-id-generation:
+    include-agent-name: false
+    include-version: false
+  model:
+    llms:
+      best: gpt-4.1
+      cheapest: gpt-4.1-nano
+    # embedding-services:
+    #   chunk: text-embedding-ada-002
+    #   schema: text-embedding-ada-002
+
+logging:
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
+  level:
+    org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
+    # Custom logging
+    # com.embabel.agent.core.support.BlackboardWorldStateDeterminer: DEBUG
+    # com.embabel.agent.api.annotation.support.AgentMetadataReader: DEBUG
 

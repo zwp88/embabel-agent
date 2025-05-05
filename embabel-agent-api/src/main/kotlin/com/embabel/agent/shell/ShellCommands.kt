@@ -384,7 +384,7 @@ class ShellCommands(
             return """|
                 |${output.color(colorPalette.color2)}
                 |
-                |LLMs used: ${result.agentProcess.modelsUsed().map { it.name }}              
+                |LLMs used: ${result.agentProcess.modelsUsed().map { it.name }}
                 |Prompt tokens: ${numberFormat.format(usage.promptTokens)}, completion tokens: ${
                 numberFormat.format(
                     usage.completionTokens
