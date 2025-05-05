@@ -383,6 +383,8 @@ class ShellCommands(
             val usage = result.agentProcess.usage()
             return """|
                 |${output.color(colorPalette.color2)}
+                |
+                |LLMs used: ${result.agentProcess.modelsUsed().map { it.name }}              
                 |Prompt tokens: ${numberFormat.format(usage.promptTokens)}, completion tokens: ${
                 numberFormat.format(
                     usage.completionTokens

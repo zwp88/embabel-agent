@@ -126,7 +126,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     agentProcessReadyToPlanEventMessage,
                     event.processId,
-                    event.worldState.infoString(),
+                    event.worldState.infoString(verbose = event.agentProcess.processContext.processOptions.verbosity.showLongPlans),
                 )
             }
 

@@ -499,7 +499,7 @@ class Autonomy(
      * Agent with only relevant actions
      */
     private fun Agent.prune(userInput: UserInput): Agent {
-        loggerFor<Autonomy>().info(
+        loggerFor<Autonomy>().debug(
             "Raw agent: {}",
             infoString(),
         )

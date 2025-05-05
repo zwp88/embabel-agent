@@ -32,6 +32,15 @@ interface LlmInvocationHistory {
     }
 
     /**
+     * Distinct list of LLMs use, sorted by name.
+     */
+    fun modelsUsed(): List<Llm> {
+        return llmInvocations.map { it.llm }
+            .distinctBy { it.name }
+            .sortedBy { it.name }
+    }
+
+    /**
      * Note that this is not apples to apples: The usage
      * may be across different LLMs, and the cost may be different.
      * Cost will correctly reflect this.
