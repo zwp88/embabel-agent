@@ -27,6 +27,7 @@ import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.agent.testing.RandomRanker
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.AStarGoapPlanner
@@ -58,7 +59,11 @@ class DynamicExecutionResult private constructor(
      * Process that executed and is now complete
      */
     val agentProcess: AgentProcess,
-) {
+) : HasInfoString {
+
+    override fun infoString(verbose: Boolean?): String {
+        return "DynamicExecutionResult(basis=$basis, output=$output, agentProcess=${agentProcess.infoString(verbose)})"
+    }
 
     companion object {
 
@@ -348,6 +353,14 @@ class Autonomy(
                 basis = userInput,
             )
         )
+        return runAgent(userInput, processOptions, agent)
+    }
+
+    fun runAgent(
+        userInput: UserInput,
+        processOptions: ProcessOptions,
+        agent: Agent
+    ): DynamicExecutionResult {
         val agentProcess = agentPlatform.runAgentFrom(
             processOptions = processOptions,
             agent = agent,
@@ -458,12 +471,7 @@ class Autonomy(
             throw goalNotApproved
         }
 
-        val goalAgent = agentScope.createAgent(
-            name = "goal-${goalChoice.match.name}",
-            description = goalChoice.match.description,
-        )
-            .withSingleGoal(goalChoice.match)
-            .prune(userInput)
+        val goalAgent = createGoalAgent(userInput = userInput, agentScope = agentScope, goal = goalChoice.match)
         if (emitEvents) eventListener.onPlatformEvent(
             DynamicAgentCreationEvent(
                 agent = goalAgent,
@@ -472,6 +480,19 @@ class Autonomy(
             )
         )
         return GoalSeeker(agent = goalAgent, rankings = goalRankings)
+    }
+
+    fun createGoalAgent(
+        userInput: UserInput,
+        agentScope: AgentScope,
+        goal: Goal
+    ): Agent {
+        return agentScope.createAgent(
+            name = "goal-${goal.name}",
+            description = goal.description,
+        )
+            .withSingleGoal(goal)
+            .prune(userInput)
     }
 
     /**

@@ -347,6 +347,15 @@ data class StarPerson(
 See [Java Json Schema Generation - Module Jackson](https://github.com/victools/jsonschema-generator/tree/main/jsonschema-module-jackson)
 for documentation of the library used.
 
+## Using as an MCP server
+
+You can use the Embabel agent platform as an MCP server from a
+UI like Claude Desktop.
+
+Because Claude
+
+https://makhlevich.substack.com/p/converting-an-mcp-server-from-sse
+
 ## Consuming MCP Servers
 
 The Embabel Agent Framework provides built-in support for consuming Model Context Protocol (MCP) servers, allowing you
