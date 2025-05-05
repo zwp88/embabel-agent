@@ -95,8 +95,10 @@ data class Goal(
             conditions
         }
 
-    override fun infoString(verbose: Boolean?) =
-        "$name - pre=${preconditions} value=${value}: $description"
+    override fun infoString(verbose: Boolean?): String {
+        val separator = if (verbose == true) "\n\t\t" else " - "
+        return "$description: $name${separator}pre=${preconditions} value=${value}"
+    }
 
     companion object {
 

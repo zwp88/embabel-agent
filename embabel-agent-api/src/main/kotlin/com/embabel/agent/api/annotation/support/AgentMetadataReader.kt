@@ -16,11 +16,8 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.api.common.TransformationActionContext
-import com.embabel.agent.api.dsl.expandInputBindings
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
@@ -29,10 +26,8 @@ import com.embabel.agent.core.support.HAS_RUN_CONDITION_PREFIX
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Named
-import com.embabel.common.core.util.DummyInstanceCreator
 import com.embabel.common.core.util.NameUtils
 import org.slf4j.LoggerFactory
-import org.springframework.ai.tool.ToolCallback
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
@@ -77,7 +72,10 @@ data class AgenticInfo(
  * as this could affect application startup.
  */
 @Service
-class AgentMetadataReader {
+class AgentMetadataReader(
+    private val actionMethodManager: ActionMethodManager = ActionMethodManager(),
+    private val nameGenerator: NameGenerator = NameGenerator(),
+) {
 
     private val logger = LoggerFactory.getLogger(AgentMetadataReader::class.java)
 
@@ -124,7 +122,7 @@ class AgentMetadataReader {
 
         val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
         val (actions, actionGoals) = actionMethods.map { actionMethod ->
-            val action = createAction(actionMethod, instance, toolCallbacksOnInstance)
+            val action = actionMethodManager.createAction(actionMethod, instance, toolCallbacksOnInstance)
             Pair(action, createGoalFromActionMethod(actionMethod, action, instance))
         }.unzip()
 
@@ -158,15 +156,6 @@ class AgentMetadataReader {
             actions = actions,
             goals = goals.toSet(),
         )
-    }
-
-    /**
-     * Generate a qualified name to avoid name clashes.
-     * @param instance The instance of the class we are reading
-     * @param name The name of the method or property for which we should generate a method
-     */
-    private fun generateName(instance: Any, name: String): String {
-        return "${instance.javaClass.name}.$name"
     }
 
     private fun findConditionMethods(type: Class<*>): List<Method> {
@@ -221,7 +210,12 @@ class AgentMetadataReader {
     ): AgentCoreGoal {
         // We need to change the name to be the property name
         val rawGoal = ReflectionUtils.invokeMethod(method, instance) as AgentCoreGoal
-        return rawGoal.copy(name = generateName(instance, NameUtils.beanMethodToPropertyName(method.name)))
+        return rawGoal.copy(
+            name = nameGenerator.generateName(
+                instance,
+                NameUtils.beanMethodToPropertyName(method.name)
+            )
+        )
     }
 
     private fun createCondition(
@@ -231,7 +225,7 @@ class AgentMetadataReader {
         val conditionAnnotation = method.getAnnotation(Condition::class.java)
         return ComputedBooleanCondition(
             name = conditionAnnotation.name.ifBlank {
-                generateName(instance, method.name)
+                nameGenerator.generateName(instance, method.name)
             },
             cost = conditionAnnotation.cost,
         )
@@ -244,120 +238,6 @@ class AgentMetadataReader {
         }
     }
 
-    /**
-     * Create an Action from a method
-     */
-    private fun createAction(
-        method: Method,
-        instance: Any,
-        toolCallbacksOnInstance: List<ToolCallback>,
-    ): MultiTransformer<Any> {
-        val actionAnnotation = method.getAnnotation(Action::class.java)
-        val allToolCallbacks = toolCallbacksOnInstance.toMutableList()
-        val inputClasses = method.parameters
-            .map { it.type }
-        val inputs = method.parameters
-            .filterNot {
-                OperationContext::class.java.isAssignableFrom(it.type)
-            }
-            .map {
-                val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
-                expandInputBindings(if (nameMatchAnnotation != null) it.name else IoBinding.DEFAULT_BINDING, it.type)
-            }
-            .flatten()
-        method.parameters
-            .filterNot {
-                OperationContext::class.java.isAssignableFrom(it.type)
-            }
-            .forEach {
-                // Dummy tools to drive metadata. Will not be invoked.
-                val parameterInstance = DummyInstanceCreator.LoremIpsum.createDummyInstance(it.type)
-                allToolCallbacks += safelyGetToolCallbacksFrom(parameterInstance)
-            }
-        return MultiTransformer(
-            name = generateName(instance, method.name),
-            description = actionAnnotation.description.ifBlank { method.name },
-            cost = actionAnnotation.cost,
-            inputs = inputs.toSet(),
-            canRerun = actionAnnotation.canRerun,
-            pre = actionAnnotation.pre.toList(),
-            post = actionAnnotation.post.toList(),
-            inputClasses = inputClasses,
-            outputClass = method.returnType as Class<Any>,
-            outputVarName = actionAnnotation.outputBinding,
-            toolCallbacks = allToolCallbacks.toList(),
-            toolGroups = actionAnnotation.toolGroups.asList(),
-        ) { context ->
-            invokeActionMethod(
-                method = method,
-                instance = instance,
-                context = context,
-                toolCallbacks = toolCallbacksOnInstance,
-            )
-        }
-    }
-
-    private fun <O> invokeActionMethod(
-        method: Method,
-        instance: Any,
-        context: TransformationActionContext<List<Any>, O>,
-        toolCallbacks: List<ToolCallback>,
-    ): O {
-        logger.debug("Invoking action method {} with payload {}", method.name, context.input)
-        val toolCallbacksOnDomainObjects = context.input.flatMap { safelyGetToolCallbacksFrom(it) }
-        val actionToolCallbacks = toolCallbacksOnDomainObjects.toMutableList()
-        // Replace dummy tools
-        actionToolCallbacks += toolCallbacks.filterNot { tc -> toolCallbacksOnDomainObjects.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
-        var args = context.input.toTypedArray()
-        if (method.parameters.any { OperationContext::class.java.isAssignableFrom(it.type) }) {
-            // We need to add the payload as the last argument
-            args += context
-        }
-        val result = try {
-            ReflectionUtils.invokeMethod(method, instance, *args)
-        } catch (e: CreateObjectPromptException) {
-            // This is our own exception to get typesafe prompt execution
-            // It is not a failure
-
-            // TODO or default options
-            val toolCallbacks =
-                (actionToolCallbacks + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
-            val promptContributors = e.promptContributors
-
-            val promptRunner = context.promptRunner(
-                llm = e.llm ?: LlmOptions(),
-                toolCallbacks = toolCallbacks,
-                promptContributors = promptContributors,
-            )
-
-            if (e.requireResult) {
-                promptRunner.createObject(
-                    prompt = e.prompt,
-                    outputClass = e.outputClass,
-                )
-            } else {
-                promptRunner.createObjectIfPossible(
-                    prompt = e.prompt,
-                    outputClass = context.outputClass as Class<Any>,
-                )
-            }
-        } catch (t: Throwable) {
-            logger.warn(
-                "Error invoking action method {}.{}: {}",
-                instance.javaClass.name,
-                method.name,
-                t.message,
-            )
-            throw t
-        }
-        logger.debug(
-            "Result of invoking action method {} was {}: payload {}",
-            method.name,
-            result,
-            context.input
-        )
-        return result as O
-    }
 
     private fun invokeConditionMethod(
         method: Method,
@@ -467,7 +347,7 @@ class AgentMetadataReader {
             type = method.returnType.name,
         )
         return AgentCoreGoal(
-            name = generateName(instance, method.name),
+            name = nameGenerator.generateName(instance, method.name),
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,
