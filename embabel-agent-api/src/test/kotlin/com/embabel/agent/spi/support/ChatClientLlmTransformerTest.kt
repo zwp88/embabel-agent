@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.agent.core.Agent
-import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.*
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
@@ -42,6 +39,13 @@ import org.springframework.ai.chat.model.Generation
 import org.springframework.ai.chat.prompt.DefaultChatOptions
 import org.springframework.ai.chat.prompt.Prompt
 
+class MutableLlmInvocationHistory : LlmInvocationHistory {
+    val invocations = mutableListOf<LlmInvocation>()
+    override val llmInvocations: List<LlmInvocation>
+        get() = invocations
+
+}
+
 data class Person(val name: String)
 
 data class WierdPerson(val name: String, val age: Int, val weirdness: String)
@@ -52,6 +56,8 @@ data class Return(
 )
 
 class ChatClientLlmTransformerTest {
+
+    val llmInvocationHistory = MutableLlmInvocationHistory()
 
     @Nested
     inner class Transform {
@@ -76,6 +82,14 @@ class ChatClientLlmTransformerTest {
                 )
                 assertEquals(person, result)
                 assertEquals(3, ese.processEvents.size)
+            }
+
+            @Test
+            fun `records usage`() {
+                val person = Person("John")
+                val result = runWithPromptReturning(jacksonObjectMapper().writeValueAsString(person))
+                assertEquals(person, result)
+                assertTrue(llmInvocationHistory.invocations.isNotEmpty())
             }
 
         }
@@ -107,14 +121,21 @@ class ChatClientLlmTransformerTest {
             llmReturn: String,
             eventListener: AgenticEventListener = EventSavingAgenticEventListener(),
         ): Any {
+            llmInvocationHistory.invocations.clear()
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.eventListener } returns eventListener
             val mockAgentPlatform = mockk<AgentPlatform>()
             every { mockAgentPlatform.toolGroupResolver } returns RegistryToolGroupResolver("mt", emptyList())
             every { mockPlatformServices.agentPlatform } returns mockAgentPlatform
             val mockAgentProcess = mockk<AgentProcess>()
+            every { mockAgentProcess.recordLlmInvocation(any()) } answers {
+                llmInvocationHistory.invocations.add(
+                    firstArg()
+                )
+            }
             every { mockAgentProcess.processContext.platformServices } returns mockPlatformServices
             val mockAgent = mockk<Agent>()
+            every { mockAgent.name } returns "whatever"
             every { mockAgent.resolveToolCallbacks(any()) } returns emptySet()
             every { mockAgentProcess.agent } returns mockAgent
             val mockProcessContext = mockk<ProcessContext>()
@@ -175,6 +196,18 @@ class ChatClientLlmTransformerTest {
                 )
                 assertEquals(Result.success(person), result.result)
                 assertEquals(3, ese.processEvents.size)
+            }
+
+            @Test
+            fun `records usage`() {
+                val person = Person("John")
+                val result = runWithPromptReturning(
+                    llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(person)),
+                    eventListener = EventSavingAgenticEventListener(),
+                    outputClass = Person::class.java,
+                )
+                assertEquals(Result.success(person), result.result)
+                assertTrue(llmInvocationHistory.invocations.isNotEmpty())
             }
 
             @Test
@@ -257,6 +290,7 @@ class ChatClientLlmTransformerTest {
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.processContext.platformServices } returns mockPlatformServices
             val mockAgent = mockk<Agent>()
+            every { mockAgent.name } returns "whatever"
             every { mockAgent.resolveToolCallbacks(any()) } returns emptySet()
             every { mockAgentProcess.agent } returns mockAgent
             val mockProcessContext = mockk<ProcessContext>()
@@ -264,6 +298,11 @@ class ChatClientLlmTransformerTest {
             every { mockProcessContext.platformServices } returns mockPlatformServices
             every { mockProcessContext.agentProcess } returns mockAgentProcess
             every { mockAgentProcess.processContext } returns mockProcessContext
+            every { mockAgentProcess.recordLlmInvocation(any()) } answers {
+                llmInvocationHistory.invocations.add(
+                    firstArg()
+                )
+            }
             val mockModelProvider = mockk<ModelProvider>()
             val mockChatModel = mockk<ChatModel>()
             every { mockChatModel.defaultOptions } returns DefaultChatOptions()

@@ -51,7 +51,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     override fun find(
         findEntitiesRequest: FindEntitiesRequest,
     ): FindEntitiesResponse<T> {
-        val llm = LlmOptions().withModel(OpenAiModels.GPT_4o)
+        val llm = LlmOptions().withModel(OpenAiModels.GPT_41)
 
         // Find the finder methods on the repository
         val finderMethodsOnRepositoryTakingOneArg: List<String> =

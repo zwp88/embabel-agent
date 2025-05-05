@@ -37,6 +37,7 @@ import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timestamped
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.time.Instant
 
@@ -74,7 +75,11 @@ data class Critique(
 @ConfigurationProperties(prefix = "embabel.examples.researcher")
 data class ResearcherProperties(
     val responseFormat: ResponseFormat = ResponseFormat.MARKDOWN,
-    val maxWordCount: Int = 250,
+    val maxWordCount: Int = 300,
+    val claudeModelName: String = AnthropicModels.CLAUDE_35_HAIKU,
+    val openAiModelName: String = OpenAiModels.GPT_41_MINI,
+    val criticModeName: String = OpenAiModels.GPT_41,
+    val mergeModelName: String = OpenAiModels.GPT_41_MINI,
     override val name: String = "Sherlock",
     override val persona: String = "A resourceful researcher agent that can perform deep web research on a topic. Nothing escapes Sherlock",
     override val voice: String = "Your voice is dry and in the style of Sherlock Holmes. Occasionally you address the user as Watson",
@@ -123,6 +128,12 @@ class Researcher(
     val properties: ResearcherProperties,
 ) {
 
+    private val logger = LoggerFactory.getLogger(Researcher::class.java)
+
+    init {
+        logger.info("Researcher agent initialized: $properties")
+    }
+
     /**
      * Categorizes the user input to determine the appropriate research approach.
      * Uses the cheapest LLM model to efficiently classify the input.
@@ -167,7 +178,7 @@ class Researcher(
         userInput = userInput,
         categorization = categorization,
         critique = null,
-        llm = LlmOptions(OpenAiModels.GPT_4o),
+        llm = LlmOptions(properties.openAiModelName),
         context = context,
     )
 
@@ -196,7 +207,7 @@ class Researcher(
         userInput = userInput,
         categorization = categorization,
         critique = critique,
-        llm = LlmOptions(OpenAiModels.GPT_4o),
+        llm = LlmOptions(properties.openAiModelName),
         context = context,
     )
 
@@ -222,7 +233,7 @@ class Researcher(
         userInput = userInput,
         categorization = categorization,
         critique = null,
-        llm = LlmOptions(AnthropicModels.CLAUDE_37_SONNET),
+        llm = LlmOptions(properties.claudeModelName),
         context = context,
     )
 
@@ -251,7 +262,7 @@ class Researcher(
         userInput = userInput,
         categorization = categorization,
         critique = critique,
-        llm = LlmOptions(AnthropicModels.CLAUDE_37_SONNET),
+        llm = LlmOptions(properties.claudeModelName),
         context = context,
     )
 
@@ -375,7 +386,7 @@ class Researcher(
     fun critiqueMergedReport(
         userInput: UserInput,
         @RequireNameMatch mergedReport: ResearchReport,
-    ): Critique = using(LlmOptions(OpenAiModels.GPT_4o)).create(
+    ): Critique = using(LlmOptions(properties.criticModeName)).create(
         """
             Is this research report satisfactory? Consider the following question:
             <${userInput.content}>
@@ -411,7 +422,7 @@ class Researcher(
             claudeReport,
         )
         return using(
-            llm = LlmOptions(OpenAiModels.GPT_4o),
+            llm = LlmOptions(properties.criticModeName),
             promptContributors = properties.promptContributors,
         ).create(
             """

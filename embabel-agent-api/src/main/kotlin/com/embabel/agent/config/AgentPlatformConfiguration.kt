@@ -82,7 +82,7 @@ class AgentPlatformConfiguration(
     @Bean
     fun ranker(llmOperations: LlmOperations): Ranker = LlmRanker(
         llmOperations = llmOperations,
-        llm = LlmOptions(OpenAiModels.GPT_4o),
+        llm = LlmOptions(OpenAiModels.GPT_41),
         maxAttempts = 3,
     )
 

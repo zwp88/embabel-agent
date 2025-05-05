@@ -254,25 +254,29 @@ abstract class AbstractAgentProcess(
             }
         }
 
+        val timestamp = Instant.now()
         val actionStatus = action.qos.retryTemplate().execute<ActionStatus, Exception> {
-
-            val actionStatus = action.execute(
+            action.execute(
                 processContext = processContext,
                 outputTypes = outputTypes,
                 action = action,
             )
-            _history += ActionInvocation(
-                actionName = action.name,
-            )
-            platformServices.eventListener.onProcessEvent(
-                ActionExecutionResultEvent(
-                    agentProcess = this,
-                    action = action,
-                    actionStatus = actionStatus,
-                )
-            )
-            actionStatus
         }
+        val runningTime = Duration.between(timestamp, Instant.now())
+        _history += ActionInvocation(
+            actionName = action.name,
+            timestamp = timestamp,
+            runningTime = runningTime,
+        )
+        platformServices.eventListener.onProcessEvent(
+            ActionExecutionResultEvent(
+                agentProcess = this,
+                action = action,
+                actionStatus = actionStatus,
+                runningTime = runningTime,
+            )
+        )
+
         logger.debug("New world state: {}", worldStateDeterminer.determineWorldState())
         return actionStatus
     }

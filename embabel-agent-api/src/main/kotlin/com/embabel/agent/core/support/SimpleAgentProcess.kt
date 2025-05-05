@@ -39,12 +39,21 @@ internal class SimpleAgentProcess(
     processOptions = processOptions,
     blackboard = blackboard,
     platformServices = platformServices,
-    timestamp = timestamp
+    timestamp = timestamp,
 ) {
+
+    private val _llmInvocations = mutableListOf<LlmInvocation>()
+
+    override val llmInvocations: List<LlmInvocation>
+        get() = _llmInvocations.toList()
 
     override val worldStateDeterminer: WorldStateDeterminer = BlackboardWorldStateDeterminer(processContext)
 
     override val planner = AStarGoapPlanner(worldStateDeterminer)
+
+    override fun recordLlmInvocation(llmInvocation: LlmInvocation) {
+        _llmInvocations.add(llmInvocation)
+    }
 
     override fun formulateAndExecutePlan(worldState: WorldState): AgentProcess {
         val plan = planner.bestValuePlanToAnyGoal(system = agent.planningSystem)

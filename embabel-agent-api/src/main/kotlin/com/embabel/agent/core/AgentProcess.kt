@@ -23,12 +23,14 @@ import java.time.Instant
 data class ActionInvocation(
     val actionName: String,
     override val timestamp: Instant = Instant.now(),
-) : Timestamped
+    override val runningTime: Duration,
+) : Timestamped, Timed
 
 /**
  * Run of an agent
  */
-interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentProcessStatusCode> {
+interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentProcessStatusCode>,
+    LlmInvocationHistory {
 
     /**
      * Unique id of this process
@@ -45,6 +47,8 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
      * The agent that this process is running for
      */
     val agent: Agent
+
+    fun recordLlmInvocation(llmInvocation: LlmInvocation)
 
     /**
      * Perform the next step only.

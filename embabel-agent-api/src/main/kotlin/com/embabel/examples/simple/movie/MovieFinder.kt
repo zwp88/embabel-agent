@@ -130,7 +130,7 @@ class MovieFinder(
 
     private val logger = LoggerFactory.getLogger(MovieFinder::class.java)
 
-    private val llm = LlmOptions(OpenAiModels.GPT_4o_MINI)
+    private val llm = LlmOptions(OpenAiModels.GPT_41_MINI)
 
     init {
         // TODO this is only for example purposes

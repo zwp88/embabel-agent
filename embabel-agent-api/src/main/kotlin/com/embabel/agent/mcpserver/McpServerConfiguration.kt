@@ -90,6 +90,7 @@ class AutonomyToolsx(private val autonomy: Autonomy) : SelfToolCallbackPublisher
 }
 
 @Service
+@Profile("!test")
 class AutonomyTools(
     private val autonomy: Autonomy,
     private val objectMapper: ObjectMapper,
@@ -105,7 +106,6 @@ class AutonomyTools(
 
     fun toolForGoal(goal: Goal): ToolCallback {
         class GoalToolCallback : ToolCallback {
-
             override fun getToolDefinition(): ToolDefinition {
                 return object : ToolDefinition {
                     override fun name(): String {
@@ -124,7 +124,6 @@ class AutonomyTools(
                     }
                 }
             }
-
 
             override fun call(
                 toolInput: String,

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.core.LlmInvocation
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
@@ -25,6 +26,7 @@ import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.ai.chat.client.ChatClient
+import org.springframework.ai.chat.client.ResponseEntity
 import org.springframework.ai.chat.messages.SystemMessage
 import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.model.ChatResponse
@@ -33,6 +35,8 @@ import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
+import java.time.Duration
+import java.time.Instant
 
 /**
  * LlmOperations implementation that uses the Spring AI ChatClient
@@ -87,17 +91,31 @@ internal class ChatClientLlmOperations(
             .call()
         return if (outputClass == String::class.java) {
             val chatResponse = callResponse.chatResponse()
-            chatResponse?.let { withChatResponse(it) }
+            chatResponse?.let { recordUsage(resources.llm, it, llmRequestEvent) }
             return chatResponse!!.result.output.text as O
         } else {
             val re = callResponse.responseEntity<O>(outputClass)!!
-            re.response?.let { withChatResponse(it) }
+            re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
             return re.entity!!
         }
     }
 
-    private fun withChatResponse(chatResponse: ChatResponse) {
-        println("Usage is ${chatResponse.metadata.usage}")
+    private fun recordUsage(
+        llm: Llm,
+        chatResponse: ChatResponse,
+        llmRequestEvent: LlmRequestEvent<*>?,
+    ) {
+        logger.info("Usage is ${chatResponse.metadata.usage}")
+        llmRequestEvent?.let {
+            val llmi = LlmInvocation(
+                llm = llm,
+                usage = chatResponse.metadata.usage,
+                agentName = it.agentProcess.agent.name,
+                timestamp = it.timestamp,
+                runningTime = Duration.between(it.timestamp, Instant.now()),
+            )
+            it.agentProcess.recordLlmInvocation(llmi)
+        }
     }
 
     override fun <O> doTransformIfPossible(
@@ -130,12 +148,13 @@ internal class ChatClientLlmOperations(
             MaybeReturn::class.java,
             outputClass,
         )
-        val output = resources.chatClient
+        val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = resources.chatClient
             .prompt(springAiPrompt)
             .toolCallbacks(interaction.toolCallbacks)
             .call()
-            .entity(typeReference)!! as MaybeReturn<O>
-        return output.toResult()
+            .responseEntity<MaybeReturn<*>>(typeReference)
+        responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
+        return responseEntity.entity!!.toResult() as Result<O>
     }
 
     @Suppress("UNCHECKED_CAST")

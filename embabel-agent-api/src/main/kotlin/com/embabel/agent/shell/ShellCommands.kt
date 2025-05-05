@@ -31,6 +31,7 @@ import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
+import java.text.NumberFormat
 
 
 @ShellComponent
@@ -43,6 +44,8 @@ class ShellCommands(
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(ShellCommands::class.java)
+
+    private val numberFormat = NumberFormat.getNumberInstance()
 
     private val agentPlatform = autonomy.agentPlatform
 
@@ -308,10 +311,13 @@ class ShellCommands(
         processOptions: ProcessOptions,
         intent: String,
     ): String {
+        val opt = if (processOptions.verbosity.debug) {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(processOptions)
+        } else {
+            objectMapper.writeValueAsString(processOptions)
+        }
         logger.info(
-            "Created process options: ${
-                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(processOptions)
-            }".color(colorPalette.highlight)
+            "Created process options: $opt".color(colorPalette.highlight)
         )
 
         return runProcess(verbosity = processOptions.verbosity, basis = intent) {
@@ -374,9 +380,16 @@ class ShellCommands(
                     output
                 )
             }
-            return output.color(
-                colorPalette.color2,
-            ) + "\n"
+            val usage = result.agentProcess.usage()
+            return """|
+                |${output.color(colorPalette.color2)}
+                |Prompt tokens: ${numberFormat.format(usage.promptTokens)}, completion tokens: ${
+                numberFormat.format(
+                    usage.completionTokens
+                )
+            }
+                |Cost: $${"%.4f".format(result.agentProcess.cost())}
+                |""".trimMargin()
         } catch (ngf: NoGoalFound) {
             if (verbosity.debug) {
                 logger.info(

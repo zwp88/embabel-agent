@@ -16,6 +16,7 @@
 package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.Llm
+import com.embabel.common.ai.model.PricingModel
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.ollama.OllamaChatModel
@@ -23,8 +24,10 @@ import org.springframework.ai.ollama.api.OllamaApi
 import org.springframework.ai.ollama.api.OllamaOptions
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 @ExcludeFromJacocoGeneratedReport(reason = "Ollama configuration can't be unit tested")
+@Profile("!test")
 @Configuration
 class OllamaModels(
 ) {
@@ -34,11 +37,16 @@ class OllamaModels(
 
     @Bean
     fun gemma2(): Llm = ollamaModelOf("gemma2:2b")
+        .copy(
+            pricingModel = PricingModel.ALL_YOU_CAN_EAT
+        )
 
     private fun ollamaModelOf(name: String): Llm {
         val chatModel = OllamaChatModel.builder()
-            .ollamaApi(OllamaApi.builder()
-                .build())
+            .ollamaApi(
+                OllamaApi.builder()
+                    .build()
+            )
             .defaultOptions(
                 OllamaOptions.builder()
                     .model(name)

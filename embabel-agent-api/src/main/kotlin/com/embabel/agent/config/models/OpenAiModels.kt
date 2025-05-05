@@ -17,6 +17,7 @@ package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
+import com.embabel.common.ai.model.PerTokenPricingModel
 import com.embabel.common.ai.model.config.OpenAiConfiguration
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
@@ -28,11 +29,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import java.time.LocalDate
 
-@ExcludeFromJacocoGeneratedReport(reason = "Open AI configuration can't be unit tested")
 @Configuration
 @ConditionalOnProperty("OPENAI_API_KEY")
+@Profile("!test")
+@ExcludeFromJacocoGeneratedReport(reason = "Open AI configuration can't be unit tested")
 class OpenAiModels(
     @Value("\${OPENAI_API_KEY}")
     private val apiKey: String,
@@ -44,24 +47,52 @@ class OpenAiModels(
     private val openAiApi = OpenAiApi.builder().apiKey(apiKey).build()
 
     @Bean
-    fun gpt4omini(): Llm {
-        val model = GPT_4o_MINI
+    fun gpt41mini(): Llm {
+        val model = GPT_41_MINI
         return Llm(
             name = model,
             model = chatModelOf(model),
             knowledgeCutoffDate = LocalDate.of(2024, 7, 18),
+        ).copy(
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = .40,
+                usdPer1mOutputTokens = 1.6,
+            )
         )
     }
 
     @Bean
-    fun gpt4o(): Llm {
-        val model = GPT_4o
+    fun gpt41(): Llm {
+        val model = GPT_41
         return Llm(
             name = model,
             model = chatModelOf(model),
             optionsConverter = optionsConverter,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
         )
+            .copy(
+                pricingModel = PerTokenPricingModel(
+                    usdPer1mInputTokens = 2.0,
+                    usdPer1mOutputTokens = 8.0,
+                )
+            )
+    }
+
+    @Bean
+    fun gpt41nano(): Llm {
+        val model = GPT_41_NANO
+        return Llm(
+            name = model,
+            model = chatModelOf(model),
+            optionsConverter = optionsConverter,
+            knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
+        )
+            .copy(
+                pricingModel = PerTokenPricingModel(
+                    usdPer1mInputTokens = .1,
+                    usdPer1mOutputTokens = .4,
+                )
+            )
     }
 
     private fun chatModelOf(model: String): ChatModel {
@@ -80,8 +111,10 @@ class OpenAiModels(
 
     companion object {
 
-        const val GPT_4o_MINI = "gpt-4o-mini"
+        const val GPT_41_MINI = "gpt-4.1-mini"
 
-        const val GPT_4o = "gpt-4o"
+        const val GPT_41 = "gpt-4.1"
+
+        const val GPT_41_NANO = "gpt-4.1-nano"
     }
 }

@@ -18,6 +18,7 @@ package com.embabel.agent.config.models
 import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
+import com.embabel.common.ai.model.PerTokenPricingModel
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import org.slf4j.LoggerFactory
 import org.springframework.ai.anthropic.AnthropicChatModel
@@ -30,6 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.retry.RetryCallback
 import org.springframework.retry.RetryContext
 import org.springframework.retry.RetryListener
@@ -47,6 +49,7 @@ data class AnthropicProperties(
  */
 @Configuration
 @ConditionalOnProperty("ANTHROPIC_API_KEY")
+@Profile("!test")
 @ExcludeFromJacocoGeneratedReport(reason = "Anthropic configuration can't be unit tested")
 class AnthropicModels(
     llms: List<Llm>,
@@ -71,20 +74,20 @@ class AnthropicModels(
         .build()
 
 
-    val gpt4o = llms.find { it.name == OpenAiModels.GPT_4o }
-    val gpt4oMini = llms.find { it.name == OpenAiModels.GPT_4o_MINI }
+    val gpt41 = llms.find { it.name == OpenAiModels.GPT_41 }
+    val gpt41mini = llms.find { it.name == OpenAiModels.GPT_41_MINI }
 
     init {
         logger.info("Anthropic models are available: $properties")
-        if (gpt4o != null) {
-            logger.info("✅ Using GPT-4o fallback")
+        if (gpt41 != null) {
+            logger.info("✅ Using ${gpt41!!.name} fallback")
         } else {
-            logger.info("❌ GPT-4o fallback not available")
+            logger.info("❌ ${gpt41!!.name} fallback not available")
         }
-        if (gpt4oMini != null) {
-            logger.info("✅ Using GPT-4o mini fallback")
+        if (gpt41mini != null) {
+            logger.info("✅ Using ${gpt41mini!!.name} fallback")
         } else {
-            logger.info("❌ GPT-4o mini fallback not available")
+            logger.info("❌ ${gpt41mini!!.name} fallback not available")
         }
     }
 
@@ -113,32 +116,54 @@ class AnthropicModels(
     fun claudeSonnet(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm {
-        return anthropicModelOf(CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31))
-            .withFallback(llm = gpt4o, whenError = flipTrigger)
+        return anthropicModelOf(
+            CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31),
+            maxTokens = 20000,
+        )
+            .withFallback(llm = gpt41, whenError = flipTrigger)
+            .copy(
+                pricingModel = PerTokenPricingModel(
+                    usdPer1mInputTokens = 3.0,
+                    usdPer1mOutputTokens = 15.0,
+                )
+            )
     }
 
     @Bean
     fun claudeHaiku(
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf(CLAUDE_35_HAIKU, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 22))
-        .withFallback(llm = gpt4oMini, whenError = flipTrigger)
+    ): Llm = anthropicModelOf(
+        CLAUDE_35_HAIKU, apiKey,
+        knowledgeCutoffDate = LocalDate.of(2024, 10, 22),
+        maxTokens = 8192,
+    )
+        .withFallback(llm = gpt41mini, whenError = flipTrigger)
+        .copy(
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = .80,
+                usdPer1mOutputTokens = 4.0,
+            )
+        )
 
     private fun anthropicModelOf(
         name: String,
         apiKey: String,
         knowledgeCutoffDate: LocalDate?,
+        maxTokens: Int,
     ): Llm {
-
+        // Claude seems to need max tokens
         val chatModel = AnthropicChatModel
             .builder()
-            .anthropicApi(AnthropicApi.builder()
-                .apiKey(apiKey)
-                .build())
+            .anthropicApi(
+                AnthropicApi.builder()
+                    .apiKey(apiKey)
+                    .build()
+            )
             .retryTemplate(retryTemplate)
             .defaultOptions(
                 AnthropicChatOptions.builder()
                     .model(name)
-                    .maxTokens(20000)
+                    .maxTokens(maxTokens)
                     .build()
             )
             .build()

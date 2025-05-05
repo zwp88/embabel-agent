@@ -46,8 +46,9 @@ class McpToolGroup(
             clients,
         )
         val toolCallbacks = provider.toolCallbacks.filter(filter)
-        loggerFor<McpToolGroup>().info(
-            "ToolCallbacks: {}",
+        loggerFor<McpToolGroup>().debug(
+            "ToolGroup role={}: {}",
+            description.role,
             toolCallbacks.map { it.toolDefinition.name() })
         toolCallbacks
     }
