@@ -284,7 +284,7 @@ class ShellCommands(
         @ShellOption(value = ["-td", "--toolDelay"], help = "Tool delay") toolDelay: Boolean = false,
         @ShellOption(value = ["-od", "--operationDelay"], help = "Operation delay") operationDelay: Boolean = false,
         @ShellOption(
-            value = ["-s", "--showPlanning"],
+            value = ["-P", "--showPlanning"],
             help = "show detailed planning info",
             defaultValue = "true",
         ) showPlanning: Boolean = true,
