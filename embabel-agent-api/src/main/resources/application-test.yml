@@ -3,3 +3,18 @@ spring:
     mcp:
       client:
         enabled: false
+
+embabel:
+  agent-platform:
+    scanning:
+      auto: false
+  model:
+    llms:
+      best: test-llm
+      cheapest: test-llm
+
+logging:
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
+  level:
+    org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR

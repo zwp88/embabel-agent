@@ -24,8 +24,10 @@ import org.springframework.ai.ollama.api.OllamaApi
 import org.springframework.ai.ollama.api.OllamaOptions
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 @ExcludeFromJacocoGeneratedReport(reason = "Ollama configuration can't be unit tested")
+@Profile("!test")
 @Configuration
 class OllamaModels(
 ) {
