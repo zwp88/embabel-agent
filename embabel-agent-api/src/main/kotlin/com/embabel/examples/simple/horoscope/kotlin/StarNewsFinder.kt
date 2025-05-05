@@ -72,7 +72,7 @@ class StarNewsFinder(
     @Action
     fun extractPerson(userInput: UserInput): PersonImpl? =
         // All prompts are typesafe
-        using(LlmOptions(OpenAiModels.GPT_41)).createObjectIfPossible(
+        using(LlmOptions(OpenAiModels.GPT_41_NANO)).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name:
             ${userInput.content}
@@ -100,7 +100,7 @@ class StarNewsFinder(
     @Action
     fun extractStarPerson(userInput: UserInput): StarPerson? =
         // All prompts are typesafe
-        using(LlmOptions(OpenAiModels.GPT_41)).createObjectIfPossible(
+        using(LlmOptions(OpenAiModels.GPT_41_MINI)).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name and star sign:
             ${userInput.content}
@@ -140,7 +140,7 @@ class StarNewsFinder(
         description = "Write an amusing writeup for the target person based on their horoscope and current news stories",
     )
     @Action
-    fun writeup(
+    fun newsWriteup(
         person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,

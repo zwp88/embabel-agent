@@ -183,4 +183,3 @@ interface BuildSystemIntegration {
         rawOutput: String,
     ): BuildStatus?
 }
-
