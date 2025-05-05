@@ -23,7 +23,8 @@ import java.time.Instant
 data class ActionInvocation(
     val actionName: String,
     override val timestamp: Instant = Instant.now(),
-) : Timestamped
+    override val runningTime: Duration,
+) : Timestamped, Timed
 
 /**
  * Run of an agent

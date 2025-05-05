@@ -78,7 +78,8 @@ class ActionExecutionResultEvent(
     agentProcess: AgentProcess,
     val action: Action,
     val actionStatus: ActionStatus,
-) : AbstractAgentProcessEvent(agentProcess)
+    override val runningTime: Duration,
+) : AbstractAgentProcessEvent(agentProcess), Timed
 
 /**
  * Call to a function from an LLM

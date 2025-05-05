@@ -24,6 +24,15 @@ import org.springframework.aop.IntroductionInterceptor
 import org.springframework.aop.framework.ProxyFactory
 import org.springframework.aop.support.DefaultIntroductionAdvisor
 
+/**
+ * Expose the given ToolGroup as an interface.
+ * This allows code actions to call the tool group as an interface,
+ * benefiting from MCP infrastructure without exposing too much power
+ * to models.
+ * Methods on the relevant interface must match the tool names
+ * and the parameters must match the tool parameters.
+ * Not all tools need to be supported.
+ */
 fun <T> exposeAsInterface(
     toolCallbackPublisher: ToolCallbackPublisher,
     intf: Class<T>,
