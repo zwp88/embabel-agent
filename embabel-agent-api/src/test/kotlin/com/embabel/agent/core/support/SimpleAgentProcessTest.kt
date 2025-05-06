@@ -22,7 +22,6 @@ import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.annotation.waitFor
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.agent
-import com.embabel.agent.api.dsl.transformer
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.AgentProcessStatusCode
@@ -70,23 +69,21 @@ class AnnotationWaitingAgent {
 }
 
 val DslWaitingAgent = agent("Waiter", description = "Simple test agent that waits") {
-    action {
-        transformer<UserInput, LocalPerson>(name = "thing") {
-            val person = LocalPerson(name = "Rod")
-            waitFor(
-                ConfirmationRequest(
-                    person,
-                    "Is this the dude?"
-                )
+    transformation<UserInput, LocalPerson>(name = "thing") {
+        val person = LocalPerson(name = "Rod")
+        waitFor(
+            ConfirmationRequest(
+                person,
+                "Is this the dude?"
             )
-        }
+        )
+
     }
 
-    action {
-        transformer<LocalPerson, Frog>(name = "thing2") {
-            Frog(name = it.input.name)
-        }
+    transformation<LocalPerson, Frog>(name = "thing2") {
+        Frog(name = it.input.name)
     }
+
 
     goal(name = "done", description = "done", satisfiedBy = Frog::class)
 }
