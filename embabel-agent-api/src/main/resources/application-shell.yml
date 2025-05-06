@@ -1,0 +1,12 @@
+spring:
+  main:
+    web-application-type: none
+  shell:
+    history:
+      enabled: true
+    interactive:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.shell: WARN
