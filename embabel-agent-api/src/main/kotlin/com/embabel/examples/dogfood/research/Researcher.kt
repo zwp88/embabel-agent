@@ -468,7 +468,7 @@ class Researcher(
      * @return The final research report
      */
     @AchievesGoal(
-        description = "Accepts a research report",
+        description = "Completes a research or question answering task, producing a research report",
     )
     // TODO this won't complete without the output binding to a new thing.
     // This makes some sense but seems a bit surprising

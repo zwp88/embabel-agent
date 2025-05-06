@@ -271,10 +271,10 @@ open class LoggingAgenticEventListener(
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
                     val promptInfo = "\nPrompt ${event.interaction.id}:\n${
                         event.springAiPrompt.toString().color(AnsiColor.GREEN)
-                    }\ntools: ${
+                    }\ntools: [${
                         event.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
                             .color(AnsiColor.BRIGHT_MAGENTA)
-                    }"
+                    }]"
                     logger.info(
                         "{} Spring ChatModel call {} with prompt {}",
                         event.processId,

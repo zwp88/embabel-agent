@@ -8,15 +8,6 @@ if (-not $env:OPENAI_API_KEY) {
     Write-Host "OPENAI_API_KEY set: OpenAI models are available" -ForegroundColor Green
 }
 
-# Check if BRAVE_API_KEY is set
-if (-not $env:BRAVE_API_KEY) {
-    Write-Host "Warning: BRAVE_API_KEY environment variable is not set." -ForegroundColor Yellow
-    Write-Host "Search features will not work properly without it."
-    Write-Host "You can get an API key at https://brave.com/search/api/"
-    Write-Host "You can set it with: `$env:BRAVE_API_KEY = 'your_api_key'"
-} else {
-    Write-Host "BRAVE_API_KEY set: Web, news and video search available" -ForegroundColor Green
-}
 
 # Navigate up one directory
 Set-Location ..
