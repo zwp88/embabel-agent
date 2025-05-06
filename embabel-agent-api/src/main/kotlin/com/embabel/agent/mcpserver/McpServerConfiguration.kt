@@ -20,6 +20,7 @@ import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbackProvider
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -35,6 +36,7 @@ interface McpToolExportCallbackPublisher : ToolCallbackPublisher
  */
 @Configuration
 @Profile("!test")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.ANY)
 class McpServerConfiguration(
     private val mcpToolExportCallbackPublishers: List<McpToolExportCallbackPublisher>,
 ) {

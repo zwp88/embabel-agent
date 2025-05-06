@@ -1,0 +1,1 @@
+# Endpoints to expose agent platform information

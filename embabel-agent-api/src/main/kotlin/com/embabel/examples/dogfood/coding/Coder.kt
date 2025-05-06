@@ -128,18 +128,17 @@ class Coder(
         context: ActionContext,
     ): CodeModificationReport {
         val report: String = context.promptRunner(
-            llm = codingProperties.primaryCodingLlm,
+            llm = codingProperties.fixCodingLlm,
             promptContributors = listOf(project),
         ).create(
             """
-                First check if the there's a github repo at the ${project.url}
-
                 Execute the following user request to modify code in the given project.
                 Use the file tools to read code and directories.
                 Use the project information to help you understand the code.
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
-                Consider any build failure report.
+
+                DO NOT ASK FOR USER INPUT: DO WHAT YOU THINK IS NEEDED TO MODIFY THE PROJECT.
 
                 Use the web tools if you are asked to use a technology you don't know about.
 

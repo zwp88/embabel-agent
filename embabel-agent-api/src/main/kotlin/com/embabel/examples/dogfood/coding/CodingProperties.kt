@@ -25,7 +25,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "embabel.coding")
 class CodingProperties(
-    val primaryCodingModel: String = AnthropicModels.CLAUDE_37_SONNET,
+    val primaryCodingModel: String = AnthropicModels.CLAUDE_35_HAIKU,
+    val fixCodingModel: String = AnthropicModels.CLAUDE_37_SONNET,
     // TODO shouldn't be hardcoded
     val defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
 ) {
@@ -35,5 +36,9 @@ class CodingProperties(
      */
     val primaryCodingLlm = LlmOptions(
         criteria = byName(primaryCodingModel),
+    )
+
+    val fixCodingLlm = LlmOptions(
+        criteria = byName(fixCodingModel),
     )
 }
