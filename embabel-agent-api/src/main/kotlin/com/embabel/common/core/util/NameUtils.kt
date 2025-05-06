@@ -20,9 +20,9 @@ object NameUtils {
 
     fun beanMethodToPropertyName(name: String): String {
         return if (name.startsWith("get") || name.startsWith("set")) {
-            name.substring(3).decapitalize()
+            name.substring(3).replaceFirstChar { it.lowercase() }
         } else if (name.startsWith("is")) {
-            name.substring(2).decapitalize()
+            name.substring(2).replaceFirstChar { it.lowercase() }
         } else {
             name
         }
