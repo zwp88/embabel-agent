@@ -235,7 +235,7 @@ makers remain human, but they can and should be greatly augmented.
 
 <!-- TODO photo of Duke with kibble -->
 
-Our three key principles:
+Our key principles:
 
 1. **We will use AI agents to help every aspect of the project:** coding, documentation, producing marketing copy etc.
    Any
@@ -245,10 +245,15 @@ Our three key principles:
    as necessary. A developer who commits or merges an agent contribution
    is responsible for ensuring that it meets the project coding standards, which are
    independent of the use of agents. For example, code must be human readable.
-3. **We will use only open source agents built on the Embabel platform.** While commercial coding agents
+3. **We will use only open source agents built on the Embabel platform,** and contribute any improvements. While
+   commercial coding agents
    may temporarily be more advanced, we believe that our
    platform is the best solution for automation and by dogfooding we will improve it fastest.
    By open sourcing agents used on our open source projects, we will maximize benefit to the community.
+4. **We will prioritize agents that help accelerate our progress.** Per the flight safety advice to fit your own mask
+   before helping others, we will prioritize
+   agents that help us accelerate our own progress. This will not only produce useful examples, but increase overall
+   project velocity.
 
 Developers must carefully read all code they commit and improve generated code if possible.
 
