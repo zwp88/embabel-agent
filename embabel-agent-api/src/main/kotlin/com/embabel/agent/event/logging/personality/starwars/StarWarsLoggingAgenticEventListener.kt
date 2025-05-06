@@ -16,6 +16,7 @@
 package com.embabel.agent.event.logging.personality.starwars
 
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
+import com.embabel.common.util.color
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
@@ -65,7 +66,7 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
 ⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⡄⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠛⠛⢯⡉⠉⠉⠉⠉⠛⢼⣿⠿⠿⠦⡙⣿⡆⢹⣷⣤⡀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠿⠄⠈⠻⠿⠿⠿⠿⠿⠿⠛⠛⠿⠛⠉⠁⠀⠀⠀⠀⠀⠀⠻⠿⠿⠿⠿⠟⠉⠀⠀⠤⠴⠶⠌⠿⠘⠿⠿⠿⠿⠶⠤⠀⠀⠀⠀
 
-    """.trimIndent(),
+    """.trimIndent().color(StarWarsColors.highlight),
     rankingChoiceMadeEventMessage = "Chosen goal {} I have with confidence {} based on {}",
     dynamicAgentCreationMessage = "You will find only what you bring in: Created agent {}",
     agentProcessCreationEventMessage = "Created a process I have: {}",
