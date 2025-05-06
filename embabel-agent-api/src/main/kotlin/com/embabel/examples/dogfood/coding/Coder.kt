@@ -112,7 +112,7 @@ class Coder(
         context.lastResult() is BuildResult
 
     @Condition(name = CoderConditions.BuildSucceeded)
-    fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.status?.success == true
+    internal fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.status?.success == true
 
     @Condition(name = CoderConditions.BuildFailed)
     fun buildFailed(buildResult: BuildResult): Boolean = buildResult.status?.success == false

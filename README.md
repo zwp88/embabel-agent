@@ -3,7 +3,9 @@
 ![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
 
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
+![Apache Tomcat](https://img.shields.io/badge/apache%20tomcat-%23F8DC75.svg?style=for-the-badge&logo=apache-tomcat&logoColor=black)
 ![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white)
 ![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
 ![Jinja](https://img.shields.io/badge/jinja-white.svg?style=for-the-badge&logo=jinja&logoColor=black)
@@ -17,9 +19,11 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;
 
-Framework for authoring agentic flows that seamlessly mix LLM-prompted interactions
-with manual code and domain models and support
-intelligent path finding towards goals.
+Framework for authoring agentic flows on the JVM that seamlessly mix LLM-prompted interactions
+with code and domain models. Supports
+intelligent path finding towards goals. Written in Kotlin
+but offers a natural usage
+model from Java.
 
 ## Key Concepts
 

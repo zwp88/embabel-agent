@@ -80,7 +80,7 @@ class StarNewsFinder(
         )
 
     @Action(cost = 100.0) // Make it costly so it won't be used in a plan unless there's no other path
-    fun makeStarry(
+    internal fun makeStarry(
         person: PersonImpl,
     ): Starry =
         fromForm("Let's get some astrological details for ${person.name}")
@@ -113,7 +113,7 @@ class StarNewsFinder(
 
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
-    fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
+    internal fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
         usingDefaultLlm.createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
