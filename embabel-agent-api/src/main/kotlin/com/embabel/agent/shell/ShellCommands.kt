@@ -194,20 +194,19 @@ class ShellCommands(
 
     @ShellMethod("List available tool groups")
     fun tools(): String {
-        return agentPlatform.toolGroupResolver.availableToolGroups()
-            .map {
-                val tgr = agentPlatform.toolGroupResolver.resolveToolGroup(it.role)
-                return tgr.resolvedToolGroup?.let {
-                    "${it.metadata}:\n\t${
-                        it.toolCallbacks.joinToString("\n\t") { tc -> "${tc.toolDefinition.name()}: ${tc.toolDefinition.description()}" }
-                    }"
-                } ?: "Failure: ${tgr.failureMessage}"
-            }
-            .joinToString(
-                separator = "\n",
-                prefix = "\t",
-                postfix = "\n",
-            )
+        val tgr = agentPlatform.toolGroupResolver
+        return String.format(
+            "%s: %s: %d available tool groups: %s",
+            tgr.javaClass.name,
+            tgr.name,
+            tgr.availableToolGroups().size,
+            "\n\t" + tgr.availableToolGroups()
+                .map { tgr.resolveToolGroup(it.role) }
+                .mapNotNull { it.resolvedToolGroup }
+                .sortedBy { it.metadata.role }
+                .joinToString("\n\t") { it.infoString(verbose = true) },
+        )
+
     }
 
     @ShellMethod("Show options")

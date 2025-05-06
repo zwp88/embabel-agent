@@ -18,10 +18,18 @@ package com.embabel.agent.toolgroups.osx
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolGroup
+import com.embabel.common.core.util.MacOSCondition
 import org.springframework.ai.tool.annotation.Tool
+import org.springframework.context.annotation.Conditional
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
+/**
+ * Simple AppleScript integration for automating on OS/X
+ */
 @Service
+@Profile("!test")
+@Conditional(MacOSCondition::class)
 class AppleScriptTools : SelfToolGroup {
 
     override val description: ToolGroupDescription
