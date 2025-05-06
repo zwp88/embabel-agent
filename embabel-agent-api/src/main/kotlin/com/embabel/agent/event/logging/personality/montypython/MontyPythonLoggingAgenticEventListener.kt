@@ -16,6 +16,7 @@
 package com.embabel.agent.event.logging.personality.montypython
 
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
@@ -25,9 +26,11 @@ import org.springframework.stereotype.Component
 @Component
 @Profile("montypython")
 class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
+    logger = LoggerFactory.getLogger("FlyingCircus"),
     welcomeMessage = """
     Nobody expects the Spanish Inquisition!
     """.trimIndent(),
+    agentDeploymentEventMessage = "Found a parrot: {}\n\tdescription: {}",
     rankingChoiceMadeEventMessage = "This parrot {} has chosen with {} certainty based on {}",
     dynamicAgentCreationMessage = "It's not dead yet: Created agent {}",
     agentProcessCreationEventMessage = "And now for something completely different: {}",
