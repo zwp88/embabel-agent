@@ -157,7 +157,7 @@ open class LoggingAgenticEventListener(
                 )
             }
 
-            is AgentProcessFunctionCallRequestEvent -> {
+            is AgentProcessToolCallRequestEvent -> {
                 logger.info(
                     functionCallRequestEventMessage,
                     event.processId,
@@ -166,7 +166,7 @@ open class LoggingAgenticEventListener(
                 )
             }
 
-            is AgentProcessFunctionCallResponseEvent -> {
+            is AgentProcessToolCallResponseEvent -> {
                 when (event.result.isSuccess) {
                     true -> logger.info(
                         functionCallSuccessResponseEventMessage,
@@ -227,8 +227,9 @@ open class LoggingAgenticEventListener(
 
             is AgentProcessStuckEvent -> {
                 logger.info(
-                    "[{}] stuck",
+                    "[{}] stuck at {}",
                     event.processId,
+                    event.agentProcess.lastWorldState
                 )
             }
 

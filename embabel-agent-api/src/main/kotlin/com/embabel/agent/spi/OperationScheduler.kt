@@ -16,7 +16,7 @@
 package com.embabel.agent.spi
 
 import com.embabel.agent.event.ActionExecutionStartEvent
-import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
+import com.embabel.agent.event.AgentProcessToolCallRequestEvent
 import com.embabel.common.core.types.Timestamped
 import java.time.Duration
 import java.time.Instant
@@ -66,7 +66,7 @@ interface OperationScheduler {
     ): ActionExecutionSchedule
 
     fun scheduleToolCall(
-        functionCallRequestEvent: AgentProcessFunctionCallRequestEvent,
+        functionCallRequestEvent: AgentProcessToolCallRequestEvent,
     ): ToolCallSchedule
 
     companion object {
@@ -83,6 +83,6 @@ private object ProntoOperationScheduler : OperationScheduler {
     override fun scheduleAction(actionExecutionStartEvent: ActionExecutionStartEvent): ActionExecutionSchedule =
         ProntoActionExecutionSchedule()
 
-    override fun scheduleToolCall(functionCallRequestEvent: AgentProcessFunctionCallRequestEvent): ToolCallSchedule =
+    override fun scheduleToolCall(functionCallRequestEvent: AgentProcessToolCallRequestEvent): ToolCallSchedule =
         ToolCallSchedule()
 }

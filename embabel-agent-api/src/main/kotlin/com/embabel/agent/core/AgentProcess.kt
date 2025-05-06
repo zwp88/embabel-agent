@@ -17,6 +17,7 @@ package com.embabel.agent.core
 
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
+import com.embabel.plan.WorldState
 import java.time.Duration
 import java.time.Instant
 
@@ -40,6 +41,12 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
     val parentId: String?
 
     val history: List<ActionInvocation>
+
+    /**
+     * The last world state that was used to plan the next action
+     * Will be non-null if the process is running
+     */
+    val lastWorldState: WorldState?
 
     val processContext: ProcessContext
 

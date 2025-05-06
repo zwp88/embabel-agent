@@ -17,7 +17,7 @@ package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ToolGroupMetadata
-import com.embabel.agent.event.AgentProcessFunctionCallRequestEvent
+import com.embabel.agent.event.AgentProcessToolCallRequestEvent
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.common.ai.model.LlmOptions
@@ -59,7 +59,7 @@ class EventPublishingToolCallback(
     override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
 
     override fun call(toolInput: String): String {
-        val functionCallRequestEvent = AgentProcessFunctionCallRequestEvent(
+        val functionCallRequestEvent = AgentProcessToolCallRequestEvent(
             agentProcess = agentProcess,
             llmOptions = llmOptions,
             function = delegate.toolDefinition.name(),

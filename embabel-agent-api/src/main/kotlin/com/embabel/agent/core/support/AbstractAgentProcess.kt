@@ -43,11 +43,16 @@ abstract class AbstractAgentProcess(
 
     protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
+    private var _lastWorldState: WorldState? = null
+
     protected var goalName: String? = null
 
     protected val _history: MutableList<ActionInvocation> = mutableListOf()
 
     protected var _status: AgentProcessStatusCode = AgentProcessStatusCode.RUNNING
+
+    override val lastWorldState: WorldState?
+        get() = _lastWorldState
 
     override val processContext = ProcessContext(
         platformServices = platformServices,
@@ -190,6 +195,7 @@ abstract class AbstractAgentProcess(
 
     override fun tick(): AgentProcess {
         val worldState = worldStateDeterminer.determineWorldState()
+        _lastWorldState = worldState
         platformServices.eventListener.onProcessEvent(
             AgentProcessReadyToPlanEvent(
                 agentProcess = this,
@@ -269,11 +275,8 @@ abstract class AbstractAgentProcess(
             runningTime = runningTime,
         )
         platformServices.eventListener.onProcessEvent(
-            ActionExecutionResultEvent(
-                agentProcess = this,
-                action = action,
+            actionExecutionStartEvent.resultEvent(
                 actionStatus = actionStatus,
-                runningTime = runningTime,
             )
         )
 

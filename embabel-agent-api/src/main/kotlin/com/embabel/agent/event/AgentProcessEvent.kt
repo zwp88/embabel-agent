@@ -38,6 +38,9 @@ interface AgentProcessEvent : AgenticEvent {
     val processId: String
 }
 
+/**
+ * Convenient superclass for AgentProcessEvent implementations
+ */
 abstract class AbstractAgentProcessEvent(
     val agentProcess: AgentProcess,
 ) : AgentProcessEvent {
@@ -72,9 +75,21 @@ class GoalAchievedEvent(
 class ActionExecutionStartEvent(
     agentProcess: AgentProcess,
     val action: Action,
-) : AbstractAgentProcessEvent(agentProcess)
+) : AbstractAgentProcessEvent(agentProcess) {
 
-class ActionExecutionResultEvent(
+    fun resultEvent(
+        actionStatus: ActionStatus,
+    ): ActionExecutionResultEvent {
+        return ActionExecutionResultEvent(
+            agentProcess = agentProcess,
+            action = action,
+            actionStatus = actionStatus,
+            runningTime = Duration.between(timestamp, Instant.now())
+        )
+    }
+}
+
+class ActionExecutionResultEvent internal constructor(
     agentProcess: AgentProcess,
     val action: Action,
     val actionStatus: ActionStatus,
@@ -84,7 +99,7 @@ class ActionExecutionResultEvent(
 /**
  * Call to a function from an LLM
  */
-class AgentProcessFunctionCallRequestEvent(
+class AgentProcessToolCallRequestEvent(
     agentProcess: AgentProcess,
     val function: String,
     val toolGroupMetadata: ToolGroupMetadata?,
@@ -92,8 +107,8 @@ class AgentProcessFunctionCallRequestEvent(
     val llmOptions: LlmOptions,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
-    fun responseEvent(result: Result<String>, runningTime: Duration): AgentProcessFunctionCallResponseEvent {
-        return AgentProcessFunctionCallResponseEvent(
+    fun responseEvent(result: Result<String>, runningTime: Duration): AgentProcessToolCallResponseEvent {
+        return AgentProcessToolCallResponseEvent(
             agentProcess = agentProcess,
             function = function,
             toolInput = toolInput,
@@ -104,7 +119,7 @@ class AgentProcessFunctionCallRequestEvent(
     }
 }
 
-class AgentProcessFunctionCallResponseEvent internal constructor(
+class AgentProcessToolCallResponseEvent internal constructor(
     agentProcess: AgentProcess,
     val function: String,
     val toolInput: String,
@@ -125,6 +140,10 @@ class AgentProcessPausedEvent(
     agentProcess: AgentProcess,
 ) : AbstractAgentProcessEvent(agentProcess)
 
+/**
+ * The AgentProcess is unable to plan from its present state.
+ * @param agentProcess the agent process
+ */
 class AgentProcessStuckEvent(
     agentProcess: AgentProcess,
 ) : AbstractAgentProcessEvent(agentProcess)
