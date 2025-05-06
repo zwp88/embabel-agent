@@ -58,7 +58,9 @@ management:
 embabel:
   agent-platform:
     scanning:
-      auto: true
+      annotation: true
+      publisher: false
+
   autonomy:
     agent-confidence-cut-off: 0.6
     goal-confidence-cut-off: 0.6
