@@ -444,8 +444,10 @@ but will not require an internet connection or any external services.
 
 ## Spring profiles
 
-- `shell`: Runs agent in interactive shell.
+- `shell`: Runs agent in interactive shell. Does not start web process.
 - `severance`: [Severance](https://www.youtube.com/watch?v=xEQP4VVuyrY&ab_channel=AppleTV) specific logging. Praise
+- `starwars`: Star Wars specific logging. Feel the force
+- `colossus`: Colossus specific logging. The Forbin Project.
   Kier!
 
 ## Testing
@@ -459,6 +461,16 @@ Types of testing:
 - Unit tests: All agents are unit testable, like any Spring-managed beans. Construct them with mock objects; call
   individual action methods. The testing library facilitates testing prompts.
 - Integration tests: tbd
+
+## Logging
+
+All logging in this project is either debug logging in the relevant
+class itself, or results from the stream of events of type `AgentEvent`.
+
+Edit `application.yml` if you want to see debug logging from the relevant classes and packages.
+
+The `severance`, `colossus` and `starwars` profiles will provide distinct logging experiences.
+If none of these profiles is chosen, vanilla logging will occur. This makes me sad.
 
 ## Miscellaneous
 
