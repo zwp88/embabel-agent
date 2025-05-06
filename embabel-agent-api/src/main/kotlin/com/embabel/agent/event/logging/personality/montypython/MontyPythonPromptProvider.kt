@@ -24,20 +24,20 @@ import org.springframework.stereotype.Component
 @Component
 @Profile("montypython")
 object MontyPythonColors : ColorPalette {
-    const val MEMBRANE: Int = 0xbeb780
-    const val GREEN: Int = 0x7da17e
+    const val YELLOW = 0xffde57
+    const val BLUE = 0x4584b6
 
     override val highlight: Int
-        get() = MEMBRANE
+        get() = YELLOW
     override val color2: Int
-        get() = GREEN
+        get() = BLUE
 }
 
 
 @Component
 @Profile("montypython")
 class MontyPythonPromptProvider : MessageGeneratorPromptProvider(
-    color = MontyPythonColors.MEMBRANE,
+    color = MontyPythonColors.YELLOW,
     prompt = "pythons",
     messageGenerator = RandomFromFileMessageGenerator(
         url = "logging/montypython.txt"

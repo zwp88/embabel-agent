@@ -469,7 +469,12 @@ class itself, or results from the stream of events of type `AgentEvent`.
 
 Edit `application.yml` if you want to see debug logging from the relevant classes and packages.
 
-The `severance`, `colossus` and `starwars` profiles will provide distinct logging experiences.
+Available logging experiences:
+
+- `severance`: Severance logging. Praise Kier
+- `colossus`: Colossus logging. The Forbin Project.
+- `montypython`: Monty Python logging. No one expects it.
+
 If none of these profiles is chosen, vanilla logging will occur. This makes me sad.
 
 ## Miscellaneous

@@ -20,24 +20,23 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 /**
- * May the force be with you
+ * And now for something completely different
  */
 @Component
 @Profile("montypython")
 class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     welcomeMessage = """
-
-
+    Nobody expects the Spanish Inquisition!
     """.trimIndent(),
-    rankingChoiceMadeEventMessage = "Chosen goal {} I have with confidence {} based on {}",
-    dynamicAgentCreationMessage = "You will find only what you bring in: Created agent {}",
-    agentProcessCreationEventMessage = "Created a process I have: {}",
-    agentProcessReadyToPlanEventMessage = "Difficult to see. Always in motion is the future: Process {} ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "Control, control, you must learn control! Process {} formulated plan <{}> from {}",
-    processCompletionMessage = "Feel the force: Process {} completed in {}",
-    processFailureMessage = "Powerful the dark side is: Process {} failed",
-    objectAddedMessage = "A little more knowledge lights our way: Object added: {} to process {}",
-    llmRequestEventMessage = "Ask LLM we will: Process {} requesting LLM transform from {} -> {}",
-    actionExecutionStartMessage = "Do or do not. There is no try: Process {} executing action {}",
-    actionExecutionResultMessage = "Powerful you have become: Process {} executed action {} in {}",
+    rankingChoiceMadeEventMessage = "This parrot {} has chosen with {} certainty based on {}",
+    dynamicAgentCreationMessage = "It's not dead yet: Created agent {}",
+    agentProcessCreationEventMessage = "And now for something completely different: {}",
+    agentProcessReadyToPlanEventMessage = "My brain hurts! Process {} ready to plan from {}",
+    agentProcessPlanFormulatedEventMessage = "We've found a witch! Process {} formulated plan <{}> from {}",
+    processCompletionMessage = "Tis but a scratch: Process {} completed in {}",
+    processFailureMessage = "It's just a flesh wound: Process {} failed",
+    objectAddedMessage = "Bring out your dead! Object added: {} to process {}",
+    llmRequestEventMessage = "Strange women lying in ponds: Process {} requesting LLM transform from {} -> {}",
+    actionExecutionStartMessage = "Run away! Run away! Process {} executing action {}",
+    actionExecutionResultMessage = "I fart in your general direction! Process {} executed action {} in {}",
 )

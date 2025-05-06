@@ -383,6 +383,7 @@ class ShellCommands(
             return """|
                 |${output.color(colorPalette.color2)}
                 |
+                |You asked: '${basis.toString().color(colorPalette.highlight)}'
                 |LLMs used: ${result.agentProcess.modelsUsed().map { it.name }}
                 |Prompt tokens: ${numberFormat.format(usage.promptTokens)}, completion tokens: ${
                 numberFormat.format(
