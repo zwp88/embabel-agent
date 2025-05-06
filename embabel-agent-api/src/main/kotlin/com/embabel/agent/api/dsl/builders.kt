@@ -24,41 +24,6 @@ import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.Modifier
 
 
-inline fun <reified I, reified O : Any> transformer(
-    name: String,
-    description: String = name,
-    pre: List<Condition> = emptyList(),
-    post: List<Condition> = emptyList(),
-    inputVarName: String = "it",
-    outputVarName: String? = "it",
-    cost: ZeroToOne = 0.0,
-    transitions: List<Transition> = emptyList(),
-    toolCallbacks: List<ToolCallback> = emptyList(),
-    toolGroups: Collection<String> = emptySet(),
-    qos: ActionQos = ActionQos(),
-    referencedInputProperties: Set<String>? = null,
-    block: Transformation<I, O>,
-): Action {
-    return Transformer(
-        name = name,
-        description = description,
-        pre = pre.map { it.name },
-        post = post.map { it.name },
-        cost = cost,
-        transitions = transitions,
-        qos = qos,
-        inputVarName = inputVarName,
-        outputVarName = outputVarName,
-        inputClass = I::class.java,
-        outputClass = O::class.java,
-        referencedInputProperties = referencedInputProperties,
-        toolCallbacks = toolCallbacks,
-        toolGroups = toolGroups,
-        block = block,
-    )
-}
-
-
 /**
  * Create input binding(s) for the given variable name and type.
  * Allow for megazords (Aggregations) and decompose them into their individual fields.

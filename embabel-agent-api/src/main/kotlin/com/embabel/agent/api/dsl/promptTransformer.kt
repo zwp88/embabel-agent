@@ -20,11 +20,12 @@ import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.Transition
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Use in DSL to perform a transform
+ * Supports AgentBuilder. Not fur direct use in user code.
  */
 inline fun <reified I, reified O : Any> promptTransformer(
     name: String,
@@ -39,9 +40,10 @@ inline fun <reified I, reified O : Any> promptTransformer(
     qos: ActionQos = ActionQos(),
     referencedInputProperties: Set<String>? = null,
     llm: LlmOptions = LlmOptions(),
+    promptContributors: List<PromptContributor> = emptyList(),
     expectation: Condition? = null,
     canRerun: Boolean = false,
-    toolCallbacks: List<ToolCallback> = emptyList(),
+    toolCallbacks: Collection<ToolCallback> = emptyList(),
     noinline prompt: (actionContext: TransformationActionContext<I, O>) -> String,
 ): Transformer<I, O> {
     val expectationTransition = expectation?.let {
@@ -68,8 +70,8 @@ inline fun <reified I, reified O : Any> promptTransformer(
     ) {
         it.promptRunner(
             llm = llm,
-            toolCallbacks = toolCallbacks,
-            promptContributors = emptyList(),
+            toolCallbacks = toolCallbacks.toList(),
+            promptContributors = promptContributors,
         ).createObject(
             prompt = prompt(it),
             outputClass = O::class.java,

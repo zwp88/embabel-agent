@@ -16,18 +16,23 @@
 package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.api.common.asTransformation
+import com.embabel.agent.api.common.Transformation
+import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.agent.spi.LlmCall
+import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.ai.prompt.PromptContributorConsumer
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
+import org.springframework.ai.tool.ToolCallback
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 /**
- * Context for the condition evaluation.
+ * Context for condition evaluation.
  */
 data class ConditionContext(
     override val processContext: ProcessContext,
@@ -38,45 +43,127 @@ typealias ConditionPredicate = (
     context: ConditionContext,
 ) -> Boolean?
 
-/**
- * DSL for creating an agent.
- */
-fun agent(
-    name: String,
-    version: String = "0.1.0-SNAPSHOT",
-    description: String,
-    toolGroups: List<String> = emptyList(),
-    block: AgentBuilder.() -> Unit,
-): Agent {
-    return AgentBuilder(name = name, version = version, description = description, toolGroups = toolGroups)
-        .apply(block)
-        .build()
-}
-
 class AgentBuilder(
     val name: String,
-    val version: String = "0.1.0-SNAPSHOT",
+    val version: String = DEFAULT_VERSION,
     val description: String,
-    val toolGroups: List<String> = emptyList(),
-) {
-    private val actions = mutableListOf<Action>()
+    toolGroups: List<String> = emptyList(),
+    toolCallbacks: Collection<ToolCallback>,
+    promptContributors: List<PromptContributor> = emptyList(),
+) : PromptContributorConsumer, ToolCallbackPublisher, ToolGroupConsumer {
+    val actions = mutableListOf<Action>()
 
     private val goals = mutableSetOf<Goal>()
 
     private val conditions = mutableSetOf<Condition>()
 
-    private var _toolGroups = mutableListOf<String>()
+    private var _toolGroups = toolGroups.toMutableSet()
+    private val _toolCallbacks = toolCallbacks.toMutableSet()
+    private val _promptContributors = promptContributors.toMutableList()
 
-    init {
-        _toolGroups += toolGroups
+    override val toolGroups: Set<String>
+        get() = _toolGroups
+
+    override val toolCallbacks: Set<ToolCallback>
+        get() = _toolCallbacks
+
+    override val promptContributors: List<PromptContributor>
+        get() = _promptContributors
+
+
+    fun requireToolGroups(vararg roles: String) {
+        _toolGroups += roles
     }
 
-    fun requireTools(vararg roles: String) {
-        _toolGroups += roles
+    fun requirePromptContributors(vararg promptContributors: PromptContributor) {
+        _promptContributors += promptContributors
+    }
+
+    fun requireToolCallbacks(vararg toolCallbacks: ToolCallback) {
+        _toolCallbacks += toolCallbacks
     }
 
     fun action(block: AgentBuilder.() -> Action) {
         actions.add(block())
+    }
+
+    /**
+     * Add an action that is a transformation
+     */
+    inline fun <reified I, reified O : Any> transformation(
+        name: String,
+        description: String = name,
+        pre: List<Condition> = emptyList(),
+        post: List<Condition> = emptyList(),
+        inputVarName: String = IoBinding.DEFAULT_BINDING,
+        outputVarName: String? = IoBinding.DEFAULT_BINDING,
+        cost: ZeroToOne = 0.0,
+        transitions: List<Transition> = emptyList(),
+        toolCallbacks: List<ToolCallback> = emptyList(),
+        toolGroups: Collection<String> = emptySet(),
+        qos: ActionQos = ActionQos(),
+        referencedInputProperties: Set<String>? = null,
+        block: Transformation<I, O>,
+    ) {
+        val action = Transformer(
+            name = name,
+            description = description,
+            pre = pre.map { it.name },
+            post = post.map { it.name },
+            cost = cost,
+            transitions = transitions,
+            qos = qos,
+            inputVarName = inputVarName,
+            outputVarName = outputVarName,
+            inputClass = I::class.java,
+            outputClass = O::class.java,
+            referencedInputProperties = referencedInputProperties,
+            toolCallbacks = this.toolCallbacks + toolCallbacks,
+            toolGroups = this.toolGroups + toolGroups,
+            block = block,
+        )
+        actions.add(action)
+    }
+
+    inline fun <reified I, reified O : Any> promptedTransformer(
+        name: String,
+        description: String = name,
+        pre: List<Condition> = emptyList(),
+        post: List<Condition> = emptyList(),
+        inputVarName: String = IoBinding.DEFAULT_BINDING,
+        outputVarName: String = IoBinding.DEFAULT_BINDING,
+        cost: ZeroToOne = 0.0,
+        transitions: List<Transition> = emptyList(),
+        toolGroups: Collection<String> = emptyList(),
+        qos: ActionQos = ActionQos(),
+        referencedInputProperties: Set<String>? = null,
+        llm: LlmOptions = LlmOptions(),
+        promptContributors: List<PromptContributor> = emptyList(),
+        expectation: Condition? = null,
+        canRerun: Boolean = false,
+        toolCallbacks: Collection<ToolCallback> = emptyList(),
+        noinline prompt: (actionContext: TransformationActionContext<I, O>) -> String,
+    ) {
+        val action = promptTransformer(
+            name = name,
+            description = description,
+            pre = pre,
+            post = post,
+            inputVarName = inputVarName,
+            outputVarName = outputVarName,
+            cost = cost,
+            transitions = transitions,
+            toolGroups = this.toolGroups + toolGroups,
+            qos = qos,
+            referencedInputProperties = referencedInputProperties,
+            llm = llm,
+            expectation = expectation,
+            canRerun = canRerun,
+            toolCallbacks = this.toolCallbacks + toolCallbacks,
+            prompt = prompt,
+            promptContributors = this.promptContributors + promptContributors,
+        )
+        actions.add(action)
     }
 
     fun goal(
@@ -95,7 +182,7 @@ class AgentBuilder(
             )
         }.toSet(),
         pre: List<Condition> = emptyList(),
-        value: Double = 0.0
+        value: ZeroToOne = 0.0
     ) {
         // TODO check validity
         goals.add(
@@ -134,7 +221,7 @@ class AgentBuilder(
     fun condition(
         name: String? = null,
         cost: ZeroToOne = 0.0,
-        block: ConditionPredicate
+        block: ConditionPredicate,
     ): ConditionDelegateProvider {
         return ConditionDelegateProvider(
             name,
@@ -177,6 +264,9 @@ class AgentBuilder(
         )
     }
 
+    /**
+     * Build the agent
+     */
     fun build(): Agent {
         return Agent(
             name = name,
@@ -189,13 +279,4 @@ class AgentBuilder(
         )
     }
 
-}
-
-inline fun <reified I, reified O : Any> AgentBuilder.agentAction(agent: Agent) {
-    action {
-        transformer<I, O>(
-            name = agent.name,
-            block = agent.asTransformation<I, O>()
-        )
-    }
 }

@@ -26,16 +26,14 @@ data class Frog(
 )
 
 val EvilWizardAgent = agent("EvilWizard", description = "Turn a person into a frog") {
-    action {
-        transformer<UserInput, MagicVictim>(name = "thing") {
-            MagicVictim(name = "Hamish")
-        }
+
+    transformation<UserInput, MagicVictim>(name = "thing") {
+        MagicVictim(name = "Hamish")
     }
 
-    action {
-        promptTransformer<MagicVictim, Frog>(name = "turn-into-frog") {
-            "Turn the person named ${it.input.name} into a frog"
-        }
+    promptedTransformer<MagicVictim, Frog>(name = "turn-into-frog") {
+        "Turn the person named ${it.input.name} into a frog"
+
     }
 
     goal(name = "done", description = "done", satisfiedBy = Frog::class)

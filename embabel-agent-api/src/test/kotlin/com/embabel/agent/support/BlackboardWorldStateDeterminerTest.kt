@@ -17,7 +17,6 @@ package com.embabel.agent.support
 
 import com.embabel.agent.api.annotation.support.Person
 import com.embabel.agent.api.dsl.agent
-import com.embabel.agent.api.dsl.transformer
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
@@ -42,16 +41,13 @@ data class AllOfTheAbove(
 ) : Aggregation
 
 val SimpleTestAgent = agent("SimpleTest", description = "Simple test agent") {
-    action {
-        transformer<UserInput, Person>(name = "thing") {
-            Person(name = "Rod")
-        }
+    transformation<UserInput, Person>(name = "thing") {
+        Person(name = "Rod")
     }
 
-    action {
-        transformer<AllOfTheAbove, Person>(name = "reverse-name") {
-            Person(it.input.person.name.reversed())
-        }
+    transformation<AllOfTheAbove, Person>(name = "reverse-name") {
+        Person(it.input.person.name.reversed())
+
     }
 
     goal(name = "done", description = "done", satisfiedBy = Person::class)
@@ -64,16 +60,12 @@ data class FancyPerson(
 ) : Fancy
 
 val InterfaceTestAgent = agent("SimpleTest", description = "Simple test agent") {
-    action {
-        transformer<UserInput, FancyPerson>(name = "thing") {
-            FancyPerson(name = "Rod")
-        }
+    transformation<UserInput, FancyPerson>(name = "thing") {
+        FancyPerson(name = "Rod")
     }
 
-    action {
-        transformer<AllOfTheAbove, FancyPerson>(name = "reverse-name") {
-            FancyPerson(it.input.person.name.reversed())
-        }
+    transformation<AllOfTheAbove, FancyPerson>(name = "reverse-name") {
+        FancyPerson(it.input.person.name.reversed())
     }
 
     goal(name = "done", description = "done", satisfiedBy = FancyPerson::class)
