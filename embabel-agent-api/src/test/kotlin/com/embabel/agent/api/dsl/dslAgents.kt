@@ -53,6 +53,6 @@ fun evenMoreEvilWizard() = agent("EvenMoreEvilWizard", description = "Turn a per
             merge = { frogs -> SnakeMeal(frogs) },
         ).parallelize()
     }
-    
+
     goal(name = "done", description = "done", satisfiedBy = SnakeMeal::class)
 }

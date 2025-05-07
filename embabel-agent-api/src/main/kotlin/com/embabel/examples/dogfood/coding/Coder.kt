@@ -137,7 +137,7 @@ class Coder(
     @Action(
         canRerun = true,
         post = [CoderConditions.BuildNeeded],
-        toolGroups = ["github", ToolGroup.WEB]
+        toolGroups = [ToolGroup.GITHUB, ToolGroup.WEB]
     )
     fun modifyCode(
         codeModificationRequest: CodeModificationRequest,
