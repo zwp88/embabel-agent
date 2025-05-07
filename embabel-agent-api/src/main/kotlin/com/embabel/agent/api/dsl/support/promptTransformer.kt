@@ -18,6 +18,7 @@ package com.embabel.agent.api.dsl.support
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
+import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.Transition
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
@@ -32,8 +33,8 @@ fun <I, O : Any> promptTransformer(
     description: String = name,
     pre: List<Condition> = emptyList(),
     post: List<Condition> = emptyList(),
-    inputVarName: String = "it",
-    outputVarName: String = "it",
+    inputVarName: String = IoBinding.DEFAULT_BINDING,
+    outputVarName: String = IoBinding.DEFAULT_BINDING,
     inputClass: Class<I>,
     outputClass: Class<O>,
     cost: ZeroToOne = 0.0,

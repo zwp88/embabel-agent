@@ -17,10 +17,7 @@ package com.embabel.agent.api.dsl.support
 
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.MagicVictim
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.Condition
-import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.Transition
+import com.embabel.agent.core.*
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.common.ai.model.LlmOptions
 import io.mockk.every
@@ -59,7 +56,12 @@ class PromptTransformerKtTest {
             every { mockAgentProcess.processContext } returns processContext
             every { processContext.blackboard } returns blackboard
             every { processContext.agentProcess } returns mockAgentProcess
-            every { processContext.getValue("it", MagicVictim::class.java.name) } returns magicVictim
+            every {
+                processContext.getValue(
+                    IoBinding.DEFAULT_BINDING,
+                    MagicVictim::class.java.name
+                )
+            } returns magicVictim
             val promptSlot = slot<String>()
             every {
                 processContext.createObject(
@@ -154,7 +156,12 @@ class PromptTransformerKtTest {
             every { mockAgentProcess.processContext } returns processContext
             every { processContext.blackboard } returns InMemoryBlackboard()
             every { processContext.agentProcess } returns mockAgentProcess
-            every { processContext.getValue("it", MagicVictim::class.java.name) } returns magicVictim
+            every {
+                processContext.getValue(
+                    IoBinding.DEFAULT_BINDING,
+                    MagicVictim::class.java.name
+                )
+            } returns magicVictim
             every {
                 processContext.createObject(
                     any(),
@@ -224,7 +231,12 @@ class PromptTransformerKtTest {
             every { mockAgentProcess.processContext } returns processContext
             every { processContext.blackboard } returns InMemoryBlackboard()
             every { processContext.agentProcess } returns mockAgentProcess
-            every { processContext.getValue("it", MagicVictim::class.java.name) } returns magicVictim
+            every {
+                processContext.getValue(
+                    IoBinding.DEFAULT_BINDING,
+                    MagicVictim::class.java.name
+                )
+            } returns magicVictim
             every {
                 processContext.createObject(
                     any(),

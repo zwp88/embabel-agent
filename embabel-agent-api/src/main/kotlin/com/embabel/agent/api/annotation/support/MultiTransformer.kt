@@ -38,7 +38,7 @@ internal class MultiTransformer<O : Any>(
     inputs: Set<IoBinding>,
     private val inputClasses: List<Class<*>>,
     private val outputClass: Class<O>,
-    private val outputVarName: String? = "it",
+    private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
     override val toolCallbacks: Collection<ToolCallback>,
     toolGroups: Collection<String>,

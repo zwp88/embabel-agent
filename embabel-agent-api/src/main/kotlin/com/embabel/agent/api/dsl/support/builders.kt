@@ -50,6 +50,9 @@ fun expandInputBindings(
     return setOf(IoBinding(inputVarName, inputClass.name))
 }
 
+/**
+ * Transformer agent that runs custom code.
+ */
 class Transformer<I, O>(
     name: String,
     description: String = name,
@@ -62,8 +65,8 @@ class Transformer<I, O>(
     qos: ActionQos = ActionQos(),
     private val inputClass: Class<I>,
     private val outputClass: Class<O>,
-    private val inputVarName: String = "it",
-    private val outputVarName: String? = "it",
+    private val inputVarName: String = IoBinding.DEFAULT_BINDING,
+    private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
     toolCallbacks: Collection<ToolCallback> = emptyList(),
     toolGroups: Collection<String>,

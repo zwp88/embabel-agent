@@ -89,7 +89,7 @@ private class AgentPlatformBackedAgentFunction<I : Any, O>(
             processOptions = processOptions,
             agent = goalAgent,
             bindings = mapOf(
-                "it" to input,
+                IoBinding.DEFAULT_BINDING to input,
             )
         )
         return processStatus.resultOfType(outputClass)
@@ -113,7 +113,7 @@ private class AgentBackedAgentFunction<I : Any, O>(
             processOptions = processOptions,
             agent = agent,
             bindings = mapOf(
-                "it" to input,
+                IoBinding.DEFAULT_BINDING to input,
             )
         )
         return processStatus.resultOfType(outputClass)

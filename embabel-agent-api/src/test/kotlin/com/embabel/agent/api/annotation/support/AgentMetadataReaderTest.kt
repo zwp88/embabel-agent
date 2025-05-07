@@ -456,7 +456,7 @@ class AgentMetadataReaderTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.llmOperations } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
-            val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+            val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
             every { mockAgentProcess.getValue(any(), any(), any()) } answers {
                 blackboard.getValue(
                     firstArg(),
@@ -505,7 +505,7 @@ class AgentMetadataReaderTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.llmOperations } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
-            val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+            val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
             every { mockAgentProcess.getValue(any(), any(), any()) } answers {
                 blackboard.getValue(
                     firstArg(),
@@ -555,7 +555,7 @@ class AgentMetadataReaderTest {
             val mockPlatformServices = mockk<PlatformServices>()
             every { mockPlatformServices.llmOperations } returns mockk()
             every { mockPlatformServices.eventListener } returns DevNull
-            val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+            val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
             every { mockAgentProcess.getValue(any(), any(), any()) } answers {
                 blackboard.getValue(
                     firstArg(),
@@ -809,7 +809,7 @@ class AgentMetadataReaderTest {
                 val mockPlatformServices = mockk<PlatformServices>()
                 every { mockPlatformServices.llmOperations } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
-                val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+                val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
                 every { mockAgentProcess.getValue(any(), any(), any()) } answers {
                     blackboard.getValue(
                         firstArg(),
@@ -861,7 +861,7 @@ class AgentMetadataReaderTest {
                 val mockPlatformServices = mockk<PlatformServices>()
                 every { mockPlatformServices.llmOperations } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
-                val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+                val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
                 every { mockAgentProcess.getValue(any(), any(), any()) } answers {
                     blackboard.getValue(
                         firstArg(),
@@ -914,7 +914,7 @@ class AgentMetadataReaderTest {
                 val mockPlatformServices = mockk<PlatformServices>()
                 every { mockPlatformServices.llmOperations } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
-                val blackboard = InMemoryBlackboard().bind("it", Person("John Doe"))
+                val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, Person("John Doe"))
                 every { mockAgentProcess.getValue(any(), any(), any()) } answers {
                     blackboard.getValue(
                         firstArg(),
@@ -969,7 +969,7 @@ class AgentMetadataReaderTest {
                 val llmt = mockk<LlmOperations>()
                 every { mockPlatformServices.llmOperations } returns llmt
                 every { mockPlatformServices.eventListener } returns DevNull
-                val blackboard = InMemoryBlackboard().bind("it", UserInput("John Doe"))
+                val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
                 every { mockAgentProcess.getValue(any(), any(), any()) } answers {
                     blackboard.getValue(
                         firstArg(),

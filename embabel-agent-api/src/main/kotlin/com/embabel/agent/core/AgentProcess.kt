@@ -81,7 +81,7 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
         require(status == AgentProcessStatusCode.COMPLETED) {
             "Cannot get result of process that is not completed: Status=$status"
         }
-        return processContext.getValue("it", outputClass.simpleName) as O?
+        return processContext.getValue(IoBinding.DEFAULT_BINDING, outputClass.simpleName) as O?
             ?: error("No result found in process status")
     }
 

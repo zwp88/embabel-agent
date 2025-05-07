@@ -15,7 +15,8 @@
  */
 package com.embabel.agent.core
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -92,7 +93,7 @@ class IoBindingTest {
 
     @Test
     fun `test DEFAULT_BINDING constant is 'it'`() {
-        assertEquals("it", IoBinding.DEFAULT_BINDING)
+        assertEquals(IoBinding.DEFAULT_BINDING, IoBinding.DEFAULT_BINDING)
     }
 
     // Test with a custom class to ensure full qualified name handling

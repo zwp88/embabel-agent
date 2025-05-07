@@ -22,10 +22,7 @@ import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.annotation.waitFor
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.agent
-import com.embabel.agent.core.Agent
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.AgentProcessStatusCode
-import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.special.UserInput
@@ -121,7 +118,7 @@ class SimpleAgentProcessTest {
             every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
 
             val blackboard = InMemoryBlackboard()
-            blackboard += ("it" to UserInput("Rod"))
+            blackboard += UserInput("Rod")
             val agentProcess = SimpleAgentProcess(
                 id = "test",
                 agent = agent,
@@ -144,7 +141,7 @@ class SimpleAgentProcessTest {
             every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
 
             val blackboard = InMemoryBlackboard()
-            blackboard += ("it" to UserInput("Rod"))
+            blackboard += (IoBinding.DEFAULT_BINDING to UserInput("Rod"))
             val agentProcess = SimpleAgentProcess(
                 id = "test",
                 agent = agent,
@@ -187,7 +184,7 @@ class SimpleAgentProcessTest {
             var called = false
             val stuckHandler = StuckHandler {
                 called = true
-                it.processContext.blackboard["it"] = UserInput("Rod")
+                it.processContext.blackboard += UserInput("Rod")
                 StuckHandlerResult(
                     message = "The magic unsticker unstuck the stuckness",
                     handler = null,
