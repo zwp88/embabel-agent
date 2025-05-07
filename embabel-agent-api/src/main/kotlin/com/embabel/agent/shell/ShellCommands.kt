@@ -381,9 +381,10 @@ class ShellCommands(
             }
             val usage = result.agentProcess.usage()
             return """|
+                |You asked: ${basis.toString().color(colorPalette.highlight)}
+                |
                 |${output.color(colorPalette.color2)}
                 |
-                |You asked: '${basis.toString().color(colorPalette.highlight)}'
                 |LLMs used: ${result.agentProcess.modelsUsed().map { it.name }}
                 |Prompt tokens: ${numberFormat.format(usage.promptTokens)}, completion tokens: ${
                 numberFormat.format(
@@ -428,6 +429,9 @@ class ShellCommands(
             return "I'm sorry. I don't know how to proceed.\n"
         } catch (pwe: ProcessWaitingException) {
             val awaitableResponse = terminalServices.handleProcessWaitingException(pwe)
+            if (awaitableResponse == null) {
+                return "Operation cancelled.\n"
+            }
             pwe.awaitable.onResponse(
                 response = awaitableResponse,
                 processContext = pwe.agentProcess!!.processContext

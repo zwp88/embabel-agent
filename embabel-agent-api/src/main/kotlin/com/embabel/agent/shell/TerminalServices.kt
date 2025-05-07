@@ -70,7 +70,11 @@ class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
         return "Conversation finished"
     }
 
-    fun handleProcessWaitingException(processWaitingException: ProcessWaitingException): AwaitableResponse =
+    /**
+     * Handle the process waiting exception request
+     * @return null if the operation was cancelled by the user
+     */
+    fun handleProcessWaitingException(processWaitingException: ProcessWaitingException): AwaitableResponse? =
         when (processWaitingException.awaitable) {
             is ConfirmationRequest<*> -> {
                 confirmationResponseFromUserInput(processWaitingException.awaitable)
@@ -92,7 +96,7 @@ class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
 
     private fun confirmationResponseFromUserInput(
         confirmationRequest: ConfirmationRequest<*>,
-    ): ConfirmationResponse {
+    ): ConfirmationResponse? {
         val confirmed = confirm(confirmationRequest.message)
         return ConfirmationResponse(
             awaitableId = confirmationRequest.id,
@@ -102,7 +106,7 @@ class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
 
     private fun formBindingResponseFromUserInput(
         formBindingRequest: FormBindingRequest<*>,
-    ): FormResponse {
+    ): FormResponse? {
         val form = formBindingRequest.payload
         val values = mutableMapOf<String, Any>()
 
@@ -166,7 +170,7 @@ class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
                 .equals("y", ignoreCase = true)
 
             if (!confirmSubmit) {
-                TODO("Handle form submission cancellation")
+                null
             } else {
                 FormResponse(
                     awaitableId = formBindingRequest.id,
