@@ -73,11 +73,6 @@ class ToolGroupsConfiguration(
         )
     }
 
-
-    private val githubTools = listOf(
-        "add_issue_comment",
-    )
-
     @Bean
     fun browserAutomationWebToolsGroup(): ToolGroup {
         return McpToolGroup(
@@ -88,8 +83,31 @@ class ToolGroupsConfiguration(
                 ToolGroupPermission.INTERNET_ACCESS
             ),
             clients = mcpSyncClients,
-            // TODO : add filter for GitHub tools
             filter = { it.toolDefinition.name().contains("puppeteer") },
+        )
+    }
+
+    // TODO this is nasty. Should replace when we have genuine metadata from Docker MCP hub
+    private val GitHubTools = listOf(
+        "add_issue_comment",
+        "create_issue",
+        "list_issues",
+        "get_issue",
+        "list_pull_requests",
+        "get_pull_request",
+    )
+
+    @Bean
+    fun githubToolsGroup(): ToolGroup {
+        return McpToolGroup(
+            description = ToolGroup.GITHUB_DESCRIPTION,
+            artifact = "docker-github",
+            provider = "Docker",
+            permissions = setOf(
+                ToolGroupPermission.INTERNET_ACCESS
+            ),
+            clients = mcpSyncClients,
+            filter = { GitHubTools.any { ght -> it.toolDefinition.name().contains(ght) } },
         )
     }
 

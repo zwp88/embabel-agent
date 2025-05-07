@@ -15,10 +15,7 @@
  */
 package com.embabel.examples.dogfood.coding
 
-import com.embabel.agent.api.annotation.AchievesGoal
-import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.Condition
+import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
@@ -32,6 +29,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
+
+data class CodeModificationRequest(
+    @get:JsonPropertyDescription("Request to modify code")
+    val request: String,
+)
 
 
 data class CodeModificationReport(
@@ -63,6 +65,21 @@ class Coder(
     @Action
     fun loadExistingProject(): SoftwareProject? =
         projectRepository.findById(codingProperties.defaultLocation).getOrNull()
+
+
+    @Action(toolGroups = [ToolGroup.GITHUB])
+    fun codeModificationRequestFromUserInput(
+        project: SoftwareProject,
+        userInput: UserInput
+    ): CodeModificationRequest = using(llm = codingProperties.primaryCodingLlm).create(
+        """
+        Create a CodeModification request based on this user input: ${userInput.content}
+        If the user wants you to pick up an issue from GitHub, search for it at ${project.url}.
+        Search for the milestone the user suggests.
+        Use the GitHub tools.
+        Create a CodeModificationRequest from the issue.
+        """.trimIndent()
+    )
 
 
     /**
@@ -123,10 +140,11 @@ class Coder(
         toolGroups = ["github", ToolGroup.WEB]
     )
     fun modifyCode(
-        userInput: UserInput,
+        codeModificationRequest: CodeModificationRequest,
         project: SoftwareProject,
         context: ActionContext,
     ): CodeModificationReport {
+        logger.info("Modifying code according to request: ${codeModificationRequest.request}")
         val report: String = context.promptRunner(
             llm = codingProperties.fixCodingLlm,
             promptContributors = listOf(project),
@@ -148,7 +166,7 @@ class Coder(
                 DO NOT BUILD *AFTER* MODIFYING CODE.
 
                 User request:
-                "${userInput.content}"
+                "${codeModificationRequest.request}"
             }
             """.trimIndent(),
         )
@@ -161,7 +179,7 @@ class Coder(
         post = [CoderConditions.BuildSucceeded]
     )
     fun fixBrokenBuild(
-        userInput: UserInput,
+        codeModificationRequest: CodeModificationRequest,
         project: SoftwareProject,
         buildFailure: BuildResult,
         context: ActionContext,
@@ -180,7 +198,7 @@ class Coder(
 
                 DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
                 Consider the following user request for the necessary functionality:
-                "${userInput.content}"
+                "${codeModificationRequest.request}"
             """.trimIndent(),
         )
         return CodeModificationReport(report)

@@ -39,6 +39,8 @@ val EvilWizardAgent = agent("EvilWizard", description = "Turn a person into a fr
     goal(name = "done", description = "done", satisfiedBy = Frog::class)
 }
 
+data class SnakeMeal(val frogs: List<Frog>)
+
 fun evenMoreEvilWizard() = agent("EvenMoreEvilWizard", description = "Turn a person into a frog") {
 
     transformation<UserInput, MagicVictim>(name = "thing") {
@@ -46,15 +48,11 @@ fun evenMoreEvilWizard() = agent("EvenMoreEvilWizard", description = "Turn a per
     }
 
     actions {
-        aggregate<MagicVictim, Frog, Frog>(
+        aggregate<MagicVictim, Frog, SnakeMeal>(
             transforms = listOf({ Frog("1") }, { Frog("2") }, { Frog("3") }),
-            merge = { it.random() },
+            merge = { frogs -> SnakeMeal(frogs) },
         ).parallelize()
     }
-
-    promptedTransformer<MagicVictim, Frog>(name = "turn-into-frog") {
-        "Turn the person named ${it.input.name} into a frog"
-    }
-
-    goal(name = "done", description = "done", satisfiedBy = Frog::class)
+    
+    goal(name = "done", description = "done", satisfiedBy = SnakeMeal::class)
 }
