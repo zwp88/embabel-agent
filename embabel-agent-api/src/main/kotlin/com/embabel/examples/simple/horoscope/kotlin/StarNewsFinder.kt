@@ -152,19 +152,19 @@ class StarNewsFinder(
         ).withTemperature(.9)
     ).createObject<Writeup>(
         """
-            Take the following news stories and write up something
-            amusing for the target person.
+        Take the following news stories and write up something
+        amusing for the target person.
 
-            Begin by summarizing their horoscope in a concise, amusing way, then
-            talk about the news. End with a surprising signoff.
+        Begin by summarizing their horoscope in a concise, amusing way, then
+        talk about the news. End with a surprising signoff.
 
-            ${person.name} is an astrology believer with the sign ${person.sign}.
-            Their horoscope for today is:
-                <horoscope>${horoscope.summary}</horoscope>
-            Relevant news stories are:
-            ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
+        ${person.name} is an astrology believer with the sign ${person.sign}.
+        Their horoscope for today is:
+            <horoscope>${horoscope.summary}</horoscope>
+        Relevant news stories are:
+        ${relevantNewsStories.items.joinToString("\n") { "- ${it.url}: ${it.summary}" }}
 
-            Format it as Markdown with links.
+        Format it as Markdown with links.
         """.trimIndent()
     )
 

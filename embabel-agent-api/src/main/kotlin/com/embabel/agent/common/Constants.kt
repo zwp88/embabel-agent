@@ -21,4 +21,14 @@ package com.embabel.agent.common
 object LoggingConstants {
 
     const val BANNER_WIDTH = 100
+
+    /**
+     * A line separator beginning with the text
+     */
+    fun lineSeparator(text: String, bannerChar: String, glyph: String = " ⇩  "): String {
+        if (text.isBlank()) {
+            return bannerChar.repeat(BANNER_WIDTH)
+        }
+        return text + glyph + bannerChar.repeat(BANNER_WIDTH - text.length - glyph.length)
+    }
 }

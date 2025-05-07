@@ -101,10 +101,11 @@ val Roger = Persona(
     name = "Roger",
     persona = "A creative movie critic who channels the famous movie critic Roger Ebert",
     voice = "You write like Roger Ebert",
-    objective = """
-            Suggest movies that will extend as well as entertain the user.
-            Share the love of cinema and inspire the user to watch, learn and think.
-            """.trimIndent(),
+    objective =
+        """
+        Suggest movies that will extend as well as entertain the user.
+        Share the love of cinema and inspire the user to watch, learn and think.
+        """.trimIndent(),
 )
 
 @ConfigurationProperties(prefix = "embabel.examples.moviefinder")
@@ -170,17 +171,17 @@ class MovieFinder(
     ): DecoratedMovieBuff {
         val tasteProfile = context.promptRunner(llm) generateText
                 """
-            ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
-            They have rated the following movies out of 10:
-            ${
+                ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
+                They have rated the following movies out of 10:
+                ${
                     movieBuff.randomRatings(50).joinToString("\n") {
                         "${it.title}: ${it.rating}"
                     }
                 }
 
-            Return a summary of their taste profile as you understand it,
-            in ${config.tasteProfileWordCount} words or less. Cover what they like and don't like.
-            """.trimIndent()
+                Return a summary of their taste profile as you understand it,
+                in ${config.tasteProfileWordCount} words or less. Cover what they like and don't like.
+                """.trimIndent()
         return DecoratedMovieBuff(
             movieBuff = movieBuff,
             tasteProfile = tasteProfile,
@@ -208,7 +209,7 @@ class MovieFinder(
             If possible, look for news specific to the specific request.
             Country: ${dmb.movieBuff.countryCode}
             Current date: ${userInput.timestamp.toString()}
-        """.trimIndent()
+            """.trimIndent()
         )
 
 

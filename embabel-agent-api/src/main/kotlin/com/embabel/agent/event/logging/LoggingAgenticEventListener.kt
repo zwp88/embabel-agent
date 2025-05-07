@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.event.logging
 
+import com.embabel.agent.common.LoggingConstants.lineSeparator
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.EarlyTermination
 import com.embabel.agent.event.*
@@ -23,6 +24,7 @@ import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.ai.chat.prompt.Prompt
 
 /**
  * Default implementation of the AgenticEventListener
@@ -268,18 +270,18 @@ open class LoggingAgenticEventListener(
                 )
             }
 
+            // Only show this at all if verbose
             is ChatModelCallEvent<*> -> {
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
-                    val promptInfo = "\nPrompt ${event.interaction.id}:\n${
-                        event.springAiPrompt.toString().color(AnsiColor.GREEN)
-                    }\ntools: [${
+                    val promptInfo = "${
+                        event.springAiPrompt.toInfoString().color(AnsiColor.GREEN)
+                    }\nprompt id: ${event.interaction.id}\ntools: [${
                         event.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
                             .color(AnsiColor.BRIGHT_MAGENTA)
                     }]"
                     logger.info(
-                        "{} Spring ChatModel call {} with prompt {}",
+                        "{} Spring AI ChatModel call:\n{}",
                         event.processId,
-                        event.interaction.id.value,
                         promptInfo,
                     )
                 }
@@ -332,4 +334,23 @@ open class LoggingAgenticEventListener(
         }
     }
 
+}
+
+fun Prompt.toInfoString(): String {
+    val bannerChar = "."
+
+    return """|${lineSeparator("Messages ", bannerChar)}
+           |${
+        this.instructions.joinToString(
+            "\n${
+                lineSeparator(
+                    "",
+                    bannerChar
+                )
+            }\n"
+        ) { "${it.messageType} <${it.text}>" }
+    }
+           |${lineSeparator("Options", bannerChar)}
+           |${this.options}
+           |""".trimMargin()
 }
