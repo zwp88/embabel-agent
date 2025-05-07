@@ -36,10 +36,8 @@ class AgentPlatformTypedOps(
 
     override fun <I : Any, O> asFunction(
         outputClass: Class<O>,
-        processOptions: ProcessOptions,
     ): AgentFunction<I, O> =
         AgentPlatformBackedAgentFunction(
-            processOptions = processOptions,
             outputClass = outputClass,
             agentPlatform = agentPlatform,
         )
@@ -47,13 +45,11 @@ class AgentPlatformTypedOps(
     override fun <I : Any, O> asFunction(
         outputClass: Class<O>,
         agentName: String,
-        processOptions: ProcessOptions,
     ): AgentFunction<I, O> {
         val agent = agentPlatform.agents().firstOrNull { it.name == agentName }
             ?: throw NoSuchAgentException(agentName)
         logger.info("Creating function for agent $agentName")
         return AgentBackedAgentFunction(
-            processOptions = processOptions,
             outputClass = outputClass,
             agentPlatform = agentPlatform,
             agent = agent,
@@ -62,7 +58,6 @@ class AgentPlatformTypedOps(
 }
 
 private class AgentPlatformBackedAgentFunction<I : Any, O>(
-    override val processOptions: ProcessOptions,
     override val outputClass: Class<O>,
     private val agentPlatform: AgentPlatform,
 ) : AgentFunction<I, O> {
@@ -72,7 +67,7 @@ private class AgentPlatformBackedAgentFunction<I : Any, O>(
     override val agentScope: AgentScope
         get() = agentPlatform
 
-    override fun apply(input: I): O {
+    override fun apply(input: I, processOptions: ProcessOptions): O {
         val goalAgent = agentPlatform.createAgent(
             name = "goal-${outputClass.simpleName}",
             description = "Goal agent for ${outputClass.simpleName}",
@@ -97,7 +92,6 @@ private class AgentPlatformBackedAgentFunction<I : Any, O>(
 }
 
 private class AgentBackedAgentFunction<I : Any, O>(
-    override val processOptions: ProcessOptions,
     override val outputClass: Class<O>,
     private val agentPlatform: AgentPlatform,
     private val agent: Agent,
@@ -108,7 +102,7 @@ private class AgentBackedAgentFunction<I : Any, O>(
     override val agentScope: AgentScope
         get() = agentPlatform
 
-    override fun apply(input: I): O {
+    override fun apply(input: I, processOptions: ProcessOptions): O {
         val processStatus = agentPlatform.runAgentFrom(
             processOptions = processOptions,
             agent = agent,

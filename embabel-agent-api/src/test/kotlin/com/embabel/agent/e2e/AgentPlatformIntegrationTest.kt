@@ -134,11 +134,11 @@ class AgentPlatformIntegrationTest(
         @Test
         fun `run star finder as transform by name`() {
             val writeup = typedOps.asFunction<UserInput, HasContent>(
-                processOptions = ProcessOptions(test = true),
                 outputClass = HasContent::class.java,
                 agentName = com.embabel.examples.simple.horoscope.java.StarNewsFinder::class.qualifiedName!!,
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
+                ProcessOptions(test = true),
             )
             assertNotNull(writeup)
             assertNotNull(writeup.text)
@@ -148,7 +148,6 @@ class AgentPlatformIntegrationTest(
         fun `reject unknown agent in transform by name`() {
             assertThrows<NoSuchAgentException> {
                 typedOps.asFunction<UserInput, Writeup>(
-                    processOptions = ProcessOptions(test = true),
                     outputClass = Writeup::class.java,
                     agentName = "stuff and nonsense",
                 )
@@ -158,10 +157,10 @@ class AgentPlatformIntegrationTest(
         @Test
         fun `run star finder as AgentPlatform transform`() {
             val writeup = typedOps.asFunction<UserInput, com.embabel.examples.simple.horoscope.java.Writeup>(
-                processOptions = ProcessOptions(test = true),
                 outputClass = com.embabel.examples.simple.horoscope.java.Writeup::class.java,
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
+                ProcessOptions(test = true),
             )
             assertNotNull(writeup)
             assertNotNull(writeup.text)
@@ -171,9 +170,9 @@ class AgentPlatformIntegrationTest(
         fun `run dsl agent as transform`() {
             autonomy.agentPlatform.deploy(EvilWizardAgent)
             val frog = typedOps.asFunction<UserInput, Frog>(
-                processOptions = ProcessOptions(test = true),
             ).apply(
                 UserInput("Hamish a poor boy"),
+                ProcessOptions(test = true),
             )
             assertNotNull(frog)
         }

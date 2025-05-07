@@ -18,15 +18,15 @@ package com.embabel.agent.api.common
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.special.UserInput
-import java.util.function.Function
+import java.util.function.BiFunction
 
 
 /**
  * Reusable AgentFunction.
- * Allows use of AgentPlatform as a function from I to O.
+ * Allows use of AgentPlatform as a function from I to O,
+ * with different process options.
  */
-interface AgentFunction<I, O> : Function<I, O> {
-    val processOptions: ProcessOptions
+interface AgentFunction<I, O> : BiFunction<I, ProcessOptions, O> {
     val agentScope: AgentScope
     val outputClass: Class<O>
 }
@@ -43,7 +43,7 @@ interface TypedOps {
         input: I,
         outputClass: Class<O>,
         processOptions: ProcessOptions = ProcessOptions(),
-    ): O = asFunction<I, O>(outputClass, processOptions).apply(input)
+    ): O = asFunction<I, O>(outputClass).apply(input, processOptions)
 
     /**
      * Return a reusable function that performs this transformation.
@@ -51,14 +51,12 @@ interface TypedOps {
      */
     fun <I : Any, O> asFunction(
         outputClass: Class<O>,
-        processOptions: ProcessOptions = ProcessOptions(),
     ): AgentFunction<I, O>
 
     @Throws(NoSuchAgentException::class)
     fun <I : Any, O> asFunction(
         outputClass: Class<O>,
         agentName: String,
-        processOptions: ProcessOptions = ProcessOptions(),
     ): AgentFunction<I, O>
 
     /**
@@ -104,5 +102,4 @@ inline fun <reified O> TypedOps.handleUserInput(
     )
 
 inline fun <I : Any, reified O> TypedOps.asFunction(
-    processOptions: ProcessOptions = ProcessOptions(),
-): AgentFunction<I, O> = asFunction(O::class.java, processOptions)
+): AgentFunction<I, O> = asFunction(O::class.java)
