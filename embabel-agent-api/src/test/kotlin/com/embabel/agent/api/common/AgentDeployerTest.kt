@@ -23,53 +23,50 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class AgentPublisherRegistrarTest {
+class AgentDeployerTest {
 
     @Test
     fun `no agents`() {
-        val mtAgentPublisher = AgentPublisher(agents = emptyList())
-        val agentPublisherRegistrar = AgentPublisherRegistrar(
-            agentPublishers = listOf(mtAgentPublisher),
+        val agentDeployer = AgentDeployer(
+            agents = emptyList(),
             agentPlatform = mockk(),
             properties = AgentScanningProperties(
                 annotation = false,
                 publisher = true,
             ),
         )
-        val allAgents = agentPublisherRegistrar.allAgents
+        val allAgents = agentDeployer.agents
         assert(allAgents.isEmpty())
     }
 
     @Test
     fun `no publication because disabled`() {
-        val agentPublisher = AgentPublisher(agents = listOf(EvilWizardAgent))
-        val agentPublisherRegistrar = AgentPublisherRegistrar(
-            agentPublishers = listOf(agentPublisher),
+        val agentDeployer = AgentDeployer(
+            agents = listOf(EvilWizardAgent),
             agentPlatform = mockk(),
             properties = AgentScanningProperties(
                 annotation = false,
                 publisher = false,
             ),
         )
-        val allAgents = agentPublisherRegistrar.allAgents
+        val allAgents = agentDeployer.agents
         assertEquals(1, allAgents.size)
         // Should not have deployed
     }
 
     @Test
     fun publication() {
-        val agentPublisher = AgentPublisher(agents = listOf(EvilWizardAgent))
         val mockAgentPlatform = mockk<AgentPlatform>()
         every { mockAgentPlatform.deploy(any()) } returns mockAgentPlatform
-        val agentPublisherRegistrar = AgentPublisherRegistrar(
-            agentPublishers = listOf(agentPublisher),
+        val agentDeployer = AgentDeployer(
+            agents = listOf(EvilWizardAgent),
             agentPlatform = mockAgentPlatform,
             properties = AgentScanningProperties(
                 annotation = false,
                 publisher = true,
             ),
         )
-        val allAgents = agentPublisherRegistrar.allAgents
+        val allAgents = agentDeployer.agents
         assertEquals(1, allAgents.size)
         // Should have deployed
         verify(exactly = 1) { mockAgentPlatform.deploy(EvilWizardAgent) }
