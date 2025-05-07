@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.dsl
+package com.embabel.agent.api.dsl.support
 
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
+import com.embabel.agent.domain.special.Aggregation
 import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.Modifier
@@ -32,7 +33,7 @@ fun expandInputBindings(
     inputVarName: String,
     inputClass: Class<*>
 ): Set<IoBinding> {
-    if (com.embabel.agent.domain.special.Aggregation::class.java.isAssignableFrom(inputClass)) {
+    if (Aggregation::class.java.isAssignableFrom(inputClass)) {
         return inputClass.declaredFields
             .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
             .map { field ->

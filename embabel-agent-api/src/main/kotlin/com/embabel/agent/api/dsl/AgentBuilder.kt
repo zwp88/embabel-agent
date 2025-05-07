@@ -18,6 +18,8 @@ package com.embabel.agent.api.dsl
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
+import com.embabel.agent.api.dsl.support.Transformer
+import com.embabel.agent.api.dsl.support.promptTransformer
 import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.agent.spi.LlmCall
@@ -165,6 +167,8 @@ class AgentBuilder(
             toolCallbacks = this.toolCallbacks + toolCallbacks,
             prompt = prompt,
             promptContributors = this.promptContributors + promptContributors,
+            inputClass = I::class.java,
+            outputClass = O::class.java,
         )
         actions.add(action)
     }

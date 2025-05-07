@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.dsl
+package com.embabel.agent.api.dsl.support
 
+import com.embabel.agent.api.dsl.Frog
+import com.embabel.agent.api.dsl.MagicVictim
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
@@ -42,7 +44,11 @@ class PromptTransformerKtTest {
 
         @Test
         fun `test prompt`() {
-            val transformer = promptTransformer<MagicVictim, Frog>(name = "frogger") {
+            val transformer = promptTransformer<MagicVictim, Frog>(
+                name = "frogger",
+                inputClass = MagicVictim::class.java,
+                outputClass = Frog::class.java,
+            ) {
                 "Turn the person named ${it.input.name} into a frog"
             }
             val magicVictim = MagicVictim(name = "Marmaduke")
@@ -72,7 +78,9 @@ class PromptTransformerKtTest {
             val transformer = promptTransformer<Person, Summary>(
                 name = "summarizer",
                 inputVarName = "person",
-                outputVarName = "summary"
+                outputVarName = "summary",
+                inputClass = Person::class.java,
+                outputClass = Summary::class.java,
             ) {
                 "Summarize information about ${it.input.name} who is ${it.input.age} years old"
             }
@@ -115,7 +123,9 @@ class PromptTransformerKtTest {
             val transformer = promptTransformer<MagicVictim, Frog>(
                 name = "conditionalTransformer",
                 pre = listOf(preCondition),
-                post = listOf(postCondition)
+                post = listOf(postCondition),
+                inputClass = MagicVictim::class.java,
+                outputClass = Frog::class.java,
             ) {
                 "Transform ${it.input.name}"
             }
@@ -130,7 +140,9 @@ class PromptTransformerKtTest {
 
             val transformer = promptTransformer<MagicVictim, Frog>(
                 name = "customLlmTransformer",
-                llm = customLlmOptions
+                llm = customLlmOptions,
+                inputClass = MagicVictim::class.java,
+                outputClass = Frog::class.java,
             ) {
                 "Transform ${it.input.name}"
             }
@@ -167,7 +179,9 @@ class PromptTransformerKtTest {
             val transformer = promptTransformer<MagicVictim, Frog>(
                 name = "transitionTransformer",
                 transitions = listOf(transition),
-                expectation = expectationCondition
+                expectation = expectationCondition,
+                inputClass = MagicVictim::class.java,
+                outputClass = Frog::class.java,
             ) {
                 "Transform ${it.input.name}"
             }
@@ -194,7 +208,9 @@ class PromptTransformerKtTest {
             val transformer = promptTransformer<MagicVictim, Frog>(
                 name = "toolTransformer",
                 toolGroups = toolGroups,
-                toolCallbacks = listOf(toolCallback)
+                toolCallbacks = listOf(toolCallback),
+                inputClass = MagicVictim::class.java,
+                outputClass = Frog::class.java,
             ) {
                 "Transform ${it.input.name}"
             }
@@ -226,14 +242,18 @@ class PromptTransformerKtTest {
         fun `transformer should handle rerunnable actions`() {
             val rerunnable = promptTransformer<MagicVictim, Frog>(
                 name = "rerunnableTransformer",
-                canRerun = true
+                canRerun = true,
+                inputClass = MagicVictim::class.java,
+                outputClass = Frog::class.java,
             ) {
                 "Transform ${it.input.name}"
             }
 
             val nonRerunnable = promptTransformer<MagicVictim, Frog>(
                 name = "nonRerunnableTransformer",
-                canRerun = false
+                canRerun = false,
+                inputClass = MagicVictim::class.java,
+                outputClass = Frog::class.java,
             ) {
                 "Transform ${it.input.name}"
             }
