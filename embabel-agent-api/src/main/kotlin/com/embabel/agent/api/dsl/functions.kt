@@ -15,34 +15,74 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.core.Action
+import com.embabel.agent.api.common.OperationContext
+import com.embabel.agent.core.AgentScope
 
-interface AgentFactory {
+/**
+ * This interface is used to build actions in a DSL-like manner.
+ * It allows chaining of functions with different input and output types.
+ *
+ * @see [AgentScopeFactory]
+ */
 
-    fun <A, B, C> chain(
-        a: (a: A) -> B,
-        b: (b: B) -> C,
-        aClass: Class<A>,
-        bClass: Class<B>,
-        cClass: Class<C>,
-    ): Actions
-}
+fun <A, B, C> chain(
+    a: (a: A) -> B,
+    b: (b: B) -> C,
+    aClass: Class<A>,
+    bClass: Class<B>,
+    cClass: Class<C>,
+): AgentScopeFactory = TODO()
 
-inline fun <reified A, reified B, reified C> AgentFactory.chain(
+
+inline fun <reified A, reified B, reified C> chain(
     noinline a: (a: A) -> B,
     noinline b: (b: B) -> C,
-): Actions {
+): AgentScopeFactory {
     return chain(a, b, A::class.java, B::class.java, C::class.java)
 }
 
-class Actions(
+fun <A, B, C> aggregate1(
+    transforms: List<(a: A, context: OperationContext) -> B>,
+    merge: (list: List<B>) -> C,
+    aClass: Class<A>,
+    bClass: Class<B>,
+    cClass: Class<C>,
+): AgentScopeFactory = TODO()
+
+inline fun <reified A, reified B, reified C> aggregate1(
+    transforms: List<(a: A, context: OperationContext) -> B>,
+    noinline merge: (list: List<B>) -> C,
+): AgentScopeFactory {
+    return aggregate1(
+        transforms,
+        merge,
+        A::class.java, B::class.java, C::class.java
+    )
+}
+
+/**
+ * Run all the transforms and merge the results.
+ */
+inline fun <reified A, reified B, reified C> aggregate(
+    transforms: List<(a: A) -> B>,
+    noinline merge: (list: List<B>) -> C,
+): AgentScopeFactory {
+    return aggregate1(
+        transforms.map { transform -> { a: A, context: OperationContext -> transform(a) } },
+        merge,
+        A::class.java, B::class.java, C::class.java
+    )
+}
+
+
+class AgentScopeFactory(
 //    val block: (T) -> Unit,
 ) {
-    fun parallelize(): Actions {
+    fun parallelize(): AgentScopeFactory {
         return this
     }
 
-    fun toActions(): Collection<Action> {
+    fun build(): AgentScope {
         TODO()
     }
 }

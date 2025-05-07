@@ -89,6 +89,17 @@ class AgentBuilder(
         actions.add(block())
     }
 
+    fun actions(block: AgentBuilder.() -> AgentScopeFactory) {
+        val agentScope = block().build()
+        add(agentScope)
+    }
+
+    fun add(agentScope: AgentScope) {
+        actions += agentScope.actions
+        goals += agentScope.goals
+        conditions += agentScope.conditions
+    }
+
     /**
      * Add an action that is a transformation NOT using an LLM.
      */
