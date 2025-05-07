@@ -60,6 +60,10 @@ interface AgentPlatform : AgentScope {
     /**
      * Run the agent from the given ProcessOptions.
      * We might create a new blackboard or have one
+     * @param agent the agent to run. Does not need to be deployed to the platform
+     * @param processOptions the options for the process
+     * @param bindings the bindings for the process: Objects that are pre-bound
+     * to the blackboard.
      */
     fun runAgentFrom(
         agent: Agent,

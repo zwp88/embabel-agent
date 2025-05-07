@@ -269,7 +269,7 @@ class Autonomy(
             processOptions = processOptions,
             agent = goalRun.agent,
             bindings = mapOf(
-                "it" to userInput
+                IoBinding.DEFAULT_BINDING to userInput
             )
         )
 
@@ -365,7 +365,7 @@ class Autonomy(
             processOptions = processOptions,
             agent = agent,
             bindings = mapOf(
-                "it" to userInput
+                IoBinding.DEFAULT_BINDING to userInput
             )
         )
         return DynamicExecutionResult.fromProcessStatus(

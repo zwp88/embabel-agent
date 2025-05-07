@@ -17,6 +17,7 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.annotation.support.Person
 import com.embabel.agent.core.ActionStatusCode
+import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
@@ -104,7 +105,7 @@ class AgentBuilderTest {
             val action = agent.actions.find { it.name == "thing" }
                 ?: error("Action not found: ${agent.actions.map { it.name }}")
             val blackboard = InMemoryBlackboard()
-            blackboard["it"] = Person("foo")
+            blackboard += Person("foo")
             val platformServices = PlatformServices(
                 eventListener = EventSavingAgenticEventListener(),
                 llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum,
@@ -127,7 +128,7 @@ class AgentBuilderTest {
             assert(r.status == ActionStatusCode.SUCCEEDED)
             assertEquals(
                 MagicVictim("Hamish"),
-                processContext.blackboard["it"],
+                processContext.blackboard[IoBinding.DEFAULT_BINDING],
                 "Result should have been bound to blackboard"
             )
         }

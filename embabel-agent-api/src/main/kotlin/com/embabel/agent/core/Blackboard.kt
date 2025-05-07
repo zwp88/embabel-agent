@@ -41,6 +41,16 @@ interface Bindable {
      * Add to entries without binding to a variable name.
      * Implementations must respect the order in which
      * entities were added.
+     * This is equivalent to using the default binding name
+     * as the key. For example, if you add a Dog to the blackboard
+     * without a key, it will be bound to the default
+     * binding name "it" and will be the last
+     * entry in the list of objects.
+     * Equivalent:
+     * ```
+     * blackboard["it"] = dog
+     * blackboard.addObject(dog)
+     * ```
      */
     fun addObject(value: Any): Bindable
 

@@ -18,6 +18,8 @@ package com.embabel.agent.api.dsl
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
+import com.embabel.agent.api.dsl.support.Transformer
+import com.embabel.agent.api.dsl.support.promptTransformer
 import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.agent.spi.LlmCall
@@ -88,7 +90,7 @@ class AgentBuilder(
     }
 
     /**
-     * Add an action that is a transformation
+     * Add an action that is a transformation NOT using an LLM.
      */
     inline fun <reified I, reified O : Any> transformation(
         name: String,
@@ -125,6 +127,9 @@ class AgentBuilder(
         actions.add(action)
     }
 
+    /**
+     * Add an action that is a transformation using an LLM.
+     */
     inline fun <reified I, reified O : Any> promptedTransformer(
         name: String,
         description: String = name,
@@ -162,10 +167,22 @@ class AgentBuilder(
             toolCallbacks = this.toolCallbacks + toolCallbacks,
             prompt = prompt,
             promptContributors = this.promptContributors + promptContributors,
+            inputClass = I::class.java,
+            outputClass = O::class.java,
         )
         actions.add(action)
     }
 
+    /**
+     * Add a goal to the agent.
+     * @param name The name of the goal.
+     * @param description A description of the goal. Should be informative,
+     * to allow the platform to choose a goal based on user input.
+     * @param satisfiedBy A class that satisfies this goal.
+     * @param requires A set of classes that are required to satisfy this goal.
+     * @param pre custom preconditions, in addition to input preconditions
+     * @param value the value of achieving this goal
+     */
     fun goal(
         name: String,
         description: String,

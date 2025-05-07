@@ -16,6 +16,7 @@
 package com.embabel.agent.support
 
 import com.embabel.agent.api.annotation.support.Person
+import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,7 +35,7 @@ class BlackboardTest {
             val bb = InMemoryBlackboard()
             assertNull(
                 bb.getValue(
-                    "it",
+                    IoBinding.DEFAULT_BINDING,
                     "AllOfTheAbove",
                     listOf(AllOfTheAbove::class.java, UserInput::class.java, Person::class.java),
                 )
@@ -47,7 +48,7 @@ class BlackboardTest {
             bb += UserInput("John is a man")
             assertNull(
                 bb.getValue(
-                    "it",
+                    IoBinding.DEFAULT_BINDING,
                     "AllOfTheAbove",
                     listOf(AllOfTheAbove::class.java, UserInput::class.java, Person::class.java),
                 )
@@ -60,7 +61,7 @@ class BlackboardTest {
             bb += UserInput("John is a man")
             bb += Person("John")
             val aota = bb.getValue(
-                "it",
+                IoBinding.DEFAULT_BINDING,
                 "AllOfTheAbove",
                 listOf(AllOfTheAbove::class.java, UserInput::class.java, Person::class.java),
             )
@@ -79,13 +80,13 @@ class BlackboardTest {
         @Test
         fun `empty blackboard, no domain objects`() {
             val bb = InMemoryBlackboard()
-            assertNull(bb.getValue("it", "Person", emptyList()))
+            assertNull(bb.getValue(IoBinding.DEFAULT_BINDING, "Person", emptyList()))
         }
 
         @Test
         fun `empty blackboard, relevant domain object`() {
             val bb = InMemoryBlackboard()
-            assertNull(bb.getValue("it", "Person", listOf(Person::class.java)))
+            assertNull(bb.getValue(IoBinding.DEFAULT_BINDING, "Person", listOf(Person::class.java)))
         }
 
         @Test
@@ -93,7 +94,7 @@ class BlackboardTest {
             val bb = InMemoryBlackboard()
             val john = Person("John")
             bb += john
-            assertEquals(john, bb.getValue("it", "Person", listOf(Person::class.java)))
+            assertEquals(john, bb.getValue(IoBinding.DEFAULT_BINDING, "Person", listOf(Person::class.java)))
         }
 
         @Test
@@ -101,7 +102,7 @@ class BlackboardTest {
             val bb = InMemoryBlackboard()
             val duke = Dog("Duke")
             bb += duke
-            assertEquals(duke, bb.getValue("it", "Dog", listOf(Dog::class.java)))
+            assertEquals(duke, bb.getValue(IoBinding.DEFAULT_BINDING, "Dog", listOf(Dog::class.java)))
         }
 
 
@@ -110,7 +111,7 @@ class BlackboardTest {
             val bb = InMemoryBlackboard()
             val duke = Dog("Duke")
             bb += duke
-            assertEquals(duke, bb.getValue("it", "Organism", listOf(Dog::class.java)))
+            assertEquals(duke, bb.getValue(IoBinding.DEFAULT_BINDING, "Organism", listOf(Dog::class.java)))
         }
 
         @Test
@@ -118,14 +119,14 @@ class BlackboardTest {
             val bb = InMemoryBlackboard()
             val duke = Dog("Duke")
             bb += duke
-            assertEquals(duke, bb.getValue("it", "Animal", listOf(Dog::class.java)))
+            assertEquals(duke, bb.getValue(IoBinding.DEFAULT_BINDING, "Animal", listOf(Dog::class.java)))
         }
 
         @Test
         fun `no type match`() {
             val bb = InMemoryBlackboard()
             val john = Person("John")
-            bb += ("it" to john)
+            bb += john
             assertNull(bb.getValue("person", "Point", listOf(Person::class.java, Point::class.java)))
         }
 

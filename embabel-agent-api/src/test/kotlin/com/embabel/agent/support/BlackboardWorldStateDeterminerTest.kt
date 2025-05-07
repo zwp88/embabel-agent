@@ -132,7 +132,7 @@ class BlackboardWorldStateDeterminerTest {
 
             val bsb = blackboardWorldStateDeterminer(blackboard)
 
-            blackboard["it"] = UserInput("xyz")
+            blackboard += UserInput("xyz")
             val worldState = bsb.determineWorldState().state
             assertTrue(
                 worldState.containsAll(

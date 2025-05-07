@@ -25,12 +25,12 @@ import org.springframework.stereotype.Component
 @Profile("starwars")
 object StarWarsColors : ColorPalette {
     const val YELLOW_ACCENT: Int = 0xFFD100
-    const val CORUSCANT_BLUE = 0x394A59
+    const val TATOOINE_ORANGE: Int = 0xAD7D37
 
     override val highlight: Int
         get() = YELLOW_ACCENT
     override val color2: Int
-        get() = CORUSCANT_BLUE
+        get() = TATOOINE_ORANGE
 }
 
 

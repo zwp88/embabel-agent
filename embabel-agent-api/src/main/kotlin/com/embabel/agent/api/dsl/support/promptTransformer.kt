@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.dsl
+package com.embabel.agent.api.dsl.support
 
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
+import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.Transition
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
@@ -27,13 +28,15 @@ import org.springframework.ai.tool.ToolCallback
 /**
  * Supports AgentBuilder. Not fur direct use in user code.
  */
-inline fun <reified I, reified O : Any> promptTransformer(
+fun <I, O : Any> promptTransformer(
     name: String,
     description: String = name,
     pre: List<Condition> = emptyList(),
     post: List<Condition> = emptyList(),
-    inputVarName: String = "it",
-    outputVarName: String = "it",
+    inputVarName: String = IoBinding.DEFAULT_BINDING,
+    outputVarName: String = IoBinding.DEFAULT_BINDING,
+    inputClass: Class<I>,
+    outputClass: Class<O>,
     cost: ZeroToOne = 0.0,
     transitions: List<Transition> = emptyList(),
     toolGroups: Collection<String> = emptyList(),
@@ -44,7 +47,7 @@ inline fun <reified I, reified O : Any> promptTransformer(
     expectation: Condition? = null,
     canRerun: Boolean = false,
     toolCallbacks: Collection<ToolCallback> = emptyList(),
-    noinline prompt: (actionContext: TransformationActionContext<I, O>) -> String,
+    prompt: (actionContext: TransformationActionContext<I, O>) -> String,
 ): Transformer<I, O> {
     val expectationTransition = expectation?.let {
         Transition(
@@ -63,8 +66,8 @@ inline fun <reified I, reified O : Any> promptTransformer(
         canRerun = canRerun,
         inputVarName = inputVarName,
         outputVarName = outputVarName,
-        inputClass = I::class.java,
-        outputClass = O::class.java,
+        inputClass = inputClass,
+        outputClass = outputClass,
         referencedInputProperties = referencedInputProperties,
         toolGroups = toolGroups,
     ) {
@@ -74,7 +77,7 @@ inline fun <reified I, reified O : Any> promptTransformer(
             promptContributors = promptContributors,
         ).createObject(
             prompt = prompt(it),
-            outputClass = O::class.java,
+            outputClass = outputClass,
         )
     }
 }
