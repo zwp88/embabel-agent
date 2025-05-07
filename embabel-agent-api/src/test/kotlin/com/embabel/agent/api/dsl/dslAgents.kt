@@ -38,3 +38,23 @@ val EvilWizardAgent = agent("EvilWizard", description = "Turn a person into a fr
 
     goal(name = "done", description = "done", satisfiedBy = Frog::class)
 }
+
+fun evenMoreEvilWizard() = agent("EvenMoreEvilWizard", description = "Turn a person into a frog") {
+
+    transformation<UserInput, MagicVictim>(name = "thing") {
+        MagicVictim(name = "Hamish")
+    }
+
+    actions {
+        aggregate<MagicVictim, Frog, Frog>(
+            transforms = listOf({ Frog("1") }, { Frog("2") }, { Frog("3") }),
+            merge = { it.random() },
+        ).parallelize()
+    }
+
+    promptedTransformer<MagicVictim, Frog>(name = "turn-into-frog") {
+        "Turn the person named ${it.input.name} into a frog"
+    }
+
+    goal(name = "done", description = "done", satisfiedBy = Frog::class)
+}
