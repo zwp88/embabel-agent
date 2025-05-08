@@ -43,12 +43,12 @@ class StarNewsFinderTest {
         val horoscopeService = FakeHoroscopeService()
 
         @Test
-        fun `writeup must contain person name`() {
+        fun `writeup must contain person's name`() {
             val starNewsFinder = StarNewsFinder(horoscopeService = horoscopeService, storyCount = 5)
             var starPerson = StarPerson(name = "Rod", sign = "Cancer")
             val relevantNewsStories = RelevantNewsStories(emptyList())
             val llmCall = captureLlmCall {
-                starNewsFinder.newsWriteup(
+                starNewsFinder.starNewsWriteup(
                     person = starPerson,
                     relevantNewsStories = relevantNewsStories,
                     horoscope = Horoscope(horoscopeService.dailyHoroscope("Cancer")),

@@ -16,6 +16,7 @@
 package com.embabel.agent.event.logging.personality.montypython
 
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
+import com.embabel.common.util.color
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
@@ -46,7 +47,7 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     |  FLYING  |                                       |  CIRCUS  |
     |__________|                                       |__________|
 
-    """.trimIndent(),
+    """.trimIndent().color(MontyPythonColors.BRIGHT_RED),
     agentDeploymentEventMessage = "Found a parrot: {}\n\tdescription: {}",
     rankingChoiceMadeEventMessage = "You don't vote for kings. We have chosen {} with {} certainty based on {}",
     dynamicAgentCreationMessage = "It's not dead yet: Created agent {}",

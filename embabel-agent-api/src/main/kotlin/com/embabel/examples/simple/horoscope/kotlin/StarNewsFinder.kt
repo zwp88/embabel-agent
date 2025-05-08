@@ -26,7 +26,8 @@ import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.embabel.common.ai.model.ModelProvider.Companion.CHEAPEST_ROLE
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.ux.form.Text
 import com.fasterxml.jackson.annotation.JsonClassDescription
@@ -219,7 +220,7 @@ class StarNewsFinder(
             novel gifts
             - If the horoscope says that they may want to work on their career,
             find news stories about training courses.
-        """.trimIndent()
+            """.trimIndent()
         )
 
     /**
@@ -238,17 +239,17 @@ class StarNewsFinder(
     // The @AchievesGoal annotation indicates that completing this action
     // achieves the given goal, so the agent flow can be complete
     @AchievesGoal(
-        description = "Produce an amusing writeup for the target person based on their horoscope and current news stories",
+        description = "Create an amusing writeup for the target person based on their horoscope and current news stories",
     )
     @Action
-    fun newsWriteup(
+    fun starNewsWriteup(
         person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
     ): Writeup = using(
         LlmOptions(
-            ModelSelectionCriteria.firstOf(
-                OpenAiModels.GPT_41_MINI,
+            byRole(
+                CHEAPEST_ROLE
             )
         ).withTemperature(.9)
     ).createObject<Writeup>(
