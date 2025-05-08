@@ -19,7 +19,7 @@ import com.embabel.agent.core.ToolCallbackPublisher
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.ai.tool.ToolCallbacks
+import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.annotation.Tool
 import kotlin.test.assertEquals
 

@@ -16,8 +16,8 @@
 package com.embabel.agent.toolgroups.web.search.brave
 
 import com.embabel.agent.toolgroups.web.search.WebSearchRequest
+import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 

@@ -42,7 +42,7 @@ import org.springframework.ai.chat.prompt.ChatOptions
 import org.springframework.ai.chat.prompt.DefaultChatOptions
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.model.tool.ToolCallingChatOptions
-import org.springframework.ai.tool.ToolCallbacks
+import org.springframework.ai.support.ToolCallbacks
 import kotlin.test.assertEquals
 
 /**
