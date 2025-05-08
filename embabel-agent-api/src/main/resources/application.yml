@@ -2,7 +2,6 @@ spring:
   application:
     name: agent-api
 
-
   threads:
     virtual:
       enabled: true
@@ -38,24 +37,31 @@ spring:
     ollama:
       base-url: http://localhost:11434
 
+#management:
+#  tracing:
+#    sampling:
+#      probability: 1.0
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#  endpoint:
+#    health:
+#      show-details: always
+
+#  zipkin:
+#    tracing:
+#      endpoint: http://localhost:9411/api/v2/spans
+
 management:
-  tracing:
-    sampling:
-      probability: 1.0
   endpoints:
     web:
       exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
-  observations:
-    key-values:
-      application:
-        value: agent-api
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+        include: prometheus,health,info,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
 embabel:
   agent-platform:
@@ -88,3 +94,7 @@ logging:
     # com.embabel.agent.core.support.BlackboardWorldStateDeterminer: DEBUG
     # com.embabel.agent.api.annotation.support.AgentMetadataReader: DEBUG
 
+    zipkin2: DEBUG
+    io.micrometer: DEBUG
+    io.micrometer.tracing: DEBUG
+    io.micrometer.tracing.zipkin2: DEBUG
