@@ -168,7 +168,7 @@ class StarNewsFinder(
      */
     @Action
     fun extractStarPerson(userInput: UserInput): StarPerson? =
-        using(LlmOptions(OpenAiModels.GPT_41_MINI)).createObjectIfPossible(
+        using(LlmOptions(byRole(CHEAPEST_ROLE))).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name and star sign:
             ${userInput.content}
