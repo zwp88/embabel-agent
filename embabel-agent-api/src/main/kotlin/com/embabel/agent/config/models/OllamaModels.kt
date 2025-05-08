@@ -50,6 +50,12 @@ class OllamaModels(
             pricingModel = PricingModel.ALL_YOU_CAN_EAT
         )
 
+    @Bean
+    fun qwen2_5_coder(): Llm = ollamaModelOf(QWEN2_5_CODER)
+        .copy(
+            pricingModel = PricingModel.ALL_YOU_CAN_EAT
+        )
+
     private fun ollamaModelOf(name: String): Llm {
         val chatModel = OllamaChatModel.builder()
             .ollamaApi(
@@ -70,5 +76,7 @@ class OllamaModels(
         const val GEMMA3_4B = "gemma3:4b"
 
         const val LLAMA3_2_3B = "llama3.2:3b"
+
+        const val QWEN2_5_CODER = "qwen2.5-coder"
     }
 }

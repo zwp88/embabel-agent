@@ -30,11 +30,17 @@ import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.web.client.RestTemplate
+
+@ConfigurationProperties("embabel.agent-platform.ranking")
+data class RankingProperties(
+    val llm: String = OpenAiModels.GPT_41_MINI,
+)
 
 /**
  * Core configuration for AgentPlatform
@@ -42,6 +48,7 @@ import org.springframework.web.client.RestTemplate
 @Configuration
 @EnableConfigurationProperties(ModelProperties::class)
 class AgentPlatformConfiguration(
+    private val rankingProperties: RankingProperties,
 ) {
 
     /**
@@ -82,7 +89,7 @@ class AgentPlatformConfiguration(
     @Bean
     fun ranker(llmOperations: LlmOperations): Ranker = LlmRanker(
         llmOperations = llmOperations,
-        llm = LlmOptions(OpenAiModels.GPT_41),
+        llm = LlmOptions(rankingProperties.llm),
         maxAttempts = 3,
     )
 

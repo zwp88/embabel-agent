@@ -52,7 +52,7 @@ open class LoggingAgenticEventListener(
     private val functionCallRequestEventMessage: String = "[{}] tool {}({})",
     private val functionCallSuccessResponseEventMessage: String = "[{}] tool {} -> {} in {}ms with payload {}",
     private val functionCallFailureResponseEventMessage: String = "[{}] failed tool {} -> {} in {}ms with payload {}",
-    private val llmRequestEventMessage: String = "[{}] requesting LLM transform {} from {} -> {} using {}",
+    private val llmRequestEventMessage: String = "[{}] requesting LLM {} to transform {} from {} -> {} using {}",
     private val llmResponseEventMessage: () -> String = { "[{}] received LLM response {} of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
     private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
@@ -264,6 +264,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     message,
                     event.processId,
+                    event.interaction.llm.criteria,
                     event.interaction.id.value,
                     event.outputClass.simpleName,
                     event.interaction.llm,

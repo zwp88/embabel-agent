@@ -60,6 +60,8 @@ embabel:
     scanning:
       annotation: true
       publisher: false
+    ranking:
+      llm: gpt-4.1
 
   autonomy:
     agent-confidence-cut-off: 0.6

@@ -57,7 +57,7 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     processCompletionMessage = "Tis but a scratch: Process {} completed in {}",
     processFailureMessage = "It's just a flesh wound: Process {} failed",
     objectAddedMessage = "Bring out your dead! Object added: {} to process {}",
-    llmRequestEventMessage = "Strange women lying in ponds: Process {} requesting LLM transform from {} -> {}",
+    llmRequestEventMessage = "Strange women lying in ponds: Process {} requesting LLM {} transform from {} -> {}",
     actionExecutionStartMessage = "Run away! Run away! Process {} executing action {}",
     actionExecutionResultMessage = "I fart in your general direction! Process {} executed action {} in {}",
 )

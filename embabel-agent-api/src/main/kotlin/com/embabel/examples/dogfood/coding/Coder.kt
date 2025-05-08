@@ -146,7 +146,7 @@ class Coder(
     ): CodeModificationReport {
         logger.info("Modifying code according to request: ${codeModificationRequest.request}")
         val report: String = context.promptRunner(
-            llm = codingProperties.fixCodingLlm,
+            llm = codingProperties.primaryCodingLlm,
             promptContributors = listOf(project),
         ).create(
             """
@@ -185,7 +185,7 @@ class Coder(
         context: ActionContext,
     ): CodeModificationReport {
         val report: String = context.promptRunner(
-            llm = codingProperties.primaryCodingLlm,
+            llm = codingProperties.fixCodingLlm,
             promptContributors = listOf(project, buildFailure),
         ).create(
             """

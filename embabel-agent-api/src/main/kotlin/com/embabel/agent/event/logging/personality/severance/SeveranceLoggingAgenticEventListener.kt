@@ -117,7 +117,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     functionCallRequestEventMessage = "[{}] ${highlight("VERVE")}: tool {}({})",
     functionCallSuccessResponseEventMessage = "[{}] ${highlight("VISION")}: tool {} -> {} in {}ms with payload {}",
     functionCallFailureResponseEventMessage = "[{}] ${highlight("WOE")}: tool {} failed {} in {}ms with payload {}",
-    llmRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM transform {} from {} -> {} using {}",
+    llmRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM {} to transform {} from {} -> {} using {}",
     llmResponseEventMessage = {
         """
         [{}] received LLM response {} of type {} from {} in {} seconds
