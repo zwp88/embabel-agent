@@ -132,6 +132,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
         )
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun extractResultIfPossible(result: Any?): T? {
         return when {
             result == null -> null

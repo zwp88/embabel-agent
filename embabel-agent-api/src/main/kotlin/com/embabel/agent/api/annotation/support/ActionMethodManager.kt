@@ -42,6 +42,7 @@ class ActionMethodManager(
     /**
      * Create an Action from a method
      */
+    @Suppress("UNCHECKED_CAST")
     fun createAction(
         method: Method,
         instance: Any,
@@ -95,6 +96,7 @@ class ActionMethodManager(
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun <O> invokeActionMethod(
         method: Method,
         instance: Any,

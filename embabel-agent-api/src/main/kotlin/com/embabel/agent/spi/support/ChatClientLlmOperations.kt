@@ -55,6 +55,7 @@ internal class ChatClientLlmOperations(
     private val maybePromptTemplate: String = "maybe_prompt_contribution",
 ) : AbstractLlmOperations(toolDecorator) {
 
+    @Suppress("UNCHECKED_CAST")
     override fun <O> doTransform(
         prompt: String,
         interaction: LlmInteraction,
@@ -118,6 +119,7 @@ internal class ChatClientLlmOperations(
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <O> doTransformIfPossible(
         prompt: String,
         interaction: LlmInteraction,

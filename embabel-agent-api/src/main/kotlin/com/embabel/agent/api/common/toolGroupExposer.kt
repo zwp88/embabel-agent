@@ -33,6 +33,7 @@ import org.springframework.aop.support.DefaultIntroductionAdvisor
  * and the parameters must match the tool parameters.
  * Not all tools need to be supported.
  */
+@Suppress("UNCHECKED_CAST")
 fun <T> exposeAsInterface(
     toolCallbackPublisher: ToolCallbackPublisher,
     intf: Class<T>,
