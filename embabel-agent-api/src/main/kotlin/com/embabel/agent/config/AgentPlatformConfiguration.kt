@@ -104,7 +104,7 @@ class AgentPlatformConfiguration(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,
         properties: ModelProperties,
-    ): ModelProvider = ApplicationPropertiesModelProvider(
+    ): ModelProvider = ConfigurableModelProvider(
         llms = llms,
         embeddingServices = embeddingServices,
         properties = properties,
