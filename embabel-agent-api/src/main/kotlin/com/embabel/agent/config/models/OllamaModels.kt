@@ -26,6 +26,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
+/**
+ * Ollama local models
+ */
 @ExcludeFromJacocoGeneratedReport(reason = "Ollama configuration can't be unit tested")
 @Profile("!test")
 @Configuration
@@ -36,7 +39,13 @@ class OllamaModels(
     }
 
     @Bean
-    fun gemma2(): Llm = ollamaModelOf("gemma2:2b")
+    fun gemma3_4b(): Llm = ollamaModelOf(GEMMA3_4B)
+        .copy(
+            pricingModel = PricingModel.ALL_YOU_CAN_EAT
+        )
+
+    @Bean
+    fun llama3_2b(): Llm = ollamaModelOf(LLAMA3_2_3B)
         .copy(
             pricingModel = PricingModel.ALL_YOU_CAN_EAT
         )
@@ -54,5 +63,12 @@ class OllamaModels(
             )
             .build()
         return Llm(name = name, chatModel)
+    }
+
+    companion object {
+
+        const val GEMMA3_4B = "gemma3:4b"
+
+        const val LLAMA3_2_3B = "llama3.2:3b"
     }
 }

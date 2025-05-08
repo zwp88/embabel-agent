@@ -18,7 +18,7 @@ package com.embabel.examples.simple.horoscope.kotlin
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
-import com.embabel.agent.config.models.OpenAiModels
+import com.embabel.agent.config.models.OllamaModels
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
@@ -26,8 +26,6 @@ import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelProvider.Companion.CHEAPEST_ROLE
-import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.ux.form.Text
 import com.fasterxml.jackson.annotation.JsonClassDescription
@@ -94,6 +92,8 @@ data class Writeup(
 class StarNewsFinder(
     // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
+    @Value("\${star-news-finder.model:llama3.2:3b}")
+    private val model: String = OllamaModels.LLAMA3_2_3B,
     @Value("\${star-news-finder.story.count:5}")
     private val storyCount: Int,
 ) {
@@ -111,7 +111,7 @@ class StarNewsFinder(
     @Action
     fun extractPerson(userInput: UserInput): PersonImpl? =
         // All prompts are typesafe
-        using(LlmOptions(OpenAiModels.GPT_41_NANO)).createObjectIfPossible(
+        usingModel(model).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name:
             ${userInput.content}
@@ -168,7 +168,7 @@ class StarNewsFinder(
      */
     @Action
     fun extractStarPerson(userInput: UserInput): StarPerson? =
-        using(LlmOptions(byRole(CHEAPEST_ROLE))).createObjectIfPossible(
+        usingModel(model).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name and star sign:
             ${userInput.content}
@@ -203,7 +203,7 @@ class StarNewsFinder(
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
     internal fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
-        usingDefaultLlm.createObject(
+        usingModel(model).createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -247,11 +247,7 @@ class StarNewsFinder(
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
     ): Writeup = using(
-        LlmOptions(
-            byRole(
-                CHEAPEST_ROLE
-            )
-        ).withTemperature(.9)
+        LlmOptions(model).withTemperature(.9)
     ).createObject<Writeup>(
         """
         Take the following news stories and write up something

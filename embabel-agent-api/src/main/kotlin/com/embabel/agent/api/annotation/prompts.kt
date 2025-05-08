@@ -32,6 +32,21 @@ fun using(
 ): PromptRunner =
     MethodReturnPromptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = promptContributors)
 
+/**
+ * Convenience method to return an ambient prompt runner for use to return in an @Action method
+ * that uses the given model with default hyperparameters
+ */
+@JvmOverloads
+fun usingModel(
+    model: String,
+    toolCallbacks: List<ToolCallback> = emptyList(),
+    promptContributors: List<PromptContributor> = emptyList(),
+): PromptRunner =
+    MethodReturnPromptRunner(
+        llm = LlmOptions(model = model),
+        toolCallbacks = toolCallbacks,
+        promptContributors = promptContributors
+    )
 
 val usingDefaultLlm: PromptRunner =
     MethodReturnPromptRunner(llm = null, toolCallbacks = emptyList(), promptContributors = emptyList())
