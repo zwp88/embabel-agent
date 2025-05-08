@@ -32,6 +32,7 @@ open class InMemoryCrudRepository<T : Any>(
 
     private val storage = ConcurrentHashMap<String, T>()
 
+    @Suppress("UNCHECKED_CAST")
     override fun <S : T> save(entity: S): S {
         var savedEntity = entity
         val existingId = idGetter.invoke(entity)

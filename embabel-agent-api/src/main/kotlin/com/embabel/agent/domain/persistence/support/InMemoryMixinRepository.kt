@@ -36,6 +36,7 @@ class InMemoryMixinRepository : AbstractMixinRepository<String>(
         map[id] = entityHolder
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <E : MixinEnabledEntity<String>> findById(
         id: String,
         type: Class<E>
@@ -43,6 +44,7 @@ class InMemoryMixinRepository : AbstractMixinRepository<String>(
         return map[id]?.instance() as? E
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <E1 : MixinEnabledEntity<String>, E2 : E1> findById(
         id: String,
         type1: Class<E1>,

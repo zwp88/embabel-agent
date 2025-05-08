@@ -101,6 +101,7 @@ interface Blackboard : Bindable, MayHaveLastResult, HasInfoString {
      * Resolve superclasses
      * For example, getValue("it", "Animal") will match a Dog if Dog extends Animal
      */
+    @Suppress("UNCHECKED_CAST")
     fun getValue(
         variable: String = IoBinding.DEFAULT_BINDING,
         type: String,

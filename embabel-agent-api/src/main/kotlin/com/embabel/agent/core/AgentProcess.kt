@@ -77,6 +77,7 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
      */
     override val runningTime get(): Duration = Duration.between(timestamp, Instant.now())
 
+    @Suppress("UNCHECKED_CAST")
     fun <O> resultOfType(outputClass: Class<O>): O {
         require(status == AgentProcessStatusCode.COMPLETED) {
             "Cannot get result of process that is not completed: Status=$status"

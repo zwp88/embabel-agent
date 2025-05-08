@@ -67,6 +67,7 @@ class DynamicExecutionResult private constructor(
 
     companion object {
 
+        @Suppress("UNCHECKED_CAST")
         fun fromProcessStatus(
             basis: Any,
             agentProcess: AgentProcess,

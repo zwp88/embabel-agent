@@ -90,6 +90,7 @@ class Transformer<I, O>(
     override val domainTypes
         get() = setOf(inputClass, outputClass)
 
+    @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
         outputTypes: Map<String, SchemaType>,

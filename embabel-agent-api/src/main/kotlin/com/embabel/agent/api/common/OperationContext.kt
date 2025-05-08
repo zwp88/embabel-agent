@@ -210,6 +210,7 @@ private class OperationContextPromptRunner(
 interface InputActionContext<I> : ActionContext {
     val input: I
 
+    @Suppress("UNCHECKED_CAST")
     override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
         val inp = input
         val instances: Collection<*> = when (inp) {

@@ -62,6 +62,7 @@ internal class MultiTransformer<O : Any>(
     override val domainTypes
         get() = inputClasses + outputClass
 
+    @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
         outputTypes: Map<String, SchemaType>,

@@ -25,7 +25,7 @@ import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.commons.lang3.text.WordUtils
+import org.apache.commons.text.WordUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.env.ConfigurableEnvironment

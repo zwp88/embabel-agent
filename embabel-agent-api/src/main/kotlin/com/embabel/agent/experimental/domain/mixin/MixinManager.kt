@@ -66,6 +66,7 @@ class MixinManager<R : Any>(
     /**
      * Implement the first interface of the object
      */
+    @Suppress("UNCHECKED_CAST")
     fun <T : Any> becomeFirstInterface(t: T): R {
         return become(t, firstInterface(t) as Class<T>)
     }
@@ -75,6 +76,7 @@ class MixinManager<R : Any>(
      * the root entity interface and all mixin interfaces.
      * @param plus additional interfaces to add
      */
+    @Suppress("UNCHECKED_CAST")
     fun instance(plus: List<Class<*>> = emptyList()): R {
         val introductionInterceptor = EntityIntroductionInterceptor()
         // Adding Proxied tag interface to the list of interfaces seems to ensure that
