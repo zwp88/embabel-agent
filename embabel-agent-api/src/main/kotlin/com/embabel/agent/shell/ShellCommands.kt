@@ -21,6 +21,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.InternetResources
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.chat.agent.LastMessageIntentAgentPlatformChatSession
+import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -37,6 +38,7 @@ import java.text.NumberFormat
 @ShellComponent
 class ShellCommands(
     private val autonomy: Autonomy,
+    private val modelProvider: ModelProvider,
     private val terminalServices: TerminalServices,
     private val environment: ConfigurableEnvironment,
     private val objectMapper: ObjectMapper,
@@ -206,8 +208,11 @@ class ShellCommands(
                 .sortedBy { it.metadata.role }
                 .joinToString("\n\t") { it.infoString(verbose = true) },
         )
-
     }
+
+    @ShellMethod("List available models")
+    fun models(): String =
+        modelProvider.infoString(true)
 
     @ShellMethod("Show options")
     fun showOptions(): String {
