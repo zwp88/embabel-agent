@@ -1,0 +1,28 @@
+
+services:
+
+  llama3.2:
+    provider:
+      type: model
+      options:
+        model: ai/llama3.2
+
+  # this requires that the brave web search and the wikipedia MCPs have been enabled in the 
+  # Docker Desktop AI Tools catalog
+  mcp-gateway:
+    provider:
+      type: mcp
+      options:
+        tools: brave_web_search,get_article,get_summary,get_related_topics
+
+  # the environment variables that will be automaticall set in this process are
+  # LLAMA3.2_URL - this is the http base url - add /chat/completions to this for doing completions
+  # LLAMA3.2_MODEL - this is the name of the model that should be passed in the request
+  # MCP_GATEWAY_ENDPOINT - this is a listening socket - connect to it and use pass the out/in streams to 
+  #                        an MCP STDIO client
+  star-news-agent:
+    image: embabel/horoscope-agent:latest
+    depends_on:
+      - model-llama3.2-model
+      - mcp-gateway
+
