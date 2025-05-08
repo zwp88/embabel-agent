@@ -70,7 +70,7 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
 
     """.trimIndent().color(StarWarsColors.highlight),
     agentDeploymentEventMessage = "Deployed an agent I have: {}\n\tdescription: {}",
-    rankingChoiceMadeEventMessage = "Chosen goal {} I have with confidence {} based on {}",
+    rankingChoiceMadeEventMessage = "Chosen {} I have with confidence {} based on {}",
     dynamicAgentCreationMessage = "You will find only what you bring in: Created agent instance {}",
     agentProcessCreationEventMessage = "Created a process I have: {}",
     agentProcessReadyToPlanEventMessage = "Difficult to see. Always in motion is the future: Process {} ready to plan from {}",

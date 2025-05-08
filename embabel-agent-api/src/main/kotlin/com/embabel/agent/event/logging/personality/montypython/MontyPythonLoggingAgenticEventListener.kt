@@ -31,7 +31,7 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     Nobody expects the Spanish Inquisition!
     """.trimIndent(),
     agentDeploymentEventMessage = "Found a parrot: {}\n\tdescription: {}",
-    rankingChoiceMadeEventMessage = "This parrot {} has chosen with {} certainty based on {}",
+    rankingChoiceMadeEventMessage = "You don't vote for kings. We have chosen {} with {} certainty based on {}",
     dynamicAgentCreationMessage = "It's not dead yet: Created agent {}",
     agentProcessCreationEventMessage = "And now for something completely different: {}",
     agentProcessReadyToPlanEventMessage = "My brain hurts! Process {} ready to plan from {}",
