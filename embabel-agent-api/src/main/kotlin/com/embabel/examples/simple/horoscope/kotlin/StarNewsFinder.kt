@@ -18,7 +18,7 @@ package com.embabel.examples.simple.horoscope.kotlin
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
-import com.embabel.agent.config.models.OllamaModels
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
@@ -92,8 +92,8 @@ data class Writeup(
 class StarNewsFinder(
     // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
-    @Value("\${star-news-finder.model:llama3.2:3b}")
-    private val model: String = OllamaModels.LLAMA3_2_3B,
+    @Value("\${star-news-finder.model:gpt-4.1-nano}")
+    private val model: String = OpenAiModels.GPT_41_NANO,
     @Value("\${star-news-finder.story.count:5}")
     private val storyCount: Int,
 ) {

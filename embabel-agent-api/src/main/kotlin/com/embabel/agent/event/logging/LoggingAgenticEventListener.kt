@@ -274,7 +274,7 @@ open class LoggingAgenticEventListener(
             // Only show this at all if verbose
             is ChatModelCallEvent<*> -> {
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
-                    val promptInfo = "${
+                    val promptInfo = "using ${event.interaction.llm.criteria.toString().color(AnsiColor.GREEN)}\n${
                         event.springAiPrompt.toInfoString().color(AnsiColor.GREEN)
                     }\nprompt id: ${event.interaction.id}\ntools: [${
                         event.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
@@ -286,7 +286,6 @@ open class LoggingAgenticEventListener(
                         promptInfo,
                     )
                 }
-
             }
 
             is LlmResponseEvent<*> -> {
