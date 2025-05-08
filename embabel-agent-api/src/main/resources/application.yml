@@ -1,6 +1,7 @@
 spring:
   application:
     name: agent-api
+
   threads:
     virtual:
       enabled: true
@@ -15,15 +16,8 @@ spring:
         version: 1.0.0
         request-timeout: 30s
         type: SYNC
-        #        sse:
-        #          connections:
-        #            server1:
-        #              url: http://localhost:8080
-        #            server2:
-        #              url: http://otherserver:8081
+
         stdio:
-          #          root-change-notification: false
-          #          servers-configuration: classpath:mcp/mcp-servers.json
           connections:
             docker-mcp:
               command: docker
@@ -35,13 +29,13 @@ spring:
                 - STDIO
                 - TCP:host.docker.internal:8811
     chat:
-      observations:
-        include-prompt: true
-        include-completion: true
+      client:
+        observations:
+          include-prompt: true
+          include-completion: true
+
     ollama:
       base-url: http://localhost:11434
-    openai:
-      api-key: ${OPENAI_API_KEY}
 
 management:
   tracing:
@@ -54,6 +48,9 @@ management:
   endpoint:
     health:
       show-details: always
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
 
 embabel:
   agent-platform:
