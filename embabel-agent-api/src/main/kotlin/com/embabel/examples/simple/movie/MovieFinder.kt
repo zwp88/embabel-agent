@@ -117,6 +117,24 @@ data class MovieFinderConfig(
     val writerPersona: Persona = Roger,
 )
 
+/**
+ * MovieFinder is a comprehensive agent in the Embabel agentic framework that recommends personalized
+ * movie suggestions to users based on their preferences, viewing history, and current interests.
+ *
+ * The agent demonstrates the orchestration of multiple actions in a workflow to achieve a complex goal:
+ * 1. Identifying a user (MovieBuff) from the repository
+ * 2. Analyzing their taste profile using LLM
+ * 3. Finding relevant news stories to inspire topical recommendations
+ * 4. Generating movie suggestions based on preferences and filtering for availability
+ * 5. Creating a personalized writeup of recommendations
+ *
+ * This class showcases several key agentic patterns:
+ * - Declarative workflow with @Action annotations and pre/post conditions
+ * - Blackboard pattern for sharing data between actions
+ * - Integration with external services (OMDB, streaming availability)
+ * - LLM prompting with context and persona
+ * - Progress tracking and event publishing
+ */
 @Profile("!test")
 @Agent(
     description = "Find movies a person hasn't seen and may find interesting"
@@ -138,6 +156,18 @@ class MovieFinder(
         populateMovieBuffRepository(movieBuffRepository)
     }
 
+    /**
+     * First action in the workflow that identifies a MovieBuff based on user input.
+     *
+     * This action demonstrates:
+     * - Entity retrieval from a repository
+     * - Natural language matching for entity lookup
+     * - Human-in-the-loop confirmation pattern
+     *
+     * @param userInput The input from the user containing information to identify a MovieBuff
+     * @param context The action context providing access to framework capabilities
+     * @return The identified MovieBuff or null if none found
+     */
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, context: ActionContext): MovieBuff? {
         return movieBuffRepository.findAll().firstOrNull()
@@ -164,6 +194,18 @@ class MovieFinder(
         }
     }
 
+    /**
+     * Analyzes the taste profile of a MovieBuff using LLM to understand their preferences.
+     *
+     * This action demonstrates:
+     * - LLM prompting with structured data
+     * - Text generation for analysis
+     * - Data enrichment pattern (decorating the MovieBuff with analysis)
+     *
+     * @param movieBuff The MovieBuff whose taste profile needs to be analyzed
+     * @param context The action context for LLM operations
+     * @return A DecoratedMovieBuff containing the original MovieBuff and their taste profile
+     */
     @Action
     fun analyzeTasteProfile(
         movieBuff: MovieBuff,
@@ -188,6 +230,18 @@ class MovieFinder(
         )
     }
 
+    /**
+     * Finds relevant news stories that might inspire movie recommendations.
+     *
+     * This action demonstrates:
+     * - Integration with web tools for real-time data
+     * - Context-aware searching based on user profile
+     * - Object creation from LLM output
+     *
+     * @param dmb The DecoratedMovieBuff containing user preferences
+     * @param userInput The original user input for additional context
+     * @return RelevantNewsStories containing news that might inspire recommendations
+     */
     @Action(toolGroups = [ToolGroup.WEB])
     fun findNewsStories(
         dmb: DecoratedMovieBuff,
@@ -212,7 +266,21 @@ class MovieFinder(
             """.trimIndent()
         )
 
-
+    /**
+     * Core action that suggests movies based on user preferences and current context.
+     *
+     * This action demonstrates:
+     * - Post-condition verification (haveEnoughMovies)
+     * - Re-runnable actions (canRerun)
+     * - Persona-based LLM prompting
+     * - Blackboard data sharing (context += suggestedMovieTitles)
+     * - Multi-stage processing (title generation → movie lookup → streaming availability)
+     *
+     * @param userInput The original user request
+     * @param dmb The DecoratedMovieBuff with taste profile
+     * @param context The action context
+     * @return StreamableMovies containing available movie recommendations
+     */
     @Action(
         post = ["haveEnoughMovies"],
         canRerun = true,
@@ -260,6 +328,17 @@ class MovieFinder(
         )
     }
 
+    /**
+     * Helper method that looks up detailed movie information from OMDB API.
+     *
+     * This method demonstrates:
+     * - External API integration
+     * - Error handling for external service calls
+     * - Data transformation (titles → detailed movie objects)
+     *
+     * @param suggestedMovieTitles The movie titles to look up
+     * @return SuggestedMovies containing detailed movie information
+     */
     private fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
         logger.info(
             "Resolving suggestedMovieTitles {}",
@@ -275,6 +354,19 @@ class MovieFinder(
         return SuggestedMovies(movies)
     }
 
+    /**
+     * Filters movies based on streaming availability for the user.
+     *
+     * This method demonstrates:
+     * - Complex filtering logic
+     * - Integration with multiple external services
+     * - Personalization based on user preferences (streaming services)
+     * - Detailed logging for debugging and transparency
+     *
+     * @param movieBuff The MovieBuff with streaming service preferences
+     * @param suggestedMovies The suggested movies to filter
+     * @return StreamableMovies containing only movies available on the user's services
+     */
     private fun streamableMovies(
         movieBuff: MovieBuff,
         suggestedMovies: SuggestedMovies,
@@ -323,10 +415,31 @@ class MovieFinder(
         return StreamableMovies(streamables)
     }
 
+    /**
+     * Condition method that checks if we have enough movie recommendations.
+     *
+     * This method demonstrates:
+     * - Condition-based workflow control
+     * - Configuration-driven thresholds
+     *
+     * @param processContext The process context to access the blackboard
+     * @return Boolean indicating if we have enough movies
+     */
     @Condition
     fun haveEnoughMovies(processContext: ProcessContext): Boolean =
         allStreamableMovies(processContext).size >= config.suggestionCount
 
+    /**
+     * Helper method to collect all streamable movies from the blackboard.
+     *
+     * This method demonstrates:
+     * - Blackboard pattern for data access
+     * - Progress tracking and event publishing
+     * - Deduplication of results
+     *
+     * @param processContext The process context to access the blackboard
+     * @return List of all unique StreamableMovie objects
+     */
     private fun allStreamableMovies(
         processContext: ProcessContext,
     ): List<StreamableMovie> {
@@ -346,7 +459,15 @@ class MovieFinder(
     }
 
     /**
-     * Movies we've already accepted or even suggested
+     * Helper method to track movies that have already been suggested.
+     *
+     * This method demonstrates:
+     * - Blackboard pattern for historical data
+     * - Combining data from multiple sources
+     * - Deduplication and sorting for consistent output
+     *
+     * @param processContext The process context to access the blackboard
+     * @return List of movie titles that should be excluded from new suggestions
      */
     private fun excludedTitles(
         processContext: ProcessContext,
@@ -359,6 +480,21 @@ class MovieFinder(
         return excludes
     }
 
+    /**
+     * Final action that creates a personalized writeup of movie recommendations.
+     *
+     * This action demonstrates:
+     * - Precondition verification (haveEnoughMovies)
+     * - Goal achievement annotation (@AchievesGoal)
+     * - Persona-based content generation
+     * - Rich content formatting (Markdown)
+     * - Comprehensive data integration for the final output
+     *
+     * @param dmb The DecoratedMovieBuff with taste profile
+     * @param streamableMovies The available movie recommendations
+     * @param context The action context
+     * @return SuggestionWriteup containing the formatted recommendations
+     */
     @Action(pre = ["haveEnoughMovies"])
     @AchievesGoal(description = "Recommend movies for a movie buff using what we know about them")
     fun writeUpSuggestions(
