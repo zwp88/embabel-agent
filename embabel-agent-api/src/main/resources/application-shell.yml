@@ -1,6 +1,6 @@
 spring:
-  main:
-    web-application-type: none
+  #  main:
+  #    web-application-type: none
   shell:
     history:
       enabled: true
@@ -10,3 +10,11 @@ spring:
 logging:
   level:
     org.springframework.shell: WARN
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans

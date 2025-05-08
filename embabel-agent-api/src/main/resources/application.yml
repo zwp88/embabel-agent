@@ -2,6 +2,7 @@ spring:
   application:
     name: agent-api
 
+
   threads:
     virtual:
       enabled: true
@@ -29,13 +30,15 @@ spring:
                 - STDIO
                 - TCP:host.docker.internal:8811
     chat:
-      client:
-        observations:
-          include-prompt: true
-          include-completion: true
+      observations:
+        include-completion: true
+        include-prompt: true
+        include-error-logging: true
 
     ollama:
       base-url: http://localhost:11434
+    openai:
+      api-key: ${OPENAI_API_KEY}
 
 management:
   tracing:
@@ -48,6 +51,10 @@ management:
   endpoint:
     health:
       show-details: always
+  observations:
+    key-values:
+      application:
+        value: agent-api
   zipkin:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
