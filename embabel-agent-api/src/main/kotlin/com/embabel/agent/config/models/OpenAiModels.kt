@@ -21,7 +21,7 @@ import com.embabel.common.ai.model.PerTokenPricingModel
 import com.embabel.common.ai.model.config.OpenAiConfiguration
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
-import org.springframework.ai.chat.model.ChatModel
+import io.micrometer.observation.ObservationRegistry
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.api.OpenAiApi
@@ -39,6 +39,7 @@ import java.time.LocalDate
 class OpenAiModels(
     @Value("\${OPENAI_API_KEY}")
     private val apiKey: String,
+    private val observationRegistry: ObservationRegistry,
 ) {
     init {
         loggerFor<OpenAiConfiguration>().info("OpenAI AI models are available")
@@ -95,12 +96,21 @@ class OpenAiModels(
             )
     }
 
-    private fun chatModelOf(model: String): ChatModel {
-        return OpenAiChatModel.builder()
+    private fun chatModelOf(
+        model: String,
+    ): OpenAiChatModel {
+        val chatModel = OpenAiChatModel.builder()
             .openAiApi(openAiApi)
             .defaultOptions(
                 OpenAiChatOptions.builder().model(model).build()
-            ).build()
+            )
+//            .retryTemplate(retryTemplate)
+            .observationRegistry(observationRegistry)
+            .build()
+
+//        observationConvention.ifAvailable { chatModel.setObservationConvention(it) }
+
+        return chatModel
     }
 
     private val optionsConverter: OptionsConverter = { options ->

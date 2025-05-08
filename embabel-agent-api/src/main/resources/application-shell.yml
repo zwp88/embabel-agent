@@ -1,6 +1,7 @@
 spring:
   #  main:
   #    web-application-type: none
+
   shell:
     history:
       enabled: true
