@@ -28,7 +28,24 @@ import org.springframework.stereotype.Component
 class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     logger = LoggerFactory.getLogger("FlyingCircus"),
     welcomeMessage = """
-    Nobody expects the Spanish Inquisition!
+
+         /\                                                 /\
+        /  \      NOBODY EXPECTS THE SPANISH INQUISITION!  /  \
+       /    \                                             /    \
+      /      \                                           /      \
+     /        \                                         /        \
+    /          \                                       /          \
+    |    ||    |                                       |    ||    |
+    |    ||    |                                       |    ||    |
+    |    ||    |                                       |    ||    |
+    |    ||    |                                       |    ||    |
+    |    ||    |                                       |    ||    |
+    |    \\___ |                                       | ___//    |
+    |          |                                       |          |
+    |  MONTY   |                                       |  PYTHON  |
+    |  FLYING  |                                       |  CIRCUS  |
+    |__________|                                       |__________|
+
     """.trimIndent(),
     agentDeploymentEventMessage = "Found a parrot: {}\n\tdescription: {}",
     rankingChoiceMadeEventMessage = "You don't vote for kings. We have chosen {} with {} certainty based on {}",
