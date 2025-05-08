@@ -23,6 +23,6 @@ services:
   star-news-agent:
     image: embabel/horoscope-agent:latest
     depends_on:
-      - model-llama3.2-model
+      - llama3.2
       - mcp-gateway
 
