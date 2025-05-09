@@ -259,6 +259,17 @@ Developers must carefully read all code they commit and improve generated code i
 
 ## Getting Started
 
+- Get the bits
+- Set up your environment
+- Run the application
+
+### Getting the bits
+
+Choose one of the following:
+
+- Clone the repository via `git clone https://github.com/embabel/embabel-agent`
+- Create a new Spring Boot project and add the necessary dependencies (TODO)
+
 ### Environment variables
 
 > Environment variables are consistent with common usage, rather than Spring AI.
@@ -273,7 +284,7 @@ Optional:
 - `ANTHROPIC_API_KEY`: For the Anthropic API
 - `BRAVE_API_KEY`: For the Brave Search API. Web, news and video search is exposed if this key is available.
 
-### Running via Spring Shell
+### Running
 
 The easiest way to run the application using using one of the scripts in the
 `scripts` directory. You can start the shell in interactive mode with:
@@ -315,6 +326,8 @@ agent for each command.
 > This will survive restarts, so is handy when iterating on an agent.
 
 #### Further examples
+
+Example commands within the shell:
 
 ```
 execute "explain this project for a five your old"
@@ -444,11 +457,22 @@ but will not require an internet connection or any external services.
 
 ## Spring profiles
 
+Spring profiles are used to configure the application for different environments and behaviors.
+
+Interaction profiles:
+
 - `shell`: Runs agent in interactive shell. Does not start web process.
+
+Model profiles:
+
+- `ollama`: Looks for Ollama models. You will need to have Ollama installed locally and the relevant models pulled.
+
+Logging profiles:
+
 - `severance`: [Severance](https://www.youtube.com/watch?v=xEQP4VVuyrY&ab_channel=AppleTV) specific logging. Praise
+  Kier!
 - `starwars`: Star Wars specific logging. Feel the force
 - `colossus`: Colossus specific logging. The Forbin Project.
-  Kier!
 
 ## Testing
 

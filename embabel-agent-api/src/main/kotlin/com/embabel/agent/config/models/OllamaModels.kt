@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Profile
  * Ollama local models
  */
 @ExcludeFromJacocoGeneratedReport(reason = "Ollama configuration can't be unit tested")
-@Profile("!test")
+@Profile("ollama")
 @Configuration
 class OllamaModels(
 ) {
