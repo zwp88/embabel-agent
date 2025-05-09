@@ -64,6 +64,7 @@ fun Llm.withFallback(
         name = this.name,
         model = this.model.withFallback(llm.model, whenError),
         optionsConverter = this.optionsConverter,
+        provider = this.provider,
         knowledgeCutoffDate = this.knowledgeCutoffDate,
     )
 }

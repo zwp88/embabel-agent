@@ -104,7 +104,7 @@ class ChatClientLlmOperationsTest {
 
         val mockModelProvider = mockk<ModelProvider>()
         val crit = slot<ModelSelectionCriteria>()
-        val fakeLlm = Llm("fake", fakeChatModel)
+        val fakeLlm = Llm("fake", "provider", fakeChatModel)
         every { mockModelProvider.getLlm(capture(crit)) } returns fakeLlm
         val cco = ChatClientLlmOperations(mockModelProvider, DefaultToolDecorator(), JinjavaTemplateRenderer())
         return Setup(cco, mockAgentProcess, mutableLlmInvocationHistory)

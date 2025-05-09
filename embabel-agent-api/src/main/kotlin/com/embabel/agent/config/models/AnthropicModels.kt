@@ -170,6 +170,7 @@ class AnthropicModels(
         return Llm(
             name = name,
             model = chatModel,
+            provider = PROVIDER,
             optionsConverter = optionsConverter,
             knowledgeCutoffDate = knowledgeCutoffDate,
         )
@@ -184,6 +185,8 @@ class AnthropicModels(
         const val CLAUDE_37_SONNET = "claude-3-7-sonnet-latest"
 
         const val CLAUDE_35_HAIKU = "claude-3-5-haiku-latest"
+
+        const val PROVIDER = "Anthropic"
     }
 
 }

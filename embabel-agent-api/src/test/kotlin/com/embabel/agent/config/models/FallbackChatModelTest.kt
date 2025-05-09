@@ -118,12 +118,14 @@ class FallbackChatModelTest {
                 name = "primary",
                 model = primaryModel,
                 optionsConverter = mockk(),
+                provider = "test",
             )
 
             val fallbackLlm = Llm(
                 name = "fallback",
                 model = fallbackModel,
                 optionsConverter = mockk(),
+                provider = "test",
             )
 
             val predicate: (Throwable) -> Boolean = { true }
@@ -145,6 +147,7 @@ class FallbackChatModelTest {
                 name = "primary",
                 model = primaryModel,
                 optionsConverter = mockk(),
+                provider = "test",
             )
 
             val predicate: (Throwable) -> Boolean = { true }

@@ -52,6 +52,8 @@ class OpenAiModels(
         return Llm(
             name = model,
             model = chatModelOf(model),
+            provider = PROVIDER,
+
             knowledgeCutoffDate = LocalDate.of(2024, 7, 18),
         ).copy(
             pricingModel = PerTokenPricingModel(
@@ -67,6 +69,7 @@ class OpenAiModels(
         return Llm(
             name = model,
             model = chatModelOf(model),
+            provider = PROVIDER,
             optionsConverter = optionsConverter,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
         )
@@ -85,6 +88,7 @@ class OpenAiModels(
             name = model,
             model = chatModelOf(model),
             optionsConverter = optionsConverter,
+            provider = PROVIDER,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
         )
             .copy(
@@ -116,5 +120,7 @@ class OpenAiModels(
         const val GPT_41 = "gpt-4.1"
 
         const val GPT_41_NANO = "gpt-4.1-nano"
+
+        const val PROVIDER = "OpenAI"
     }
 }

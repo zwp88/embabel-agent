@@ -152,7 +152,7 @@ class ChatClientLlmTransformerTest {
                     Generation(AssistantMessage(llmReturn)),
                 ),
             )
-            every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
+            every { mockModelProvider.getLlm(any()) } returns Llm("test", "provider", mockChatModel)
 
             val transformer = ChatClientLlmOperations(
                 mockModelProvider,
@@ -312,7 +312,7 @@ class ChatClientLlmTransformerTest {
                     Generation(AssistantMessage(llmReturn)),
                 ),
             )
-            every { mockModelProvider.getLlm(any()) } returns Llm("test", mockChatModel)
+            every { mockModelProvider.getLlm(any()) } returns Llm("test", "provider", mockChatModel)
 
             val transformer =
                 ChatClientLlmOperations(

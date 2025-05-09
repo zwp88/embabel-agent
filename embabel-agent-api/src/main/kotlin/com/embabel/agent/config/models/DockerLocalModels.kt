@@ -15,22 +15,32 @@
  */
 package com.embabel.agent.config.models
 
+import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
+import com.embabel.common.ai.model.PricingModel
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
-import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.model.NoopApiKey
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.api.OpenAiApi
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
+
+@ConfigurationProperties(prefix = "embabel.docker.models")
+data class DockerProperties(
+    val baseUrl: String = "http://localhost:12434/engines",
+    override val maxAttempts: Int = 10,
+    override val backoffMillis: Long = 2000L,
+    override val backoffMultiplier: Double = 5.0,
+    override val backoffMaxInterval: Long = 180000L,
+) : RetryProperties
 
 /**
  * Docker local models
@@ -40,8 +50,7 @@ import org.springframework.web.client.body
 @ExcludeFromJacocoGeneratedReport(reason = "Docker model configuration can't be unit tested")
 @Configuration
 class DockerLocalModels(
-    @Value("\${docker.models.base-url:http://localhost:12434/}")
-    private val baseUrl: String,
+    private val dockerProperties: DockerProperties,
     private val configurableBeanFactory: ConfigurableBeanFactory,
     private val environment: Environment,
 ) {
@@ -64,7 +73,7 @@ class DockerLocalModels(
         try {
             val restClient = RestClient.create()
             val response = restClient.get()
-                .uri("$baseUrl/engines/v1/models")
+                .uri("${dockerProperties.baseUrl}/v1/models")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body<ModelResponse>()
@@ -77,7 +86,7 @@ class DockerLocalModels(
                     )
             } ?: emptyList()
         } catch (e: Exception) {
-            logger.warn("Failed to load models from {}: {}", baseUrl, e.message)
+            logger.warn("Failed to load models from {}: {}", dockerProperties.baseUrl, e.message)
             emptyList()
         }
 
@@ -89,7 +98,7 @@ class DockerLocalModels(
             logger.info("Docker local models will not be queried as the '{}' profile is not active", DOCKER_PROFILE)
             return
         }
-        logger.info("Docker local models will be discovered at {}", baseUrl)
+        logger.info("Docker local models will be discovered at {}", dockerProperties.baseUrl)
 
         val models = loadModels()
         if (models.isEmpty()) {
@@ -104,9 +113,9 @@ class DockerLocalModels(
 
                 // Use registerSingleton with a more descriptive bean name
                 configurableBeanFactory.registerSingleton(beanName, llmModel)
-                logger.debug("Successfully registered Ollama model {} as bean {}", model.id, beanName)
+                logger.debug("Successfully registered Docker model {} as bean {}", model.id, beanName)
             } catch (e: Exception) {
-                logger.error("Failed to register Ollama model {}", model.id, e)
+                logger.error("Failed to register Docker model {}", model.id, e)
             }
         }
     }
@@ -114,12 +123,11 @@ class DockerLocalModels(
     /**
      * Docker models are open AI compatible
      */
-    private fun dockerModelOf(model: Model): ChatModel {
-        val url = "$baseUrl/v1/completions/"
-        return OpenAiChatModel.builder()
+    private fun dockerModelOf(model: Model): Llm {
+        val chatModel = OpenAiChatModel.builder()
             .openAiApi(
                 OpenAiApi.Builder()
-                    .baseUrl(baseUrl)
+                    .baseUrl(dockerProperties.baseUrl)
                     .apiKey(NoopApiKey())
                     .build()
             )
@@ -127,7 +135,17 @@ class DockerLocalModels(
                 OpenAiChatOptions.builder()
                     .model(model.id)
                     .build()
-            ).build()
+            )
+            .retryTemplate(dockerProperties.retryTemplate())
+            .build()
+        return Llm(
+            name = model.id,
+            model = chatModel,
+            provider = PROVIDER,
+            optionsConverter = optionsConverter,
+            knowledgeCutoffDate = null,
+            pricingModel = PricingModel.ALL_YOU_CAN_EAT,
+        )
     }
 
     private val optionsConverter: OptionsConverter = { options ->
@@ -138,5 +156,7 @@ class DockerLocalModels(
 
     companion object {
         const val DOCKER_PROFILE = "docker"
+
+        const val PROVIDER = "Docker"
     }
 }

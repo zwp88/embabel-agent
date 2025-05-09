@@ -134,11 +134,13 @@ class OllamaModels(
         return Llm(
             name = name,
             model = chatModel,
+            provider = PROVIDER,
             pricingModel = PricingModel.ALL_YOU_CAN_EAT
         )
     }
 
     companion object {
         const val OLLAMA_PROFILE = "ollama"
+        const val PROVIDER = "Ollama"
     }
 }

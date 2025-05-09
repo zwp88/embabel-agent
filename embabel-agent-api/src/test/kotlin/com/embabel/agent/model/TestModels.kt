@@ -31,7 +31,8 @@ class TestModels {
         return Llm(
             name = "test-llm",
             model = FakeChatModel("I am a fake chat model"),
-            pricingModel = PricingModel.usdPer1MTokens(.1, .1)
+            pricingModel = PricingModel.usdPer1MTokens(.1, .1),
+            provider = "test",
         )
     }
 }
