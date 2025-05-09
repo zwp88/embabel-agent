@@ -17,8 +17,8 @@ spring:
               command: socat
               args:
                 - STDIO
-                - TCP:${MCP_GATEWAY_ENDPOINT}
-   
+                - TCP:${MCP-GATEWAY_ENDPOINT}
+
 logging:
   pattern:
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
