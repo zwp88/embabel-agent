@@ -18,48 +18,110 @@ package com.embabel.agent.config.models
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.PricingModel
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
-import com.embabel.common.util.loggerFor
+import com.fasterxml.jackson.annotation.JsonProperty
+import jakarta.annotation.PostConstruct
+import org.slf4j.LoggerFactory
 import org.springframework.ai.ollama.OllamaChatModel
 import org.springframework.ai.ollama.api.OllamaApi
 import org.springframework.ai.ollama.api.OllamaOptions
-import org.springframework.context.annotation.Bean
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.http.MediaType
+import org.springframework.web.client.RestClient
+import org.springframework.web.client.body
 
 /**
- * Ollama local models
+ * Ollama local models.
+ * This class will always be loaded, but models won't be loaded
+ * from Ollama unless the "ollama" profile is set.
  */
 @ExcludeFromJacocoGeneratedReport(reason = "Ollama configuration can't be unit tested")
-@Profile("ollama")
 @Configuration
 class OllamaModels(
+    @Value("\${spring.ai.ollama.base-url}")
+    private val baseUrl: List<String>,
+    private val configurableBeanFactory: ConfigurableBeanFactory,
+    private val environment: Environment,
 ) {
-    init {
-        loggerFor<OllamaModels>().info("Ollama models are available")
+    private val logger = LoggerFactory.getLogger(OllamaModels::class.java)
+
+    private data class ModelResponse(
+        @JsonProperty("models") val models: List<ModelDetails>
+    )
+
+    private data class ModelDetails(
+        @JsonProperty("name") val name: String,
+        @JsonProperty("size") val size: Long,
+        @JsonProperty("modified_at") val modifiedAt: String
+    )
+
+    private data class Model(
+        val name: String,
+        val model: String,
+        val size: Long
+    )
+
+    private fun loadModels(): List<Model> {
+        return baseUrl.flatMap { url ->
+            try {
+                val restClient = RestClient.create()
+                val response = restClient.get()
+                    .uri("$url/api/tags")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .body<ModelResponse>()
+
+                response?.models?.mapNotNull { modelDetails ->
+                    // Additional validation to ensure model names are valid
+                    if (modelDetails.name.isNotBlank()) {
+                        Model(
+                            name = modelDetails.name.replace(":", "-").lowercase(),
+                            model = modelDetails.name,
+                            size = modelDetails.size
+                        )
+                    } else null
+                } ?: emptyList()
+            } catch (e: Exception) {
+                logger.warn("Failed to load models from {}: {}", url, e.message)
+                emptyList()
+            }
+        }
     }
 
-    @Bean
-    fun gemma3_4b(): Llm = ollamaModelOf(GEMMA3_4B)
-        .copy(
-            pricingModel = PricingModel.ALL_YOU_CAN_EAT
-        )
+    @PostConstruct
+    fun registerModels() {
+        val activeProfiles = environment.activeProfiles
+        if (environment.activeProfiles.contains("ollama")) {
+            logger.info("Ollama models will be discovered at {}", baseUrl)
 
-    @Bean
-    fun llama3_2b(): Llm = ollamaModelOf(LLAMA3_2_3B)
-        .copy(
-            pricingModel = PricingModel.ALL_YOU_CAN_EAT
-        )
+            val models = loadModels()
+            if (models.isEmpty()) {
+                logger.warn("No Ollama models discovered. Check Ollama server configuration.")
+                return
+            }
 
-    @Bean
-    fun qwen2_5_coder(): Llm = ollamaModelOf(QWEN2_5_CODER)
-        .copy(
-            pricingModel = PricingModel.ALL_YOU_CAN_EAT
-        )
+            models.forEach { model ->
+                try {
+                    val beanName = "ollamaModel-${model.name}"
+                    val llmModel = ollamaModelOf(model.model)
+
+                    // Use registerSingleton with a more descriptive bean name
+                    configurableBeanFactory.registerSingleton(beanName, llmModel)
+                    logger.info("Successfully registered Ollama model {} as bean {}", model.name, beanName)
+                } catch (e: Exception) {
+                    logger.error("Failed to register Ollama model {}: {}", model.name, e.message)
+                }
+            }
+        }
+    }
 
     private fun ollamaModelOf(name: String): Llm {
         val chatModel = OllamaChatModel.builder()
             .ollamaApi(
                 OllamaApi.builder()
+                    .baseUrl(baseUrl.firstOrNull() ?: throw IllegalStateException("No Ollama base URL configured"))
                     .build()
             )
             .defaultOptions(
@@ -68,15 +130,11 @@ class OllamaModels(
                     .build()
             )
             .build()
-        return Llm(name = name, chatModel)
-    }
 
-    companion object {
-
-        const val GEMMA3_4B = "gemma3:4b"
-
-        const val LLAMA3_2_3B = "llama3.2:3b"
-
-        const val QWEN2_5_CODER = "qwen2.5-coder"
+        return Llm(
+            name = name,
+            model = chatModel,
+            pricingModel = PricingModel.ALL_YOU_CAN_EAT
+        )
     }
 }

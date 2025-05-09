@@ -34,6 +34,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.DependsOn
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.web.client.RestTemplate
 
@@ -107,6 +108,7 @@ class AgentPlatformConfiguration(
         ProcessOptionsOperationScheduler()
 
     @Bean
+    @DependsOn("ollamaModels")
     fun modelProvider(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,

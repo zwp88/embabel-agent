@@ -144,7 +144,7 @@ class Coder(
         project: SoftwareProject,
         context: ActionContext,
     ): CodeModificationReport {
-        logger.info("Modifying code according to request: ${codeModificationRequest.request}")
+        logger.info("✎ Modifying code according to request: ${codeModificationRequest.request}")
         val report: String = context.promptRunner(
             llm = codingProperties.primaryCodingLlm,
             promptContributors = listOf(project),

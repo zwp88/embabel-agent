@@ -16,9 +16,9 @@
 package com.embabel.examples.dogfood.coding
 
 import com.embabel.agent.config.models.AnthropicModels
-import com.embabel.agent.config.models.OllamaModels
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
+import com.embabel.common.util.loggerFor
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
@@ -26,11 +26,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "embabel.coding")
 class CodingProperties(
-    val primaryCodingModel: String = OllamaModels.QWEN2_5_CODER,
+    val primaryCodingModel: String = AnthropicModels.CLAUDE_35_HAIKU,//OllamaModels.QWEN2_5_CODER,
     val fixCodingModel: String = AnthropicModels.CLAUDE_37_SONNET,
     // TODO shouldn't be hardcoded
     val defaultLocation: String = System.getProperty("user.dir") + "/embabel-agent-api",
 ) {
+
+    init {
+        loggerFor<CodingProperties>().info("Coding properties: {}", this)
+    }
 
     /**
      * Primary coding Llm
