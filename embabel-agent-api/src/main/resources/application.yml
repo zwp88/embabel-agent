@@ -37,31 +37,28 @@ spring:
     ollama:
       base-url: http://localhost:11434
 
-#management:
-#  tracing:
-#    sampling:
-#      probability: 1.0
-#  endpoints:
-#    web:
-#      exposure:
-#        include: "*"
-#  endpoint:
-#    health:
-#      show-details: always
-
-#  zipkin:
-#    tracing:
-#      endpoint: http://localhost:9411/api/v2/spans
-
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: true
   endpoints:
     web:
       exposure:
-        include: prometheus,health,info,metrics
-  metrics:
-    export:
-      prometheus:
-        enabled: true
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  observations:
+    http:
+      client:
+        requests:
+          name: http.client.requests
+  zipkin:
+
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
 
 embabel:
   agent-platform:
@@ -89,12 +86,28 @@ logging:
   pattern:
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
   level:
-    org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
-    # Custom logging
-    # com.embabel.agent.core.support.BlackboardWorldStateDeterminer: DEBUG
-    # com.embabel.agent.api.annotation.support.AgentMetadataReader: DEBUG
+    root: INFO
+    org.springframework: INFO
 
-    zipkin2: DEBUG
-    io.micrometer: DEBUG
-    io.micrometer.tracing: DEBUG
-    io.micrometer.tracing.zipkin2: DEBUG
+    # Super verbose tracing for Zipkin
+    zipkin2: TRACE
+    io.micrometer: TRACE
+    io.micrometer.tracing: TRACE
+    io.micrometer.tracing.zipkin2: TRACE
+    io.zipkin: TRACE
+    brave: TRACE
+
+    # Spring Boot specific tracing
+    org.springframework.web.servlet.DispatcherServlet: TRACE
+    org.springframework.boot.actuate.trace: TRACE
+    org.springframework.boot.autoconfigure.zipkin: TRACE
+    org.springframework.cloud.sleuth: TRACE
+
+    # HTTP client tracing
+    org.apache.http: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+
+    # Actuator and context loading
+    org.springframework.boot.actuate: DEBUG
+    org.springframework.boot.autoconfigure: DEBUG
+    org.springframework.context: DEBUG
