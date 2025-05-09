@@ -42,14 +42,23 @@ class McpToolGroup(
     )
 
     override val toolCallbacks: Collection<ToolCallback> = run {
-        val provider = SyncMcpToolCallbackProvider(
-            clients,
-        )
-        val toolCallbacks = provider.toolCallbacks.filter(filter)
-        loggerFor<McpToolGroup>().debug(
-            "ToolGroup role={}: {}",
-            description.role,
-            toolCallbacks.map { it.toolDefinition.name() })
-        toolCallbacks
+        try {
+            val provider = SyncMcpToolCallbackProvider(
+                clients,
+            )
+            val toolCallbacks = provider.toolCallbacks.filter(filter)
+            loggerFor<McpToolGroup>().debug(
+                "ToolGroup role={}: {}",
+                description.role,
+                toolCallbacks.map { it.toolDefinition.name() })
+            toolCallbacks
+        } catch (e: Exception) {
+            loggerFor<McpToolGroup>().error(
+                "Failed to load tool callbacks for role {}: {}",
+                description.role,
+                e.message,
+            )
+            emptyList()
+        }
     }
 }

@@ -248,6 +248,27 @@ class ChatClientLlmOperationsTest {
             assertEquals(toolCallbacks.size, tools.size, "Must have passed same number of tools")
             assertEquals(toolCallbacks.map { it.toolDefinition.name() }, tools.map { it.toolDefinition.name() })
         }
+
+        @Test
+        fun `handles reasoning model return`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(
+                "<think>Deep thoughts</think>\n" + jacksonObjectMapper().writeValueAsString(duke)
+            )
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObject(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result)
+        }
     }
 
     @Nested
@@ -284,6 +305,27 @@ class ChatClientLlmOperationsTest {
             val duke = Dog("Duke")
 
             val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn(success = duke)))
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObjectIfPossible(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = Dog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result.getOrThrow())
+        }
+
+        @Test
+        fun `handles reasoning model success return`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(
+                "<think>More deep thoughts</think>\n" + jacksonObjectMapper().writeValueAsString(MaybeReturn(success = duke))
+            )
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObjectIfPossible(

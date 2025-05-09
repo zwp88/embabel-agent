@@ -10,20 +10,13 @@ spring:
   ai:
     mcp:
       client:
-        enabled: false
+        enabled: true
         name: embabel
         version: 1.0.0
         request-timeout: 30s
         type: SYNC
-        #        sse:
-        #          connections:
-        #            server1:
-        #              url: http://localhost:8080
-        #            server2:
-        #              url: http://otherserver:8081
+
         stdio:
-          #          root-change-notification: false
-          #          servers-configuration: classpath:mcp/mcp-servers.json
           connections:
             docker-mcp:
               command: docker

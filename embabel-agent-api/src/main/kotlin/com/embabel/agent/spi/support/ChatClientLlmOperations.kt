@@ -31,6 +31,7 @@ import org.springframework.ai.chat.messages.SystemMessage
 import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.model.ChatResponse
 import org.springframework.ai.chat.prompt.Prompt
+import org.springframework.ai.converter.BeanOutputConverter
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
@@ -95,7 +96,7 @@ internal class ChatClientLlmOperations(
             chatResponse?.let { recordUsage(resources.llm, it, llmRequestEvent) }
             return chatResponse!!.result.output.text as O
         } else {
-            val re = callResponse.responseEntity<O>(outputClass)!!
+            val re = callResponse.responseEntity<O>(SuppressThinkingConverter(BeanOutputConverter(outputClass)))!!
             re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
             return re.entity!!
         }
@@ -154,7 +155,7 @@ internal class ChatClientLlmOperations(
             .prompt(springAiPrompt)
             .toolCallbacks(interaction.toolCallbacks)
             .call()
-            .responseEntity<MaybeReturn<*>>(typeReference)
+            .responseEntity<MaybeReturn<*>>(SuppressThinkingConverter(BeanOutputConverter(typeReference)))!!
         responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
         return responseEntity.entity!!.toResult() as Result<O>
     }
