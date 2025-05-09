@@ -230,6 +230,16 @@ class OneTransformerActionWithCustomToolGroupOnly {
 
 }
 
+@Agentic
+class OneTransformerActionTakingInterfaceWithCustomToolGroupOnly {
+
+    @Action(cost = 500.0, toolGroups = ["magic"])
+    fun toPerson(person: Person): Frog {
+        return Frog(person.name)
+    }
+
+}
+
 data class Task(
     val what: String,
 )

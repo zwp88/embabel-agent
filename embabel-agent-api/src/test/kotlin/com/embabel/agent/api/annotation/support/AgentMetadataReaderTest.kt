@@ -424,6 +424,56 @@ class AgentMetadataReaderTest {
         }
 
         @Test
+        @Disabled("Not sure why this is not binding")
+        fun `one action with custom tool group taking interface`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(OneTransformerActionTakingInterfaceWithCustomToolGroupOnly())
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.actions.size)
+            val action = metadata.actions.single()
+            assertEquals(1, action.inputs.size, "Should have 1 input")
+            assertEquals(Person::class.java.name, action.inputs.single().type)
+            assertEquals(1, action.outputs.size, "Should have 1 output")
+            assertEquals(
+                Frog::class.java.name,
+                action.outputs.single().type,
+                "Output name must match",
+            )
+            assertEquals(1, action.toolGroups.size)
+            assertEquals("magic", action.toolGroups.single())
+            val agent = mockk<IAgent>()
+            every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
+            val mockAgentProcess = mockk<AgentProcess>()
+            every { mockAgentProcess.agent } returns agent
+            val mockPlatformServices = mockk<PlatformServices>()
+            every { mockPlatformServices.llmOperations } returns mockk()
+            every { mockPlatformServices.eventListener } returns DevNull
+            val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, Person("John Doe"))
+            every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+                blackboard.getValue(
+                    firstArg(),
+                    secondArg(),
+                    thirdArg(),
+                )
+            }
+            every { mockAgentProcess.set(any(), any()) } answers {
+                blackboard.set(
+                    firstArg(),
+                    secondArg(),
+                )
+            }
+            every { mockAgentProcess.lastResult() } returns Person("John Doe")
+
+            val pc = ProcessContext(
+                platformServices = mockPlatformServices,
+                agentProcess = mockAgentProcess,
+            )
+            val result = action.execute(pc, mockk(), action)
+            assertEquals(ActionStatusCode.SUCCEEDED, result.status)
+            assertEquals(Frog("John Doe"), pc.blackboard.lastResult())
+        }
+
+        @Test
         fun `one action with 2 args only`() {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnly())

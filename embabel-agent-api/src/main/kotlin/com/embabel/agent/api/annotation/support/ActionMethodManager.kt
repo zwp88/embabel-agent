@@ -69,7 +69,7 @@ class ActionMethodManager(
                 OperationContext::class.java.isAssignableFrom(it.type)
             }
             .forEach {
-                // Dummy tools to drive metadata. Will not be invoked.
+                // Obtain dummy tools to drive metadata. Will not be invoked.
                 val parameterInstance = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(it.type)
                 allToolCallbacks += safelyGetToolCallbacksFrom(parameterInstance)
             }

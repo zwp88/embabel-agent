@@ -130,7 +130,7 @@ class StarNewsFinder(
      */
     @Action(cost = 100.0) // Make it costly so it won't be used in a plan unless there's no other path
     internal fun makeStarry(
-        person: PersonImpl,
+        person: Person,
     ): Starry =
         fromForm("Let's get some astrological details for ${person.name}")
 
@@ -144,10 +144,9 @@ class StarNewsFinder(
      * @param starry The astrological details
      * @return A StarPerson object combining both sets of information
      */
-    // TODO should work with the Person interface rather than PersonImpl
     @Action
     fun assembleStarPerson(
-        person: PersonImpl,
+        person: Person,
         starry: Starry,
     ): StarPerson {
         return StarPerson(
