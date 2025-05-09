@@ -75,10 +75,17 @@ interface ActionRunner {
                     processContext.blackboard.addObject(are.awaitable)
                     ActionStatusCode.WAITING
                 } catch (t: Throwable) {
-                    logger.error(
-                        "Unexpected error invoking action",
-                        t,
-                    )
+                    if (logger.isDebugEnabled) {
+                        logger.debug(
+                            "Unexpected error invoking action",
+                            t,
+                        )
+                    } else {
+                        logger.warn(
+                            "Unexpected error invoking action: {}",
+                            t.message,
+                        )
+                    }
                     throw t
                 }
             }
