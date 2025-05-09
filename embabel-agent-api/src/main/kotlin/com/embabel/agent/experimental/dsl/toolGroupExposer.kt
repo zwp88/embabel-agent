@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common
+package com.embabel.agent.experimental.dsl
 
 import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.core.ToolGroup

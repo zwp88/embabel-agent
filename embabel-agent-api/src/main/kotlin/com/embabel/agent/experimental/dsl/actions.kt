@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.dsl
+package com.embabel.agent.experimental.dsl
 
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.core.AgentScope
@@ -74,6 +74,25 @@ inline fun <reified A, reified B, reified C> aggregate(
     )
 }
 
+inline fun <reified A, reified B> withAll(
+    vararg transforms: (a: A) -> B,
+): Aggregated<A, B> {
+    return Aggregated(
+        transforms.map { transform -> { a: A, context: OperationContext -> transform(a) } },
+        A::class.java, B::class.java,
+    )
+}
+
+class Aggregated<A, B>(
+    private val transforms: List<(a: A, context: OperationContext) -> B>,
+    private val aClass: Class<A>,
+    private val bClass: Class<B>,
+) {
+    fun <C> merge(merger: (b: B) -> C): AgentScopeFactory {
+        TODO()
+    }
+
+}
 
 class AgentScopeFactory(
 //    val block: (T) -> Unit,

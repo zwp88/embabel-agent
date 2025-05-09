@@ -21,6 +21,7 @@ import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.dsl.support.Transformer
 import com.embabel.agent.api.dsl.support.promptTransformer
 import com.embabel.agent.core.*
+import com.embabel.agent.experimental.dsl.AgentScopeFactory
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.agent.spi.LlmCall
 import com.embabel.common.ai.model.LlmOptions
