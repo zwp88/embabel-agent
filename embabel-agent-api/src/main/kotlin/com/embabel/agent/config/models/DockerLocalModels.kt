@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.config.models
 
+import com.embabel.agent.common.RetryProperties
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.ai.model.PricingModel

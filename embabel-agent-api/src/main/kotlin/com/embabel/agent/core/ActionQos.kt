@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.common.RetryTemplateProvider
 import org.springframework.retry.support.RetryTemplate
 import org.springframework.retry.support.RetryTemplateBuilder
 
@@ -24,8 +25,8 @@ import org.springframework.retry.support.RetryTemplateBuilder
 data class ActionQos(
     val maxAttempts: Int = 3,
     val idempotent: Boolean = false,
-) {
+) : RetryTemplateProvider {
 
-    fun retryTemplate(): RetryTemplate =
+    override fun retryTemplate(): RetryTemplate =
         RetryTemplateBuilder().maxAttempts(maxAttempts).fixedBackoff(1000).build()
 }

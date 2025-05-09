@@ -92,7 +92,7 @@ data class Writeup(
 class StarNewsFinder(
     // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
-    @Value("\${star-news-finder.model:ai/llama3.2}")
+    @Value("\${star-news-finder.model:ai/qwen3}")
     private val model: String = OpenAiModels.GPT_41_NANO,
     @Value("\${star-news-finder.story.count:5}")
     private val storyCount: Int,
