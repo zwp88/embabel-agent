@@ -347,6 +347,18 @@ execute "consider the StarNewsFinder kotlin class. This is intended as an exampl
 
 ### Bringing in additional LLMs
 
+#### Local models with well-known providers
+
+The Embabel Agent Framework supports local models from:
+
+- Ollama: Simply set the `ollama` profile and your local Ollama endpoint will be queries. All local models will be
+  available.
+- Docker: Set the `docker` profile and your local Docker endpoint will be queried. All local models will be available.
+
+#### Custom LLMs
+
+You can define an LLM for any provider for which a Spring AI `ChatModel` is available.
+
 Simply define Spring beans of type `Llm`.
 See the `OpenAiConfiguration` class as an example.
 
@@ -474,6 +486,7 @@ Interaction profiles:
 Model profiles:
 
 - `ollama`: Looks for Ollama models. You will need to have Ollama installed locally and the relevant models pulled.
+- `docker`: Looks for Docker-managed local models.
 
 Logging profiles:
 

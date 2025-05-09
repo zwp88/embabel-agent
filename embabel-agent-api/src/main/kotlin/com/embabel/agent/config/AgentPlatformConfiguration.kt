@@ -107,8 +107,13 @@ class AgentPlatformConfiguration(
     fun actionScheduler(): OperationScheduler =
         ProcessOptionsOperationScheduler()
 
+    /**
+     * Ollama and Docker models won't be loaded unless the profile is set.
+     * However, we need to depend on them to make sure any LLMs they
+     * might created get injected here
+     */
     @Bean
-    @DependsOn("ollamaModels")
+    @DependsOn("ollamaModels", "dockerLocalModels")
     fun modelProvider(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,

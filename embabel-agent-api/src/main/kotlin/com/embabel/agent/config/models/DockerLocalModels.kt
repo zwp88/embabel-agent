@@ -15,15 +15,15 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.PricingModel
+import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
-import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
-import org.springframework.ai.ollama.OllamaChatModel
-import org.springframework.ai.ollama.api.OllamaApi
-import org.springframework.ai.ollama.api.OllamaOptions
+import org.springframework.ai.chat.model.ChatModel
+import org.springframework.ai.model.NoopApiKey
+import org.springframework.ai.openai.OpenAiChatModel
+import org.springframework.ai.openai.OpenAiChatOptions
+import org.springframework.ai.openai.api.OpenAiApi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Configuration
@@ -33,54 +33,48 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 
 /**
- * Ollama local models.
+ * Docker local models
  * This class will always be loaded, but models won't be loaded
- * from Ollama unless the "ollama" profile is set.
+ * from the Docker endpoint unless the "docker" profile is set.
  */
-@ExcludeFromJacocoGeneratedReport(reason = "Ollama configuration can't be unit tested")
+@ExcludeFromJacocoGeneratedReport(reason = "Docker model configuration can't be unit tested")
 @Configuration
-class OllamaModels(
-    @Value("\${spring.ai.ollama.base-url}")
+class DockerLocalModels(
+    @Value("\${docker.models.base-url:http://localhost:12434/}")
     private val baseUrl: String,
     private val configurableBeanFactory: ConfigurableBeanFactory,
     private val environment: Environment,
 ) {
-    private val logger = LoggerFactory.getLogger(OllamaModels::class.java)
+    private val logger = LoggerFactory.getLogger(DockerLocalModels::class.java)
 
     private data class ModelResponse(
-        @JsonProperty("models") val models: List<ModelDetails>
+        val `object`: String,
+        val data: List<ModelDetails>
     )
 
     private data class ModelDetails(
-        @JsonProperty("name") val name: String,
-        @JsonProperty("size") val size: Long,
-        @JsonProperty("modified_at") val modifiedAt: String
+        val id: String,
     )
 
     private data class Model(
-        val name: String,
-        val model: String,
-        val size: Long
+        val id: String
     )
 
     private fun loadModels(): List<Model> =
         try {
             val restClient = RestClient.create()
             val response = restClient.get()
-                .uri("$baseUrl/api/tags")
+                .uri("$baseUrl/engines/v1/models")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body<ModelResponse>()
 
-            response?.models?.mapNotNull { modelDetails ->
+            response?.data?.mapNotNull { modelDetails ->
                 // Additional validation to ensure model names are valid
-                if (modelDetails.name.isNotBlank()) {
-                    Model(
-                        name = modelDetails.name.replace(":", "-").lowercase(),
-                        model = modelDetails.name,
-                        size = modelDetails.size
+                Model(
+                    id = modelDetails.id.replace(":", "-").lowercase(),
+
                     )
-                } else null
             } ?: emptyList()
         } catch (e: Exception) {
             logger.warn("Failed to load models from {}: {}", baseUrl, e.message)
@@ -91,54 +85,58 @@ class OllamaModels(
     @PostConstruct
     fun registerModels() {
         val activeProfiles = environment.activeProfiles
-        if (!environment.activeProfiles.contains(OLLAMA_PROFILE)) {
-            logger.info("Ollama models will not be queried as the '{}' profile is not active", OLLAMA_PROFILE)
+        if (!environment.activeProfiles.contains(DOCKER_PROFILE)) {
+            logger.info("Docker local models will not be queried as the '{}' profile is not active", DOCKER_PROFILE)
             return
         }
-        logger.info("Ollama models will be discovered at {}", baseUrl)
+        logger.info("Docker local models will be discovered at {}", baseUrl)
 
         val models = loadModels()
         if (models.isEmpty()) {
-            logger.warn("No Ollama models discovered. Check Ollama server configuration.")
+            logger.warn("No Docker local models discovered. Check Docker server configuration.")
             return
         }
 
         models.forEach { model ->
             try {
-                val beanName = "ollamaModel-${model.name}"
-                val llmModel = ollamaModelOf(model.model)
+                val beanName = "dockerModel-${model.id}"
+                val llmModel = dockerModelOf(model)
 
                 // Use registerSingleton with a more descriptive bean name
                 configurableBeanFactory.registerSingleton(beanName, llmModel)
-                logger.debug("Successfully registered Ollama model {} as bean {}", model.name, beanName)
+                logger.debug("Successfully registered Ollama model {} as bean {}", model.id, beanName)
             } catch (e: Exception) {
-                logger.error("Failed to register Ollama model {}: {}", model.name, e.message)
+                logger.error("Failed to register Ollama model {}", model.id, e)
             }
         }
     }
 
-    private fun ollamaModelOf(name: String): Llm {
-        val chatModel = OllamaChatModel.builder()
-            .ollamaApi(
-                OllamaApi.builder()
+    /**
+     * Docker models are open AI compatible
+     */
+    private fun dockerModelOf(model: Model): ChatModel {
+        val url = "$baseUrl/v1/completions/"
+        return OpenAiChatModel.builder()
+            .openAiApi(
+                OpenAiApi.Builder()
                     .baseUrl(baseUrl)
+                    .apiKey(NoopApiKey())
                     .build()
             )
             .defaultOptions(
-                OllamaOptions.builder()
-                    .model(name)
+                OpenAiChatOptions.builder()
+                    .model(model.id)
                     .build()
-            )
-            .build()
+            ).build()
+    }
 
-        return Llm(
-            name = name,
-            model = chatModel,
-            pricingModel = PricingModel.ALL_YOU_CAN_EAT
-        )
+    private val optionsConverter: OptionsConverter = { options ->
+        OpenAiChatOptions.builder()
+            .temperature(options.temperature)
+            .build()
     }
 
     companion object {
-        const val OLLAMA_PROFILE = "ollama"
+        const val DOCKER_PROFILE = "docker"
     }
 }

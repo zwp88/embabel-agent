@@ -1,0 +1,45 @@
+services:
+
+  llama3.2:
+    provider:
+      type: model
+      options:
+        model: ai/llama3.2
+
+  # this requires that the brave web search and the wikipedia MCPs have been enabled in the
+  # Docker Desktop AI Tools catalog
+  mcp-gateway:
+    provider:
+      type: mcp
+      options:
+        tools: brave_web_search,get_article,get_summary,get_related_topics
+
+  postgres:
+    image: pgvector/pgvector:pg15
+    ports:
+      - "5432:5432"
+    volumes:
+      - ~/apps/postgres:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_PASSWORD=/${PGPASSWORD:-look_to_the_stars}
+      - POSTGRES_USER=${PGUSER:-astrid}
+      - POSTGRES_DB=embabel
+
+  zipkin:
+    image: 'openzipkin/zipkin:latest'
+    ports:
+      - "9411:9411"
+
+
+  # the environment variables that will be automatically set in this process are
+  # LLAMA3.2_URL - this is the http base url - add /chat/completions to this for doing completions
+  # LLAMA3.2_MODEL - this is the name of the model that should be passed in the request
+  # MCP_GATEWAY_ENDPOINT - this is a listening socket - connect to it and use pass the out/in streams to
+  #                        an MCP STDIO client
+#  star-news-agent:
+#    image: springrod/embabel-agent-api:1.0.0-SNAPSHOT
+#    depends_on:
+#      - llama3.2
+#      - mcp-gateway
+

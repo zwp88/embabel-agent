@@ -10,7 +10,7 @@ spring:
   ai:
     mcp:
       client:
-        enabled: true
+        enabled: false
         name: embabel
         version: 1.0.0
         request-timeout: 30s
