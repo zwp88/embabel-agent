@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.api.annotation.support
 
-import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.ActionStatusCode
 import com.embabel.agent.core.AgentProcess
@@ -40,7 +39,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import com.embabel.agent.core.Agent as IAgent
+import com.embabel.agent.core.Agent as CoreAgent
 
 
 class AgentMetadataReaderTest {
@@ -441,7 +440,7 @@ class AgentMetadataReaderTest {
             )
             assertEquals(1, action.toolGroups.size)
             assertEquals("magic", action.toolGroups.single())
-            val agent = mockk<IAgent>()
+            val agent = mockk<CoreAgent>()
             every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
@@ -499,7 +498,7 @@ class AgentMetadataReaderTest {
             assertNotNull(metadata)
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.first()
-            val agent = mockk<IAgent>()
+            val agent = mockk<CoreAgent>()
             every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
@@ -548,7 +547,7 @@ class AgentMetadataReaderTest {
                 action.inputs.single().type,
                 "Should not consider payload as input: ${action.inputs}",
             )
-            val agent = mockk<IAgent>()
+            val agent = mockk<CoreAgent>()
             every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
@@ -598,7 +597,7 @@ class AgentMetadataReaderTest {
                 action.inputs.single().type,
                 "Should not consider payload as input",
             )
-            val agent = mockk<IAgent>()
+            val agent = mockk<CoreAgent>()
             every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
@@ -638,7 +637,7 @@ class AgentMetadataReaderTest {
             assertNotNull(metadata)
             assertEquals(1, metadata!!.actions.size)
             val action = metadata.actions.first()
-            val agent = mockk<IAgent>()
+            val agent = mockk<CoreAgent>()
             every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
             val mockAgentProcess = mockk<AgentProcess>()
             every { mockAgentProcess.agent } returns agent
@@ -841,7 +840,7 @@ class AgentMetadataReaderTest {
                 assertNotNull(metadata)
                 assertEquals(1, metadata!!.actions.size)
                 val action = metadata.actions.first()
-                val agent = mockk<IAgent>()
+                val agent = mockk<CoreAgent>()
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
@@ -893,7 +892,7 @@ class AgentMetadataReaderTest {
                 assertNotNull(metadata)
                 assertEquals(1, metadata!!.actions.size)
                 val action = metadata.actions.first()
-                val agent = mockk<IAgent>()
+                val agent = mockk<CoreAgent>()
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
@@ -946,7 +945,7 @@ class AgentMetadataReaderTest {
                 assertNotNull(metadata)
                 assertEquals(1, metadata!!.actions.size)
                 val action = metadata.actions.first()
-                val agent = mockk<IAgent>()
+                val agent = mockk<CoreAgent>()
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
@@ -1009,7 +1008,7 @@ class AgentMetadataReaderTest {
                 assertNotNull(metadata)
                 assertEquals(1, metadata!!.actions.size)
                 val action = metadata.actions.first()
-                val agent = mockk<IAgent>()
+                val agent = mockk<CoreAgent>()
                 every { agent.domainTypes } returns listOf(Person::class.java, UserInput::class.java)
                 val mockAgentProcess = mockk<AgentProcess>()
                 every { mockAgentProcess.agent } returns agent
@@ -1065,7 +1064,7 @@ class AgentMetadataReaderTest {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(OneTransformerActionOnly())
             assertNotNull(metadata)
-            assertFalse(metadata!! is Agent)
+            assertFalse(metadata!! is CoreAgent)
         }
 
         @Test
@@ -1073,8 +1072,8 @@ class AgentMetadataReaderTest {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnly())
             assertNotNull(metadata)
-            assertTrue(metadata is IAgent, "@Agent should create an agent")
-            metadata as IAgent
+            assertTrue(metadata is CoreAgent, "@Agent should create an agent")
+            metadata as CoreAgent
             assertEquals(1, metadata.actions.size)
             assertEquals(
                 AgentWithOneTransformerActionWith2ArgsOnly::class.java.name,
