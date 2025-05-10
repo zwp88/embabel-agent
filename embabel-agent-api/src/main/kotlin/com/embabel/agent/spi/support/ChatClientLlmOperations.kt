@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.common.RetryTemplateProvider
 import com.embabel.agent.core.LlmInvocation
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
@@ -25,6 +26,8 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.common.textio.template.TemplateRenderer
+import com.fasterxml.jackson.databind.DatabindException
+import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.client.ResponseEntity
 import org.springframework.ai.chat.messages.SystemMessage
@@ -33,27 +36,76 @@ import org.springframework.ai.chat.model.ChatResponse
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.converter.BeanOutputConverter
 import org.springframework.ai.openai.OpenAiChatOptions
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.retry.RetryCallback
+import org.springframework.retry.RetryContext
+import org.springframework.retry.RetryListener
+import org.springframework.retry.support.RetryTemplate
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
 import java.time.Duration
 import java.time.Instant
 
 /**
+ * We want to be more forgiving with data binding. This
+ * can be important for smaller models.
+ */
+@ConfigurationProperties(prefix = "embabel.llm-operations.data-binding")
+data class LlmDataBindingProperties(
+    override val maxAttempts: Int = 10,
+    val fixedBackoffMillis: Long = 30L,
+) : RetryTemplateProvider {
+    private val logger = LoggerFactory.getLogger(LlmDataBindingProperties::class.java)
+
+    override fun retryTemplate(): RetryTemplate {
+        return RetryTemplate.builder()
+            .maxAttempts(maxAttempts)
+            .fixedBackoff(Duration.ofMillis(fixedBackoffMillis))
+            .withListener(object : RetryListener {
+                override fun <T : Any, E : Throwable> onError(
+                    context: RetryContext,
+                    callback: RetryCallback<T, E>,
+                    throwable: Throwable
+                ) {
+                    logger.info(
+                        "Retry attempt {} of {} due to: {}",
+                        context.retryCount,
+                        maxAttempts,
+                        throwable.message ?: "Unknown error"
+                    )
+                }
+            })
+            .build()
+    }
+}
+
+/**
+ * Properties for the ChatClientLlmOperations operations
+ * @param maybePromptTemplate template to use for the "maybe" prompt, which
+ *  * can enable a failure result if the LLM does not have enough information to
+ *  * create the desired output structure.
+ */
+@ConfigurationProperties(prefix = "embabel.llm-operations.maybe-prompt-template")
+data class ChatClientLlmOperationsProperties(
+    val maybePromptTemplate: String = "maybe_prompt_contribution",
+)
+
+
+/**
  * LlmOperations implementation that uses the Spring AI ChatClient
  * @param modelProvider ModelProvider to get the LLM model
  * @param toolDecorator ToolDecorator to decorate tools to make them aware of platform
  * @param templateRenderer TemplateRenderer to render templates
- * @param maybePromptTemplate Template to use for the "maybe" prompt, which
- * can enable a failure result if the LLM does not have enough information to
- * create the desired output structure.
+ * @param dataBindingProperties properties
  */
 @Service
 internal class ChatClientLlmOperations(
     private val modelProvider: ModelProvider,
     toolDecorator: ToolDecorator,
     private val templateRenderer: TemplateRenderer,
-    private val maybePromptTemplate: String = "maybe_prompt_contribution",
+    private val dataBindingProperties: LlmDataBindingProperties = LlmDataBindingProperties(),
+    private val chatClientLlmOperationsProperties: ChatClientLlmOperationsProperties = ChatClientLlmOperationsProperties(),
 ) : AbstractLlmOperations(toolDecorator) {
 
     @Suppress("UNCHECKED_CAST")
@@ -91,14 +143,16 @@ internal class ChatClientLlmOperations(
             // Try to lock to correct overload. Method overloading is evil.
             .toolCallbacks(interaction.toolCallbacks)
             .call()
-        return if (outputClass == String::class.java) {
-            val chatResponse = callResponse.chatResponse()
-            chatResponse?.let { recordUsage(resources.llm, it, llmRequestEvent) }
-            return chatResponse!!.result.output.text as O
-        } else {
-            val re = callResponse.responseEntity<O>(SuppressThinkingConverter(BeanOutputConverter(outputClass)))!!
-            re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
-            return re.entity!!
+        return dataBindingProperties.retryTemplate().execute<O, DatabindException> {
+            if (outputClass == String::class.java) {
+                val chatResponse = callResponse.chatResponse()
+                chatResponse?.let { recordUsage(resources.llm, it, llmRequestEvent) }
+                chatResponse!!.result.output.text as O
+            } else {
+                val re = callResponse.responseEntity<O>(SuppressThinkingConverter(BeanOutputConverter(outputClass)))!!
+                re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
+                re.entity!!
+            }
         }
     }
 
@@ -128,7 +182,7 @@ internal class ChatClientLlmOperations(
         llmRequestEvent: LlmRequestEvent<O>,
     ): Result<O> {
         val maybeReturnPromptContribution = templateRenderer.renderLoadedTemplate(
-            maybePromptTemplate,
+            chatClientLlmOperationsProperties.maybePromptTemplate,
             emptyMap(),
         )
 
@@ -157,7 +211,9 @@ internal class ChatClientLlmOperations(
             .call()
             .responseEntity<MaybeReturn<*>>(SuppressThinkingConverter(BeanOutputConverter(typeReference)))!!
         responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
-        return responseEntity.entity!!.toResult() as Result<O>
+        return dataBindingProperties.retryTemplate().execute<Result<O>, DatabindException> {
+            responseEntity.entity!!.toResult() as Result<O>
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

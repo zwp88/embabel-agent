@@ -46,10 +46,16 @@ data class FindEntitiesResponse<T>(
  */
 interface NaturalLanguageRepository<T> {
 
+    /**
+     * Find entities matching this query
+     */
     fun find(
         findEntitiesRequest: FindEntitiesRequest,
     ): FindEntitiesResponse<T>
 
+    /**
+     * I'm feeling lucky. Try to find one
+     */
     fun findOne(
         description: String,
         confidenceCutOff: ZeroToOne = 1.0,

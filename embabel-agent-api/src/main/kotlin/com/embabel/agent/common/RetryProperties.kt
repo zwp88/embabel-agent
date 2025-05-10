@@ -25,6 +25,7 @@ import org.springframework.retry.support.RetryTemplate
 import java.time.Duration
 
 interface RetryTemplateProvider {
+    val maxAttempts: Int
     fun retryTemplate(): RetryTemplate
 }
 
@@ -32,7 +33,6 @@ interface RetryTemplateProvider {
  * Extended by configuration for retry
  */
 interface RetryProperties : RetryTemplateProvider {
-    val maxAttempts: Int
     val backoffMillis: Long
     val backoffMultiplier: Double
     val backoffMaxInterval: Long
