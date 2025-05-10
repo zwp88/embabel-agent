@@ -19,6 +19,9 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+/**
+ * Please refer to comprehensive tests [AutonomyGoalSelectionTest] and [AutonomyAgentSelectionTest]
+ */
 class AutonomyTest {
 
     @Nested
@@ -27,13 +30,17 @@ class AutonomyTest {
         @Test
         @Disabled
         fun `test choose and accomplish goal with valid input`() {
-            // TODO: Implement test
+            /**
+             * please refer to [AutonomyGoalSelectionTest.testChooseAndAccomplishGoalWithValidInput]
+             */
         }
 
         @Test
         @Disabled
         fun `test choose and accomplish goal with invalid input`() {
-            // TODO: Implement test
+            /**
+             * please refer to [AutonomyGoalSelectionTest.testChooseAndAccomplishGoalWithInvalidInput]
+             */
         }
     }
 
@@ -43,13 +50,17 @@ class AutonomyTest {
         @Test
         @Disabled
         fun `test choose and run agent with valid input`() {
-            // TODO: Implement test
+            /**
+             * please refer to [AutonomyAgentSelectionTest.testChooseAndRunAgentWithValidInput]
+             */
         }
 
         @Test
         @Disabled
         fun `test choose and run agent with invalid input`() {
-            // TODO: Implement test
+            /**
+             *  please refer to [AutonomyAgentSelectionTest.testChooseAndRunAgentWithInvalidInput]
+             */
         }
     }
 
