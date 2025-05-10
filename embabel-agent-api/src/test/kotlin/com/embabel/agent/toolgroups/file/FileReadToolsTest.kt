@@ -36,6 +36,7 @@ class FileReadToolsTest {
         rootPath = tempDir.toString()
         fileReadTools = object : FileReadTools {
             override val root: String = rootPath
+            override val fileContentTransformers: List<FileContentTransformer> = emptyList()
         }
     }
 

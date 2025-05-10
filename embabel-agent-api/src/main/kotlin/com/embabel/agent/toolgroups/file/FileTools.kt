@@ -21,6 +21,7 @@ import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.spi.support.SelfToolCallbackPublisher
 import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
+import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
 import java.io.File
@@ -33,27 +34,41 @@ import java.nio.file.Paths
 import java.util.zip.ZipInputStream
 
 /**
+ * Something that can edit a file
+ */
+typealias FileContentTransformer = (raw: String) -> String
+
+/**
  * File tools. Extend FileReadTools for safe read only use
  */
 interface FileTools : FileReadTools, FileWriteTools {
 
     companion object {
 
-        fun toolGroup(root: String): ToolGroup = object : FileTools, SelfToolGroup {
-            override val root: String = root
-            override val artifact: String = "io-file"
-            override val description: ToolGroupDescription get() = ToolGroup.FILE_DESCRIPTION
-            override val permissions get() = setOf(ToolGroupPermission.HOST_ACCESS)
-
-        }
+        fun toolGroup(root: String): ToolGroup = DefaultFileTools(root)
     }
 }
+
+private class DefaultFileTools(
+    override val root: String,
+    override val artifact: String = "io-file",
+    override val description: ToolGroupDescription = ToolGroup.FILE_DESCRIPTION,
+    override val permissions: Set<ToolGroupPermission> = setOf(ToolGroupPermission.HOST_ACCESS),
+    override val fileContentTransformers: List<FileContentTransformer> = emptyList(),
+) : FileTools, SelfToolGroup
 
 /**
  * LLM-ready ToolCallbacks and convenience methods for file operations.
  * Use at your own risk: This makes changes to your host machine!!
  */
 interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
+
+    /**
+     * Provide sanitizers that run on file content before returning it.
+     * They must be sure not to change any content that may need to be replaced
+     * as this will break editing if editing is done in the same session.
+     */
+    val fileContentTransformers: List<FileContentTransformer>
 
     @Tool(description = "Find files using glob patterns. Return absolute paths")
     fun findFiles(glob: String): List<String> {
@@ -85,7 +100,22 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
     @Tool(description = "Read a file at the relative path")
     fun readFile(path: String): String {
         val resolvedPath = resolveAndValidateFile(path)
-        return Files.readString(resolvedPath)
+        val rawContent = Files.readString(resolvedPath)
+        var transformedContent = rawContent
+
+        // Run all sanitizers over the content in order
+        for (sanitizer in fileContentTransformers) {
+            transformedContent = sanitizer(transformedContent)
+        }
+        loggerFor<FileReadTools>().info(
+            "Transformed {} content with {} sanitizers: Length went from {} to {}",
+            path,
+            fileContentTransformers.size,
+            "%,d".format(rawContent.length),
+            "%,d".format(transformedContent.length),
+        )
+
+        return transformedContent
     }
 
     @Tool(description = "List files and directories at a given path. Prefix is f: for file or d: for directory")

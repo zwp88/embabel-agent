@@ -19,7 +19,9 @@ import com.embabel.agent.toolgroups.code.BuildOptions
 import com.embabel.agent.toolgroups.code.BuildResult
 import com.embabel.agent.toolgroups.code.Ci
 import com.embabel.agent.toolgroups.code.SymbolSearch
+import com.embabel.agent.toolgroups.file.FileContentTransformer
 import com.embabel.agent.toolgroups.file.FileTools
+import com.embabel.agent.toolgroups.file.WellKnownFileContentTransformers
 import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
@@ -41,6 +43,9 @@ open class SoftwareProject(
     @get:JsonPropertyDescription("Build command, such as 'mvn clean test'")
     val buildCommand: String,
 ) : PromptContributor, FileTools, SymbolSearch /*CiTools*/ {
+
+    override val fileContentTransformers: List<FileContentTransformer>
+        get() = listOf(WellKnownFileContentTransformers.removeApacheLicenseHeader)
 
     val ci = Ci(root)
 
