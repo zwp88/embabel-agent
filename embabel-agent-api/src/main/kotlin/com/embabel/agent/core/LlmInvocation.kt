@@ -51,6 +51,26 @@ interface LlmInvocationHistory {
         val completionTokens = llmInvocations.sumOf { it.usage.completionTokens }
         return DefaultUsage(promptTokens, completionTokens)
     }
+
+    fun costInfoString(verbose: Boolean): String {
+        val usage = usage()
+        return if (verbose) """|
+            |LLMs used: ${modelsUsed().map { it.name }}
+            |Prompt tokens: ${"%,d".format(usage.promptTokens)}, completion tokens: ${
+            "%,d".format(
+                usage.completionTokens
+            )
+        }
+            |Cost: $${"%.4f".format(cost())}
+            |""".trimMargin()
+        else "LLMs: ${modelsUsed().map { it.name }}; " +
+                "prompt tokens: ${"%,d".format(usage.promptTokens)}; completion tokens: ${
+                    "%,d".format(
+                        usage.completionTokens
+                    )
+                }; cost: $${"%.4f".format(cost())}"
+    }
+
 }
 
 /**

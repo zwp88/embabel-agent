@@ -20,19 +20,69 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.ai.converter.StructuredOutputConverter
 
 /**
- * Add few shot examples to the output converter.
+ * Decorator for Spring's [StructuredOutputConverter] that adds few-shot examples to the output format description.
+ *
+ * <p>
+ * Few-shot examples are often used in prompt engineering to help AI models understand the expected output format
+ * by providing concrete example outputs. This converter generates such examples automatically using dummy data
+ * and injects them into the format description returned by [getFormat()].
+ *
+ * @param T the output type for the converter
+ * @property delegate the underlying output converter to which conversion is delegated
+ * @property outputClass the class type for which dummy example instances will be generated
+ * @property ifPossible determines whether to include both success and failure examples (true) or just a simple example (false)
+ *
+ * Usage:
+ * Wrap an existing StructuredOutputConverter with this class to enhance its format description for LLM prompting.
  */
 class WithExampleConverter<T>(
+    /**
+     * The underlying converter that actually performs the output conversion.
+     * This class delegates all conversion logic to this instance.
+     */
     private val delegate: StructuredOutputConverter<T>,
+    /**
+     * The output type for which dummy example data will be generated.
+     * Used to create illustrative example outputs for the format description.
+     */
     private val outputClass: Class<T>,
+    /**
+     * If true, includes both 'success' and 'failure' examples using a wrapper structure (e.g., MaybeReturn).
+     * If false, includes only a bare example output.
+     */
     private val ifPossible: Boolean,
 ) : StructuredOutputConverter<T> {
 
+    /**
+     * Delegates conversion to the underlying [delegate].
+     *
+     * @param source the raw output string to convert
+     * @return the converted output, or null if conversion fails
+     */
     override fun convert(source: String): T? = delegate.convert(source)
 
+    /**
+     * Returns a format description string, augmented with few-shot examples.
+     *
+     * The example(s) are generated using [DummyInstanceCreator], which creates a mock instance of [outputClass].
+     *
+     * If [ifPossible] is true, the example is wrapped in a structure (presumably [MaybeReturn]) that shows both
+     * 'success' and 'failure' cases. This is helpful when the output type can be a success or an error.
+     *
+     * If [ifPossible] is false, only a single example output is shown (not wrapped).
+     *
+     * The underlying converter's format is always appended after the examples.
+     *
+     * @return a string describing the output format, including examples
+     */
     override fun getFormat(): String {
+        // Generate a dummy example instance of the output type using lorem ipsum values for strings
         val example = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(outputClass)
         return if (ifPossible) {
+            // If possible, show both a success and a failure example using a wrapper structure.
+            // The MaybeReturn class is assumed to be a generic wrapper for success/failure outputs.
+            // - success: wraps the dummy example
+            // - failure: wraps a fixed failure message
             """|
         |Examples:
         |   success:
@@ -44,6 +94,7 @@ class WithExampleConverter<T>(
         |${delegate.format}
         """.trimMargin()
         } else {
+            // Otherwise, just show a single example output (not wrapped in MaybeReturn)
             """|
         |Example:
         |${jacksonObjectMapper().writeValueAsString(example)}

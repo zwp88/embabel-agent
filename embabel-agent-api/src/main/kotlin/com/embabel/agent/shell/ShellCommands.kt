@@ -75,6 +75,15 @@ class ShellCommands(
         return "Blackboard cleared"
     }
 
+    @ShellMethod(value = "Show recent agent process runs. This is what actually happened, not just what was planned.")
+    fun runs(): String {
+        val plans = agentProcesses.map {
+            "[${it.id}] Goal: ${it.agent.goals.map { g -> g.name }}; usage - ${it.costInfoString(verbose = false)}\n\t\t" +
+                    it.history.joinToString("\n\t\t") { it.infoString() }
+        }
+        return "Recent runs:\n\t${plans.joinToString("\n\t")}"
+    }
+
     @ShellMethod(value = "List all active Spring profiles")
     fun profiles(): String {
         val profiles = environment.activeProfiles
@@ -384,19 +393,12 @@ class ShellCommands(
                     output
                 )
             }
-            val usage = result.agentProcess.usage()
             return """|
                 |You asked: ${basis.toString().color(colorPalette.highlight)}
                 |
                 |${output.color(colorPalette.color2)}
                 |
-                |LLMs used: ${result.agentProcess.modelsUsed().map { it.name }}
-                |Prompt tokens: ${numberFormat.format(usage.promptTokens)}, completion tokens: ${
-                numberFormat.format(
-                    usage.completionTokens
-                )
-            }
-                |Cost: $${"%.4f".format(result.agentProcess.cost())}
+                |${result.agentProcess.costInfoString(verbose = true)}
                 |""".trimMargin()
         } catch (ngf: NoGoalFound) {
             if (verbosity.debug) {

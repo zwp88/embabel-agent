@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
 import com.embabel.plan.WorldState
@@ -25,7 +26,12 @@ data class ActionInvocation(
     val actionName: String,
     override val timestamp: Instant = Instant.now(),
     override val runningTime: Duration,
-) : Timestamped, Timed
+) : Timestamped, Timed, HasInfoString {
+
+    override fun infoString(verbose: Boolean?): String {
+        return "$actionName(${"%,d".format(runningTime.toMillis())}ms)"
+    }
+}
 
 /**
  * Run of an agent

@@ -44,7 +44,7 @@ class StarNewsFinderTest {
 
         @Test
         fun `writeup must contain person's name`() {
-            val starNewsFinder = StarNewsFinder(horoscopeService = horoscopeService, storyCount = 5)
+            val starNewsFinder = StarNewsFinder(horoscopeService = horoscopeService, storyCount = 5, wordCount = 100)
             var starPerson = StarPerson(name = "Rod", sign = "Cancer")
             val relevantNewsStories = RelevantNewsStories(emptyList())
             val llmCall = captureLlmCall {

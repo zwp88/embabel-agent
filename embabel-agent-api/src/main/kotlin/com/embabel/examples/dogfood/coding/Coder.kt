@@ -83,7 +83,7 @@ class Coder(
 
 
     /**
-     * Llm will determine the command to use to build the project.
+     * The LLM will determine the command to use to build the project.
      * Only use as a last resort, so we mark it as expensive.
      */
     @Action(
@@ -100,11 +100,7 @@ class Coder(
             context.promptRunner(
                 llm = codingProperties.primaryCodingLlm,
                 promptContributors = listOf(project),
-            ).generateText(
-                """
-                Build the project
-            """.trimIndent(),
-            )
+            ).generateText("Build the project")
         }
         return project.ci.parseBuildOutput(rawOutput, Duration.ofMillis(ms))
     }
@@ -134,10 +130,14 @@ class Coder(
     @Condition(name = CoderConditions.BuildFailed)
     fun buildFailed(buildResult: BuildResult): Boolean = buildResult.status?.success == false
 
+    // Be very careful with GitHub tools
     @Action(
         canRerun = true,
         post = [CoderConditions.BuildNeeded],
-        toolGroups = [ToolGroup.GITHUB, ToolGroup.WEB]
+        toolGroups = [
+//            ToolGroup.GITHUB,
+            ToolGroup.WEB
+        ]
     )
     fun modifyCode(
         codeModificationRequest: CodeModificationRequest,
@@ -165,6 +165,8 @@ class Coder(
                 IF BUILDING IS NEEDED, BE SURE TO RUN UNIT TESTS.
                 DO NOT BUILD *AFTER* MODIFYING CODE.
 
+                Make multiple small, focused edits if you can.
+
                 User request:
                 "${codeModificationRequest.request}"
             }
@@ -176,7 +178,8 @@ class Coder(
     @Action(
         canRerun = true,
         pre = [CoderConditions.BuildFailed, CoderConditions.BuildWasLastAction],
-        post = [CoderConditions.BuildSucceeded]
+        post = [CoderConditions.BuildSucceeded],
+        toolGroups = [ToolGroup.WEB],
     )
     fun fixBrokenBuild(
         codeModificationRequest: CodeModificationRequest,
@@ -189,16 +192,16 @@ class Coder(
             promptContributors = listOf(project, buildFailure),
         ).create(
             """
-                Modify code in the given project to fix the broken build.
-                Use the file tools to read code and directories.
-                Use the project information to help you understand the code.
-                The project will be in git so you can safely modify content without worrying about backups.
-                Return an explanation of what you did and why.
-                Consider the build failure report.
+            Modify code in the given project to fix the broken build.
+            Use the file tools to read code and directories.
+            Use the project information to help you understand the code.
+            The project will be in git so you can safely modify content without worrying about backups.
+            Return an explanation of what you did and why.
+            Consider the build failure report.
 
-                DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
-                Consider the following user request for the necessary functionality:
-                "${codeModificationRequest.request}"
+            DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
+            Consider the following user request for the necessary functionality:
+            "${codeModificationRequest.request}"
             """.trimIndent(),
         )
         return CodeModificationReport(report)
