@@ -150,7 +150,13 @@ internal class ChatClientLlmOperations(
                 chatResponse?.let { recordUsage(resources.llm, it, llmRequestEvent) }
                 chatResponse!!.result.output.text as O
             } else {
-                val re = callResponse.responseEntity<O>(SuppressThinkingConverter(BeanOutputConverter(outputClass)))!!
+                val re = callResponse.responseEntity<O>(
+                    WithExampleConverter(
+                        delegate = SuppressThinkingConverter(BeanOutputConverter(outputClass)),
+                        outputClass = outputClass,
+                        ifPossible = false,
+                    ),
+                )
                 re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
                 re.entity!!
             }
@@ -211,7 +217,13 @@ internal class ChatClientLlmOperations(
                 .prompt(springAiPrompt)
                 .toolCallbacks(interaction.toolCallbacks)
                 .call()
-                .responseEntity<MaybeReturn<*>>(SuppressThinkingConverter(BeanOutputConverter(typeReference)))!!
+                .responseEntity<MaybeReturn<*>>(
+                    WithExampleConverter(
+                        delegate = SuppressThinkingConverter(BeanOutputConverter(typeReference)),
+                        outputClass = outputClass as Class<MaybeReturn<*>>,
+                        ifPossible = true,
+                    )
+                )
             responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
             responseEntity.entity!!.toResult() as Result<O>
         }
