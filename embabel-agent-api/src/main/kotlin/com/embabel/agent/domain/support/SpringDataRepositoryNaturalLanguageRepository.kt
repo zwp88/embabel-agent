@@ -62,6 +62,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
                 .filterNot { it.name.startsWith("findAll") }
                 .filter { it.parameterTypes.size == 1 }
                 .map { it.name }
+                .distinct()
         logger.info(
             "Eligible repository finder methods on {}: {}",
             repository.javaClass.name,
@@ -74,19 +75,20 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
             You can choose from the following finders:
             ${finderMethodsOnRepositoryTakingOneArg.joinToString("\n") { "- $it" }}
             For each finder method, return its name and the value you would use to call it.
+            Remember that findById might work with one of the fields.
 
             <description>${findEntitiesRequest.description}</description>
             """.trimIndent()
         )
-        logger.debug(
-            "Found fields for {}: {}",
+        logger.info(
+            "Found finder methods for {}: {}",
             entityType.simpleName,
-            referencedFinderInvocations.fields.sortedBy { it.name }
+            referencedFinderInvocations.invocations.sortedBy { it.name }
         )
 
         val matches = mutableListOf<EntityMatch<T>>()
 
-        for (finder in referencedFinderInvocations.fields) {
+        for (finder in referencedFinderInvocations.invocations) {
             // Find the method on the repository
             val repositoryMethod = repository.javaClass.methods
                 .firstOrNull { it.name == finder.name }
@@ -149,7 +151,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
 
 
 internal data class FinderInvocations(
-    val fields: List<FinderInvocation>,
+    val invocations: List<FinderInvocation>,
 )
 
 internal data class FinderInvocation(

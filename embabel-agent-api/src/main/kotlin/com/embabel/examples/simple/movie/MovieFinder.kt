@@ -32,6 +32,7 @@ import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -115,7 +116,13 @@ data class MovieFinderConfig(
     val writeupWordCount: Int = 200,
     val suggesterPersona: Persona = Roger,
     val writerPersona: Persona = Roger,
-)
+    val model: String = OpenAiModels.GPT_41_MINI,
+) {
+
+    val llm = LlmOptions(
+        criteria = byName(model),
+    )
+}
 
 /**
  * MovieFinder is a comprehensive agent in the Embabel agentic framework that recommends personalized
@@ -149,8 +156,6 @@ class MovieFinder(
 
     private val logger = LoggerFactory.getLogger(MovieFinder::class.java)
 
-    private val llm = LlmOptions(OpenAiModels.GPT_41_MINI)
-
     init {
         // TODO this is only for example purposes
         populateMovieBuffRepository(movieBuffRepository)
@@ -170,11 +175,11 @@ class MovieFinder(
      */
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, context: ActionContext): MovieBuff? {
-//        return movieBuffRepository.findAll().firstOrNull()
+        return movieBuffRepository.findAll().firstOrNull()
 
         val fer = movieBuffRepository.naturalLanguageRepository(
             context,
-            LlmOptions(OpenAiModels.GPT_41_MINI)
+            config.llm,
         ).find(
             FindEntitiesRequest(description = userInput.content),
         )
@@ -213,7 +218,7 @@ class MovieFinder(
         movieBuff: MovieBuff,
         context: ActionContext,
     ): DecoratedMovieBuff {
-        val tasteProfile = context.promptRunner(llm) generateText
+        val tasteProfile = context.promptRunner(config.llm) generateText
                 """
                 ${movieBuff.name} is a movie lover with hobbies of ${movieBuff.hobbies.joinToString(", ")}
                 They have rated the following movies out of 10:
@@ -249,7 +254,7 @@ class MovieFinder(
         dmb: DecoratedMovieBuff,
         userInput: UserInput
     ): RelevantNewsStories =
-        using(llm).createObject(
+        using(config.llm).createObject(
             """
             ${dmb.movieBuff.name} is a movie buff.
             Their hobbies are ${dmb.movieBuff.hobbies.joinToString(", ")}
@@ -293,7 +298,7 @@ class MovieFinder(
         context: ActionContext,
     ): StreamableMovies {
         val suggestedMovieTitles = context.promptRunner(
-            llm.withTemperature(1.3),
+            config.llm.withTemperature(1.3),
             promptContributors = listOf(config.suggesterPersona),
         ).createObject<SuggestedMovieTitles>(
             """
@@ -505,7 +510,7 @@ class MovieFinder(
         context: ActionContext,
     ): SuggestionWriteup {
         val text = context.promptRunner(
-            llm = llm,
+            llm = config.llm,
             promptContributors = listOf(config.suggesterPersona)
         ) generateText
                 """

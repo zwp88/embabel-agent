@@ -44,7 +44,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            fields = emptyList(),
+            invocations = emptyList(),
         )
         every {
             mockPromptRunner.createObject(
@@ -71,7 +71,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            fields = listOf(FinderInvocation(name = "findByName", value = "something")),
+            invocations = listOf(FinderInvocation(name = "findByName", value = "something")),
         )
         every {
             mockPromptRunner.createObject(
@@ -101,7 +101,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            fields = listOf(FinderInvocation(name = "findByDescription", value = "something")),
+            invocations = listOf(FinderInvocation(name = "findByDescription", value = "something")),
         )
         every {
             mockPromptRunner.createObject(
@@ -132,7 +132,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            fields = listOf(FinderInvocation(name = "findByName", value = "something")),
+            invocations = listOf(FinderInvocation(name = "findByName", value = "something")),
         )
         every {
             mockPromptRunner.createObject(
