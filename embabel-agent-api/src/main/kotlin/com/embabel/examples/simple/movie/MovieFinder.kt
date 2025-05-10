@@ -170,10 +170,12 @@ class MovieFinder(
      */
     @Action(description = "Retrieve a MovieBuff based on the user input")
     fun findMovieBuff(userInput: UserInput, context: ActionContext): MovieBuff? {
-        return movieBuffRepository.findAll().firstOrNull()
+//        return movieBuffRepository.findAll().firstOrNull()
 
-        // TODO Standard action helper that can bind
-        val fer = movieBuffRepository.naturalLanguageRepository(context).find(
+        val fer = movieBuffRepository.naturalLanguageRepository(
+            context,
+            LlmOptions(OpenAiModels.GPT_41_MINI)
+        ).find(
             FindEntitiesRequest(description = userInput.content),
         )
         // TODO present a choices form

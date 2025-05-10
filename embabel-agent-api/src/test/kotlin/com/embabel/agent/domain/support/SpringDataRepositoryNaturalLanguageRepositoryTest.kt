@@ -56,6 +56,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
+            llm = mockk(),
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -82,6 +83,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
+            llm = mockk(),
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -111,6 +113,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
+            llm = mockk(),
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -141,6 +144,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         every { mockPayload.promptRunner(any()) } returns mockPromptRunner
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
+            llm = mockk(),
         )
         val matches = nlr.find(FindEntitiesRequest("Description"))
         val found = matches.matches.single()

@@ -17,7 +17,6 @@ package com.embabel.agent.domain.support
 
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.createObject
-import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.domain.persistence.EntityMatch
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
 import com.embabel.agent.domain.persistence.FindEntitiesResponse
@@ -29,11 +28,13 @@ import java.util.*
 
 inline fun <reified T, ID> CrudRepository<T, ID>.naturalLanguageRepository(
     context: ActionContext,
+    llm: LlmOptions,
 ): NaturalLanguageRepository<T> =
     SpringDataRepositoryNaturalLanguageRepository(
         repository = this,
         entityType = T::class.java,
         context = context,
+        llm = llm,
     )
 
 /**
@@ -44,6 +45,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     val repository: CrudRepository<T, ID>,
     val entityType: Class<T>,
     val context: ActionContext,
+    val llm: LlmOptions,
 ) : NaturalLanguageRepository<T> {
 
     private val logger = LoggerFactory.getLogger(this.javaClass)
@@ -51,7 +53,6 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     override fun find(
         findEntitiesRequest: FindEntitiesRequest,
     ): FindEntitiesResponse<T> {
-        val llm = LlmOptions().withModel(OpenAiModels.GPT_41)
 
         // Find the finder methods on the repository
         val finderMethodsOnRepositoryTakingOneArg: List<String> =
