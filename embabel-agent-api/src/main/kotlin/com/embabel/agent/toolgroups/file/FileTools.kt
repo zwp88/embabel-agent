@@ -97,6 +97,16 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
         return results
     }
 
+    /**
+     * Use for safe reading of files. Returns null if the file doesn't exist or is not readable.
+     */
+    fun safeReadFile(path: String): String? = try {
+        readFile(path)
+    } catch (e: Exception) {
+        loggerFor<FileReadTools>().warn("Failed to read file at {}: {}", path, e.message)
+        null
+    }
+
     @Tool(description = "Read a file at the relative path")
     fun readFile(path: String): String {
         val resolvedPath = resolveAndValidateFile(path)

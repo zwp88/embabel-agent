@@ -38,11 +38,16 @@ open class SoftwareProject(
     val url: String? = null,
     @get:JsonPropertyDescription("The technologies used in the project. List, comma separated. Include 10")
     val tech: String,
-    @get:JsonPropertyDescription("Notes on the coding style used in this project. 20 words.")
-    val codingStyle: String,
+    val defaultCodingStyle: String = """
+            No coding style guide found at ${DEFAULT_CODING_STYLE_GUIDE}.
+            Try to follow the conventions of files you read in the project.
+        """.trimIndent(),
     @get:JsonPropertyDescription("Build command, such as 'mvn clean test'")
     val buildCommand: String,
 ) : PromptContributor, FileTools, SymbolSearch /*CiTools*/ {
+
+    val codingStyle: String = safeReadFile(DEFAULT_CODING_STYLE_GUIDE)
+        ?: defaultCodingStyle
 
     override val fileContentTransformers: List<FileContentTransformer>
         get() = listOf(WellKnownFileContentTransformers.removeApacheLicenseHeader)
@@ -95,6 +100,10 @@ open class SoftwareProject(
             |Coding style:
             |$codingStyle
         """.trimMargin()
+
+    companion object {
+        const val DEFAULT_CODING_STYLE_GUIDE = "/.embabel/coding_style.md"
+    }
 
 }
 

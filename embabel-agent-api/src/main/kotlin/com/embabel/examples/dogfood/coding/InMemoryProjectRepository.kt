@@ -38,15 +38,4 @@ val EmbabelAgentApi = SoftwareProject(
         |Kotlin, Spring Boot, Maven, Jacoco, Spring AI
         |JUnit 5, mockk
         |"""".trimMargin(),
-    codingStyle = """
-        Favor clarity. Use Kotlin coding conventions and consistent formatting.
-        Use the Spring idiom where possible.
-        Favor immutability.
-        Favor test cases using @Nested classes. Use ` instead of @DisplayName for test cases.
-        In log statements, use placeholders for efficiency.
-        E.g. logger.info("{} {}", a, b) instead of logger.info("computed string").
-
-        In Java, use modern Java features like var, records, and switch expressions.
-        Use multiline strings rather than concatenation.
-    """.trimIndent(),
 )
