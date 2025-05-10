@@ -138,12 +138,13 @@ internal class ChatClientLlmOperations(
             )
         }
 
-        val callResponse = resources.chatClient
-            .prompt(springAiPrompt)
-            // Try to lock to correct overload. Method overloading is evil.
-            .toolCallbacks(interaction.toolCallbacks)
-            .call()
         return dataBindingProperties.retryTemplate().execute<O, DatabindException> {
+
+            val callResponse = resources.chatClient
+                .prompt(springAiPrompt)
+                // Try to lock to correct overload. Method overloading is evil.
+                .toolCallbacks(interaction.toolCallbacks)
+                .call()
             if (outputClass == String::class.java) {
                 val chatResponse = callResponse.chatResponse()
                 chatResponse?.let { recordUsage(resources.llm, it, llmRequestEvent) }
@@ -205,13 +206,13 @@ internal class ChatClientLlmOperations(
             MaybeReturn::class.java,
             outputClass,
         )
-        val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = resources.chatClient
-            .prompt(springAiPrompt)
-            .toolCallbacks(interaction.toolCallbacks)
-            .call()
-            .responseEntity<MaybeReturn<*>>(SuppressThinkingConverter(BeanOutputConverter(typeReference)))!!
-        responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
         return dataBindingProperties.retryTemplate().execute<Result<O>, DatabindException> {
+            val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = resources.chatClient
+                .prompt(springAiPrompt)
+                .toolCallbacks(interaction.toolCallbacks)
+                .call()
+                .responseEntity<MaybeReturn<*>>(SuppressThinkingConverter(BeanOutputConverter(typeReference)))!!
+            responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
             responseEntity.entity!!.toResult() as Result<O>
         }
     }
