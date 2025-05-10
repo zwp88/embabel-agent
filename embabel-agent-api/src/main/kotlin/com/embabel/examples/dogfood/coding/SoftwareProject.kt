@@ -18,11 +18,13 @@ package com.embabel.examples.dogfood.coding
 import com.embabel.agent.toolgroups.code.BuildOptions
 import com.embabel.agent.toolgroups.code.BuildResult
 import com.embabel.agent.toolgroups.code.Ci
+import com.embabel.agent.toolgroups.code.SymbolSearch
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.ai.tool.annotation.Tool
+import org.springframework.ai.tool.annotation.ToolParam
 import org.springframework.data.repository.CrudRepository
 
 /**
@@ -38,9 +40,32 @@ open class SoftwareProject(
     val codingStyle: String,
     @get:JsonPropertyDescription("Build command, such as 'mvn clean test'")
     val buildCommand: String,
-) : PromptContributor, FileTools /*CiTools*/ {
+) : PromptContributor, FileTools, SymbolSearch /*CiTools*/ {
 
     val ci = Ci(root)
+
+    @Tool(description = "Returns the file containing a class with the given name")
+    fun findClass(@ToolParam(description = "class name") name: String): String {
+        val matches = findClassInProject(name, globPattern = "**/*.{java,kt}")
+        return if (matches.isNotEmpty()) {
+            matches.joinToString("\n") { it.relativePath }
+        } else {
+            "No class found with name $name"
+        }
+    }
+
+    @Tool(description = "Returns the file containing a class with the given name")
+    fun findPattern(
+        @ToolParam(description = "regex pattern") regex: String,
+        @ToolParam(description = "glob pattern for file to search") globPattern: String
+    ): String {
+        val matches = findPatternInProject(pattern = Regex(regex), globPattern = globPattern)
+        return if (matches.isNotEmpty()) {
+            matches.joinToString("\n") { it.relativePath }
+        } else {
+            "No matches for pattern '$regex' in $globPattern"
+        }
+    }
 
     @Tool(description = "Build the project using the given command in the root")
     fun build(command: String): String {
