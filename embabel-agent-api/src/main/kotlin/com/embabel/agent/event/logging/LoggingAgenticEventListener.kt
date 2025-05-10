@@ -301,7 +301,7 @@ open class LoggingAgenticEventListener(
                     message,
                     event.processId,
                     event.interaction.id.value,
-                    event.response!!::class.java.simpleName,
+                    event.response?.let { it::class.java.simpleName } ?: "null",
                     event.interaction.llm.criteria,
                     event.runningTime.seconds,
                 )
