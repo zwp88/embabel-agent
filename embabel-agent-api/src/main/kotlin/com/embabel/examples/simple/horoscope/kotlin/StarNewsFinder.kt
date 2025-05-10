@@ -92,12 +92,14 @@ data class Writeup(
 class StarNewsFinder(
     // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
-//    @Value("\${star-news-finder.model:gpt-4.1-nano}")
-    @Value("\${star-news-finder.model:ai/llama3.2}")
+    @Value("\${star-news-finder.model:gpt-4.1-nano}")
+//    @Value("\${star-news-finder.model:ai/llama3.2}")
 
     private val model: String = OpenAiModels.GPT_41_NANO,
     @Value("\${star-news-finder.story.count:5}")
     private val storyCount: Int,
+    @Value("\${star-news-finder.word.count:100}")
+    private val wordCount: Int,
 ) {
 
     /**
@@ -252,7 +254,7 @@ class StarNewsFinder(
     ).createObject<Writeup>(
         """
         Take the following news stories and write up something
-        amusing for the target person.
+        amusing for the target person in $wordCount words.
 
         Begin by summarizing their horoscope in a concise, amusing way, then
         talk about the news. End with a surprising signoff.
