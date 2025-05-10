@@ -197,7 +197,7 @@ class Coder(
             Use the project information to help you understand the code.
             The project will be in git so you can safely modify content without worrying about backups.
             Return an explanation of what you did and why.
-            Consider the build failure report.
+            Consider the build failure report.           
 
             DO NOT BUILD THE PROJECT. JUST MODIFY CODE.
             Consider the following user request for the necessary functionality:
@@ -209,6 +209,6 @@ class Coder(
 
     @Action(pre = [CoderConditions.BuildSucceeded])
     @AchievesGoal(description = "Modify project code as per user request")
-    fun codeModificationComplete(codeModificationReport: CodeModificationReport) = codeModificationReport
+    fun shareCodeModificationReport(codeModificationReport: CodeModificationReport) = codeModificationReport
 
 }
