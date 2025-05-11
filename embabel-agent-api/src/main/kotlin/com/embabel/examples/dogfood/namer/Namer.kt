@@ -19,9 +19,12 @@ import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.aggregate
+import com.embabel.agent.config.models.AnthropicModels
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.toolgroups.web.domain.DomainChecker
 import com.embabel.common.ai.model.LlmOptions
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,21 +36,33 @@ data class AllNames(val accepted: List<GeneratedName>, val rejected: List<Genera
 @Configuration
 class NamerAgentConfiguration {
     @Bean
-    fun namingAgent(): Agent {
-        return simpleNamingAgent()
+    fun namingAgent(domainChecker: DomainChecker): Agent {
+        return simpleNamingAgent(
+            llms = listOf(
+                LlmOptions(OpenAiModels.GPT_41_MINI).withTemperature(.3),
+                LlmOptions(OpenAiModels.GPT_41_MINI).withTemperature(1.3),
+                LlmOptions(AnthropicModels.CLAUDE_35_HAIKU).withTemperature(.9),
+                LlmOptions(AnthropicModels.CLAUDE_35_HAIKU).withTemperature(.8),
+                LlmOptions("ai/llama3.2").withTemperature(.3),
+            ),
+            domainChecker = domainChecker,
+        )
     }
 }
 
 /**
  * Naming agent that generates names for a company or project.
  */
-fun simpleNamingAgent() = agent(
+fun simpleNamingAgent(
+    llms: List<LlmOptions>,
+    domainChecker: DomainChecker,
+) = agent(
     "Company namer",
     description = "Name a company or project, using internet research"
 ) {
 
-    fun generateNames(context: InputActionContext<UserInput>): GeneratedNames {
-        return context.promptRunner(LlmOptions(), toolGroups = listOf(ToolGroup.WEB)).createObject(
+    fun generateNamesWith(llm: LlmOptions, context: InputActionContext<UserInput>): GeneratedNames {
+        return context.promptRunner(llm = llm, toolGroups = listOf(ToolGroup.WEB)).createObject(
             """
             Generate a list of names for a company or project, based on the following input.
             Use web tools to research the space first.
@@ -60,9 +75,11 @@ fun simpleNamingAgent() = agent(
 
     actions {
         aggregate<UserInput, GeneratedNames, AllNames>(
-            transforms = listOf(
-                ::generateNames,
-                { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
+            transforms = llms.map { llm ->
+                { context: InputActionContext<UserInput> ->
+                    generateNamesWith(llm, context)
+                }
+            },
             merge = { generatedNamesList ->
                 AllNames(
                     accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },

@@ -21,12 +21,16 @@ import org.springframework.stereotype.Service
 import java.net.InetAddress
 import java.net.Socket
 
+interface DomainChecker {
+    fun isDomainAvailable(domain: String): Boolean
+}
+
 @Service
-class DomainChecker {
+internal class DefaultDomainChecker : DomainChecker {
 
-    private val logger = loggerFor<DomainChecker>()
+    private val logger = loggerFor<DefaultDomainChecker>()
 
-    fun isDomainAvailable(domain: String): Boolean =
+    override fun isDomainAvailable(domain: String): Boolean =
         isDomainAvailableByDns(domain) && isDomainAvailableByWhois(domain)
 
 
