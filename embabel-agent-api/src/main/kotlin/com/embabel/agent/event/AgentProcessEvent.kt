@@ -187,6 +187,10 @@ class LlmRequestEvent<O>(
             runningTime = runningTime
         )
     }
+
+    override fun toString(): String {
+        return "LlmRequestEvent(outputClass=$outputClass, interaction=$interaction, prompt='$prompt')"
+    }
 }
 
 
@@ -213,7 +217,12 @@ class LlmResponseEvent<O> internal constructor(
     val prompt: String,
     val response: O,
     override val runningTime: Duration,
-) : AbstractAgentProcessEvent(agentProcess), Timed
+) : AbstractAgentProcessEvent(agentProcess), Timed {
+
+    override fun toString(): String {
+        return "LlmResponseEvent(outputClass=$outputClass, interaction=$interaction, prompt=$prompt, response=$response, runningTime=$runningTime)"
+    }
+}
 
 /**
  * Binding to context
