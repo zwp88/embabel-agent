@@ -15,8 +15,19 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.api.dsl.support.Transformer
+import com.embabel.agent.core.Action
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.resultOfType
+
+fun <I, O : Any> Agent.asTransformation(outputClass: Class<O>) = Transformation<I, O> {
+    val childAgentProcess = it.agentPlatform().createChildProcess(
+        agent = this,
+        parentAgentProcess = it.processContext.agentProcess,
+    )
+    val childProcessResult = childAgentProcess.run()
+    childProcessResult.resultOfType(outputClass)
+}
 
 /**
  * Creates a transformation action from an agent
@@ -28,6 +39,55 @@ inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformatio
     )
     val childProcessResult = childAgentProcess.run()
     childProcessResult.resultOfType()
+}
+
+inline fun <reified I, reified O : Any> Agent.asAction(): Action =
+    agentTransformer<I, O>(this)
+
+fun <I, O : Any> asAction(agentName: String, inputClass: Class<I>, outputClass: Class<O>): Action {
+    return Transformer(
+        name = "@action-${agentName}",
+        description = "@action-${agentName}",
+        pre = emptyList(),
+        post = emptyList(),
+        cost = 0.0,
+        value = 0.0,
+        canRerun = true,
+        inputClass = inputClass,
+        outputClass = outputClass,
+        toolGroups = emptyList(),
+        toolCallbacks = emptyList(),
+    ) {
+        val agent: Agent = it.processContext.platformServices.agentPlatform.agents().singleOrNull() {
+            it.name == agentName
+        } ?: throw IllegalArgumentException(
+            "Agent '$agentName' not found: Known agents:\n\t${
+                it.processContext.platformServices.agentPlatform.agents().joinToString("\n\t") { it.name }
+            }"
+        )
+        agent.asTransformation<I, O>(outputClass).transform(it)
+    }
+}
+
+inline fun <reified I, reified O : Any> asAction(agentName: String): Action =
+    asAction<I, O>(agentName, I::class.java, O::class.java)
+
+inline fun <reified I, reified O : Any> agentTransformer(agent: Agent): Action {
+    return Transformer(
+        name = "@action-${agent.name}",
+        description = "@action-${agent.name}",
+        pre = emptyList(),
+        post = emptyList(),
+        cost = 0.0,
+        value = 0.0,
+        canRerun = true,
+        inputClass = I::class.java,
+        outputClass = O::class.java,
+        toolGroups = emptyList(),
+        toolCallbacks = emptyList(),
+    ) {
+        agent.asTransformation<I, O>().transform(it)
+    }
 }
 
 

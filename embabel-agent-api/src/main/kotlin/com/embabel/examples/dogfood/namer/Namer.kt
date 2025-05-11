@@ -28,12 +28,14 @@ import com.embabel.agent.toolgroups.web.domain.DomainChecker
 import com.embabel.common.ai.model.LlmOptions
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 data class GeneratedName(val name: String, val reason: String)
 data class GeneratedNames(val names: List<GeneratedName>)
 data class AllNames(val accepted: List<GeneratedName>, val rejected: List<GeneratedName>)
 
 @Configuration
+@Profile("!test")
 class NamerAgentConfiguration {
     @Bean
     fun namingAgent(domainChecker: DomainChecker): Agent {
@@ -74,6 +76,10 @@ fun simpleNamingAgent(
     }
 
     actions {
+//        action {
+//            TODO()
+//        }
+
         aggregate<UserInput, GeneratedNames, AllNames>(
             transforms = llms.map { llm ->
                 { context: InputActionContext<UserInput> ->

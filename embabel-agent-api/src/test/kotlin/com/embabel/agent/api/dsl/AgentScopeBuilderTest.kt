@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
+import com.embabel.agent.api.common.asAction
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.domain.special.UserInput
@@ -24,6 +25,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
 fun createAgentPlatform(): AgentPlatform {
@@ -69,6 +71,63 @@ class AgentScopeBuilderTest {
                 "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
             )
             assertTrue(result.lastResult() is AllNames)
+        }
+    }
+
+    @Nested
+    inner class Nesting {
+        @Test
+        fun `metadata is correct`() {
+            val agent = nesting()
+
+            assertEquals(1, agent.conditions.size, "Should have join condition")
+            assertEquals(4, agent.actions.size, "Should have actions")
+            assertEquals(1, agent.goals.size)
+        }
+
+        @Test
+        fun `fails without agent`() {
+            val agent = nesting()
+            val ap = createAgentPlatform()
+            val processOptions = ProcessOptions()
+            assertThrows<IllegalArgumentException> {
+                ap.runAgentFrom(
+                    agent = agent,
+                    processOptions = processOptions,
+                    bindings = mapOf(
+                        "it" to UserInput("do something")
+                    ),
+                )
+            }
+        }
+
+        @Test
+        fun `agent runs`() {
+            val agent = nesting()
+            val ap = createAgentPlatform()
+            ap.deploy(agent(name = "foobar", description = "doesn't matter here") {
+                transformation<UserInput, Thing>("foobar") {
+                    Thing(it.input.content)
+                }
+                goal("name", "description", satisfiedBy = Thing::class)
+            }
+            )
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                4,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is AllNames)
+            assertTrue(result.all<Thing>().isNotEmpty(), "Should have got interim result from agent")
         }
     }
 }
@@ -125,3 +184,28 @@ fun redoNamer() =
 
         goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
     }
+
+data class Thing(val t: String)
+
+fun nesting() = agent("nesting test", description = "Nesting test") {
+
+    action {
+        asAction<UserInput, Thing>(agentName = "foobar")
+    }
+
+    actions {
+        aggregate<Thing, GeneratedNames, AllNames>(
+            transforms = listOf(
+                { GeneratedNames(names = emptyList()) },
+                { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
+            merge = { generatedNamesList ->
+                AllNames(
+                    accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },
+                    rejected = emptyList()
+                )
+            },
+        ).parallelize()
+    }
+
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
+}
