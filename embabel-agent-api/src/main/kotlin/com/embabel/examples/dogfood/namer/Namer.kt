@@ -15,10 +15,10 @@
  */
 package com.embabel.examples.dogfood.namer
 
-import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.createObject
+import com.embabel.agent.api.dsl.BiInputActionContext
 import com.embabel.agent.api.dsl.agent
-import com.embabel.agent.api.dsl.aggregate
+import com.embabel.agent.api.dsl.biAggregate
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
@@ -65,14 +65,15 @@ fun simpleNamingAgent(
     description = "Name a company or project, using internet research"
 ) {
 
-    fun generateNamesWith(llm: LlmOptions, context: InputActionContext<UserInput>): GeneratedNames {
+    fun generateNamesWith(llm: LlmOptions, context: BiInputActionContext<UserInput, ResearchReport>): GeneratedNames {
         return context.promptRunner(llm = llm, toolGroups = listOf(ToolGroup.WEB)).createObject(
             """
             Generate a list of names for a company or project, based on the following input.
-            Use web tools to research the space first.
+            Consider the following research report:
+            ${context.input2.text}
 
             # Input
-            ${context.input.content}
+            ${context.input1.content}
             """.trimIndent()
         )
     }
@@ -81,9 +82,9 @@ fun simpleNamingAgent(
 
         agentAction<UserInput, ResearchReport>(agentName = Researcher::class.java.name)
 
-        aggregate<UserInput, GeneratedNames, AllNames>(
+        biAggregate<UserInput, ResearchReport, GeneratedNames, AllNames>(
             transforms = llms.map { llm ->
-                { context: InputActionContext<UserInput> ->
+                { context ->
                     generateNamesWith(llm, context)
                 }
             },

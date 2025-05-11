@@ -15,12 +15,15 @@
  */
 package com.embabel.agent.api.dsl
 
+import com.embabel.agent.api.annotation.support.MultiTransformationAction
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.InputsActionContext
 import com.embabel.agent.api.dsl.support.TransformationAction
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.Rerun
 import com.embabel.common.core.MobyNameGenerator
+import org.springframework.ai.tool.ToolCallback
 
 /**
  * This interface is used to build actions in a DSL-like manner.
@@ -104,6 +107,69 @@ fun <A, B, C> aggregate(
     )
 }
 
+fun <A1, A2, B : Any, C> biAggregate(
+    transforms: List<(context: BiInputActionContext<A1, A2>) -> B>,
+    merge: (list: List<B>) -> C,
+    a1Class: Class<A1>,
+    a2Class: Class<A2>,
+    bClass: Class<B>,
+    cClass: Class<C>,
+): AgentScopeBuilder {
+    val allCompletedCondition = ComputedBooleanCondition(
+        name = "List<${bClass.name}>=>${cClass.name}",
+        evaluator = {
+            it.blackboard.all(bClass).size == transforms.size
+        }
+    )
+    val actions = mutableListOf<Action>()
+
+    val transformActions = transforms.mapIndexed { index, transform ->
+        MultiTransformationAction<B>(
+            name = "${a1Class.name}+${a2Class.name}=>${bClass.name}-$index",
+            description = "Transform ${a1Class.name}+${a2Class.name} to $bClass",
+            pre = emptyList(),
+            post = listOf(allCompletedCondition.name),
+            cost = 0.0,
+            value = 0.0,
+            canRerun = true,
+            inputs = setOf(
+                IoBinding(IoBinding.DEFAULT_BINDING, a1Class.name),
+                IoBinding(IoBinding.DEFAULT_BINDING, a2Class.name),
+            ),
+            inputClasses = listOf(a1Class, a2Class),
+            outputClass = bClass,
+            toolGroups = emptyList(),
+            toolCallbacks = emptyList(),
+        ) {
+            transform.invoke(BiInputActionContext(it.input[0] as A1, it.input[1] as A2, it))
+        }
+    }
+    actions += transformActions
+    val mergeAction = TransformationAction(
+        name = "List<${bClass.name}>=>${cClass.name}",
+        description = "Aggregate list $bClass to $cClass",
+        pre = transformActions.map { Rerun.hasRunCondition(it) } + allCompletedCondition.name,
+        post = emptyList(),
+        cost = 0.0,
+        value = 0.0,
+        canRerun = true,
+        inputClass = bClass,
+        outputClass = cClass,
+        toolGroups = emptyList(),
+        toolCallbacks = emptyList(),
+    ) {
+        val cList = it.objects.filterIsInstance<B>(bClass)
+        merge(cList)
+    }
+    actions += mergeAction
+    return AgentScopeBuilder(
+        name = MobyNameGenerator.generateName(),
+        actions = actions,
+        goals = emptySet(),
+        conditions = setOf(allCompletedCondition),
+    )
+}
+
 interface OutputAwareActionContext<I, O> : InputsActionContext {
     val input: I
     val output: O
@@ -128,6 +194,33 @@ inline fun <reified A, reified B, reified C> aggregate(
 ): AgentScopeBuilder {
     return aggregate(
         transforms, merge, A::class.java, B::class.java, C::class.java
+    )
+}
+
+data class BiInputActionContext<A1, A2>(
+    val input1: A1,
+    val input2: A2,
+    val actionContext: ActionContext,
+) : InputsActionContext, ActionContext by actionContext {
+
+    override val inputs: List<Any> get() = listOfNotNull(input1, input2)
+
+    override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
+        return actionContext.toolCallbacksOnDomainObjects()
+    }
+}
+
+inline fun <reified A1, reified A2, reified B : Any, reified C> biAggregate(
+    transforms: List<(context: BiInputActionContext<A1, A2>) -> B>,
+    noinline merge: (list: List<B>) -> C,
+): AgentScopeBuilder {
+    return biAggregate<A1, A2, B, C>(
+        transforms,
+        merge,
+        a1Class = A1::class.java,
+        a2Class = A2::class.java,
+        bClass = B::class.java,
+        cClass = C::class.java,
     )
 }
 

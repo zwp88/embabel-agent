@@ -74,6 +74,41 @@ class AgentScopeBuilderTest {
     }
 
     @Nested
+    inner class BiAggregate {
+        @Test
+        fun `metadata is correct`() {
+            val agent: Agent = biAggregate()
+            assert(agent.name == "biAggregate")
+            assert(agent.version == DEFAULT_VERSION)
+            assert(agent.toolGroups.isEmpty())
+            assertEquals(1, agent.conditions.size, "Should have join condition")
+            assertEquals(4, agent.actions.size, "Should have actions")
+            assertEquals(1, agent.goals.size)
+        }
+
+        @Test
+        fun `agent runs`() {
+            val agent: Agent = biAggregate()
+            val ap = createAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                4,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}",
+            )
+            assertTrue(result.lastResult() is AllNames)
+        }
+    }
+
+    @Nested
     inner class Nesting {
         @Test
         fun `metadata is correct`() {
@@ -192,6 +227,29 @@ fun nesting() = agent("nesting test", description = "Nesting test") {
 
     actions {
         aggregate<Thing, GeneratedNames, AllNames>(
+            transforms = listOf(
+                { GeneratedNames(names = emptyList()) },
+                { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
+            merge = { generatedNamesList ->
+                AllNames(
+                    accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },
+                    rejected = emptyList()
+                )
+            },
+        ).parallelize()
+    }
+
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
+}
+
+fun biAggregate() = agent("biAggregate", description = "Nesting test") {
+
+    transformation<UserInput, Thing>("foo") {
+        Thing(it.input.content)
+    }
+
+    actions {
+        biAggregate<UserInput, Thing, GeneratedNames, AllNames>(
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },
                 { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
