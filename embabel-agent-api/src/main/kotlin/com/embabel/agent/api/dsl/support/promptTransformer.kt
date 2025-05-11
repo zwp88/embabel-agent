@@ -48,14 +48,14 @@ fun <I, O : Any> promptTransformer(
     canRerun: Boolean = false,
     toolCallbacks: Collection<ToolCallback> = emptyList(),
     prompt: (actionContext: TransformationActionContext<I, O>) -> String,
-): Transformer<I, O> {
+): TransformationAction<I, O> {
     val expectationTransition = expectation?.let {
         Transition(
             to = name,
             condition = name,
         )
     }
-    return Transformer<I, O>(
+    return TransformationAction<I, O>(
         name = name,
         description = description,
         pre = pre.map { it.name },

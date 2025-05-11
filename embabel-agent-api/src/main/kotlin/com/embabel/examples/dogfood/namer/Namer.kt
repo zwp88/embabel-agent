@@ -23,9 +23,11 @@ import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.toolgroups.web.domain.DomainChecker
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.examples.dogfood.research.Researcher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -76,9 +78,8 @@ fun simpleNamingAgent(
     }
 
     actions {
-//        action {
-//            TODO()
-//        }
+
+        agentAction<UserInput, ResearchReport>(agentName = Researcher::class.java.name)
 
         aggregate<UserInput, GeneratedNames, AllNames>(
             transforms = llms.map { llm ->

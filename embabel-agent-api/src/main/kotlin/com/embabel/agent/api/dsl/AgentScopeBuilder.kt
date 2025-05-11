@@ -17,7 +17,7 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.InputsActionContext
-import com.embabel.agent.api.dsl.support.Transformer
+import com.embabel.agent.api.dsl.support.TransformationAction
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.Rerun
 import com.embabel.common.core.MobyNameGenerator
@@ -62,7 +62,7 @@ fun <A, B, C> aggregate(
     val actions = mutableListOf<Action>()
 
     val transformActions = transforms.mapIndexed { index, transform ->
-        Transformer(
+        TransformationAction(
             name = "${aClass.name}=>${bClass.name}-$index",
             description = "Transform $aClass to $bClass",
             pre = emptyList(),
@@ -79,7 +79,7 @@ fun <A, B, C> aggregate(
         }
     }
     actions += transformActions
-    val mergeAction = Transformer(
+    val mergeAction = TransformationAction(
         name = "List<${bClass.name}>=>${cClass.name}",
         description = "Aggregate list $bClass to $cClass",
         pre = transformActions.map { Rerun.hasRunCondition(it) } + allCompletedCondition.name,

@@ -73,7 +73,7 @@ class ActionMethodManager(
                 val parameterInstance = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(it.type)
                 allToolCallbacks += safelyGetToolCallbacksFrom(parameterInstance)
             }
-        return MultiTransformer(
+        return MultiTransformationAction(
             name = nameGenerator.generateName(instance, method.name),
             description = actionAnnotation.description.ifBlank { method.name },
             cost = actionAnnotation.cost,

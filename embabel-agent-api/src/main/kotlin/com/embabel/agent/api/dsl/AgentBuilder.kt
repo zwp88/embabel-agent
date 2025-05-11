@@ -19,7 +19,7 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.asAction
-import com.embabel.agent.api.dsl.support.Transformer
+import com.embabel.agent.api.dsl.support.TransformationAction
 import com.embabel.agent.api.dsl.support.promptTransformer
 import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition
@@ -140,7 +140,7 @@ class AgentBuilder(
         referencedInputProperties: Set<String>? = null,
         block: Transformation<I, O>,
     ) {
-        val action = Transformer(
+        val action = TransformationAction(
             name = name,
             description = description,
             pre = pre.map { it.name },

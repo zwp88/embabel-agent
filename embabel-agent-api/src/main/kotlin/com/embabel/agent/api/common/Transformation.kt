@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.api.common
 
-import com.embabel.agent.api.dsl.support.Transformer
+import com.embabel.agent.api.dsl.support.TransformationAction
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.resultOfType
@@ -45,7 +45,7 @@ inline fun <reified I, reified O : Any> Agent.asAction(): Action =
     agentTransformer<I, O>(this)
 
 fun <I, O : Any> asAction(agentName: String, inputClass: Class<I>, outputClass: Class<O>): Action {
-    return Transformer(
+    return TransformationAction(
         name = "@action-${agentName}",
         description = "@action-${agentName}",
         pre = emptyList(),
@@ -73,7 +73,7 @@ inline fun <reified I, reified O : Any> asAction(agentName: String): Action =
     asAction<I, O>(agentName, I::class.java, O::class.java)
 
 inline fun <reified I, reified O : Any> agentTransformer(agent: Agent): Action {
-    return Transformer(
+    return TransformationAction(
         name = "@action-${agent.name}",
         description = "@action-${agent.name}",
         pre = emptyList(),

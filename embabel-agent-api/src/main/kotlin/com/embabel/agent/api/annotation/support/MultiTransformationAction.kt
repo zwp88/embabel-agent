@@ -24,8 +24,9 @@ import org.springframework.ai.tool.ToolCallback
 
 /**
  * Transformer that can take multiple inputs.
+ * The block takes a List<Any>.
  */
-internal class MultiTransformer<O : Any>(
+class MultiTransformationAction<O : Any>(
     name: String,
     description: String = name,
     pre: List<String> = emptyList(),

@@ -53,7 +53,7 @@ fun expandInputBindings(
 /**
  * Transformer agent that runs custom code.
  */
-class Transformer<I, O>(
+class TransformationAction<I, O>(
     name: String,
     description: String = name,
     pre: List<String> = emptyList(),
