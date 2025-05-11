@@ -113,6 +113,7 @@ class CreateObjectPromptException(
     requireResult: Boolean,
     llm: LlmOptions? = null,
     outputClass: Class<*>,
+    override val toolGroups: Collection<String>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>
 ) : ExecutePromptException(
@@ -129,6 +130,7 @@ class EvaluateConditionPromptException(
     val confidenceThreshold: ZeroToOne,
     requireResult: Boolean,
     llm: LlmOptions? = null,
+    override val toolGroups: Collection<String>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>
 ) : ExecutePromptException(

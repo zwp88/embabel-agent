@@ -45,6 +45,7 @@ interface OperationContext : Blackboard {
 
     fun promptRunner(
         llm: LlmOptions,
+        toolGroups: Collection<String> = emptyList(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         promptContributors: List<PromptContributor?> = emptyList(),
     ): PromptRunner {
@@ -92,6 +93,7 @@ interface ActionContext : OperationContext {
     // TODO default LLM options from action
     override fun promptRunner(
         llm: LlmOptions,
+        toolGroups: Collection<String>,
         toolCallbacks: List<ToolCallback>,
         promptContributors: List<PromptContributor?>,
     ): PromptRunner {
@@ -103,6 +105,7 @@ interface ActionContext : OperationContext {
         return OperationContextPromptRunner(
             this,
             llm = llm,
+            toolGroups = toolGroups,
             toolCallbacks = updatedToolCallbacks,
             promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
         )
@@ -121,6 +124,7 @@ interface ActionContext : OperationContext {
 private class OperationContextPromptRunner(
     private val context: OperationContext,
     override val llm: LlmOptions,
+    override val toolGroups: Collection<String> = emptyList(),
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
@@ -139,6 +143,7 @@ private class OperationContextPromptRunner(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
+                toolGroups = toolGroups,
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
@@ -157,6 +162,7 @@ private class OperationContextPromptRunner(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
+                toolGroups = toolGroups,
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),

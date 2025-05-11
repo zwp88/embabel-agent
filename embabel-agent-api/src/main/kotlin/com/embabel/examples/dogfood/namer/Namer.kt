@@ -16,10 +16,13 @@
 package com.embabel.examples.dogfood.namer
 
 import com.embabel.agent.api.common.InputActionContext
+import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.aggregate
 import com.embabel.agent.core.Agent
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.special.UserInput
+import com.embabel.common.ai.model.LlmOptions
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -35,15 +38,23 @@ class NamerAgentConfiguration {
     }
 }
 
-
+/**
+ * Naming agent that generates names for a company or project.
+ */
 fun simpleNamingAgent() = agent(
     "Company namer",
     description = "Name a company or project, using internet research"
 ) {
 
     fun generateNames(context: InputActionContext<UserInput>): GeneratedNames {
-        return GeneratedNames(
-            names = listOf(GeneratedName("musicology.com", "Sounds good")),
+        return context.promptRunner(LlmOptions(), toolGroups = listOf(ToolGroup.WEB)).createObject(
+            """
+            Generate a list of names for a company or project, based on the following input.
+            Use web tools to research the space first.
+
+            # Input
+            ${context.input.content}
+            """.trimIndent()
         )
     }
 

@@ -126,6 +126,7 @@ class ActionMethodManager(
 
             val promptRunner = context.promptRunner(
                 llm = e.llm ?: LlmOptions.Companion(),
+                toolGroups = e.toolGroups + (context.action?.toolGroups ?: emptyList()),
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
             )

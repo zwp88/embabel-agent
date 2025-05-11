@@ -29,6 +29,7 @@ import org.springframework.ai.tool.ToolCallback
  */
 internal class MethodReturnPromptRunner(
     override val llm: LlmOptions?,
+    override val toolGroups: Collection<String>,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
@@ -42,6 +43,7 @@ internal class MethodReturnPromptRunner(
             llm = llm,
             requireResult = true,
             outputClass = outputClass,
+            toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
             promptContributors = promptContributors,
         )
@@ -56,6 +58,7 @@ internal class MethodReturnPromptRunner(
             llm = llm,
             requireResult = false,
             outputClass = outputClass,
+            toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
             promptContributors = promptContributors,
         )
@@ -72,6 +75,7 @@ internal class MethodReturnPromptRunner(
             confidenceThreshold = confidenceThreshold,
             llm = llm,
             requireResult = false,
+            toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
             promptContributors = promptContributors,
         )

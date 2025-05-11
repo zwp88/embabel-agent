@@ -40,11 +40,13 @@ value class InteractionId(val value: String) {
 interface LlmCall : PromptContributorConsumer {
     val llm: LlmOptions?
     val toolCallbacks: List<ToolCallback>
+    val toolGroups: Collection<String>
     override val promptContributors: List<PromptContributor>
 
     companion object {
         operator fun invoke(): LlmCall = object : LlmCall {
             override val llm: LlmOptions? = null
+            override val toolGroups: Collection<String> = emptyList()
             override val toolCallbacks: List<ToolCallback> = emptyList()
             override val promptContributors: List<PromptContributor> = emptyList()
         }
@@ -69,6 +71,7 @@ interface LlmCall : PromptContributorConsumer {
 data class LlmInteraction(
     val id: InteractionId,
     override val llm: LlmOptions = LlmOptions(),
+    override val toolGroups: Collection<String> = emptyList(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
 ) : LlmCall {
