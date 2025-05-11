@@ -308,7 +308,7 @@ You can also run the shell under your IDE or from the command line
 using Maven directly:
 
 ```bash
-export SPRING_PROFILES_ACTIVE=shell,severance
+export SPRING_PROFILES_ACTIVE=shell,starwars
 mvn spring-boot:run
 ```
 
@@ -517,10 +517,18 @@ Edit `application.yml` if you want to see debug logging from the relevant classe
 Available logging experiences:
 
 - `severance`: Severance logging. Praise Kier
+- `starwars`: Star Wars logging. Feel the force. The default as it's understood throughout the galaxy.
 - `colossus`: Colossus logging. The Forbin Project.
 - `montypython`: Monty Python logging. No one expects it.
 
 If none of these profiles is chosen, vanilla logging will occur. This makes me sad.
+
+## Contributing
+
+We welcome contributions to the Embabel Agent Framework.
+
+Look at the [coding style guide](embabel-agent-api/.embabel/coding-style.md) for style guidelines.
+This file also informs agentic coding behavior.
 
 ## Miscellaneous
 
