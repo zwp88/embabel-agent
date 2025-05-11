@@ -23,6 +23,7 @@ import com.embabel.agent.toolgroups.file.FileContentTransformer
 import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.agent.toolgroups.file.WellKnownFileContentTransformers
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.ai.tool.annotation.Tool
@@ -46,8 +47,15 @@ open class SoftwareProject(
     val buildCommand: String,
 ) : PromptContributor, FileTools, SymbolSearch /*CiTools*/ {
 
-    val codingStyle: String = safeReadFile(DEFAULT_CODING_STYLE_GUIDE)
-        ?: defaultCodingStyle
+    val codingStyle: String
+        get() {
+            val location = "$root/$DEFAULT_CODING_STYLE_GUIDE"
+            loggerFor<SoftwareProject>().info("Looking for coding style guide at '$location'")
+            val content = safeReadFile(location)
+            loggerFor<SoftwareProject>().info("Found coding style guide at $location")
+            return content
+                ?: defaultCodingStyle
+        }
 
     override val fileContentTransformers: List<FileContentTransformer>
         get() = listOf(WellKnownFileContentTransformers.removeApacheLicenseHeader)
@@ -102,7 +110,7 @@ open class SoftwareProject(
         """.trimMargin()
 
     companion object {
-        const val DEFAULT_CODING_STYLE_GUIDE = "/.embabel/coding_style.md"
+        const val DEFAULT_CODING_STYLE_GUIDE = ".embabel/coding-style.md"
     }
 
 }

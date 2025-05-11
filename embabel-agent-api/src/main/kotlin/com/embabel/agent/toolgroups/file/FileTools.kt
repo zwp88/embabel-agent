@@ -296,7 +296,7 @@ private fun resolvePath(root: String, path: String): Path {
     val resolvedPath = basePath.resolve(path).normalize().toAbsolutePath()
 
     if (!resolvedPath.startsWith(basePath)) {
-        throw SecurityException("Path traversal attempt detected: $path, root=$root")
+        throw SecurityException("Path traversal attempt detected: $path, root=$root, resolved='$resolvedPath', base=$'basePath'")
     }
     return resolvedPath
 }
