@@ -16,36 +16,25 @@
 package com.embabel.agent.toolgroups.web.domain
 
 
-import com.embabel.agent.toolgroups.web.crawl.ContentSavingPageHandler
-import com.embabel.agent.toolgroups.web.crawl.WebCrawler
 import com.embabel.common.util.loggerFor
-import org.springframework.ai.tool.annotation.Tool
 import org.springframework.stereotype.Service
 import java.net.InetAddress
 import java.net.Socket
 
-class WebScraperTools(
-    private val webcrawler: WebCrawler
-) {
-
-    @Tool(description = "Scrape web page content")
-    fun scrape(url: String): String {
-        loggerFor<WebScraperTools>().info("Scraping URL: {}", url)
-        val ph = ContentSavingPageHandler()
-        webcrawler.extractData(url, ph)
-        return ph.content()
-    }
-
-}
-
 @Service
 class DomainChecker {
+
+    private val logger = loggerFor<DomainChecker>()
+
+    fun isDomainAvailable(domain: String): Boolean =
+        isDomainAvailableByDns(domain) && isDomainAvailableByWhois(domain)
+
 
     /**
      * Check domain availability using DNS lookup approach
      * Returns true if domain seems to be available (not registered)
      */
-    fun isDomainAvailableByDns(domain: String): Boolean {
+    private fun isDomainAvailableByDns(domain: String): Boolean {
         return try {
             // Try to resolve the domain - if it fails, domain might be available
             InetAddress.getByName("$domain.")
@@ -58,7 +47,7 @@ class DomainChecker {
     /**
      * Alternative approach using WHOIS port connection
      */
-    fun isDomainAvailableByWhois(domain: String): Boolean {
+    private fun isDomainAvailableByWhois(domain: String): Boolean {
         val tld = domain.substringAfterLast(".")
         val host = when (tld) {
             "com", "net" -> "whois.verisign-grs.com"

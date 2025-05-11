@@ -367,39 +367,7 @@ class ShellCommands(
             val result = run()
             logger.debug("Result: {}\n", result)
             recordAgentProcess(result.agentProcess)
-            var output = ""
-            if (result.output is HasContent) {
-                // TODO naive Markdown test
-                output += if (result.output.text.contains("#")) {
-                    "\n" + markdownToConsole(result.output.text)
-                        .color(colorPalette.color2)
-                } else {
-                    WordUtils.wrap(result.output.text, 140).color(
-                        colorPalette.color2,
-                    )
-                }
-
-                if (result.output is InternetResources) {
-                    output += "\n\n" + result.output.links.joinToString("\n") {
-                        "- ${it.url}: ${
-                            it.summary.color(
-                                colorPalette.color2
-                            )
-                        }"
-                    }
-                }
-            } else {
-                output = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-                    output
-                )
-            }
-            return """|
-                |You asked: ${basis.toString().color(colorPalette.highlight)}
-                |
-                |${output.color(colorPalette.color2)}
-                |
-                |${result.agentProcess.costInfoString(verbose = true)}
-                |""".trimMargin()
+            return formatProcessOutput(result, basis)
         } catch (ngf: NoGoalFound) {
             if (verbosity.debug) {
                 logger.info(
@@ -450,6 +418,42 @@ class ShellCommands(
                 )
             }
         }
+    }
+
+    private fun formatProcessOutput(result: DynamicExecutionResult, basis: Any): String {
+        var output = ""
+        if (result.output is HasContent) {
+            // TODO naive Markdown test
+            output += if (result.output.text.contains("#")) {
+                "\n" + markdownToConsole(result.output.text)
+                    .color(colorPalette.color2)
+            } else {
+                WordUtils.wrap(result.output.text, 140).color(
+                    colorPalette.color2,
+                )
+            }
+
+            if (result.output is InternetResources) {
+                output += "\n\n" + result.output.links.joinToString("\n") {
+                    "- ${it.url}: ${
+                        it.summary.color(
+                            colorPalette.color2
+                        )
+                    }"
+                }
+            }
+        } else {
+            output = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
+                result.output
+            )
+        }
+        return """|
+                    |You asked: ${basis.toString().color(colorPalette.highlight)}
+                    |
+                    |${output.color(colorPalette.color2)}
+                    |
+                    |${result.agentProcess.costInfoString(verbose = true)}
+                    |""".trimMargin()
     }
 
 }

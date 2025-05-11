@@ -32,7 +32,7 @@ class AgentDeployerTest {
             agentPlatform = mockk(),
             properties = AgentScanningProperties(
                 annotation = false,
-                publisher = true,
+                bean = true,
             ),
         )
         val allAgents = agentDeployer.agents
@@ -46,7 +46,7 @@ class AgentDeployerTest {
             agentPlatform = mockk(),
             properties = AgentScanningProperties(
                 annotation = false,
-                publisher = false,
+                bean = false,
             ),
         )
         val allAgents = agentDeployer.agents
@@ -63,7 +63,7 @@ class AgentDeployerTest {
             agentPlatform = mockAgentPlatform,
             properties = AgentScanningProperties(
                 annotation = false,
-                publisher = true,
+                bean = true,
             ),
         )
         val allAgents = agentDeployer.agents

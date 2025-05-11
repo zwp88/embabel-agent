@@ -36,7 +36,7 @@ class AgentDeployer(
 
     init {
         logger.debug("Properties: {}", properties)
-        if (!properties.publisher) {
+        if (!properties.bean) {
             logger.info("AgentDeployer scanning disabled: skipping")
         } else {
             logger.info(

@@ -21,12 +21,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * Scanning configuration
  * @param annotation whether to auto register beans with
  * @Agent and @Agentic annotation
- * @param publisher whether to auto register agents
- * from AgentPublisher implementations
+ * @param bean whether to auto register agents
+ * from Agent beans
  * @see com.embabel.agent.api.annotation.Agent
  */
 @ConfigurationProperties("embabel.agent-platform.scanning")
 data class AgentScanningProperties(
     val annotation: Boolean = true,
-    val publisher: Boolean = false,
+    val bean: Boolean = false,
 )
