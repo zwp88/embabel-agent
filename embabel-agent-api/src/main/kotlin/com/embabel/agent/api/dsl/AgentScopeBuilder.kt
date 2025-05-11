@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.InputsActionContext
 import com.embabel.agent.api.dsl.support.Transformer
 import com.embabel.agent.core.*
+import com.embabel.agent.core.support.Rerun
 import com.embabel.common.core.MobyNameGenerator
 
 /**
@@ -60,29 +61,28 @@ fun <A, B, C> aggregate(
     )
     val actions = mutableListOf<Action>()
 
-    transforms.forEachIndexed { index, transform ->
-        actions.add(
-            Transformer(
-                name = "${aClass.name}=>${bClass.name}-$index",
-                description = "Transform $aClass to $bClass",
-                pre = emptyList(),
-                post = listOf(allCompletedCondition.name),
-                cost = 0.0,
-                value = 0.0,
-                canRerun = true,
-                inputClass = aClass,
-                outputClass = bClass,
-                toolGroups = emptyList(),
-                toolCallbacks = emptyList(),
-            ) {
-                transform.invoke(it)
-            }
-        )
+    val transformActions = transforms.mapIndexed { index, transform ->
+        Transformer(
+            name = "${aClass.name}=>${bClass.name}-$index",
+            description = "Transform $aClass to $bClass",
+            pre = emptyList(),
+            post = listOf(allCompletedCondition.name),
+            cost = 0.0,
+            value = 0.0,
+            canRerun = true,
+            inputClass = aClass,
+            outputClass = bClass,
+            toolGroups = emptyList(),
+            toolCallbacks = emptyList(),
+        ) {
+            transform.invoke(it)
+        }
     }
+    actions += transformActions
     val mergeAction = Transformer(
         name = "List<${bClass.name}>=>${cClass.name}",
         description = "Aggregate list $bClass to $cClass",
-        pre = listOf(allCompletedCondition.name),
+        pre = transformActions.map { Rerun.hasRunCondition(it) } + allCompletedCondition.name,
         post = emptyList(),
         cost = 0.0,
         value = 0.0,

@@ -21,8 +21,8 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
-import com.embabel.agent.core.support.HAS_RUN_CONDITION_PREFIX
 import com.embabel.agent.core.support.InMemoryBlackboard
+import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
@@ -125,7 +125,7 @@ class AgentMetadataReaderTest {
             assertEquals("Creating a person", g.description)
             val expected = mapOf(
                 "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
-                HAS_RUN_CONDITION_PREFIX + action.name to ConditionDetermination.TRUE
+                Rerun.hasRunCondition(action) to ConditionDetermination.TRUE
             )
             assertTrue(
                 g.preconditions.containsAll(

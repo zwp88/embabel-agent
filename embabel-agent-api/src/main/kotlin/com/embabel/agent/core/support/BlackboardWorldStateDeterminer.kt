@@ -18,6 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.satisfiesType
+import com.embabel.agent.core.support.Rerun.HAS_RUN_CONDITION_PREFIX
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.GoapWorldState
 import com.embabel.plan.goap.WorldStateDeterminer
@@ -74,7 +75,7 @@ class BlackboardWorldStateDeterminer(
                 ConditionDetermination(determination)
             }
 
-            condition.startsWith(HAS_RUN_CONDITION_PREFIX) -> {
+            condition.startsWith(Rerun.HAS_RUN_CONDITION_PREFIX) -> {
                 // Special case for hasRun- conditions
                 val actionName = condition.substringAfter(HAS_RUN_CONDITION_PREFIX)
                 val determination = ConditionDetermination(processContext.agentProcess.history.any {

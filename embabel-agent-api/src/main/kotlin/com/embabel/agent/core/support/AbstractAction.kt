@@ -27,7 +27,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 
-const val HAS_RUN_CONDITION_PREFIX = "hasRun_"
+object Rerun {
+    const val HAS_RUN_CONDITION_PREFIX = "hasRun_"
+
+    fun hasRunCondition(action: Action): String {
+        return "$HAS_RUN_CONDITION_PREFIX${action.name}"
+    }
+}
 
 /**
  * Abstract action implementation
@@ -73,7 +79,7 @@ abstract class AbstractAction(
                 }.forEach { output ->
                     conditions[output.value] = ConditionDetermination(false)
                 }
-                conditions["$HAS_RUN_CONDITION_PREFIX$name"] = ConditionDetermination(false)
+                conditions[Rerun.hasRunCondition(this)] = ConditionDetermination(false)
             }
             conditions
         }
@@ -85,7 +91,7 @@ abstract class AbstractAction(
         outputs.forEach { output ->
             conditions[output.value] = ConditionDetermination(true)
         }
-        conditions += (HAS_RUN_CONDITION_PREFIX + this.name) to ConditionDetermination(true)
+        conditions += Rerun.hasRunCondition(this) to ConditionDetermination(true)
         conditions
     }
 }
