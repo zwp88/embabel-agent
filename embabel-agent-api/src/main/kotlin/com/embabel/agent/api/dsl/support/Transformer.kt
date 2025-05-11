@@ -68,7 +68,7 @@ class Transformer<I, O>(
     private val inputVarName: String = IoBinding.DEFAULT_BINDING,
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    toolCallbacks: Collection<ToolCallback> = emptyList(),
+    toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Collection<String>,
     private val block: Transformation<I, O>,
 ) : AbstractAction(

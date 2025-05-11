@@ -65,13 +65,13 @@ class AgentBuilder(
     private val conditions = mutableSetOf<Condition>()
 
     private var _toolGroups = toolGroups.toMutableSet()
-    private val _toolCallbacks = toolCallbacks.toMutableSet()
+    private val _toolCallbacks = toolCallbacks.toMutableList()
     private val _promptContributors = promptContributors.toMutableList()
 
     override val toolGroups: Set<String>
         get() = _toolGroups
 
-    override val toolCallbacks: Set<ToolCallback>
+    override val toolCallbacks: List<ToolCallback>
         get() = _toolCallbacks
 
     override val promptContributors: List<PromptContributor>

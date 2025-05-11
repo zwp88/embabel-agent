@@ -25,7 +25,7 @@ import org.springframework.ai.tool.ToolCallback
  */
 interface SelfToolCallbackPublisher : ToolCallbackPublisher {
 
-    override val toolCallbacks: Collection<ToolCallback>
+    override val toolCallbacks: List<ToolCallback>
         get() = ToolCallbacks.from(this).toList()
 }
 

@@ -34,6 +34,8 @@ internal class MethodReturnPromptRunner(
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
 
+    override val name = "MethodReturnPromptRunner"
+
     override fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,

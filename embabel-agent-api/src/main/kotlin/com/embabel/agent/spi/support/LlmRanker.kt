@@ -62,7 +62,8 @@ internal class LlmRanker(
         val type = rankables.firstOrNull()?.javaClass?.simpleName
             ?: throw IllegalArgumentException("Rankables must not be empty")
 
-        val prompt = """
+        val prompt =
+            """
             Given the user input, choose the $description that best reflects the user's intent.
 
             User input: $userInput
@@ -72,7 +73,7 @@ internal class LlmRanker(
 
             Return the name of the chosen $type and the confidence score from 0-1.
             IMPORTANT: The fully qualified name must be exactly the same as in the list.
-        """.trimIndent()
+            """.trimIndent()
         val grr = llmOperations.doTransform(
             prompt = prompt,
             interaction = LlmInteraction(

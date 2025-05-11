@@ -58,7 +58,7 @@ abstract class AbstractAction(
     override val inputs: Set<IoBinding> = emptySet(),
     override val outputs: Set<IoBinding> = emptySet(),
     override val transitions: List<Transition> = emptyList(),
-    override val toolCallbacks: Collection<ToolCallback>,
+    override val toolCallbacks: List<ToolCallback>,
     override val toolGroups: Collection<String>,
     override val canRerun: Boolean,
     override val qos: ActionQos = ActionQos(),

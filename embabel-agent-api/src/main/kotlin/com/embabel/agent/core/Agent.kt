@@ -45,7 +45,7 @@ data class Agent(
     override val name: String,
     val version: String = DEFAULT_VERSION,
     override val description: String,
-    override val toolCallbacks: Collection<ToolCallback> = emptyList(),
+    override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val toolGroups: Collection<String> = emptyList(),
     override val conditions: Set<Condition> = emptySet(),
     override val actions: List<Action>,

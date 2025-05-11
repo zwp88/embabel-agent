@@ -41,7 +41,7 @@ class McpToolGroup(
         permissions = permissions,
     )
 
-    override val toolCallbacks: Collection<ToolCallback> = run {
+    override val toolCallbacks: List<ToolCallback> = run {
         try {
             val provider = SyncMcpToolCallbackProvider(
                 clients,

@@ -119,7 +119,6 @@ interface ActionContext : OperationContext {
 
 /**
  * Uses the platform's LlmOperations to execute the prompt
- * Merely a convenience.
  */
 private class OperationContextPromptRunner(
     private val context: OperationContext,
@@ -128,6 +127,8 @@ private class OperationContextPromptRunner(
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
+
+    override val name = "OperationContextPromptRunner"
 
     val action = (context as? ActionContext)?.action
 

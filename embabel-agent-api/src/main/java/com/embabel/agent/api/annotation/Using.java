@@ -16,6 +16,8 @@
 package com.embabel.agent.api.annotation;
 
 import com.embabel.agent.api.common.PromptRunner;
+import com.embabel.agent.core.ToolConsumer;
+import com.embabel.agent.spi.ToolGroupResolver;
 import com.embabel.common.ai.model.BuildableLlmOptions;
 import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.common.ai.prompt.PromptContributor;
@@ -105,7 +107,7 @@ public class Using implements PromptRunner {
     }
 
     @Override
-    public @NotNull Collection<String> getToolGroups() {
+    public @NotNull List<String> getToolGroups() {
         return toolGroups;
     }
 
@@ -119,5 +121,16 @@ public class Using implements PromptRunner {
     @NotNull
     public List<PromptContributor> getPromptContributors() {
         return promptContributors;
+    }
+
+    @Override
+    @NotNull
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
+    @Override
+    public @NotNull Collection<ToolCallback> resolveToolCallbacks(@NotNull ToolGroupResolver toolGroupResolver) {
+        return ToolConsumer.Companion.resolveToolCallbacks(this, toolGroupResolver);
     }
 }
