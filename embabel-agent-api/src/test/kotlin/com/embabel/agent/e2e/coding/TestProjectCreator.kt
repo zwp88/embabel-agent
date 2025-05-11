@@ -65,7 +65,7 @@ class TestProjectCreator {
         return SoftwareProject(
             root = projectDir.absolutePath,
             tech = "Kotlin, Spring Boot, Maven, Spring Web, Spring Actuator, Spring DevTools",
-            codingStyle = "Modern Kotlin with Spring Boot conventions. Clean architecture with separation of concerns.",
+            defaultCodingStyle = "Modern Kotlin with Spring Boot conventions. Clean architecture with separation of concerns.",
             buildCommand = "mvn test",
         )
     }
