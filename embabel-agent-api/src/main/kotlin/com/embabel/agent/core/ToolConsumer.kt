@@ -148,7 +148,7 @@ interface ToolCallbackSpec {
     /**
      * Tool callbacks referenced or exposed.
      */
-    val toolCallbacks: Collection<ToolCallback>
+    val toolCallbacks: List<ToolCallback>
 
 }
 
@@ -172,28 +172,40 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
 
     val name: String
 
-    fun resolveToolCallbacks(toolGroupResolver: ToolGroupResolver): Collection<ToolCallback> {
-        val tools = mutableListOf<ToolCallback>()
-        tools += toolCallbacks
-        for (role in toolGroups) {
-            val resolution = toolGroupResolver.resolveToolGroup(role)
-            if (resolution.resolvedToolGroup == null) {
-                loggerFor<ToolConsumer>().warn(
-                    "Could not resolve tool group with role='{}': {}", role, resolution.failureMessage
-                )
-            } else {
-                tools += resolution.resolvedToolGroup.toolCallbacks
-            }
-        }
-        loggerFor<ToolConsumer>().debug(
-            "{} resolved {} tools from {} tools and {} tool groups: {}",
-            name,
-            tools.size,
-            toolCallbacks.size,
-            toolGroups.size,
-            tools.map { it.toolDefinition.name() },
+    fun resolveToolCallbacks(toolGroupResolver: ToolGroupResolver): Collection<ToolCallback> =
+        resolveToolCallbacks(
+            toolConsumer = this,
+            toolGroupResolver = toolGroupResolver,
         )
-        return tools.distinctBy { it.toolDefinition.name() }
+
+    companion object {
+        // Factored into companion so Java can use it
+        fun resolveToolCallbacks(
+            toolConsumer: ToolConsumer,
+            toolGroupResolver: ToolGroupResolver
+        ): Collection<ToolCallback> {
+            val tools = mutableListOf<ToolCallback>()
+            tools += toolConsumer.toolCallbacks
+            for (role in toolConsumer.toolGroups) {
+                val resolution = toolGroupResolver.resolveToolGroup(role)
+                if (resolution.resolvedToolGroup == null) {
+                    loggerFor<ToolConsumer>().warn(
+                        "Could not resolve tool group with role='{}': {}", role, resolution.failureMessage
+                    )
+                } else {
+                    tools += resolution.resolvedToolGroup.toolCallbacks
+                }
+            }
+            loggerFor<ToolConsumer>().debug(
+                "{} resolved {} tools from {} tools and {} tool groups: {}",
+                toolConsumer.name,
+                tools.size,
+                toolConsumer.toolCallbacks.size,
+                toolConsumer.toolGroups.size,
+                tools.map { it.toolDefinition.name() },
+            )
+            return tools.distinctBy { it.toolDefinition.name() }
+        }
     }
 }
 
@@ -201,8 +213,8 @@ interface ToolCallbackPublisher : ToolCallbackSpec {
 
     companion object {
 
-        operator fun invoke(toolCallbacks: Collection<ToolCallback> = emptyList()) = object : ToolCallbackPublisher {
-            override val toolCallbacks: Collection<ToolCallback> = toolCallbacks
+        operator fun invoke(toolCallbacks: List<ToolCallback> = emptyList()) = object : ToolCallbackPublisher {
+            override val toolCallbacks: List<ToolCallback> = toolCallbacks
         }
     }
 }
@@ -218,7 +230,7 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
 
         operator fun invoke(
             metadata: ToolGroupMetadata,
-            toolCallbacks: Collection<ToolCallback>,
+            toolCallbacks: List<ToolCallback>,
         ): ToolGroup = ToolGroupImpl(
             metadata = metadata,
             toolCallbacks = toolCallbacks,
@@ -274,7 +286,7 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
 
 private data class ToolGroupImpl(
     override val metadata: ToolGroupMetadata,
-    override val toolCallbacks: Collection<ToolCallback>,
+    override val toolCallbacks: List<ToolCallback>,
 ) : ToolGroup
 
 /**

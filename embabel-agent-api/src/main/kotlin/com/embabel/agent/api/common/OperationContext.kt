@@ -45,6 +45,7 @@ interface OperationContext : Blackboard {
 
     fun promptRunner(
         llm: LlmOptions,
+        toolGroups: Collection<String> = emptyList(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         promptContributors: List<PromptContributor?> = emptyList(),
     ): PromptRunner {
@@ -92,6 +93,7 @@ interface ActionContext : OperationContext {
     // TODO default LLM options from action
     override fun promptRunner(
         llm: LlmOptions,
+        toolGroups: Collection<String>,
         toolCallbacks: List<ToolCallback>,
         promptContributors: List<PromptContributor?>,
     ): PromptRunner {
@@ -103,6 +105,7 @@ interface ActionContext : OperationContext {
         return OperationContextPromptRunner(
             this,
             llm = llm,
+            toolGroups = toolGroups,
             toolCallbacks = updatedToolCallbacks,
             promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
         )
@@ -116,14 +119,16 @@ interface ActionContext : OperationContext {
 
 /**
  * Uses the platform's LlmOperations to execute the prompt
- * Merely a convenience.
  */
 private class OperationContextPromptRunner(
     private val context: OperationContext,
     override val llm: LlmOptions,
+    override val toolGroups: Collection<String> = emptyList(),
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
+
+    override val name = "OperationContextPromptRunner"
 
     val action = (context as? ActionContext)?.action
 
@@ -139,6 +144,7 @@ private class OperationContextPromptRunner(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
+                toolGroups = toolGroups,
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
@@ -157,6 +163,7 @@ private class OperationContextPromptRunner(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
+                toolGroups = toolGroups,
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
@@ -207,20 +214,31 @@ private class OperationContextPromptRunner(
     }
 }
 
-interface InputActionContext<I> : ActionContext {
-    val input: I
+interface InputsActionContext : ActionContext {
+    val inputs: List<Any>
 
     @Suppress("UNCHECKED_CAST")
     override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
-        val inp = input
-        val instances: Collection<*> = when (inp) {
-            is Array<*> -> inp.toList()
-            is Collection<*> -> input as Collection<*>
-            else -> listOf(input)
+        val instances = mutableListOf<Any>()
+        inputs.forEach { input ->
+            when (input) {
+                is Array<*> -> instances += input.toList()
+                is Collection<*> -> instances += input
+                else -> instances += input
+            }
         }
-        return safelyGetToolCallbacks(instances as Collection<Any>)
+        return safelyGetToolCallbacks(instances)
     }
 
+}
+
+/**
+ * Takes a single input
+ */
+interface InputActionContext<I> : InputsActionContext {
+    val input: I
+
+    override val inputs: List<Any> get() = listOfNotNull(input)
 }
 
 data class TransformationActionContext<I, O>(

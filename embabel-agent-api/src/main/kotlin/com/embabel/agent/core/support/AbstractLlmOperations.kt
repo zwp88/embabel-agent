@@ -144,7 +144,7 @@ abstract class AbstractLlmOperations(
     ): Triple<List<ToolCallback>, String, LlmRequestEvent<O>> {
         val toolGroupResolver = agentProcess.processContext.platformServices.agentPlatform.toolGroupResolver
         val allToolCallbacks =
-            (interaction.toolCallbacks + agentProcess.processContext.agentProcess.agent.resolveToolCallbacks(
+            (interaction.resolveToolCallbacks(
                 toolGroupResolver,
             ) + (action?.resolveToolCallbacks(toolGroupResolver)
                 ?: emptySet())).distinctBy { it.toolDefinition.name() }
@@ -157,6 +157,10 @@ abstract class AbstractLlmOperations(
         agentProcess.processContext.platformServices.eventListener.onProcessEvent(
             llmRequestEvent
         )
+        logger.info(
+            "Expanded toolCallbacks from {}: {}",
+            llmRequestEvent,
+            allToolCallbacks.map { it.toolDefinition.name() })
         return Triple(allToolCallbacks, prompt, llmRequestEvent)
     }
 }

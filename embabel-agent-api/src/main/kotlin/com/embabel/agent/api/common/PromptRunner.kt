@@ -24,7 +24,8 @@ import org.springframework.ai.tool.ToolCallback
 
 
 /**
- * Interface for executing prompts
+ * Convenience interface for executing prompts.
+ * User code should use this interface to execute prompts.
  * A PromptRunner interface allows control over prompt execution
  * and reuse between different execution.
  * A contextual facade to LlmOperations.
@@ -32,6 +33,9 @@ import org.springframework.ai.tool.ToolCallback
  */
 interface PromptRunner : LlmCall {
 
+    /**
+     * Generate text
+     */
     infix fun generateText(prompt: String): String =
         createObject(
             prompt = prompt,
@@ -93,7 +97,6 @@ interface LlmCallRequest : LlmObjectCreationRequest {
  * Exception thrown to indicate that a prompt should be executed.
  * This is not a real failure but meant to be intercepted by infrastructure.
  * It allows us to maintain strong typing.
- * @param prompt prompt to run
  * @param requireResult whether to require a result or allow the LLM to
  * say that it cannot produce a result
  * @param llm llm to use. Contextual LLM will be used if not set
@@ -106,13 +109,17 @@ sealed class ExecutePromptException(
     override val promptContributors: List<PromptContributor>
 ) : LlmObjectCreationRequest, RuntimeException(
     "Not a real failure but meant to be intercepted by infrastructure"
-)
+) {
+
+    override val name = "ExecutePromptException"
+}
 
 class CreateObjectPromptException(
     override val prompt: String,
     requireResult: Boolean,
     llm: LlmOptions? = null,
     outputClass: Class<*>,
+    override val toolGroups: Collection<String>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>
 ) : ExecutePromptException(
@@ -129,6 +136,7 @@ class EvaluateConditionPromptException(
     val confidenceThreshold: ZeroToOne,
     requireResult: Boolean,
     llm: LlmOptions? = null,
+    override val toolGroups: Collection<String>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>
 ) : ExecutePromptException(

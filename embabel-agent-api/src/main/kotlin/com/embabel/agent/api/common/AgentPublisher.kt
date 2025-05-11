@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service
 
 /**
  * Automatically deploy all [Agent] beans
- * with to the [AgentPlatform].
+ * to the [AgentPlatform].
  */
 @Service
 class AgentDeployer(
@@ -36,7 +36,7 @@ class AgentDeployer(
 
     init {
         logger.debug("Properties: {}", properties)
-        if (!properties.publisher) {
+        if (!properties.bean) {
             logger.info("AgentDeployer scanning disabled: skipping")
         } else {
             logger.info(

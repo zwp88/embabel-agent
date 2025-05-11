@@ -16,6 +16,8 @@
 package com.embabel.agent.api.annotation;
 
 import com.embabel.agent.api.common.PromptRunner;
+import com.embabel.agent.core.ToolConsumer;
+import com.embabel.agent.spi.ToolGroupResolver;
 import com.embabel.common.ai.model.BuildableLlmOptions;
 import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.common.ai.prompt.PromptContributor;
@@ -24,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.lang.NonNull;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,6 +42,8 @@ public class Using implements PromptRunner {
     }
 
     private final LlmOptions llmOptions;
+
+    private final List<String> toolGroups = List.of();
 
     private final List<ToolCallback> toolCallbacks = List.of();
 
@@ -57,6 +62,11 @@ public class Using implements PromptRunner {
         this(new BuildableLlmOptions());
     }
 
+    public Using withToolGroups(@NonNull List<String> toolGroups) {
+        this.toolGroups.addAll(toolGroups);
+        return this;
+    }
+
     public Using withToolCallbacks(@NonNull List<ToolCallback> toolCallbacks) {
         this.toolCallbacks.addAll(toolCallbacks);
         return this;
@@ -69,31 +79,36 @@ public class Using implements PromptRunner {
 
     @Override
     public <T> T createObject(@NotNull String prompt, @NotNull Class<T> outputClass) {
-        return PromptsKt.using(llmOptions, toolCallbacks, promptContributors)
+        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, promptContributors)
                 .createObject(prompt, outputClass);
     }
 
     @Override
     public <T> @Nullable T createObjectIfPossible(@NotNull String prompt, @NotNull Class<T> outputClass) {
-        return PromptsKt.using(llmOptions, toolCallbacks, promptContributors)
+        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, promptContributors)
                 .createObjectIfPossible(prompt, outputClass);
     }
 
     @Override
     @NotNull
     public String generateText(@NotNull String prompt) {
-        return PromptsKt.using(llmOptions, toolCallbacks, promptContributors).generateText(prompt);
+        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, promptContributors).generateText(prompt);
     }
 
     @Override
     public boolean evaluateCondition(@NotNull String condition, @NotNull String context, double confidenceThreshold) {
-        return PromptsKt.using(llmOptions, toolCallbacks, promptContributors).evaluateCondition(condition, context, confidenceThreshold);
+        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, promptContributors).evaluateCondition(condition, context, confidenceThreshold);
     }
 
     @Override
     @Nullable
     public LlmOptions getLlm() {
         return llmOptions;
+    }
+
+    @Override
+    public @NotNull List<String> getToolGroups() {
+        return toolGroups;
     }
 
     @Override
@@ -106,5 +121,16 @@ public class Using implements PromptRunner {
     @NotNull
     public List<PromptContributor> getPromptContributors() {
         return promptContributors;
+    }
+
+    @Override
+    @NotNull
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
+    @Override
+    public @NotNull Collection<ToolCallback> resolveToolCallbacks(@NotNull ToolGroupResolver toolGroupResolver) {
+        return ToolConsumer.Companion.resolveToolCallbacks(this, toolGroupResolver);
     }
 }

@@ -21,7 +21,6 @@ import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.dsl.support.Transformer
 import com.embabel.agent.api.dsl.support.promptTransformer
 import com.embabel.agent.core.*
-import com.embabel.agent.experimental.dsl.AgentScopeFactory
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.agent.spi.LlmCall
 import com.embabel.common.ai.model.LlmOptions
@@ -30,6 +29,7 @@ import com.embabel.common.ai.prompt.PromptContributorConsumer
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
+import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -54,6 +54,10 @@ class AgentBuilder(
     toolCallbacks: Collection<ToolCallback>,
     promptContributors: List<PromptContributor> = emptyList(),
 ) : PromptContributorConsumer, ToolCallbackPublisher, ToolGroupConsumer {
+
+    private val logger = LoggerFactory.getLogger(AgentBuilder::class.java)
+
+    // Needs to be public for inline functions to work
     val actions = mutableListOf<Action>()
 
     private val goals = mutableSetOf<Goal>()
@@ -61,13 +65,13 @@ class AgentBuilder(
     private val conditions = mutableSetOf<Condition>()
 
     private var _toolGroups = toolGroups.toMutableSet()
-    private val _toolCallbacks = toolCallbacks.toMutableSet()
+    private val _toolCallbacks = toolCallbacks.toMutableList()
     private val _promptContributors = promptContributors.toMutableList()
 
     override val toolGroups: Set<String>
         get() = _toolGroups
 
-    override val toolCallbacks: Set<ToolCallback>
+    override val toolCallbacks: List<ToolCallback>
         get() = _toolCallbacks
 
     override val promptContributors: List<PromptContributor>
@@ -90,8 +94,13 @@ class AgentBuilder(
         actions.add(block())
     }
 
-    fun actions(block: AgentBuilder.() -> AgentScopeFactory) {
+    fun actions(block: AgentBuilder.() -> AgentScopeBuilder) {
         val agentScope = block().build()
+        logger.info(
+            "Adding actions from agent scope {}: {}",
+            agentScope.name,
+            agentScope.actions,
+        )
         add(agentScope)
     }
 

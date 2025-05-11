@@ -22,7 +22,7 @@ import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.support.HAS_RUN_CONDITION_PREFIX
+import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Named
@@ -352,7 +352,7 @@ class AgentMetadataReader(
             inputs = setOf(inputBinding),
             value = goalAnnotation.value,
             // Add precondition of the action having run
-            pre = setOf(HAS_RUN_CONDITION_PREFIX + action.name),
+            pre = setOf(Rerun.hasRunCondition(action)) + action.preconditions.keys.toSet(),
         )
     }
 }

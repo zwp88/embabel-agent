@@ -17,11 +17,18 @@ package com.embabel.agent.spi
 
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ProcessOptions
+import java.util.*
 
 /**
  * Generate names for agent processes
  */
-interface ProcessIdGenerator {
+fun interface ProcessIdGenerator {
     fun createProcessId(agent: Agent, processOptions: ProcessOptions): String
+
+    companion object {
+        val RANDOM: ProcessIdGenerator = ProcessIdGenerator { agent, processOptions ->
+            UUID.randomUUID().toString()
+        }
+    }
 
 }

@@ -27,10 +27,16 @@ import org.springframework.ai.tool.ToolCallback
 @JvmOverloads
 fun using(
     llm: LlmOptions? = null,
+    toolGroups: Collection<String> = emptyList(),
     toolCallbacks: List<ToolCallback> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
 ): PromptRunner =
-    MethodReturnPromptRunner(llm = llm, toolCallbacks = toolCallbacks, promptContributors = promptContributors)
+    MethodReturnPromptRunner(
+        llm = llm,
+        toolGroups = toolGroups,
+        toolCallbacks = toolCallbacks,
+        promptContributors = promptContributors,
+    )
 
 /**
  * Convenience method to return an ambient prompt runner for use to return in an @Action method
@@ -39,14 +45,21 @@ fun using(
 @JvmOverloads
 fun usingModel(
     model: String,
+    toolGroups: Collection<String> = emptyList(),
     toolCallbacks: List<ToolCallback> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
 ): PromptRunner =
     MethodReturnPromptRunner(
         llm = LlmOptions(model = model),
+        toolGroups = toolGroups,
         toolCallbacks = toolCallbacks,
         promptContributors = promptContributors
     )
 
 val usingDefaultLlm: PromptRunner =
-    MethodReturnPromptRunner(llm = null, toolCallbacks = emptyList(), promptContributors = emptyList())
+    MethodReturnPromptRunner(
+        llm = null,
+        toolGroups = emptyList(),
+        toolCallbacks = emptyList(),
+        promptContributors = emptyList(),
+    )

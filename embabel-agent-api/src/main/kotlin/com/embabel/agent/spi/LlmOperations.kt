@@ -17,10 +17,12 @@ package com.embabel.agent.spi
 
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.ToolConsumer
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
+import com.embabel.common.core.MobyNameGenerator
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -37,14 +39,15 @@ value class InteractionId(val value: String) {
  * Spec for calling an LLM. Optional LlmOptions,
  * plus tool callbacks and prompt contributors.
  */
-interface LlmCall : PromptContributorConsumer {
+interface LlmCall : PromptContributorConsumer, ToolConsumer {
     val llm: LlmOptions?
-    val toolCallbacks: List<ToolCallback>
     override val promptContributors: List<PromptContributor>
 
     companion object {
         operator fun invoke(): LlmCall = object : LlmCall {
+            override val name = MobyNameGenerator.generateName()
             override val llm: LlmOptions? = null
+            override val toolGroups: Collection<String> = emptyList()
             override val toolCallbacks: List<ToolCallback> = emptyList()
             override val promptContributors: List<PromptContributor> = emptyList()
         }
@@ -69,15 +72,19 @@ interface LlmCall : PromptContributorConsumer {
 data class LlmInteraction(
     val id: InteractionId,
     override val llm: LlmOptions = LlmOptions(),
+    override val toolGroups: Collection<String> = emptyList(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
 ) : LlmCall {
+
+    override val name: String = id.value
 
     companion object {
         fun from(llm: LlmCall, id: InteractionId) = LlmInteraction(
             id = id,
             llm = llm.llm ?: LlmOptions(),
             toolCallbacks = llm.toolCallbacks,
+            toolGroups = llm.toolGroups,
             promptContributors = llm.promptContributors,
         )
     }

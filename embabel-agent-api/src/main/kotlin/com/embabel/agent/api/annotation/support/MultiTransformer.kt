@@ -40,7 +40,7 @@ internal class MultiTransformer<O : Any>(
     private val outputClass: Class<O>,
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    override val toolCallbacks: Collection<ToolCallback>,
+    override val toolCallbacks: List<ToolCallback>,
     toolGroups: Collection<String>,
     private val block: Transformation<List<Any>, O>,
 ) : AbstractAction(

@@ -52,7 +52,7 @@ embabel:
   agent-platform:
     scanning:
       annotation: true
-      publisher: false
+      bean: true
     ranking:
       llm: gpt-4.1
 
