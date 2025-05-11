@@ -102,7 +102,13 @@ internal class SimpleAgentProcess(
                 )
             )
             logger.debug("▶️ Process {} running: {}\n\tPlan: {}", id, worldState, plan.infoString())
-            val agent = agent.actions.single { it.name == plan.actions.first().name }
+            val agent = agent.actions.singleOrNull { it.name == plan.actions.first().name }
+                ?: error(
+                    "No unique action found for ${plan.actions.first().name} in ${agent.actions.map { it.name }}: Actions are\n${
+                        agent.actions.joinToString(
+                            "\n"
+                        ) { it.name }
+                    }")
             val actionStatus = executeAction(agent)
             _status = actionStatusToAgentProcessStatus(actionStatus)
         }

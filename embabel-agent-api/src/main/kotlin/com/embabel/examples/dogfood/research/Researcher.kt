@@ -21,9 +21,7 @@ import com.embabel.agent.api.common.create
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.domain.library.HasContent
-import com.embabel.agent.domain.library.InternetResource
-import com.embabel.agent.domain.library.InternetResources
+import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.agent.experimental.prompt.PromptUtils
@@ -33,31 +31,10 @@ import com.embabel.common.ai.model.ModelProvider.Companion.CHEAPEST_ROLE
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
-import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timestamped
-import com.fasterxml.jackson.annotation.JsonClassDescription
-import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.time.Instant
-
-@JsonClassDescription("Research report, containing a text field and links")
-data class ResearchReport(
-    @get:JsonPropertyDescription(
-        "The text of the research report",
-    )
-    override val text: String,
-    override val links: List<InternetResource>,
-) : HasContent, InternetResources, HasInfoString {
-
-    override fun infoString(verbose: Boolean?): String {
-        return """
-            Report:
-            $text
-            Links: ${links.joinToString("\n") { it.url }}
-        """.trimIndent()
-    }
-}
 
 data class SingleLlmReport(
     val report: ResearchReport,

@@ -20,6 +20,7 @@ import com.embabel.agent.event.AgentDeploymentEvent
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.*
+import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -37,9 +38,9 @@ internal class DefaultAgentPlatform(
     private val llmOperations: LlmOperations,
     override val toolGroupResolver: ToolGroupResolver,
     eventListeners: List<AgenticEventListener>,
-    private val processIdGenerator: ProcessIdGenerator,
-    private val agentProcessRepository: AgentProcessRepository,
-    private val operationScheduler: OperationScheduler,
+    private val processIdGenerator: ProcessIdGenerator = ProcessIdGenerator.RANDOM,
+    private val agentProcessRepository: AgentProcessRepository = InMemoryAgentProcessRepository(),
+    private val operationScheduler: OperationScheduler = OperationScheduler.PRONTO,
 ) : AgentPlatform {
 
     private val logger = LoggerFactory.getLogger(DefaultAgentPlatform::class.java)

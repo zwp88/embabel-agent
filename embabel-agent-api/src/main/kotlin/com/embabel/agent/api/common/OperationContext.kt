@@ -207,20 +207,31 @@ private class OperationContextPromptRunner(
     }
 }
 
-interface InputActionContext<I> : ActionContext {
-    val input: I
+interface InputsActionContext : ActionContext {
+    val inputs: List<Any>
 
     @Suppress("UNCHECKED_CAST")
     override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
-        val inp = input
-        val instances: Collection<*> = when (inp) {
-            is Array<*> -> inp.toList()
-            is Collection<*> -> input as Collection<*>
-            else -> listOf(input)
+        val instances = mutableListOf<Any>()
+        inputs.forEach { input ->
+            when (input) {
+                is Array<*> -> instances += input.toList()
+                is Collection<*> -> instances += input
+                else -> instances += input
+            }
         }
-        return safelyGetToolCallbacks(instances as Collection<Any>)
+        return safelyGetToolCallbacks(instances)
     }
 
+}
+
+/**
+ * Takes a single input
+ */
+interface InputActionContext<I> : InputsActionContext {
+    val input: I
+
+    override val inputs: List<Any> get() = listOfNotNull(input)
 }
 
 data class TransformationActionContext<I, O>(

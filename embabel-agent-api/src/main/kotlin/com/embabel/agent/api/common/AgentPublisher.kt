@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service
 
 /**
  * Automatically deploy all [Agent] beans
- * with to the [AgentPlatform].
+ * to the [AgentPlatform].
  */
 @Service
 class AgentDeployer(

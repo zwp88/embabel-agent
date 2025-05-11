@@ -23,7 +23,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * @Agent and @Agentic annotation
  * @param publisher whether to auto register agents
  * from AgentPublisher implementations
- * @see com.embabel.agent.api.common.AgentPublisher
  * @see com.embabel.agent.api.annotation.Agent
  */
 @ConfigurationProperties("embabel.agent-platform.scanning")

@@ -178,11 +178,15 @@ fun satisfiesType(boundInstance: Any, type: String): Boolean {
     return interfaces.any { it.simpleName == type || it.name == type }
 }
 
+fun <T> Blackboard.all(clazz: Class<T>): List<T> {
+    return objects.filterIsInstance(clazz)
+}
+
 /**
  * Return all entries of a specific type
  */
 inline fun <reified T> Blackboard.all(): List<T> {
-    return objects.filterIsInstance<T>()
+    return all<T>(T::class.java)
 }
 
 /**
