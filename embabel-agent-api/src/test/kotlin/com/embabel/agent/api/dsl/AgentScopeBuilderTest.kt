@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.api.common.asAction
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.domain.special.UserInput
@@ -189,9 +188,7 @@ data class Thing(val t: String)
 
 fun nesting() = agent("nesting test", description = "Nesting test") {
 
-    action {
-        asAction<UserInput, Thing>(agentName = "foobar")
-    }
+    agentAction<UserInput, Thing>(agentName = "foobar")
 
     actions {
         aggregate<Thing, GeneratedNames, AllNames>(

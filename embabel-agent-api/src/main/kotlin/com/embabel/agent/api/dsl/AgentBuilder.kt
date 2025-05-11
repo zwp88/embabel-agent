@@ -18,6 +18,7 @@ package com.embabel.agent.api.dsl
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
+import com.embabel.agent.api.common.asAction
 import com.embabel.agent.api.dsl.support.Transformer
 import com.embabel.agent.api.dsl.support.promptTransformer
 import com.embabel.agent.core.*
@@ -90,8 +91,19 @@ class AgentBuilder(
         _toolCallbacks += toolCallbacks
     }
 
+    /**
+     * Create an action
+     */
     fun action(block: AgentBuilder.() -> Action) {
         actions.add(block())
+    }
+
+    /**
+     * Add an action that references the agent with a given name
+     */
+    inline fun <reified I, reified O : Any> agentAction(agentName: String) {
+        val aa = asAction<I, O>(agentName)
+        actions.add(aa)
     }
 
     fun actions(block: AgentBuilder.() -> AgentScopeBuilder) {
