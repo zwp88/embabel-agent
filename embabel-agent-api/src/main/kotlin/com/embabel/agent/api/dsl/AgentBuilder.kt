@@ -41,6 +41,7 @@ import kotlin.reflect.KProperty
 data class ConditionContext(
     override val processContext: ProcessContext,
     override val operation: Named,
+    override val toolGroups: Collection<String> = emptySet(),
 ) : OperationContext, Blackboard by processContext.blackboard
 
 typealias ConditionPredicate = (

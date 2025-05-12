@@ -18,6 +18,7 @@ package com.embabel.agent.api.common
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.ToolGroupConsumer
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.experimental.primitive.Determination
@@ -35,7 +36,8 @@ import org.springframework.ai.tool.ToolCallback
  * Context for any operation. Exposes blackboard and process context.
  * @param processContext the process context
  */
-interface OperationContext : Blackboard {
+interface OperationContext : Blackboard, ToolGroupConsumer {
+
     val processContext: ProcessContext
 
     /**
@@ -43,13 +45,22 @@ interface OperationContext : Blackboard {
      */
     val operation: Named
 
+    /**
+     * Create a prompt runner for this context.
+     * Application code should always go through this method to run LLM operations.
+     * @param llm the LLM options to use
+     * @param toolGroups extra local tool groups to use, in addition to those declared on the action if
+     * we're in an action
+     * @param toolCallbacks extra tool callbacks to use
+     * @param promptContributors extra prompt contributors to use, in addition to those declared on the action if
+     * we're in an action, or at agent level
+     */
     fun promptRunner(
-        llm: LlmOptions,
+        llm: LlmOptions = LlmOptions(),
         toolGroups: Collection<String> = emptyList(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         promptContributors: List<PromptContributor?> = emptyList(),
     ): PromptRunner {
-        // TODO consider getting tool callbacks from the domain model
 //        val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
         // Add any tool callbacks that are not already in the list
 //        updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
@@ -57,16 +68,22 @@ interface OperationContext : Blackboard {
         return OperationContextPromptRunner(
             this,
             llm = llm,
+            toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
             promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
         )
     }
 
     companion object {
-        operator fun invoke(processContext: ProcessContext, operation: Named): OperationContext =
+        operator fun invoke(
+            processContext: ProcessContext,
+            operation: Named,
+            toolGroups: List<String>,
+        ): OperationContext =
             SimpleOperationContext(
                 processContext = processContext,
                 operation = operation,
+                toolGroups = toolGroups,
             )
     }
 }
@@ -74,6 +91,7 @@ interface OperationContext : Blackboard {
 private class SimpleOperationContext(
     override val processContext: ProcessContext,
     override val operation: Named,
+    override val toolGroups: Collection<String>,
 ) : OperationContext, Blackboard by processContext.agentProcess {
     override fun toString(): String {
         return "SimpleOperationContext(processContext=$processContext)"
@@ -103,7 +121,7 @@ interface ActionContext : OperationContext {
         return OperationContextPromptRunner(
             this,
             llm = llm,
-            toolGroups = toolGroups,
+            toolGroups = this.toolGroups + toolGroups,
             toolCallbacks = toolCallbacksToUse,
             promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
         )
@@ -121,7 +139,7 @@ interface ActionContext : OperationContext {
 private class OperationContextPromptRunner(
     private val context: OperationContext,
     override val llm: LlmOptions,
-    override val toolGroups: Collection<String> = emptyList(),
+    override val toolGroups: Collection<String>,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
@@ -142,7 +160,7 @@ private class OperationContextPromptRunner(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
-                toolGroups = toolGroups,
+                toolGroups = this.toolGroups + toolGroups,
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
@@ -161,7 +179,7 @@ private class OperationContextPromptRunner(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
-                toolGroups = toolGroups,
+                toolGroups = this.toolGroups + toolGroups,
                 toolCallbacks = toolCallbacks,
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
@@ -247,6 +265,9 @@ data class TransformationActionContext<I, O>(
     val outputClass: Class<O>,
 ) : InputActionContext<I>, Blackboard by processContext.agentProcess,
     AgenticEventListener by processContext {
+
+    override val toolGroups: Collection<String>
+        get() = action?.toolGroups ?: emptyList()
 
     override val operation = action ?: error("No action in context")
 }

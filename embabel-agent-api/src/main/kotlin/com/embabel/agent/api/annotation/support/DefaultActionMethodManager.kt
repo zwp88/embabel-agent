@@ -81,7 +81,7 @@ internal class DefaultActionMethodManager(
             invokeActionMethod(
                 method = method,
                 instance = instance,
-                context = context.copy(),
+                context = context,
                 // Get the tool callbacks from the real instance, which we now have access to
                 toolCallbacks = safelyGetToolCallbacksFrom(context.input),
             )
@@ -118,7 +118,8 @@ internal class DefaultActionMethodManager(
 
             val promptRunner = context.promptRunner(
                 llm = e.llm ?: LlmOptions.Companion(),
-                toolGroups = e.toolGroups,
+                // Remember to add tool groups from the context to those the exception specified at the call site
+                toolGroups = (e.toolGroups + context.toolGroups).distinct(),
                 toolCallbacks = toolCallbacksToUse,
                 promptContributors = promptContributors,
             )

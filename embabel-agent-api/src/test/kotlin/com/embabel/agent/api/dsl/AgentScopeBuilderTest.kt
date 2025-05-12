@@ -16,27 +16,15 @@
 package com.embabel.agent.api.dsl
 
 import com.embabel.agent.core.*
-import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.spi.support.EventSavingAgenticEventListener
+import com.embabel.agent.fixtures.createAgentPlatform
 import com.embabel.agent.spi.support.Person
-import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
 import com.embabel.common.core.MobyNameGenerator
-import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
-
-fun createAgentPlatform(): AgentPlatform {
-    val llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum
-    return DefaultAgentPlatform(
-        llmOperations = llmOperations,
-        eventListeners = listOf(EventSavingAgenticEventListener()),
-        toolGroupResolver = mockk(),
-    )
-}
 
 class AgentScopeBuilderTest {
 

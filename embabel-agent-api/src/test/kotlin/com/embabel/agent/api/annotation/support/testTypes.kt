@@ -17,6 +17,7 @@ package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ActionContext
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.Frog
@@ -25,6 +26,7 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.ai.model.LlmOptions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.ai.tool.annotation.Tool
 
 data class Person(val name: String) {
@@ -230,11 +232,26 @@ class OneTransformerActionWithCustomToolGroupOnly {
 
 }
 
-@Agentic
+@Agent(description = "thing")
 class OneTransformerActionTakingInterfaceWithCustomToolGroupOnly {
 
+    @AchievesGoal(description = "Creating a frog")
     @Action(cost = 500.0, toolGroups = ["magic"])
     fun toPerson(person: Person): Frog {
+        return Frog(person.name)
+    }
+
+}
+
+@Agent(description = "thing")
+class OneTransformerActionTakingInterfaceWithExpectationCustomToolGroupOnly {
+
+    @AchievesGoal(description = "Creating a frog")
+    @Action(cost = 500.0, toolGroups = ["magic"])
+    fun toPerson(person: Person, context: OperationContext): Frog {
+        val pr = context.promptRunner()
+        assertEquals(setOf("magic"), pr.toolGroups.toSet())
+//        assertFalse(pr.toolCallbacks.isEmpty(), "ToolCallbacks should be expanded")
         return Frog(person.name)
     }
 
