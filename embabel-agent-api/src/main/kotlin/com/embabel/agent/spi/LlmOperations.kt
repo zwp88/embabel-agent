@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.spi
 
+import com.embabel.agent.api.annotation.support.DummyToolCallback
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ToolConsumer
@@ -76,6 +77,13 @@ data class LlmInteraction(
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
 ) : LlmCall {
+
+    init {
+
+        if (toolCallbacks.any { it is DummyToolCallback }) {
+            throw IllegalArgumentException("Dummy found")
+        }
+    }
 
     override val name: String = id.value
 

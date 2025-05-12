@@ -117,7 +117,7 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
         for (sanitizer in fileContentTransformers) {
             transformedContent = sanitizer(transformedContent)
         }
-        loggerFor<FileReadTools>().info(
+        loggerFor<FileReadTools>().debug(
             "Transformed {} content with {} sanitizers: Length went from {} to {}",
             path,
             fileContentTransformers.size,

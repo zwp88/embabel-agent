@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import com.embabel.agent.core.Agent as CoreAgent
 
 
@@ -771,14 +772,16 @@ class AgentMetadataReaderTest {
                     action.toolCallbacks.map { it.toolDefinition.name() }.toSet(),
                 )
                 val toolWithArg = action.toolCallbacks.single { it.toolDefinition.name() == "toolWithArg" }
-                val result = toolWithArg.call(
-                    """
+                // It will be a dummy tool
+                assertThrows<IllegalStateException> {
+                    toolWithArg.call(
+                        """
                     {
                         "location": "foo"
                     }
                 """.trimIndent()
-                )
-                assertEquals(result, "\"foo\"")
+                    )
+                }
             }
 
         }

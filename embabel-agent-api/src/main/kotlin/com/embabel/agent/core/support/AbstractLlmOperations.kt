@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.api.annotation.support.DummyToolCallback
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.LlmRequestEvent
@@ -146,8 +147,12 @@ abstract class AbstractLlmOperations(
         val allToolCallbacks =
             (interaction.resolveToolCallbacks(
                 toolGroupResolver,
+                // TODO this is hacky
             ) + (action?.resolveToolCallbacks(toolGroupResolver)
                 ?: emptySet())).distinctBy { it.toolDefinition.name() }
+        if (allToolCallbacks.any { it is DummyToolCallback }) {
+            error("Bug: Tool callbacks include dummies: ${allToolCallbacks.filterIsInstance<DummyToolCallback>()}")
+        }
         val llmRequestEvent = LlmRequestEvent(
             agentProcess = agentProcess,
             outputClass = outputClass,

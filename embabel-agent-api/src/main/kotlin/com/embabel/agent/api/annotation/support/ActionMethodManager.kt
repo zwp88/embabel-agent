@@ -15,149 +15,29 @@
  */
 package com.embabel.agent.api.annotation.support
 
-import com.embabel.agent.api.annotation.RequireNameMatch
-import com.embabel.agent.api.common.CreateObjectPromptException
-import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
-import com.embabel.agent.api.common.support.expandInputBindings
 import com.embabel.agent.core.Action
-import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
-import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.core.util.DummyInstanceCreator
-import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
 
 /**
  * Creates and invokes actions from annotated methods.
  */
-class ActionMethodManager(
-    val nameGenerator: NameGenerator = NameGenerator()
-) {
-
-    private val logger = LoggerFactory.getLogger(ActionMethodManager::class.java)
+interface ActionMethodManager {
 
     /**
      * Create an Action from a method
      */
-    @Suppress("UNCHECKED_CAST")
     fun createAction(
         method: Method,
         instance: Any,
         toolCallbacksOnInstance: List<ToolCallback>,
-    ): Action {
-        val actionAnnotation = method.getAnnotation(com.embabel.agent.api.annotation.Action::class.java)
-        val allToolCallbacks = toolCallbacksOnInstance.toMutableList()
-        val inputClasses = method.parameters
-            .map { it.type }
-        val inputs = method.parameters
-            .filterNot {
-                OperationContext::class.java.isAssignableFrom(it.type)
-            }
-            .map {
-                val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
-                expandInputBindings(
-                    if (nameMatchAnnotation != null) it.name else IoBinding.Companion.DEFAULT_BINDING,
-                    it.type
-                )
-            }
-            .flatten()
-        method.parameters
-            .filterNot {
-                OperationContext::class.java.isAssignableFrom(it.type)
-            }
-            .forEach {
-                // Obtain dummy tools to drive metadata. Will not be invoked.
-                val parameterInstance = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(it.type)
-                allToolCallbacks += safelyGetToolCallbacksFrom(parameterInstance)
-            }
-        return MultiTransformationAction(
-            name = nameGenerator.generateName(instance, method.name),
-            description = actionAnnotation.description.ifBlank { method.name },
-            cost = actionAnnotation.cost,
-            inputs = inputs.toSet(),
-            canRerun = actionAnnotation.canRerun,
-            pre = actionAnnotation.pre.toList(),
-            post = actionAnnotation.post.toList(),
-            inputClasses = inputClasses,
-            outputClass = method.returnType as Class<Any>,
-            outputVarName = actionAnnotation.outputBinding,
-            toolCallbacks = allToolCallbacks.toList(),
-            toolGroups = actionAnnotation.toolGroups.asList(),
-        ) { context ->
-            invokeActionMethod(
-                method = method,
-                instance = instance,
-                context = context,
-                toolCallbacks = toolCallbacksOnInstance,
-            )
-        }
-    }
+    ): Action
 
-    @Suppress("UNCHECKED_CAST")
     fun <O> invokeActionMethod(
         method: Method,
         instance: Any,
         context: TransformationActionContext<List<Any>, O>,
         toolCallbacks: List<ToolCallback>,
-    ): O {
-        logger.debug("Invoking action method {} with payload {}", method.name, context.input)
-        val toolCallbacksOnDomainObjects = context.input.flatMap { safelyGetToolCallbacksFrom(it) }
-        val actionToolCallbacks = toolCallbacksOnDomainObjects.toMutableList()
-        // Replace dummy tools
-        actionToolCallbacks += toolCallbacks.filterNot { tc -> toolCallbacksOnDomainObjects.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
-        var args = context.input.toTypedArray()
-        if (method.parameters.any { OperationContext::class.java.isAssignableFrom(it.type) }) {
-            // We need to add the payload as the last argument
-            args += context
-        }
-        val result = try {
-            ReflectionUtils.invokeMethod(method, instance, *args)
-        } catch (e: CreateObjectPromptException) {
-            // This is our own exception to get typesafe prompt execution
-            // It is not a failure
-
-            // TODO or default options
-            val toolCallbacks =
-                (actionToolCallbacks + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
-            val promptContributors = e.promptContributors
-
-            val promptRunner = context.promptRunner(
-                llm = e.llm ?: LlmOptions.Companion(),
-                toolGroups = e.toolGroups + (context.action?.toolGroups ?: emptyList()),
-                toolCallbacks = toolCallbacks,
-                promptContributors = promptContributors,
-            )
-
-            if (e.requireResult) {
-                promptRunner.createObject(
-                    prompt = e.prompt,
-                    outputClass = e.outputClass,
-                )
-            } else {
-                promptRunner.createObjectIfPossible(
-                    prompt = e.prompt,
-                    outputClass = context.outputClass as Class<Any>,
-                )
-            }
-        } catch (t: Throwable) {
-            logger.warn(
-                "Error invoking action method {}.{}: {}",
-                instance.javaClass.name,
-                method.name,
-                t.message,
-            )
-            throw t
-        }
-        logger.debug(
-            "Result of invoking action method {} was {}: payload {}",
-            method.name,
-            result,
-            context.input
-        )
-        return result as O
-    }
-
+    ): O
 }
