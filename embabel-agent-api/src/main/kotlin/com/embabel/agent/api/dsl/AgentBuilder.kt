@@ -47,6 +47,9 @@ typealias ConditionPredicate = (
     context: ConditionContext,
 ) -> Boolean?
 
+/**
+ * Instances of this are usually created via the convenient agent() function.
+ */
 class AgentBuilder(
     val name: String,
     val version: String = DEFAULT_VERSION,
@@ -79,14 +82,16 @@ class AgentBuilder(
         get() = _promptContributors
 
 
+    /**
+     * Require tool groups at agent level
+     */
     fun requireToolGroups(vararg roles: String) {
         _toolGroups += roles
     }
 
-    fun requirePromptContributors(vararg promptContributors: PromptContributor) {
-        _promptContributors += promptContributors
-    }
-
+    /**
+     * Require tool callbacks at agent level
+     */
     fun requireToolCallbacks(vararg toolCallbacks: ToolCallback) {
         _toolCallbacks += toolCallbacks
     }
@@ -96,6 +101,13 @@ class AgentBuilder(
      */
     fun action(block: AgentBuilder.() -> Action) {
         actions.add(block())
+    }
+
+    /**
+     * Require prompt contributors at agent level
+     */
+    fun requirePromptContributors(vararg promptContributors: PromptContributor) {
+        _promptContributors += promptContributors
     }
 
     /**
@@ -115,7 +127,17 @@ class AgentBuilder(
         actions.add(aa)
     }
 
-    fun actions(block: AgentBuilder.() -> AgentScopeBuilder) {
+    fun add(agentScope: AgentScope) {
+        actions += agentScope.actions
+        goals += agentScope.goals
+        conditions += agentScope.conditions
+    }
+
+    /**
+     * Add a pattern builder, such as an aggregation flow, to the agent.
+     * Must be used if you have multiple actions
+     */
+    fun flow(block: AgentBuilder.() -> AgentScopeBuilder) {
         val agentScope = block().build()
         logger.info(
             "Adding actions from agent scope {}: {}",
@@ -123,12 +145,6 @@ class AgentBuilder(
             agentScope.actions,
         )
         add(agentScope)
-    }
-
-    fun add(agentScope: AgentScope) {
-        actions += agentScope.actions
-        goals += agentScope.goals
-        conditions += agentScope.conditions
     }
 
     /**

@@ -47,7 +47,7 @@ fun evenMoreEvilWizard() = agent("EvenMoreEvilWizard", description = "Turn a per
         MagicVictim(name = "Hamish")
     }
 
-    actions {
+    flow {
         aggregate<MagicVictim, Frog, SnakeMeal>(
             transforms = listOf({ Frog("1") }, { Frog("2") }, { Frog("3") }),
             merge = { frogs -> SnakeMeal(frogs) },

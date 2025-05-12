@@ -27,24 +27,54 @@ import com.embabel.common.core.MobyNameGenerator
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * This interface is used to build actions in a DSL-like manner.
- * It allows chaining of functions with different input and output types.
- *
- * @see [AgentScopeBuilder]
+ * Creates a chain from A to B via C. Emits actions.
  */
-
 fun <A, B, C> chain(
-    a: (a: A) -> B,
-    b: (b: B) -> C,
+    a: (context: InputActionContext<A>) -> B,
+    b: (context: InputActionContext<B>) -> C,
     aClass: Class<A>,
     bClass: Class<B>,
     cClass: Class<C>,
-): AgentScopeBuilder = TODO()
+): AgentScopeBuilder {
+    val actions: List<Action> = listOf(
+        TransformationAction(
+            name = "chain-0",
+            description = "chain element 0",
+            cost = 0.0,
+            value = 0.0,
+            canRerun = false,
+            inputClass = aClass,
+            outputClass = bClass,
+            toolGroups = emptyList(),
+            toolCallbacks = emptyList(),
+        ) {
+            a.invoke(it)
+        },
+        TransformationAction(
+            name = "chain-1",
+            description = "chain element 0",
+            cost = 0.0,
+            value = 0.0,
+            canRerun = false,
+            inputClass = bClass,
+            outputClass = cClass,
+            toolGroups = emptyList(),
+            toolCallbacks = emptyList(),
+        ) {
+            b.invoke(it)
+        })
+    return AgentScopeBuilder(
+        name = MobyNameGenerator.generateName(),
+        actions = actions,
+    )
+}
 
-
+/**
+ * Convenience method to chain A to B via C using Kotlin reified types.
+ */
 inline fun <reified A, reified B, reified C> chain(
-    noinline a: (a: A) -> B,
-    noinline b: (b: B) -> C,
+    noinline a: (context: InputActionContext<A>) -> B,
+    noinline b: (context: InputActionContext<B>) -> C,
 ): AgentScopeBuilder {
     return chain(a, b, A::class.java, B::class.java, C::class.java)
 }
@@ -108,6 +138,9 @@ fun <A, B, C> aggregate(
     )
 }
 
+/**
+ * Aggregate taking 2 inputs
+ */
 fun <A1, A2, B : Any, C> biAggregate(
     transforms: List<(context: BiInputActionContext<A1, A2>) -> B>,
     merge: (list: List<B>) -> C,
@@ -171,14 +204,6 @@ fun <A1, A2, B : Any, C> biAggregate(
     )
 }
 
-interface OutputAwareActionContext<I, O> : InputsActionContext {
-    val input: I
-    val output: O
-
-    override val inputs: List<Any> get() = listOfNotNull(input, output)
-}
-
-
 /**
  * Run all the transforms and merge the results.
  */
@@ -218,6 +243,10 @@ inline fun <reified A1, reified A2, reified B : Any, reified C> biAggregate(
     )
 }
 
+/**
+ * Special aggregate that works like an accumulator. If the condition is not
+ * satisfied, your transformer methods will be called again with the latest updated context.
+ */
 inline fun <reified A, reified B : Any, reified C> repeatableAggregate(
     startWith: C,
     transforms: List<(context: BiInputActionContext<A, C>) -> B>,

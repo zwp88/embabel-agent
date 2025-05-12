@@ -19,6 +19,7 @@ import com.embabel.agent.core.*
 import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.support.EventSavingAgenticEventListener
+import com.embabel.agent.spi.support.Person
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
 import com.embabel.common.core.MobyNameGenerator
 import io.mockk.mockk
@@ -38,6 +39,42 @@ fun createAgentPlatform(): AgentPlatform {
 }
 
 class AgentScopeBuilderTest {
+
+    @Nested
+    inner class Chain {
+        @Test
+        fun `metadata is correct`() {
+            val agent: Agent = userInputToFrogChain()
+            assertEquals("uitf", agent.name)
+            assertEquals("Evil frogly wizard", agent.description)
+            assert(agent.version == DEFAULT_VERSION)
+            assert(agent.toolGroups.isEmpty())
+            assertEquals(0, agent.conditions.size, "Should have no conditions")
+            assertEquals(2, agent.actions.size, "Should have 2 actions")
+            assertEquals(1, agent.goals.size)
+        }
+
+        @Test
+        fun `agent runs`() {
+            val agent: Agent = userInputToFrogChain()
+            val ap = createAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                2,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is Frog)
+        }
+    }
 
     @Nested
     inner class Aggregate {
@@ -230,10 +267,21 @@ data class GeneratedName(val name: String, val reason: String)
 data class GeneratedNames(val names: List<GeneratedName>)
 data class AllNames(val accepted: List<GeneratedName>, val rejected: List<GeneratedName>)
 
+fun userInputToFrogChain() = agent("uitf", description = "Evil frogly wizard") {
+
+    flow {
+        chain<UserInput, Person, Frog>(
+            { Person(it.input.content) },
+            { Frog(it.input.name) },
+        )
+    }
+
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = Frog::class)
+}
 
 fun simpleNamer() = agent("Thing namer", description = "Name a thing, using internet research") {
 
-    actions {
+    flow {
         aggregate<UserInput, GeneratedNames, AllNames>(
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },
@@ -256,7 +304,7 @@ fun redoNamer() =
         description = "Name a thing, using internet research, repeating until we are happy"
     ) {
 
-        actions {
+        flow {
             repeat<AllNames>(
                 what = {
                     repeatableAggregate<UserInput, GeneratedNames, AllNames>(
@@ -295,7 +343,7 @@ fun nestingByName() = agent("nesting test", description = "Nesting test") {
 
     referencedAgentAction<UserInput, Thing>(agentName = "foobar")
 
-    actions {
+    flow {
         aggregate<Thing, GeneratedNames, AllNames>(
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },
@@ -321,7 +369,7 @@ fun nestingByReference() = agent("nesting test", description = "Nesting test") {
             }
             goal("name", "description", satisfiedBy = Thing::class)
         })
-    actions {
+    flow {
         aggregate<Thing, GeneratedNames, AllNames>(
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },
@@ -344,7 +392,7 @@ fun biAggregate() = agent("biAggregate", description = "Nesting test") {
         Thing(it.input.content)
     }
 
-    actions {
+    flow {
         biAggregate<UserInput, Thing, GeneratedNames, AllNames>(
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },

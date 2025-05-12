@@ -78,7 +78,7 @@ fun simpleNamingAgent(
         )
     }
 
-    actions {
+    flow {
 
         referencedAgentAction<UserInput, ResearchReport>(agentName = Researcher::class.java.name)
 
