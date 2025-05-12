@@ -18,7 +18,6 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.ActionRunner
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.Transition
 import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
@@ -46,7 +45,6 @@ internal class SerializableAction(
     inputs: Set<IoBinding> = setOfNotNull(input),
     output: IoBinding? = null,
     outputs: Set<IoBinding> = setOfNotNull(output),
-    transitions: List<Transition> = emptyList(),
     toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Collection<String> = emptySet(),
     val runner: ActionRunner,
@@ -61,7 +59,6 @@ internal class SerializableAction(
     value = value,
     inputs = inputs,
     outputs = outputs,
-    transitions = transitions,
     canRerun = canRerun,
     toolGroups = toolGroups,
     qos = qos,

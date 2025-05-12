@@ -17,7 +17,10 @@ package com.embabel.agent.api.dsl.support
 
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.MagicVictim
-import com.embabel.agent.core.*
+import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.Condition
+import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.common.ai.model.LlmOptions
 import io.mockk.every
@@ -25,7 +28,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.ai.tool.ToolCallback
@@ -173,38 +175,6 @@ class PromptTransformerKtTest {
             } returns Frog(name = "Alice")
 
             transformer.execute(processContext = processContext, outputTypes = emptyMap(), action = transformer)
-        }
-
-        @Test
-        @Disabled("behavior not yet defined")
-        fun `transformer should handle transitions and expectations`() {
-            val transition = Transition(to = "nextStep", condition = "someCondition")
-            val expectationCondition = mockk<Condition>()
-
-            every { expectationCondition.name } returns "expectationCheck"
-
-            val transformer = promptTransformer<MagicVictim, Frog>(
-                name = "transitionTransformer",
-                transitions = listOf(transition),
-                expectation = expectationCondition,
-                inputClass = MagicVictim::class.java,
-                outputClass = Frog::class.java,
-            ) {
-                "Transform ${it.input.name}"
-            }
-
-            // Should include both the explicit transition and the expectation transition
-            assertEquals(2, transformer.transitions.size)
-
-            // Verify the explicit transition
-            val explicitTransition = transformer.transitions.find { it.to == "nextStep" }
-            assertNotNull(explicitTransition)
-            assertEquals("someCondition", explicitTransition?.condition)
-
-            // Verify the expectation transition
-            val expectationTransition = transformer.transitions.find { it.to == "transitionTransformer" }
-            assertNotNull(expectationTransition)
-            assertEquals("expectationCheck", expectationTransition?.condition)
         }
 
         @Test

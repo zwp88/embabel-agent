@@ -18,7 +18,6 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.Transition
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
@@ -44,7 +43,6 @@ object Rerun {
  * @param inputs the input bindings
  * @param outputs the output bindings
  * @param canRerun can we rerun this action?
- * @param transitions any transitions
  * @param qos quality of service requirements
  */
 abstract class AbstractAction(
@@ -56,7 +54,6 @@ abstract class AbstractAction(
     override val value: ZeroToOne = 0.0,
     override val inputs: Set<IoBinding> = emptySet(),
     override val outputs: Set<IoBinding> = emptySet(),
-    override val transitions: List<Transition> = emptyList(),
     override val toolGroups: Collection<String>,
     override val canRerun: Boolean,
     override val qos: ActionQos = ActionQos(),

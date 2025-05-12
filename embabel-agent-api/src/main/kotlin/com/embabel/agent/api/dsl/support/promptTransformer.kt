@@ -20,7 +20,6 @@ import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.Transition
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
@@ -39,30 +38,21 @@ fun <I, O : Any> promptTransformer(
     inputClass: Class<I>,
     outputClass: Class<O>,
     cost: ZeroToOne = 0.0,
-    transitions: List<Transition> = emptyList(),
     toolGroups: Collection<String> = emptyList(),
     qos: ActionQos = ActionQos(),
     referencedInputProperties: Set<String>? = null,
     llm: LlmOptions = LlmOptions(),
     promptContributors: List<PromptContributor> = emptyList(),
-    expectation: Condition? = null,
     canRerun: Boolean = false,
     toolCallbacks: Collection<ToolCallback> = emptyList(),
     prompt: (actionContext: TransformationActionContext<I, O>) -> String,
 ): TransformationAction<I, O> {
-    val expectationTransition = expectation?.let {
-        Transition(
-            to = name,
-            condition = name,
-        )
-    }
     return TransformationAction<I, O>(
         name = name,
         description = description,
         pre = pre.map { it.name },
         post = post.map { it.name },
         cost = cost,
-        transitions = (transitions + expectationTransition).filterNotNull(),
         qos = qos,
         canRerun = canRerun,
         inputVarName = inputVarName,
