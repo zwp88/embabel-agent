@@ -53,7 +53,7 @@ class OperationContextPromptRunnerTest {
         val runner = OperationContextPromptRunner(
             context = mockOperationContext,
             llm = LlmOptions(),
-            toolGroups = emptyList(),
+            toolGroups = emptySet(),
             toolCallbacks = emptyList(),
             promptContributors = emptyList()
         )

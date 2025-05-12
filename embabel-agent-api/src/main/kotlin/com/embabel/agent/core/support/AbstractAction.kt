@@ -54,7 +54,7 @@ abstract class AbstractAction(
     override val value: ZeroToOne = 0.0,
     override val inputs: Set<IoBinding> = emptySet(),
     override val outputs: Set<IoBinding> = emptySet(),
-    override val toolGroups: Collection<String>,
+    override val toolGroups: Set<String>,
     override val canRerun: Boolean,
     override val qos: ActionQos = ActionQos(),
 ) : Action {

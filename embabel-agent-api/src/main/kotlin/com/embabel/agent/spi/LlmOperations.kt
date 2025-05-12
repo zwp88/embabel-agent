@@ -47,7 +47,7 @@ interface LlmCall : PromptContributorConsumer, ToolConsumer {
         operator fun invoke(): LlmCall = object : LlmCall {
             override val name = MobyNameGenerator.generateName()
             override val llm: LlmOptions? = null
-            override val toolGroups: Collection<String> = emptyList()
+            override val toolGroups: Set<String> = emptySet()
             override val toolCallbacks: List<ToolCallback> = emptyList()
             override val promptContributors: List<PromptContributor> = emptyList()
         }
@@ -72,7 +72,7 @@ interface LlmCall : PromptContributorConsumer, ToolConsumer {
 data class LlmInteraction(
     val id: InteractionId,
     override val llm: LlmOptions = LlmOptions(),
-    override val toolGroups: Collection<String> = emptyList(),
+    override val toolGroups: Set<String> = emptySet(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
 ) : LlmCall {

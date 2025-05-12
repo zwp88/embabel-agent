@@ -180,7 +180,7 @@ class PromptTransformerKtTest {
         @Test
         fun `transformer should handle tool groups and callbacks`() {
             val toolCallback = mockk<ToolCallback>()
-            val toolGroups = listOf("math", "web")
+            val toolGroups = setOf("math", "web")
 
             val transformer = promptTransformer<MagicVictim, Frog>(
                 name = "toolTransformer",

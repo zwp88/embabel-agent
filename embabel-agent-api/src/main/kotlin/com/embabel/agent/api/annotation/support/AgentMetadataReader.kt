@@ -250,7 +250,7 @@ class AgentMetadataReader(
                 override val name: String = method.name
             },
             processContext = processContext,
-            toolGroups = emptyList(),
+            toolGroups = emptySet(),
         )
         for (parameter in method.parameters) {
             when {

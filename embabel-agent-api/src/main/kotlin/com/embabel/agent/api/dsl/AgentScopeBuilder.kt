@@ -45,7 +45,7 @@ fun <A, B, C> chain(
             canRerun = false,
             inputClass = aClass,
             outputClass = bClass,
-            toolGroups = emptyList(),
+            toolGroups = emptySet(),
             toolCallbacks = emptyList(),
         ) {
             a.invoke(it)
@@ -58,7 +58,7 @@ fun <A, B, C> chain(
             canRerun = false,
             inputClass = bClass,
             outputClass = cClass,
-            toolGroups = emptyList(),
+            toolGroups = emptySet(),
             toolCallbacks = emptyList(),
         ) {
             b.invoke(it)
@@ -90,7 +90,7 @@ fun <A, B, C> branch(
             inputClass = aClass,
             leftOutputClass = bClass,
             rightOutputClass = cClass,
-            toolGroups = emptyList(),
+            toolGroups = emptySet(),
             toolCallbacks = emptyList(),
         ) {
             a.invoke(it)
@@ -147,7 +147,7 @@ fun <A, B, C> aggregate(
             canRerun = true,
             inputClass = aClass,
             outputClass = bClass,
-            toolGroups = emptyList(),
+            toolGroups = emptySet(),
             toolCallbacks = emptyList(),
         ) {
             transform.invoke(it)
@@ -164,7 +164,7 @@ fun <A, B, C> aggregate(
         canRerun = true,
         inputClass = bClass,
         outputClass = cClass,
-        toolGroups = emptyList(),
+        toolGroups = emptySet(),
         toolCallbacks = emptyList(),
     ) {
         val cList = it.objects.filterIsInstance<B>(bClass)
@@ -213,7 +213,7 @@ fun <A1, A2, B : Any, C> biAggregate(
             ),
             inputClasses = listOf(a1Class, a2Class),
             outputClass = bClass,
-            toolGroups = emptyList(),
+            toolGroups = emptySet(),
         ) {
             transform.invoke(BiInputActionContext(it.input[0] as A1, it.input[1] as A2, it))
         }
@@ -229,7 +229,7 @@ fun <A1, A2, B : Any, C> biAggregate(
         canRerun = true,
         inputClass = bClass,
         outputClass = cClass,
-        toolGroups = emptyList(),
+        toolGroups = emptySet(),
         toolCallbacks = emptyList(),
     ) {
         val cList = it.objects.filterIsInstance<B>(bClass)
@@ -309,7 +309,7 @@ inline fun <reified A, reified B : Any, reified C> repeatableAggregate(
         value = 0.0,
         canRerun = true,
         outputClass = C::class.java,
-        toolGroups = emptyList(),
+        toolGroups = emptySet(),
         toolCallbacks = emptyList(),
     ) {
         startWith
@@ -347,7 +347,7 @@ fun <C> repeat(
         canRerun = true,
         inputClass = cClass,
         outputClass = cClass,
-        toolGroups = emptyList(),
+        toolGroups = emptySet(),
         toolCallbacks = emptyList(),
     ) {
         TODO()

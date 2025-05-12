@@ -38,7 +38,7 @@ fun <I, O : Any> promptTransformer(
     inputClass: Class<I>,
     outputClass: Class<O>,
     cost: ZeroToOne = 0.0,
-    toolGroups: Collection<String> = emptyList(),
+    toolGroups: Set<String> = emptySet(),
     qos: ActionQos = ActionQos(),
     referencedInputProperties: Set<String>? = null,
     llm: LlmOptions = LlmOptions(),

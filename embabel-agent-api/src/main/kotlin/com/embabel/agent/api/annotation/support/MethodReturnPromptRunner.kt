@@ -29,7 +29,7 @@ import org.springframework.ai.tool.ToolCallback
  */
 internal class MethodReturnPromptRunner(
     override val llm: LlmOptions?,
-    override val toolGroups: Collection<String>,
+    override val toolGroups: Set<String>,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {

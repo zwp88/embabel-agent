@@ -27,7 +27,7 @@ import org.springframework.ai.tool.ToolCallback
 @JvmOverloads
 fun using(
     llm: LlmOptions? = null,
-    toolGroups: Collection<String> = emptyList(),
+    toolGroups: Set<String> = emptySet(),
     toolCallbacks: List<ToolCallback> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
 ): PromptRunner =
@@ -45,7 +45,7 @@ fun using(
 @JvmOverloads
 fun usingModel(
     model: String,
-    toolGroups: Collection<String> = emptyList(),
+    toolGroups: Set<String> = emptySet(),
     toolCallbacks: List<ToolCallback> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
 ): PromptRunner =
@@ -59,7 +59,7 @@ fun usingModel(
 val usingDefaultLlm: PromptRunner =
     MethodReturnPromptRunner(
         llm = null,
-        toolGroups = emptyList(),
+        toolGroups = emptySet(),
         toolCallbacks = emptyList(),
         promptContributors = emptyList(),
     )

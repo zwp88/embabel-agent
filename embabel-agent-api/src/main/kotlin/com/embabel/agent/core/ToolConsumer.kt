@@ -160,7 +160,7 @@ interface ToolGroupConsumer {
      * Tool groups exposed. This will include directly registered tool groups
      * and tool groups resolved from ToolGroups.
      */
-    val toolGroups: Collection<String>
+    val toolGroups: Set<String>
 }
 
 /**

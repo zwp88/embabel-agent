@@ -70,7 +70,7 @@ class SupplierAction<O>(
     outputVarName: String? = IoBinding.DEFAULT_BINDING,
     referencedInputProperties: Set<String>? = null,
     toolCallbacks: List<ToolCallback> = emptyList(),
-    toolGroups: Collection<String>,
+    toolGroups: Set<String>,
     block: Transformation<Unit, O>,
 ) : TransformationAction<Unit, O>(
     name = name,
@@ -108,7 +108,7 @@ open class TransformationAction<I, O>(
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
     toolCallbacks: List<ToolCallback> = emptyList(),
-    toolGroups: Collection<String>,
+    toolGroups: Set<String>,
     private val block: Transformation<I, O>,
 ) : AbstractAction(
     name = name,

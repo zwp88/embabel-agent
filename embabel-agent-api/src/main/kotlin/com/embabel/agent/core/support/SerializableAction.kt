@@ -46,7 +46,7 @@ internal class SerializableAction(
     output: IoBinding? = null,
     outputs: Set<IoBinding> = setOfNotNull(output),
     toolCallbacks: List<ToolCallback> = emptyList(),
-    toolGroups: Collection<String> = emptySet(),
+    toolGroups: Set<String> = emptySet(),
     val runner: ActionRunner,
     qos: ActionQos = ActionQos(),
     canRerun: Boolean = false,

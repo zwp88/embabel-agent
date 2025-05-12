@@ -27,6 +27,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Java syntax sugar for running prompts.
@@ -42,7 +43,7 @@ public class Using implements PromptRunner {
 
     private final LlmOptions llmOptions;
 
-    private final List<String> toolGroups = List.of();
+    private final Set<String> toolGroups = Set.of();
 
     private final List<ToolCallback> toolCallbacks = List.of();
 
@@ -106,7 +107,7 @@ public class Using implements PromptRunner {
     }
 
     @Override
-    public @NotNull List<String> getToolGroups() {
+    public @NotNull Set<String> getToolGroups() {
         return toolGroups;
     }
 

@@ -39,7 +39,7 @@ class MultiTransformationAction<O : Any>(
     private val outputClass: Class<O>,
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    toolGroups: Collection<String>,
+    toolGroups: Set<String>,
     private val block: Transformation<List<Any>, O>,
 ) : AbstractAction(
     name = name,

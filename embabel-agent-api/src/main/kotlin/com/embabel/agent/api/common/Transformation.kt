@@ -58,7 +58,7 @@ fun <I, O : Any> asAction(agentName: String, inputClass: Class<I>, outputClass: 
         canRerun = true,
         inputClass = inputClass,
         outputClass = outputClass,
-        toolGroups = emptyList(),
+        toolGroups = emptySet(),
         toolCallbacks = emptyList(),
     ) {
         val agent: Agent = it.processContext.platformServices.agentPlatform.agents().singleOrNull() {
@@ -86,7 +86,7 @@ inline fun <reified I, reified O : Any> agentTransformer(agent: Agent): Action {
         canRerun = true,
         inputClass = I::class.java,
         outputClass = O::class.java,
-        toolGroups = emptyList(),
+        toolGroups = emptySet(),
         toolCallbacks = emptyList(),
     ) {
         agent.asTransformation<I, O>().transform(it)

@@ -76,7 +76,7 @@ internal class DefaultActionMethodManager(
             inputClasses = inputClasses,
             outputClass = method.returnType as Class<Any>,
             outputVarName = actionAnnotation.outputBinding,
-            toolGroups = actionAnnotation.toolGroups.asList(),
+            toolGroups = actionAnnotation.toolGroups.toSet(),
         ) { context ->
             invokeActionMethod(
                 method = method,
@@ -119,7 +119,7 @@ internal class DefaultActionMethodManager(
             val promptRunner = context.promptRunner(
                 llm = e.llm ?: LlmOptions.Companion(),
                 // Remember to add tool groups from the context to those the exception specified at the call site
-                toolGroups = (e.toolGroups + context.toolGroups).distinct(),
+                toolGroups = e.toolGroups + context.toolGroups,
                 toolCallbacks = toolCallbacksToUse,
                 promptContributors = promptContributors,
             )

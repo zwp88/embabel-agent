@@ -52,7 +52,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
      */
     fun promptRunner(
         llm: LlmOptions = LlmOptions(),
-        toolGroups: Collection<String> = emptyList(),
+        toolGroups: Set<String> = emptySet(),
         toolCallbacks: List<ToolCallback> = emptyList(),
         promptContributors: List<PromptContributor?> = emptyList(),
     ): PromptRunner {
@@ -73,7 +73,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         operator fun invoke(
             processContext: ProcessContext,
             operation: Named,
-            toolGroups: List<String>,
+            toolGroups: Set<String>,
         ): OperationContext =
             SimpleOperationContext(
                 processContext = processContext,
@@ -86,7 +86,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
 private class SimpleOperationContext(
     override val processContext: ProcessContext,
     override val operation: Named,
-    override val toolGroups: Collection<String>,
+    override val toolGroups: Set<String>,
 ) : OperationContext, Blackboard by processContext.agentProcess {
     override fun toString(): String {
         return "SimpleOperationContext(processContext=$processContext)"
@@ -106,7 +106,7 @@ interface ActionContext : OperationContext {
     // TODO default LLM options from action
     override fun promptRunner(
         llm: LlmOptions,
-        toolGroups: Collection<String>,
+        toolGroups: Set<String>,
         toolCallbacks: List<ToolCallback>,
         promptContributors: List<PromptContributor?>,
     ): PromptRunner {
@@ -164,7 +164,7 @@ data class TransformationActionContext<I, O>(
 ) : InputActionContext<I>, Blackboard by processContext.agentProcess,
     AgenticEventListener by processContext {
 
-    override val toolGroups: Collection<String>
+    override val toolGroups: Set<String>
         get() = action.toolGroups
 
     override val operation = action

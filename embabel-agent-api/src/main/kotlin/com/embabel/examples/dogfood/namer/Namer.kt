@@ -66,7 +66,7 @@ fun simpleNamingAgent(
 ) {
 
     fun generateNamesWith(llm: LlmOptions, context: BiInputActionContext<UserInput, ResearchReport>): GeneratedNames {
-        return context.promptRunner(llm = llm, toolGroups = listOf(ToolGroup.WEB)).createObject(
+        return context.promptRunner(llm = llm, toolGroups = setOf(ToolGroup.WEB)).createObject(
             """
             Generate a list of names for a company or project, based on the following input.
             Consider the following research report:
