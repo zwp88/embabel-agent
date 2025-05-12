@@ -25,7 +25,6 @@ import com.embabel.plan.goap.EffectSpec
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.ai.tool.ToolCallback
 
 object Rerun {
     const val HAS_RUN_CONDITION_PREFIX = "hasRun_"
@@ -58,7 +57,6 @@ abstract class AbstractAction(
     override val inputs: Set<IoBinding> = emptySet(),
     override val outputs: Set<IoBinding> = emptySet(),
     override val transitions: List<Transition> = emptyList(),
-    override val toolCallbacks: List<ToolCallback>,
     override val toolGroups: Collection<String>,
     override val canRerun: Boolean,
     override val qos: ActionQos = ActionQos(),

@@ -173,7 +173,7 @@ interface AgentSystemStep : GoapStep, Described {
 @JsonSubTypes(
     JsonSubTypes.Type(value = SerializableAction::class),
 )
-interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, ToolConsumer {
+interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, ToolGroupConsumer {
     val outputs: Set<IoBinding>
     override val cost: ZeroToOne get() = 0.0
 

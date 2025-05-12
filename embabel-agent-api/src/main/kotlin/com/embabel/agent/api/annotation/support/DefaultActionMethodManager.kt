@@ -24,10 +24,8 @@ import com.embabel.agent.core.Action
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.core.util.DummyInstanceCreator
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.ai.tool.definition.ToolDefinition
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
 
@@ -35,11 +33,11 @@ import java.lang.reflect.Method
  * Implementation that creates dummy instances of domain objects to discover tools,
  * before re-reading the tool callbacks from the actual domain object instances at invocation time.
  */
-internal class DummyDomainObjectInstanceCreatingActionMethodManager(
+internal class DefaultActionMethodManager(
     val nameGenerator: NameGenerator = NameGenerator()
 ) : ActionMethodManager {
 
-    private val logger = LoggerFactory.getLogger(DummyDomainObjectInstanceCreatingActionMethodManager::class.java)
+    private val logger = LoggerFactory.getLogger(DefaultActionMethodManager::class.java)
 
     @Suppress("UNCHECKED_CAST")
     override fun createAction(
@@ -67,13 +65,7 @@ internal class DummyDomainObjectInstanceCreatingActionMethodManager(
             .filterNot {
                 OperationContext::class.java.isAssignableFrom(it.type)
             }
-            .forEach {
-                // Obtain dummy tools to drive metadata. Will not be invoked.
-                val parameterInstance = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(it.type)
-                allToolCallbacks += safelyGetToolCallbacksFrom(parameterInstance).map {
-                    DummyToolCallback(it)
-                }
-            }
+
         return MultiTransformationAction(
             name = nameGenerator.generateName(instance, method.name),
             description = actionAnnotation.description.ifBlank { method.name },
@@ -85,14 +77,14 @@ internal class DummyDomainObjectInstanceCreatingActionMethodManager(
             inputClasses = inputClasses,
             outputClass = method.returnType as Class<Any>,
             outputVarName = actionAnnotation.outputBinding,
-            toolCallbacks = allToolCallbacks.toList(),
             toolGroups = actionAnnotation.toolGroups.asList(),
         ) { context ->
             invokeActionMethod(
                 method = method,
                 instance = instance,
-                context = context,
-                toolCallbacks = toolCallbacksOnInstance,
+                context = context.copy(),
+                // Get the tool callbacks from the real instance, which we now have access to
+                toolCallbacks = safelyGetToolCallbacksFrom(context.input),
             )
         }
     }
@@ -105,19 +97,13 @@ internal class DummyDomainObjectInstanceCreatingActionMethodManager(
         toolCallbacks: List<ToolCallback>,
     ): O {
         logger.debug("Invoking action method {} with payload {}", method.name, context.input)
-        // Recompute tool callbacks on domain object parameters to remove dummy tools
-        // that we created to drive metadata
+
         val toolCallbacksOnRealDomainObjects = context.input.flatMap { safelyGetToolCallbacksFrom(it) }
         logger.debug("Tool callbacks on real domain objects: {}", toolCallbacksOnRealDomainObjects)
         val toolCallbacksToUse =
-            (toolCallbacks.filterNot { it is DummyToolCallback } + toolCallbacksOnRealDomainObjects)
+            (toolCallbacks + toolCallbacksOnRealDomainObjects)
                 .distinctBy { it.toolDefinition.name() }
 
-        if (toolCallbacksToUse.filterIsInstance<DummyToolCallback>().isNotEmpty()) {
-            error(
-                "Bug: Tool callbacks include dummies: ${toolCallbacksToUse.filterIsInstance<DummyToolCallback>()}"
-            )
-        }
         var args = context.input.toTypedArray()
         if (method.parameters.any { OperationContext::class.java.isAssignableFrom(it.type) }) {
             // We need to add the payload as the last argument
@@ -133,7 +119,7 @@ internal class DummyDomainObjectInstanceCreatingActionMethodManager(
 
             val promptRunner = context.promptRunner(
                 llm = e.llm ?: LlmOptions.Companion(),
-                toolGroups = e.toolGroups + (context.action?.toolGroups ?: emptyList()),
+                toolGroups = e.toolGroups,
                 toolCallbacks = toolCallbacksToUse,
                 promptContributors = promptContributors,
             )
@@ -167,16 +153,4 @@ internal class DummyDomainObjectInstanceCreatingActionMethodManager(
         return result as O
     }
 
-}
-
-/**
- * Distinct class to ensure that we never call them
- */
-class DummyToolCallback(val delegate: ToolCallback) : ToolCallback {
-    override fun getToolDefinition(): ToolDefinition =
-        delegate.toolDefinition
-
-    override fun call(toolInput: String): String {
-        error("Dummy tool callback called: $toolInput")
-    }
 }

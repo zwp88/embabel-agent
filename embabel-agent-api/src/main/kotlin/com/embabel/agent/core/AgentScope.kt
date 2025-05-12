@@ -69,7 +69,7 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
         extraToolGroups: Collection<String> = emptyList(),
     ): Agent {
         val toolCallbacks =
-            (actions.flatMap { it.toolCallbacks } + extraToolCallbacks).distinct()
+            extraToolCallbacks.distinct()
         val toolGroups =
             (actions.flatMap { it.toolGroups } + extraToolGroups).distinct()
         val newAgent = Agent(

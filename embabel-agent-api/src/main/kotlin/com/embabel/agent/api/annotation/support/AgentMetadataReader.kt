@@ -73,7 +73,7 @@ data class AgenticInfo(
  */
 @Service
 class AgentMetadataReader(
-    private val actionMethodManager: ActionMethodManager = DummyDomainObjectInstanceCreatingActionMethodManager(),
+    private val actionMethodManager: ActionMethodManager = DefaultActionMethodManager(),
     private val nameGenerator: NameGenerator = NameGenerator(),
 ) {
 

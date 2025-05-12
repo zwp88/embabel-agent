@@ -63,7 +63,6 @@ internal class SerializableAction(
     outputs = outputs,
     transitions = transitions,
     canRerun = canRerun,
-    toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,
     qos = qos,
 ),

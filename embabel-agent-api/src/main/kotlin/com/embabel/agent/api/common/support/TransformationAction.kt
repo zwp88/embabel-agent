@@ -123,7 +123,6 @@ open class TransformationAction<I, O>(
     inputs = expandInputBindings(inputVarName, inputClass),
     outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.name)),
     transitions = transitions,
-    toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,
     canRerun = canRerun,
     qos = qos,
