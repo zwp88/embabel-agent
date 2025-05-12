@@ -219,6 +219,10 @@ class ShellCommands(
     fun models(): String =
         modelProvider.infoString(true)
 
+    @ShellMethod("List available rag services")
+    fun ragService(): String =
+        autonomy.agentPlatform.platformServices.ragService.infoString(verbose = true)
+
     @ShellMethod("Show options")
     fun showOptions(): String {
         // Don't show the blackboard as it's long

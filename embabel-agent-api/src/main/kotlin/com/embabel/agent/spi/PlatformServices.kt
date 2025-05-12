@@ -17,6 +17,7 @@ package com.embabel.agent.spi
 
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.rag.RagService
 import org.springframework.stereotype.Component
 
 /**
@@ -32,4 +33,5 @@ data class PlatformServices(
     val llmOperations: LlmOperations,
     val eventListener: AgenticEventListener,
     val operationScheduler: OperationScheduler,
+    val ragService: RagService,
 )

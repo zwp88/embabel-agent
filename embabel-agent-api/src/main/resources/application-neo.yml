@@ -1,0 +1,6 @@
+spring:
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: ${NEO4J_USERNAME:-neo4j}
+      password: ${NEO4J_PASSWORD:-brahmsian}
