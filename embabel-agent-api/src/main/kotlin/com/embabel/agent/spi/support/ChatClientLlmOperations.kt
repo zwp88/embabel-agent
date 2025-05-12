@@ -115,10 +115,6 @@ internal class ChatClientLlmOperations(
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>?,
     ): O {
-        // TODO would be good to identify this ahead of time
-        if (List::class.java.isAssignableFrom(outputClass)) {
-            error("Output class must not be a List")
-        }
 
         val resources = getLlmInvocationResources(interaction.llm)
         val promptContributions =

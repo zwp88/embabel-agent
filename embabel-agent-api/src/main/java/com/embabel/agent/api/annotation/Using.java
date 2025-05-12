@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.lang.NonNull;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -130,7 +129,7 @@ public class Using implements PromptRunner {
     }
 
     @Override
-    public @NotNull Collection<ToolCallback> resolveToolCallbacks(@NotNull ToolGroupResolver toolGroupResolver) {
+    public @NotNull List<ToolCallback> resolveToolCallbacks(@NotNull ToolGroupResolver toolGroupResolver) {
         return ToolConsumer.Companion.resolveToolCallbacks(this, toolGroupResolver);
     }
 }

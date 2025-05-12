@@ -146,20 +146,21 @@ abstract class AbstractLlmOperations(
         val allToolCallbacks =
             interaction.resolveToolCallbacks(
                 toolGroupResolver,
-                // TODO this is hacky
             )
         val llmRequestEvent = LlmRequestEvent(
             agentProcess = agentProcess,
             outputClass = outputClass,
-            interaction = interaction,
+            interaction = interaction.copy(
+                toolCallbacks = allToolCallbacks,
+            ),
             prompt = prompt,
         )
-        agentProcess.processContext.platformServices.eventListener.onProcessEvent(
+        agentProcess.processContext.onProcessEvent(
             llmRequestEvent
         )
         logger.debug(
             "Expanded toolCallbacks from {}: {}",
-            llmRequestEvent,
+            llmRequestEvent.interaction.toolCallbacks.map { it.toolDefinition.name() },
             allToolCallbacks.map { it.toolDefinition.name() })
         return Triple(allToolCallbacks, prompt, llmRequestEvent)
     }

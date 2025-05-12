@@ -172,7 +172,7 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
 
     val name: String
 
-    fun resolveToolCallbacks(toolGroupResolver: ToolGroupResolver): Collection<ToolCallback> =
+    fun resolveToolCallbacks(toolGroupResolver: ToolGroupResolver): List<ToolCallback> =
         resolveToolCallbacks(
             toolConsumer = this,
             toolGroupResolver = toolGroupResolver,
@@ -183,7 +183,7 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
         fun resolveToolCallbacks(
             toolConsumer: ToolConsumer,
             toolGroupResolver: ToolGroupResolver
-        ): Collection<ToolCallback> {
+        ): List<ToolCallback> {
             val tools = mutableListOf<ToolCallback>()
             tools += toolConsumer.toolCallbacks
             for (role in toolConsumer.toolGroups) {
@@ -204,7 +204,7 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
                 toolConsumer.toolGroups.size,
                 tools.map { it.toolDefinition.name() },
             )
-            return tools.distinctBy { it.toolDefinition.name() }
+            return tools.distinctBy { it.toolDefinition.name() }.sortedBy { it.toolDefinition.name() }
         }
     }
 }

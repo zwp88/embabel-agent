@@ -247,7 +247,9 @@ class ChatClientLlmOperationsTest {
             assertEquals(1, fakeChatModel.promptsPassed.size)
             val tools = fakeChatModel.optionsPassed[0].toolCallbacks
             assertEquals(toolCallbacks.size, tools.size, "Must have passed same number of tools")
-            assertEquals(toolCallbacks.map { it.toolDefinition.name() }, tools.map { it.toolDefinition.name() })
+            assertEquals(
+                toolCallbacks.map { it.toolDefinition.name() }.sorted(),
+                tools.map { it.toolDefinition.name() })
         }
 
         @Test
@@ -382,7 +384,9 @@ class ChatClientLlmOperationsTest {
             assertEquals(1, fakeChatModel.promptsPassed.size)
             val tools = fakeChatModel.optionsPassed[0].toolCallbacks
             assertEquals(toolCallbacks.size, tools.size, "Must have passed same number of tools")
-            assertEquals(toolCallbacks.map { it.toolDefinition.name() }, tools.map { it.toolDefinition.name() })
+            assertEquals(
+                toolCallbacks.map { it.toolDefinition.name() }.sorted(),
+                tools.map { it.toolDefinition.name() })
         }
     }
 

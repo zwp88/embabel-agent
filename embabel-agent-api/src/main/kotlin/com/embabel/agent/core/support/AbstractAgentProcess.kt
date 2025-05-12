@@ -99,7 +99,7 @@ abstract class AbstractAgentProcess(
 
     override fun addObject(value: Any): Bindable {
         blackboard.addObject(value)
-        processContext.platformServices.eventListener.onProcessEvent(
+        processContext.onProcessEvent(
             ObjectAddedEvent(
                 agentProcess = this,
                 value = value,
