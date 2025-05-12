@@ -89,7 +89,7 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
             "Cannot get result of process that is not completed: Status=$status"
         }
         return processContext.getValue(IoBinding.DEFAULT_BINDING, outputClass.simpleName) as O?
-            ?: error("No result found in process status")
+            ?: error("No result of type ${outputClass.name} found in process status")
     }
 
 }

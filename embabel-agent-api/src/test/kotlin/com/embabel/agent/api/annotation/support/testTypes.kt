@@ -20,7 +20,7 @@ import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.createObject
-import com.embabel.agent.api.dsl.Frog
+import com.embabel.agent.api.dsl.*
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
@@ -453,3 +453,37 @@ class ToolMethodsOnDomainObjects {
 }
 
 data class NoTools(val x: Int)
+
+
+@Agent(description = "define flow")
+class DefineFlowTest {
+
+    @Action
+    fun toPerson(userInput: UserInput, context: TransformationActionContext<UserInput, Person>): Person {
+        return chain<UserInput, Person, Frog>(
+            { Person(it.input.content) },
+            { Frog(it.input.name) },
+        ).run(context)
+    }
+
+    @AchievesGoal(description = "Creating a person")
+    @Action
+    fun done(person: Person): Person {
+        return person
+    }
+}
+
+@Agent(description = "local agent")
+class LocalAgentTest {
+
+    @Action
+    fun toDeadPerson(userInput: UserInput, context: TransformationActionContext<UserInput, SnakeMeal>): SnakeMeal {
+        return runAgent<UserInput, SnakeMeal>(evenMoreEvilWizard(), context)
+    }
+
+    @AchievesGoal(description = "Eating a person")
+    @Action
+    fun done(person: SnakeMeal): SnakeMeal {
+        return person
+    }
+}

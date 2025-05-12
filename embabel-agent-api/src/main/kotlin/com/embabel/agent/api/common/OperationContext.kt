@@ -158,14 +158,14 @@ interface InputActionContext<I> : InputsActionContext {
 data class TransformationActionContext<I, O>(
     override val input: I,
     override val processContext: ProcessContext,
-    override val action: Action?,
+    override val action: Action,
     val inputClass: Class<I>,
     val outputClass: Class<O>,
 ) : InputActionContext<I>, Blackboard by processContext.agentProcess,
     AgenticEventListener by processContext {
 
     override val toolGroups: Collection<String>
-        get() = action?.toolGroups ?: emptyList()
+        get() = action.toolGroups
 
-    override val operation = action ?: error("No action in context")
+    override val operation = action
 }

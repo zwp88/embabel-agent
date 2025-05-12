@@ -111,7 +111,7 @@ class AutonomyGoalSelectionTest {
         // Mock the scope
         val agentScope = mockk<AgentScope>()
         every { agentScope.goals } returns setOf(testGoal)
-        every { agentScope.createAgent(any(), any(), any(), any()) } returns realAgent
+        every { agentScope.createAgent(any(), any()) } returns realAgent
 
         // Mock process with expected return value
         val testProcess = mockk<AgentProcess>()
@@ -190,7 +190,7 @@ class AutonomyGoalSelectionTest {
             agentScope.goals
 
             // Verify agent creation
-            agentScope.createAgent(any(), any(), any(), any())
+            agentScope.createAgent(any(), any())
 
             // Verify goal selection
             realAgent.withSingleGoal(testGoal)
@@ -293,7 +293,7 @@ class AutonomyGoalSelectionTest {
 
         // Mock agent creation
         every {
-            agentScope.createAgent(any(), any(), any(), any())
+            agentScope.createAgent(any(), any())
         } returns agent
 
         // Mock process with all necessary methods

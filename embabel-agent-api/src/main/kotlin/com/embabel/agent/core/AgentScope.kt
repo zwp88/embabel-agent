@@ -18,7 +18,6 @@ package com.embabel.agent.core
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Named
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.springframework.ai.tool.ToolCallback
 
 interface ConditionSource {
 
@@ -59,19 +58,11 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
      * Create a new agent from the given scope
      * @param name Name of the agent to create
      * @param description Description of the agent to create
-     * @param extraToolCallbacks Extra tool callbacks to add to the agent
-     * @param extraToolGroups Extra tool groups to add to the agent
      */
     fun createAgent(
         name: String,
         description: String,
-        extraToolCallbacks: Collection<ToolCallback> = emptyList(),
-        extraToolGroups: Collection<String> = emptyList(),
     ): Agent {
-        val toolCallbacks =
-            extraToolCallbacks.distinct()
-        val toolGroups =
-            (actions.flatMap { it.toolGroups } + extraToolGroups).distinct()
         val newAgent = Agent(
             name = name,
             description = name,

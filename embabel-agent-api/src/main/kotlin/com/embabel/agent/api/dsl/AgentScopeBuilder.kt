@@ -16,9 +16,7 @@
 package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.annotation.support.MultiTransformationAction
-import com.embabel.agent.api.common.ActionContext
-import com.embabel.agent.api.common.InputActionContext
-import com.embabel.agent.api.common.InputsActionContext
+import com.embabel.agent.api.common.*
 import com.embabel.agent.api.common.support.Branch
 import com.embabel.agent.api.common.support.BranchingAction
 import com.embabel.agent.api.common.support.SupplierAction
@@ -399,4 +397,50 @@ data class AgentScopeBuilder(
             conditions = conditions,
         )
     }
+
+    inline fun <reified O : Any> run(context: TransformationActionContext<*, O>): O {
+        val withExtraGoal = AgentScope(
+            name = name,
+            actions = actions,
+            goals = goals + Goal(
+                name = name,
+                description = "description",
+                inputs = setOf(
+                    IoBinding(
+                        type = context.outputClass,
+                        name = IoBinding.DEFAULT_BINDING,
+                    ),
+                ),
+            ),
+            conditions = conditions,
+        )
+        val agent = withExtraGoal.createAgent(
+            name = name,
+            description = name,
+        )
+        val singleAction = agent.asAction<Any, O>()
+        singleAction.execute(
+            processContext = context.processContext,
+            outputTypes = emptyMap(),
+            action = context.action,
+        )
+        return context.last<O>() ?: throw IllegalStateException(
+            "No output of type ${O::class.java} found in context"
+        )
+    }
+}
+
+inline fun <reified I, reified O : Any> runAgent(
+    agent: Agent,
+    context: TransformationActionContext<I, O>,
+): O {
+    val singleAction = agent.asAction<Any, O>()
+    singleAction.execute(
+        processContext = context.processContext,
+        outputTypes = emptyMap(),
+        action = context.action,
+    )
+    return context.last<O>() ?: throw IllegalStateException(
+        "No output of type ${O::class.java} found in context"
+    )
 }

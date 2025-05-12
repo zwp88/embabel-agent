@@ -115,7 +115,7 @@ abstract class AbstractAgentProcess(
     override fun run(): AgentProcess {
         if (agent.goals.isEmpty()) {
             logger.info("🤔 Process {} has no goals: {}", this.id, agent.goals)
-            error("Agent ${agent.name} has no goals")
+            error("Agent ${agent.name} has no goals: ${agent.infoString(verbose = true)}")
         }
 
         tick()
