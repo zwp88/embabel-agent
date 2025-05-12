@@ -77,7 +77,6 @@ interface LlmInvocationHistory {
  * @param agentName name of the agent, if known
  */
 data class LlmInvocation(
-
     val llm: Llm,
     val usage: Usage,
     val agentName: String? = null,

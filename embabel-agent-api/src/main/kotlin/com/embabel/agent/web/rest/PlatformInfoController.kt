@@ -15,25 +15,25 @@
  */
 package com.embabel.agent.web.rest
 
-import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.Agent
-import com.embabel.agent.core.Goal
-import com.embabel.agent.core.Action
-import com.embabel.agent.core.Condition
+import com.embabel.agent.core.*
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.tags.Tag
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+
 
 /**
  * Provides endpoints to retrieve general platform information, including agents, goals, actions, and conditions.
  */
 @RestController
 @RequestMapping("/api/v1/platform-info")
-@Tag(name = "Platform Information", description = "Endpoints for retrieving platform, agents, goals, actions, and conditions information.")
+@Tag(
+    name = "Platform Information",
+    description = "Endpoints for retrieving platform, agents, goals, actions, and conditions information."
+)
 class PlatformInfoController(
     private val agentPlatform: AgentPlatform,
 ) {
@@ -52,7 +52,7 @@ class PlatformInfoController(
             ApiResponse(responseCode = "200", description = "List of agents returned successfully")
         ]
     )
-    fun getAgents(): Set<Agent> = agentPlatform.agents()
+    fun getAgents(): List<AgentMetadata> = agentPlatform.agents().map { AgentMetadata(it) }.sortedBy { it.name }
 
     /**
      * Returns a list of all goals known to the platform (across all agents).

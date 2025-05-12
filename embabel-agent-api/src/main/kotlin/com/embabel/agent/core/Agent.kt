@@ -17,7 +17,10 @@ package com.embabel.agent.core
 
 import com.embabel.agent.spi.StuckHandler
 import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.Named
+import com.embabel.common.core.util.ComputerSaysNoSerializer
 import com.embabel.plan.goap.GoapPlanningSystem
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import org.slf4j.LoggerFactory
 
 /**
@@ -37,6 +40,7 @@ const val DEFAULT_VERSION = "0.1.0-SNAPSHOT"
  * @param actions The actions the agent can use
  * @param schemaTypes Data types used in this agent
  */
+@JsonSerialize(using = ComputerSaysNoSerializer::class)
 data class Agent(
     override val name: String,
     val version: String = DEFAULT_VERSION,
@@ -118,4 +122,26 @@ data class Agent(
         }
     }
 
+}
+
+/**
+ * Safely serializable agent metadata
+ */
+data class AgentMetadata(
+    override val name: String,
+    val version: String,
+    override val description: String,
+    val goals: List<String>,
+    val actions: List<String>,
+    val conditions: Set<String>
+) : Named, Described {
+
+    constructor(agent: Agent) : this(
+        name = agent.name,
+        version = agent.version,
+        description = agent.description,
+        goals = agent.goals.map { it.infoString(verbose = false) }.sorted(),
+        actions = agent.actions.map { it.name }.sorted(),
+        conditions = agent.conditions.map { it.name }.toSet()
+    )
 }
