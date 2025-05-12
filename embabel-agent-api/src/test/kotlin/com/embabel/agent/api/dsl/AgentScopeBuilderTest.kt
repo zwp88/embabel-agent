@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
+import com.embabel.agent.api.common.support.Branch
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.support.Person
@@ -27,6 +28,41 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
 class AgentScopeBuilderTest {
+
+    @Nested
+    inner class Branch {
+        @Test
+        fun `metadata is correct`() {
+            val agent: Agent = userInputToFrogOrPersonBranch()
+            assertEquals("brancher", agent.name)
+            assertEquals("brancher0", agent.description)
+            assertEquals(DEFAULT_VERSION, agent.version)
+            assertEquals(0, agent.conditions.size, "Should have no conditions")
+            assertEquals(1, agent.actions.size, "Should have 2 actions")
+            assertEquals(1, agent.goals.size)
+        }
+
+        @Test
+        fun `agent runs`() {
+            val agent: Agent = userInputToFrogOrPersonBranch()
+            val ap = createAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                1,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is Person)
+        }
+    }
 
     @Nested
     inner class Chain {
@@ -250,6 +286,15 @@ class AgentScopeBuilderTest {
 data class GeneratedName(val name: String, val reason: String)
 data class GeneratedNames(val names: List<GeneratedName>)
 data class AllNames(val accepted: List<GeneratedName>, val rejected: List<GeneratedName>)
+
+fun userInputToFrogOrPersonBranch() = agent("brancher", description = "brancher0") {
+
+    flow {
+        branch<UserInput, Person, Frog> { Branch(Person(it.input.content)) }
+    }
+
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = Person::class)
+}
 
 fun userInputToFrogChain() = agent("uitf", description = "Evil frogly wizard") {
 

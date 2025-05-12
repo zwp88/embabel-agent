@@ -19,6 +19,8 @@ import com.embabel.agent.api.annotation.support.MultiTransformationAction
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.InputsActionContext
+import com.embabel.agent.api.common.support.Branch
+import com.embabel.agent.api.common.support.BranchingAction
 import com.embabel.agent.api.common.support.SupplierAction
 import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.*
@@ -67,6 +69,47 @@ fun <A, B, C> chain(
         name = MobyNameGenerator.generateName(),
         actions = actions,
     )
+}
+
+
+/**
+ * Branch from A to B or C using Kotlin reified types.
+ * Makes conditionals easy to express.
+ */
+fun <A, B, C> branch(
+    a: (context: InputActionContext<A>) -> Branch<B, C>,
+    aClass: Class<A>,
+    bClass: Class<B>,
+    cClass: Class<C>,
+): AgentScopeBuilder {
+    val branchAction =
+        BranchingAction<A, B, C>(
+            name = "chain-0",
+            description = "chain element 0",
+            cost = 0.0,
+            value = 0.0,
+            canRerun = false,
+            inputClass = aClass,
+            leftOutputClass = bClass,
+            rightOutputClass = cClass,
+            toolGroups = emptyList(),
+            toolCallbacks = emptyList(),
+        ) {
+            a.invoke(it)
+        }
+    return AgentScopeBuilder(
+        name = MobyNameGenerator.generateName(),
+        actions = listOf(branchAction),
+    )
+}
+
+/**
+ * Convenience method to branch from A to B or C using Kotlin reified types.
+ */
+inline fun <reified A, reified B, reified C> branch(
+    noinline a: (context: InputActionContext<A>) -> Branch<B, C>,
+): AgentScopeBuilder {
+    return branch(a, A::class.java, B::class.java, C::class.java)
 }
 
 /**
