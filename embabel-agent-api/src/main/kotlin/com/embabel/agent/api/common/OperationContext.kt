@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.api.common
 
-import com.embabel.agent.api.annotation.support.DummyToolCallback
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
@@ -98,7 +97,7 @@ interface ActionContext : OperationContext {
         toolCallbacks: List<ToolCallback>,
         promptContributors: List<PromptContributor?>,
     ): PromptRunner {
-        val toolCallbacksToUse = toolCallbacks.filterNot { it is DummyToolCallback } + toolCallbacksOnDomainObjects()
+        val toolCallbacksToUse = toolCallbacks + toolCallbacksOnDomainObjects()
         val promptContributorsToUse = promptContributors + CurrentDate()
 
         return OperationContextPromptRunner(
@@ -126,12 +125,6 @@ private class OperationContextPromptRunner(
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
 ) : PromptRunner {
-
-    init {
-        if (toolCallbacks.any { it is DummyToolCallback }) {
-            error("Bug: Tool callbacks include dummies: ${toolCallbacks.filterIsInstance<DummyToolCallback>()}")
-        }
-    }
 
     override val name = "OperationContextPromptRunner"
 

@@ -20,7 +20,6 @@ import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import com.embabel.common.core.types.ZeroToOne
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Transformer that can take multiple inputs.
@@ -41,7 +40,6 @@ class MultiTransformationAction<O : Any>(
     private val outputClass: Class<O>,
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    override val toolCallbacks: List<ToolCallback>,
     toolGroups: Collection<String>,
     private val block: Transformation<List<Any>, O>,
 ) : AbstractAction(
@@ -54,7 +52,6 @@ class MultiTransformationAction<O : Any>(
     inputs,
     outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.name)),
     transitions = transitions,
-    toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,
     canRerun = canRerun,
     qos = qos,

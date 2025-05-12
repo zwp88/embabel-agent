@@ -173,7 +173,6 @@ fun <A1, A2, B : Any, C> biAggregate(
             inputClasses = listOf(a1Class, a2Class),
             outputClass = bClass,
             toolGroups = emptyList(),
-            toolCallbacks = emptyList(),
         ) {
             transform.invoke(BiInputActionContext(it.input[0] as A1, it.input[1] as A2, it))
         }
