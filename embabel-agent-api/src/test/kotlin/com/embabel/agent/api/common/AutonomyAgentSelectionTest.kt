@@ -23,12 +23,8 @@ import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import io.mockk.*
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 /**
  * Tests for the agent selection functionality in Autonomy.
@@ -106,8 +102,6 @@ class AutonomyAgentSelectionTest {
                 actions = emptyList(),
                 goals = setOf(testGoal),
                 conditions = emptySet(),
-                toolGroups = emptyList(),
-                toolCallbacks = emptyList()
             )
         ) {
             // Only override the problematic infoString method
@@ -193,9 +187,11 @@ class AutonomyAgentSelectionTest {
             eventListener.onPlatformEvent(
                 withArg { event ->
                     // This verifies that events about ranking/selection were published
-                    assertTrue(event.toString().contains("Ranking") ||
-                              event.toString().contains("Agent"),
-                        "Event should be related to agent ranking or selection")
+                    assertTrue(
+                        event.toString().contains("Ranking") ||
+                                event.toString().contains("Agent"),
+                        "Event should be related to agent ranking or selection"
+                    )
                 }
             )
         }
@@ -233,8 +229,6 @@ class AutonomyAgentSelectionTest {
                 actions = emptyList(),
                 goals = emptySet(),
                 conditions = emptySet(),
-                toolGroups = emptyList(),
-                toolCallbacks = emptyList()
             )
         ) {
             // Only override the problematic infoString method
@@ -277,18 +271,24 @@ class AutonomyAgentSelectionTest {
 
         // Verify exception contains expected details
         assertTrue(exception.basis is UserInput, "Exception basis should be UserInput")
-        assertEquals(userInput, (exception.basis as UserInput).content,
-            "UserInput content should match")
+        assertEquals(
+            userInput, (exception.basis as UserInput).content,
+            "UserInput content should match"
+        )
 
         // Verify rankings in exception
         val rankings = exception.agentRankings.rankings
         assertEquals(1, rankings.size, "Should have exactly one ranking")
 
         val ranking = rankings.first()
-        assertEquals("lowConfidenceAgent", ranking.match.name,
-            "Ranking should contain our low confidence agent")
-        assertEquals(0.3, ranking.score,
-            "Ranking score should be 0.3, below threshold of 0.5")
+        assertEquals(
+            "lowConfidenceAgent", ranking.match.name,
+            "Ranking should contain our low confidence agent"
+        )
+        assertEquals(
+            0.3, ranking.score,
+            "Ranking score should be 0.3, below threshold of 0.5"
+        )
 
         // Verify platform interaction
         verify {

@@ -58,7 +58,6 @@ annotation class Agent(
     val description: String,
     val version: String = DEFAULT_VERSION,
     val scan: Boolean = true,
-    val toolGroups: Array<String> = [],
 
     /**
      * The value may indicate a suggestion for a logical component name,

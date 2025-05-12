@@ -347,7 +347,6 @@ class AgentBuilder(
             name = name,
             version = version,
             description = description,
-            toolGroups = _toolGroups,
             conditions = conditions,
             actions = actions,
             goals = goals,

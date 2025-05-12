@@ -75,8 +75,6 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
         val newAgent = Agent(
             name = name,
             description = name,
-            toolCallbacks = toolCallbacks,
-            toolGroups = toolGroups,
             actions = actions,
             goals = goals,
             conditions = conditions,

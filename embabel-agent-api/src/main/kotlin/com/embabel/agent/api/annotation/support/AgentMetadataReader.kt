@@ -146,7 +146,6 @@ class AgentMetadataReader(
                 conditions = conditions,
                 actions = actions,
                 goals = goals.toSet(),
-                toolGroups = agenticInfo.agentAnnotation.toolGroups.toList(),
             )
         }
 

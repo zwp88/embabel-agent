@@ -46,7 +46,6 @@ internal class DefaultActionMethodManager(
         toolCallbacksOnInstance: List<ToolCallback>,
     ): Action {
         val actionAnnotation = method.getAnnotation(com.embabel.agent.api.annotation.Action::class.java)
-        val allToolCallbacks = toolCallbacksOnInstance.toMutableList()
         val inputClasses = method.parameters
             .map { it.type }
         val inputs = method.parameters

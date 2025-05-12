@@ -23,12 +23,8 @@ import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import io.mockk.*
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.assertThrows
 
 /**
  * Tests for the goal selection functionality in Autonomy.
@@ -106,9 +102,6 @@ class AutonomyGoalSelectionTest {
                 description = "Real Agent",
                 actions = emptyList(),
                 goals = setOf(testGoal),
-                conditions = emptySet(),
-                toolGroups = emptyList(),
-                toolCallbacks = emptyList()
             )
         ) {
             // Only override the problematic infoString method
@@ -222,10 +215,12 @@ class AutonomyGoalSelectionTest {
             eventListener.onPlatformEvent(
                 withArg { event ->
                     // This verifies that events about ranking/selection were published
-                    assertTrue(event.toString().contains("Ranking") ||
-                              event.toString().contains("Goal") ||
-                              event.toString().contains("Agent"),
-                        "Event should be related to goal/agent ranking or selection")
+                    assertTrue(
+                        event.toString().contains("Ranking") ||
+                                event.toString().contains("Goal") ||
+                                event.toString().contains("Agent"),
+                        "Event should be related to goal/agent ranking or selection"
+                    )
                 }
             )
         }
@@ -269,8 +264,6 @@ class AutonomyGoalSelectionTest {
                 actions = emptyList(),
                 goals = setOf(testGoal),
                 conditions = emptySet(),
-                toolGroups = emptyList(),
-                toolCallbacks = emptyList()
             )
         ) {
             // Only override the problematic infoString method
@@ -342,19 +335,27 @@ class AutonomyGoalSelectionTest {
         assertNotNull(exception.goalRankings, "Exception should have goalRankings")
 
         assertTrue(exception.basis is UserInput, "Exception basis should be UserInput")
-        assertEquals("test input", (exception.basis as UserInput).content,
-            "UserInput should contain our test string")
+        assertEquals(
+            "test input", (exception.basis as UserInput).content,
+            "UserInput should contain our test string"
+        )
 
         // Verify rankings
-        assertEquals(1, exception.goalRankings.rankings.size,
-            "There should be exactly one ranking")
+        assertEquals(
+            1, exception.goalRankings.rankings.size,
+            "There should be exactly one ranking"
+        )
 
         val ranking = exception.goalRankings.rankings.firstOrNull()
         assertNotNull(ranking, "There should be a ranking in the exception")
 
-        assertEquals("testGoal", ranking?.match?.name,
-            "Ranking should contain our goal")
-        assertEquals(0.3, ranking?.score,
-            "Ranking score should be 0.3, below threshold")
+        assertEquals(
+            "testGoal", ranking?.match?.name,
+            "Ranking should contain our goal"
+        )
+        assertEquals(
+            0.3, ranking?.score,
+            "Ranking score should be 0.3, below threshold"
+        )
     }
 }

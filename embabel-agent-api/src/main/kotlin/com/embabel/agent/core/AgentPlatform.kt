@@ -51,7 +51,6 @@ interface AgentPlatform : AgentScope {
                 actions = agentScope.actions,
                 goals = agentScope.goals,
                 conditions = agentScope.conditions,
-                toolGroups = emptyList(),
             )
         )
         return this

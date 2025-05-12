@@ -19,7 +19,6 @@ import com.embabel.agent.spi.StuckHandler
 import com.embabel.common.core.types.Described
 import com.embabel.plan.goap.GoapPlanningSystem
 import org.slf4j.LoggerFactory
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Default version for anything versioned
@@ -34,9 +33,6 @@ const val DEFAULT_VERSION = "0.1.0-SNAPSHOT"
  * @param description A description of the agent
  * @param goals The goals the agent can achieve
  * @param stuckHandler The handler to call when the agent is stuck, provided
- * @param toolCallbacks The callbacks for tools the agent can use. Enables them to be
- * associated with agent definition.
- * @param toolGroups The tool groups the agent can use
  * @param conditions Well known conditions that can be referenced by actions
  * @param actions The actions the agent can use
  * @param schemaTypes Data types used in this agent
@@ -45,8 +41,6 @@ data class Agent(
     override val name: String,
     val version: String = DEFAULT_VERSION,
     override val description: String,
-    override val toolCallbacks: List<ToolCallback> = emptyList(),
-    override val toolGroups: Collection<String> = emptyList(),
     override val conditions: Set<Condition> = emptySet(),
     override val actions: List<Action>,
     override val goals: Set<Goal>,
@@ -56,7 +50,7 @@ data class Agent(
         defaultDataTypes = emptyList(),
         actions = actions,
     ),
-) : Described, AgentScope, ToolConsumer {
+) : Described, AgentScope {
 
     /**
      * Return a version of the agent with the single goal

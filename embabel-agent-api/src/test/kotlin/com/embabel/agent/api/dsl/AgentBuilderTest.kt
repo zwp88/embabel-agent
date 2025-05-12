@@ -69,7 +69,6 @@ class AgentBuilderTest {
             assert(agent.name == "foo")
             assert(agent.description == "bar")
             assert(agent.version == "0.1.0-SNAPSHOT")
-            assert(agent.toolGroups.isEmpty())
             assert(agent.actions.isEmpty())
             assert(agent.goals.isEmpty())
         }
@@ -84,7 +83,6 @@ class AgentBuilderTest {
             assert(agent.name == "oneAction")
             assert(agent.description == "one action agent")
             assert(agent.version == "0.1.0-SNAPSHOT")
-            assert(agent.toolGroups.isEmpty())
             assertEquals(1, agent.actions.size)
             assert(agent.goals.isEmpty())
         }
@@ -93,7 +91,6 @@ class AgentBuilderTest {
         fun `one action and one goal`() {
             val agent = oneActionAndOneGoal
             assert(agent.name == "oneActionAndOneGoal")
-            assert(agent.toolGroups.isEmpty())
             assertEquals(1, agent.actions.size)
             assertEquals(1, agent.goals.size)
             assertEquals("turnedIntoDog", agent.goals.first().name)

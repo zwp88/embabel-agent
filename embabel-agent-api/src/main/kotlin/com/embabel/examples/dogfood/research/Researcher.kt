@@ -99,7 +99,6 @@ data class Categorization(
  */
 @Agent(
     description = "Perform deep web research on a topic",
-    toolGroups = [ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION]
 )
 class Researcher(
     val properties: ResearcherProperties,
@@ -145,7 +144,8 @@ class Researcher(
     @Action(
         post = [REPORT_SATISFACTORY],
         canRerun = true,
-        outputBinding = "gpt4Report"
+        outputBinding = "gpt4Report",
+        toolGroups = [ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION]
     )
     fun researchWithGpt4(
         userInput: UserInput,
@@ -173,7 +173,8 @@ class Researcher(
         pre = [REPORT_UNSATISFACTORY],
         post = [REPORT_SATISFACTORY],
         canRerun = true,
-        outputBinding = "gpt4Report"
+        outputBinding = "gpt4Report",
+        toolGroups = [ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION]
     )
     fun redoResearchWithGpt4(
         userInput: UserInput,
@@ -201,6 +202,7 @@ class Researcher(
         post = [REPORT_SATISFACTORY],
         outputBinding = "claudeReport",
         canRerun = true,
+        toolGroups = [ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION]
     )
     fun researchWithClaude(
         userInput: UserInput,
@@ -229,6 +231,7 @@ class Researcher(
         post = [REPORT_SATISFACTORY],
         outputBinding = "claudeReport",
         canRerun = true,
+        toolGroups = [ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION]
     )
     fun redoResearchWithClaude(
         userInput: UserInput,
