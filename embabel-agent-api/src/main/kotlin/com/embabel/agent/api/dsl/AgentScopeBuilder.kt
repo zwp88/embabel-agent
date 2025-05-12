@@ -19,7 +19,8 @@ import com.embabel.agent.api.annotation.support.MultiTransformationAction
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.InputsActionContext
-import com.embabel.agent.api.dsl.support.TransformationAction
+import com.embabel.agent.api.common.support.SupplierAction
+import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.Rerun
 import com.embabel.common.core.MobyNameGenerator
@@ -177,13 +178,6 @@ interface OutputAwareActionContext<I, O> : InputsActionContext {
     override val inputs: List<Any> get() = listOfNotNull(input, output)
 }
 
-fun <A, B, C> repeatableAggregate(
-    transforms: List<(context: OutputAwareActionContext<A, C>) -> B>,
-    merge: (list: List<B>) -> C,
-    aClass: Class<A>,
-    bClass: Class<B>,
-    cClass: Class<C>,
-): AgentScopeBuilder = TODO()
 
 /**
  * Run all the transforms and merge the results.
@@ -224,24 +218,81 @@ inline fun <reified A1, reified A2, reified B : Any, reified C> biAggregate(
     )
 }
 
-inline fun <reified A, reified B, reified C> repeatableAggregate(
-    transforms: List<(context: OutputAwareActionContext<A, C>) -> B>,
+inline fun <reified A, reified B : Any, reified C> repeatableAggregate(
+    startWith: C,
+    transforms: List<(context: BiInputActionContext<A, C>) -> B>,
     noinline merge: (list: List<B>) -> C,
 ): AgentScopeBuilder {
-    return repeatableAggregate(
-        transforms, merge, A::class.java, B::class.java, C::class.java
+    val asb = biAggregate<A, C, B, C>(
+        transforms,
+        merge,
+        a1Class = A::class.java,
+        a2Class = C::class.java,
+        bClass = B::class.java,
+        cClass = C::class.java,
+    )
+    val populator: Action = SupplierAction<C>(
+        name = "repeatable-aggregate",
+        description = "Repeatable aggregate",
+        pre = emptyList(),
+        post = emptyList(),
+        cost = 0.0,
+        value = 0.0,
+        canRerun = true,
+        outputClass = C::class.java,
+        toolGroups = emptyList(),
+        toolCallbacks = emptyList(),
+    ) {
+        startWith
+    }
+    return asb.copy(
+        actions = asb.actions + populator,
     )
 }
 
+
 fun <C> repeat(
     what: () -> AgentScopeBuilder,
-    until: (context: InputActionContext<C>) -> Boolean,
-    cClass: Class<*>,
-): AgentScopeBuilder = TODO()
+    // TODO gather this
+    until: (c: C, context: ProcessContext) -> Boolean,
+    cClass: Class<C>,
+): AgentScopeBuilder {
+    val conditionName = "repeat-until-${cClass.name}"
+    val untilCondition = ComputedBooleanCondition(
+        name = conditionName,
+        evaluator = {
+            val input = it.blackboard.last(cClass)
+            if (input == null) {
+                return@ComputedBooleanCondition false
+            }
+            until(input, it)
+        })
+    val doerScope = what.invoke().build()
+    val completionAction = TransformationAction(
+        name = "repeat",
+        description = "Repeat until condition is met",
+        pre = listOf(untilCondition.name),
+        post = emptyList(),
+        cost = 0.0,
+        value = 0.0,
+        canRerun = true,
+        inputClass = cClass,
+        outputClass = cClass,
+        toolGroups = emptyList(),
+        toolCallbacks = emptyList(),
+    ) {
+        TODO()
+    }
+    return AgentScopeBuilder(
+        name = MobyNameGenerator.generateName(),
+        actions = doerScope.actions + completionAction,
+        conditions = setOf(untilCondition),
+    )
+}
 
 inline fun <reified C> repeat(
     noinline what: () -> AgentScopeBuilder,
-    noinline until: (context: InputActionContext<C>) -> Boolean,
+    noinline until: (c: C, processContext: ProcessContext) -> Boolean,
 ): AgentScopeBuilder {
     return repeat(what, until, C::class.java)
 }

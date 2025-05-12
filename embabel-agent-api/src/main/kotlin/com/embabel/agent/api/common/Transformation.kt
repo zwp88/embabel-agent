@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.api.common
 
-import com.embabel.agent.api.dsl.support.TransformationAction
+import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.resultOfType

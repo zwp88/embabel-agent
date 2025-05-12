@@ -19,7 +19,7 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.asAction
-import com.embabel.agent.api.dsl.support.TransformationAction
+import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.api.dsl.support.promptTransformer
 import com.embabel.agent.core.*
 import com.embabel.agent.experimental.primitive.PromptCondition

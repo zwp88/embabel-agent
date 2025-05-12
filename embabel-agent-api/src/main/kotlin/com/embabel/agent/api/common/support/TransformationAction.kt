@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.dsl.support
+package com.embabel.agent.api.common.support
 
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
@@ -33,6 +33,10 @@ fun expandInputBindings(
     inputVarName: String,
     inputClass: Class<*>
 ): Set<IoBinding> {
+    if (inputClass == Unit::class.java) {
+        // Unit is a special case, we don't want to bind any inputs
+        return emptySet()
+    }
     if (Aggregation::class.java.isAssignableFrom(inputClass)) {
         return inputClass.declaredFields
             .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
@@ -51,9 +55,47 @@ fun expandInputBindings(
 }
 
 /**
+ * Action that has no input preconditions, but produces an output
+ */
+class SupplierAction<O>(
+    name: String,
+    description: String = name,
+    pre: List<String> = emptyList(),
+    post: List<String> = emptyList(),
+    cost: ZeroToOne = 0.0,
+    value: ZeroToOne = 0.0,
+    transitions: List<Transition> = emptyList(),
+    canRerun: Boolean = false,
+    qos: ActionQos = ActionQos(),
+    outputClass: Class<O>,
+    outputVarName: String? = IoBinding.DEFAULT_BINDING,
+    referencedInputProperties: Set<String>? = null,
+    toolCallbacks: List<ToolCallback> = emptyList(),
+    toolGroups: Collection<String>,
+    block: Transformation<Unit, O>,
+) : TransformationAction<Unit, O>(
+    name = name,
+    description = description,
+    pre = pre,
+    post = post,
+    cost = cost,
+    value = value,
+    transitions = transitions,
+    canRerun = canRerun,
+    qos = qos,
+    inputClass = Unit::class.java,
+    outputClass = outputClass,
+    outputVarName = outputVarName,
+    referencedInputProperties = referencedInputProperties,
+    toolCallbacks = toolCallbacks,
+    toolGroups = toolGroups,
+    block = block
+)
+
+/**
  * Transformer agent that runs custom code.
  */
-class TransformationAction<I, O>(
+open class TransformationAction<I, O>(
     name: String,
     description: String = name,
     pre: List<String> = emptyList(),

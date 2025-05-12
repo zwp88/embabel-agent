@@ -20,6 +20,7 @@ import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
+import com.embabel.common.core.MobyNameGenerator
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -164,6 +165,42 @@ class AgentScopeBuilderTest {
             assertTrue(result.all<Thing>().isNotEmpty(), "Should have got interim result from agent")
         }
     }
+
+    @Nested
+    inner class Redo {
+        @Test
+        fun `metadata is correct`() {
+            val agent: Agent = redoNamer()
+            assertEquals("Thing namer", agent.name)
+            assertEquals("Name a thing, using internet research, repeating until we are happy", agent.description)
+            assert(agent.version == DEFAULT_VERSION)
+            assert(agent.toolGroups.isEmpty())
+            assertEquals(1, agent.conditions.size, "Should have join condition")
+            assertEquals(5, agent.actions.size, "Should have actions")
+            assertEquals(1, agent.goals.size)
+        }
+
+        @Test
+        fun `agent runs`() {
+            val agent: Agent = redoNamer()
+            val ap = createAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                1,
+                result.processContext.agentProcess.history.size,
+                "Will have short history in top level process"
+            )
+            assertTrue(result.lastResult() is AllNames)
+        }
+    }
 }
 
 data class GeneratedName(val name: String, val reason: String)
@@ -200,8 +237,18 @@ fun redoNamer() =
             repeat<AllNames>(
                 what = {
                     repeatableAggregate<UserInput, GeneratedNames, AllNames>(
+                        startWith = AllNames(accepted = emptyList(), rejected = emptyList()),
                         transforms = listOf(
-                            { GeneratedNames(names = emptyList()) },
+                            {
+                                GeneratedNames(
+                                    names = listOf(
+                                        GeneratedName(
+                                            MobyNameGenerator.generateName(),
+                                            "Helps make money"
+                                        )
+                                    )
+                                )
+                            },
                             { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
                         merge = { generatedNamesList ->
                             AllNames(
@@ -211,8 +258,8 @@ fun redoNamer() =
                         },
                     )
                 },
-                until = {
-                    it.input.accepted.size > 5
+                until = { it, _ ->
+                    it.accepted.size > 5
                 })
         }
 

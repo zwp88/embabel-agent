@@ -16,6 +16,7 @@
 package com.embabel.agent.api.dsl.support
 
 import com.embabel.agent.api.common.TransformationActionContext
+import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.IoBinding
