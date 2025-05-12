@@ -41,6 +41,9 @@ inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformatio
     childProcessResult.resultOfType()
 }
 
+/**
+ * Expose this agent as an action of the given transformation type
+ */
 inline fun <reified I, reified O : Any> Agent.asAction(): Action =
     agentTransformer<I, O>(this)
 

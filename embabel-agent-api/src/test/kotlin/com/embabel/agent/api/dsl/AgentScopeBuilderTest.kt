@@ -113,7 +113,7 @@ class AgentScopeBuilderTest {
     inner class Nesting {
         @Test
         fun `metadata is correct`() {
-            val agent = nesting()
+            val agent = nestingByName()
 
             assertEquals(1, agent.conditions.size, "Should have join condition")
             assertEquals(4, agent.actions.size, "Should have actions")
@@ -122,7 +122,7 @@ class AgentScopeBuilderTest {
 
         @Test
         fun `fails without agent`() {
-            val agent = nesting()
+            val agent = nestingByName()
             val ap = createAgentPlatform()
             val processOptions = ProcessOptions()
             assertThrows<IllegalArgumentException> {
@@ -137,8 +137,31 @@ class AgentScopeBuilderTest {
         }
 
         @Test
-        fun `agent runs`() {
-            val agent = nesting()
+        fun `by reference - agent runs`() {
+            val agent = nestingByReference()
+            val ap = createAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                4,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is AllNames)
+            assertTrue(result.all<Thing>().isNotEmpty(), "Should have got interim result from agent")
+        }
+
+
+        @Test
+        fun `by name - agent runs`() {
+            val agent = nestingByName()
             val ap = createAgentPlatform()
             ap.deploy(agent(name = "foobar", description = "doesn't matter here") {
                 transformation<UserInput, Thing>("foobar") {
@@ -268,10 +291,36 @@ fun redoNamer() =
 
 data class Thing(val t: String)
 
-fun nesting() = agent("nesting test", description = "Nesting test") {
+fun nestingByName() = agent("nesting test", description = "Nesting test") {
 
-    agentAction<UserInput, Thing>(agentName = "foobar")
+    referencedAgentAction<UserInput, Thing>(agentName = "foobar")
 
+    actions {
+        aggregate<Thing, GeneratedNames, AllNames>(
+            transforms = listOf(
+                { GeneratedNames(names = emptyList()) },
+                { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
+            merge = { generatedNamesList ->
+                AllNames(
+                    accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },
+                    rejected = emptyList()
+                )
+            },
+        ).parallelize()
+    }
+
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
+}
+
+fun nestingByReference() = agent("nesting test", description = "Nesting test") {
+
+    localAgentAction<UserInput, Thing>(
+        agent(name = "foobar", description = "doesn't matter here") {
+            transformation<UserInput, Thing>("foobar") {
+                Thing(it.input.content)
+            }
+            goal("name", "description", satisfiedBy = Thing::class)
+        })
     actions {
         aggregate<Thing, GeneratedNames, AllNames>(
             transforms = listOf(

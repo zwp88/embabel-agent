@@ -99,9 +99,18 @@ class AgentBuilder(
     }
 
     /**
+     * Add an action is an anonymous agent. This is valuable because the
+     * agent will be private and will not pollute the global action space.
+     */
+    inline fun <reified I, reified O : Any> localAgentAction(agent: Agent) {
+        val aa = agent.asAction<I, O>()
+        actions.add(aa)
+    }
+
+    /**
      * Add an action that references the agent with a given name
      */
-    inline fun <reified I, reified O : Any> agentAction(agentName: String) {
+    inline fun <reified I, reified O : Any> referencedAgentAction(agentName: String) {
         val aa = asAction<I, O>(agentName)
         actions.add(aa)
     }
