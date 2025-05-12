@@ -21,10 +21,10 @@ import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
-import com.embabel.agent.fixtures.createAgentPlatform
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.testing.createAgentPlatform
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.plan.goap.ConditionDetermination

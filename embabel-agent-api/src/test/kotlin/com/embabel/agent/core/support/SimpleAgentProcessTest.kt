@@ -31,8 +31,8 @@ import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
 import com.embabel.agent.event.logging.personality.severance.SeveranceLoggingAgenticEventListener
 import com.embabel.agent.spi.*
-import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.agent.support.SimpleTestAgent
+import com.embabel.agent.testing.EventSavingAgenticEventListener
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

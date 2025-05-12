@@ -26,7 +26,7 @@ import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.Aggregation
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.spi.PlatformServices
-import com.embabel.agent.spi.support.EventSavingAgenticEventListener
+import com.embabel.agent.testing.EventSavingAgenticEventListener
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
 import io.mockk.mockk

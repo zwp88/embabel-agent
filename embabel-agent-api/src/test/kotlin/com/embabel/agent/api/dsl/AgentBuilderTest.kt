@@ -23,9 +23,9 @@ import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.core.support.SimpleAgentProcess
 import com.embabel.agent.spi.PlatformServices
-import com.embabel.agent.spi.support.EventSavingAgenticEventListener
 import com.embabel.agent.support.Dog
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
+import com.embabel.agent.testing.EventSavingAgenticEventListener
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested

@@ -20,6 +20,7 @@ import com.embabel.agent.event.AgentProcessToolCallRequestEvent
 import com.embabel.agent.event.AgentProcessToolCallResponseEvent
 import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.testing.EventSavingAgenticEventListener
 import com.embabel.common.ai.model.LlmOptions
 import io.mockk.every
 import io.mockk.mockk

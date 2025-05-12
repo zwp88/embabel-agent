@@ -17,8 +17,8 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.fixtures.createAgentPlatform
 import com.embabel.agent.spi.support.Person
+import com.embabel.agent.testing.createAgentPlatform
 import com.embabel.common.core.MobyNameGenerator
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested

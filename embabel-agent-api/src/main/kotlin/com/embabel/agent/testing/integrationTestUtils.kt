@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi.support
+package com.embabel.agent.testing
 
-import com.embabel.agent.event.AgentPlatformEvent
-import com.embabel.agent.event.AgentProcessEvent
-import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.support.DefaultAgentPlatform
+import io.mockk.mockk
 
-class EventSavingAgenticEventListener(
-    val platformEvents: MutableList<AgentPlatformEvent> = mutableListOf(),
-    val processEvents: MutableList<AgentProcessEvent> = mutableListOf(),
-) : AgenticEventListener {
-    override fun onPlatformEvent(event: AgentPlatformEvent) {
-        platformEvents += event
-    }
-
-    override fun onProcessEvent(event: AgentProcessEvent) {
-        processEvents += event
-    }
+fun createAgentPlatform(): AgentPlatform {
+    val llmOperations = DummyObjectCreatingLlmOperations.Companion.LoremIpsum
+    return DefaultAgentPlatform(
+        llmOperations = llmOperations,
+        eventListeners = listOf(EventSavingAgenticEventListener()),
+        toolGroupResolver = mockk(),
+    )
 }

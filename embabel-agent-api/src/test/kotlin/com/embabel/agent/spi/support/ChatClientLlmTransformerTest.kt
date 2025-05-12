@@ -20,6 +20,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.testing.EventSavingAgenticEventListener
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.JinjavaTemplateRenderer

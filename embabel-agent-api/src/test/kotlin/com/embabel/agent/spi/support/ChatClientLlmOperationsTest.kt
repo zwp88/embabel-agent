@@ -22,6 +22,7 @@ import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.support.SimpleTestAgent
+import com.embabel.agent.testing.EventSavingAgenticEventListener
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider
