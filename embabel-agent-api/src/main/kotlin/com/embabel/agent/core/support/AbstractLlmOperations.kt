@@ -157,7 +157,7 @@ abstract class AbstractLlmOperations(
         agentProcess.processContext.platformServices.eventListener.onProcessEvent(
             llmRequestEvent
         )
-        logger.info(
+        logger.debug(
             "Expanded toolCallbacks from {}: {}",
             llmRequestEvent,
             allToolCallbacks.map { it.toolDefinition.name() })
