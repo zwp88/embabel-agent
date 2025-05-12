@@ -35,7 +35,7 @@ class AgentScopeBuilderTest {
             val agent: Agent = userInputToFrogChain()
             assertEquals("uitf", agent.name)
             assertEquals("Evil frogly wizard", agent.description)
-            assert(agent.version == DEFAULT_VERSION)
+            assertEquals(DEFAULT_VERSION, agent.version)
             assertEquals(0, agent.conditions.size, "Should have no conditions")
             assertEquals(2, agent.actions.size, "Should have 2 actions")
             assertEquals(1, agent.goals.size)
@@ -102,8 +102,8 @@ class AgentScopeBuilderTest {
         @Test
         fun `metadata is correct`() {
             val agent: Agent = biAggregate()
-            assert(agent.name == "biAggregate")
-            assert(agent.version == DEFAULT_VERSION)
+            assertEquals("biAggregate", agent.name)
+            assertEquals(DEFAULT_VERSION, agent.version)
             assertEquals(1, agent.conditions.size, "Should have join condition")
             assertEquals(4, agent.actions.size, "Should have actions")
             assertEquals(1, agent.goals.size)
@@ -218,7 +218,7 @@ class AgentScopeBuilderTest {
             val agent: Agent = redoNamer()
             assertEquals("Thing namer", agent.name)
             assertEquals("Name a thing, using internet research, repeating until we are happy", agent.description)
-            assert(agent.version == DEFAULT_VERSION)
+            assertEquals(DEFAULT_VERSION, agent.version)
             assertEquals(1, agent.conditions.size, "Should have join condition")
             assertEquals(5, agent.actions.size, "Should have actions")
             assertEquals(1, agent.goals.size)

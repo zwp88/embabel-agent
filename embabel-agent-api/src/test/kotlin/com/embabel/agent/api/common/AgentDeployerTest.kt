@@ -22,6 +22,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class AgentDeployerTest {
 
@@ -36,7 +37,7 @@ class AgentDeployerTest {
             ),
         )
         val allAgents = agentDeployer.agents
-        assert(allAgents.isEmpty())
+        assertTrue(allAgents.isEmpty(), "No agents")
     }
 
     @Test

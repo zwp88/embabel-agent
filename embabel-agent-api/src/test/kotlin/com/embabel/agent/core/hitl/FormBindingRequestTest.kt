@@ -16,29 +16,11 @@
 package com.embabel.agent.core.hitl
 
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.hitl.FormBindingRequest
-import com.embabel.agent.core.hitl.FormResponse
-import com.embabel.agent.core.hitl.ResponseImpact
-import com.embabel.ux.form.DefaultFormProcessor
-import com.embabel.ux.form.Form
-import com.embabel.ux.form.FormBinder
-import com.embabel.ux.form.FormSubmission
-import com.embabel.ux.form.FormSubmissionResult
-import com.embabel.ux.form.TextField
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkConstructor
-import io.mockk.mockkStatic
-import io.mockk.slot
-import io.mockk.unmockkAll
-import io.mockk.verify
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import java.time.Instant
-import java.util.UUID
+import com.embabel.ux.form.*
+import io.mockk.*
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertTrue
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -122,7 +104,12 @@ class FormBindingRequestTest {
             val submissionResult = mockk<FormSubmissionResult>(relaxed = true)
             every { submissionResult.valid } returns true
 
-            every { anyConstructed<DefaultFormProcessor>().processSubmission(form, formSubmission) } returns submissionResult
+            every {
+                anyConstructed<DefaultFormProcessor>().processSubmission(
+                    form,
+                    formSubmission
+                )
+            } returns submissionResult
 
             val testData = TestData("John Doe", "john@example.com")
             every { anyConstructed<FormBinder<TestData>>().bind(submissionResult) } returns testData
@@ -155,14 +142,19 @@ class FormBindingRequestTest {
             every { submissionResult.valid } returns false
             every { submissionResult.validationErrors } returns mapOf("email" to "This field is required")
 
-            every { anyConstructed<DefaultFormProcessor>().processSubmission(form, formSubmission) } returns submissionResult
+            every {
+                anyConstructed<DefaultFormProcessor>().processSubmission(
+                    form,
+                    formSubmission
+                )
+            } returns submissionResult
 
             // Act & Assert
             val exception = assertThrows<IllegalStateException> {
                 request.onResponse(response, processContext)
             }
 
-            assert(exception.message!!.contains("Form submission is not valid"))
+            assertTrue(exception.message!!.contains("Form submission is not valid"))
         }
     }
 
@@ -201,8 +193,8 @@ class FormBindingRequestTest {
             val result = request.toString()
 
             // Assert
-            assert(result.contains(request.id))
-            assert(result.contains("payload="))
+            assertTrue(result.contains(request.id))
+            assertTrue(result.contains("payload="))
         }
     }
 

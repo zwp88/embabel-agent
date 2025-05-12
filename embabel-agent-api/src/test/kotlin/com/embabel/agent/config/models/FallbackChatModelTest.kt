@@ -19,6 +19,7 @@ import com.embabel.common.ai.model.Llm
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -106,7 +107,7 @@ class FallbackChatModelTest {
             val result = primaryModel.withFallback(fallbackModel, predicate)
 
             // Assert
-            assert(result is FallbackChatModel)
+            assertTrue(result is FallbackChatModel)
         }
 
         @Test
@@ -135,7 +136,7 @@ class FallbackChatModelTest {
 
             // Assert
             assertEquals("primary", result.name)
-            assert(result.model is FallbackChatModel)
+            assertTrue(result.model is FallbackChatModel, "Result should be fallback model")
         }
 
         @Test

@@ -66,11 +66,11 @@ class AgentBuilderTest {
         @Test
         fun `empty agent`() {
             val agent = emptyAgent
-            assert(agent.name == "foo")
-            assert(agent.description == "bar")
-            assert(agent.version == "0.1.0-SNAPSHOT")
-            assert(agent.actions.isEmpty())
-            assert(agent.goals.isEmpty())
+            assertEquals("foo", agent.name)
+            assertEquals("bar", agent.description)
+            assertEquals(_root_ide_package_.com.embabel.agent.core.DEFAULT_VERSION, agent.version)
+            assertTrue(agent.actions.isEmpty(), "Should be no actions")
+            assertTrue(agent.goals.isEmpty(), "Should be no goals")
         }
     }
 
@@ -80,17 +80,17 @@ class AgentBuilderTest {
         @Test
         fun `one action`() {
             val agent = oneAction
-            assert(agent.name == "oneAction")
-            assert(agent.description == "one action agent")
-            assert(agent.version == "0.1.0-SNAPSHOT")
+            assertEquals("oneAction", agent.name)
+            assertEquals("one action agent", agent.description)
+            assertEquals(_root_ide_package_.com.embabel.agent.core.DEFAULT_VERSION, agent.version)
             assertEquals(1, agent.actions.size)
-            assert(agent.goals.isEmpty())
+            assertTrue(agent.goals.isEmpty())
         }
 
         @Test
         fun `one action and one goal`() {
             val agent = oneActionAndOneGoal
-            assert(agent.name == "oneActionAndOneGoal")
+            assertEquals("oneActionAndOneGoal", agent.name)
             assertEquals(1, agent.actions.size)
             assertEquals(1, agent.goals.size)
             assertEquals("turnedIntoDog", agent.goals.first().name)
@@ -122,7 +122,7 @@ class AgentBuilderTest {
                 platformServices = platformServices,
             )
             val r = action.execute(processContext, emptyMap(), action)
-            assert(r.status == ActionStatusCode.SUCCEEDED)
+            assertEquals(ActionStatusCode.SUCCEEDED, r.status)
             assertEquals(
                 MagicVictim("Hamish"),
                 processContext.blackboard[IoBinding.DEFAULT_BINDING],
@@ -156,7 +156,7 @@ class AgentBuilderTest {
                 platformServices = platformServices,
             )
             val r = action.execute(processContext, emptyMap(), action)
-            assert(r.status == ActionStatusCode.SUCCEEDED)
+            assertEquals(ActionStatusCode.SUCCEEDED, r.status)
             val output = processContext.blackboard.lastResult()
             assertTrue(
                 output is Frog,
