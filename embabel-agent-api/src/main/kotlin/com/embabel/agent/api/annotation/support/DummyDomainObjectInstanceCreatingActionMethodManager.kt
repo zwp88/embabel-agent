@@ -69,7 +69,7 @@ internal class DummyDomainObjectInstanceCreatingActionMethodManager(
             }
             .forEach {
                 // Obtain dummy tools to drive metadata. Will not be invoked.
-                val parameterInstance = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(it.type)
+                val parameterInstance = DummyInstanceCreator.LoremIpsum.createDummyInstance(it.type)
                 allToolCallbacks += safelyGetToolCallbacksFrom(parameterInstance).map {
                     DummyToolCallback(it)
                 }
