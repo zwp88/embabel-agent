@@ -72,7 +72,7 @@ object CoderConditions {
 @Profile("!test")
 class Coder(
     private val projectRepository: ProjectRepository,
-    private val codingProperties: CodingProperties,
+    private val coderProperties: CoderProperties,
 ) {
 
     private val logger = LoggerFactory.getLogger(Coder::class.java)
@@ -83,7 +83,7 @@ class Coder(
      */
     @Action
     fun loadExistingProject(): SoftwareProject? =
-        projectRepository.findById(codingProperties.defaultLocation).getOrNull()
+        projectRepository.findById(coderProperties.defaultLocation).getOrNull()
 
 
     /**
@@ -94,7 +94,7 @@ class Coder(
     fun codeModificationRequestFromUserInput(
         project: SoftwareProject,
         userInput: UserInput
-    ): CodeModificationRequest = using(llm = codingProperties.primaryCodingLlm).create(
+    ): CodeModificationRequest = using(llm = coderProperties.primaryCodingLlm).create(
         """
         Create a CodeModification request based on this user input: ${userInput.content}
         If the user wants you to pick up an issue from GitHub, search for it at ${project.url}.
@@ -124,7 +124,7 @@ class Coder(
     ): BuildResult {
         val (rawOutput, ms) = time {
             context.promptRunner(
-                llm = codingProperties.primaryCodingLlm,
+                llm = coderProperties.primaryCodingLlm,
                 promptContributors = listOf(project),
             ).generateText("Build the project")
         }
@@ -194,12 +194,12 @@ class Coder(
     ): CodeModificationReport {
         logger.info("✎ Modifying code according to request: ${codeModificationRequest.request}")
         val report: String = context.promptRunner(
-            llm = codingProperties.primaryCodingLlm,
+            llm = coderProperties.primaryCodingLlm,
             promptContributors = listOf(project),
         ).create(
             """
                 Execute the following user request to modify code in the given project.
-                Use the file tools to read code and directories.
+                Use the file tools to read code and directories on the local system.
                 Use the project information to help you understand the code.
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
@@ -207,6 +207,7 @@ class Coder(
                 DO NOT ASK FOR USER INPUT: DO WHAT YOU THINK IS NEEDED TO MODIFY THE PROJECT.
 
                 Use the web tools if you are asked to use a technology you don't know about.
+                ALWAYS LOOK FOR THE FILES IN THE PROJECT LOCALLY USING FILE TOOLS, NOT THE WEB.
 
                 DO NOT BUILD THE PROJECT UNLESS THE USER HAS REQUESTED IT
                 AND IT IS NECESSARY TO DECIDE WHAT TO MODIFY.
@@ -241,7 +242,7 @@ class Coder(
         context: ActionContext,
     ): CodeModificationReport {
         val report: String = context.promptRunner(
-            llm = codingProperties.fixCodingLlm,
+            llm = coderProperties.fixCodingLlm,
             promptContributors = listOf(project, buildFailure),
         ).create(
             """

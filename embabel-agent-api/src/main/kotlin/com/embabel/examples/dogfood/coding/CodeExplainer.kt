@@ -39,7 +39,7 @@ data class CodeExplanation(
 )
 @Profile("!test")
 class CodeExplainer(
-    private val codingProperties: CodingProperties,
+    private val coderProperties: CoderProperties,
 ) {
 
     @Action(toolGroups = [ToolGroup.WEB])
@@ -48,7 +48,7 @@ class CodeExplainer(
         userInput: UserInput,
         project: SoftwareProject,
     ): CodeExplanation = using(
-        llm = codingProperties.primaryCodingLlm,
+        llm = coderProperties.primaryCodingLlm,
         promptContributors = listOf(project)
     ).create(
         """

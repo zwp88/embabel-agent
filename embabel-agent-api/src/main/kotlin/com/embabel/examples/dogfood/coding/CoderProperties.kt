@@ -25,7 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * Common configuration and utilities
  */
 @ConfigurationProperties(prefix = "embabel.coding")
-class CodingProperties(
+class CoderProperties(
     val primaryCodingModel: String = AnthropicModels.CLAUDE_37_SONNET,//OllamaModels.QWEN2_5_CODER,
     val fixCodingModel: String = AnthropicModels.CLAUDE_37_SONNET,
     // TODO shouldn't be hardcoded
@@ -33,7 +33,7 @@ class CodingProperties(
 ) {
 
     init {
-        loggerFor<CodingProperties>().info("Coding properties: {}", this)
+        loggerFor<CoderProperties>().info("Coding properties: {}", this)
     }
 
     /**
