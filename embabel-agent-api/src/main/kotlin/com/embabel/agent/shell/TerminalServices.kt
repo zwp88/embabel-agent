@@ -18,6 +18,7 @@ package com.embabel.agent.shell
 import com.embabel.agent.api.common.*
 import com.embabel.agent.core.hitl.*
 import com.embabel.agent.event.logging.personality.ColorPalette
+import com.embabel.chat.AgenticResultAssistantMessage
 import com.embabel.chat.ChatSession
 import com.embabel.chat.UserMessage
 import com.embabel.common.util.AnsiColor
@@ -26,6 +27,7 @@ import com.embabel.common.util.loggerFor
 import com.embabel.ux.form.Button
 import com.embabel.ux.form.FormSubmission
 import com.embabel.ux.form.TextField
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.Terminal
@@ -35,7 +37,10 @@ import org.springframework.stereotype.Component
  * Provide interaction and form support
  */
 @Component
-class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
+class TerminalServices(
+    private val terminal: Terminal,
+    private val objectMapper: ObjectMapper,
+) : GoalChoiceApprover {
     /**
      * Get further input
      */
@@ -63,7 +68,22 @@ class TerminalServices(private val terminal: Terminal) : GoalChoiceApprover {
             }
             val userMessage = UserMessage(userInput)
             chatSession.send(userMessage) {
-                lineReader.printAbove("Assistant: ${it.content.color(colorPalette.color2)}")
+                when (it) {
+                    is UserMessage -> error("User message should not be sent by the assistant")
+                    is AgenticResultAssistantMessage -> {
+                        val formatted = formatProcessOutput(
+                            result = it.dynamicExecutionResult,
+                            basis = userInput,
+                            colorPalette = colorPalette,
+                            objectMapper = objectMapper,
+                        )
+                        lineReader.printAbove("Assistant:\n$formatted")
+                    }
+
+                    else -> {
+                        lineReader.printAbove("Assistant: ${it.content.color(colorPalette.color2)}")
+                    }
+                }
             }
         }
 

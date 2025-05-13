@@ -55,16 +55,22 @@ embabel:
     llms:
       best: gpt-4.1
       cheapest: gpt-4.1-nano
-    # embedding-services:
-    #   chunk: text-embedding-ada-002
-    #   schema: text-embedding-ada-002
+
 
 logging:
   pattern:
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
   level:
+
+    # Temporary hack until we resolve BeanPostProcessor warnings
     org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
-    # Custom logging
-    # com.embabel.agent.core.support.BlackboardWorldStateDeterminer: DEBUG
-    # com.embabel.agent.api.annotation.support.AgentMetadataReader: DEBUG
+
+    # We deliberately suppress verbose error messages from the Spring AI converter
+    # that can be distracting in the console
+    # Any unrecoverable errors will still be logged when they propagate up the stack
+    org.springframework.ai.converter.BeanOutputConverter: OFF
+
+    # Embabel classes that can be useful to turn up to DEBUG
+    com.embabel.agent.core.support.BlackboardWorldStateDeterminer: INFO
+    com.embabel.agent.api.annotation.support.AgentMetadataReader: INFO
 

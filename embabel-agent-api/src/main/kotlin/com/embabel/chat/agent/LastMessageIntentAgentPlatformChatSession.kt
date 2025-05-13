@@ -49,7 +49,8 @@ class LastMessageIntentAgentPlatformChatSession(
                 agentScope = autonomy.agentPlatform,
             )
             val result = dynamicExecutionResult.output
-            return AssistantMessage(
+            return AgenticResultAssistantMessage(
+                dynamicExecutionResult = dynamicExecutionResult,
                 content = result.toString(),
             )
         } catch (_: NoGoalFound) {

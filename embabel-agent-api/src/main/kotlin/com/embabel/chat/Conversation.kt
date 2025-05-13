@@ -15,14 +15,12 @@
  */
 package com.embabel.chat
 
+import com.embabel.agent.api.common.DynamicExecutionResult
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.Timestamped
-import org.springframework.ai.chat.messages.AssistantMessage
-import org.springframework.ai.chat.messages.UserMessage
 import java.time.Instant
-import org.springframework.ai.chat.messages.Message as SpringAiMessage
 
 /**
  * Conversation shim for agent system
@@ -68,17 +66,21 @@ class UserMessage(
     override val timestamp: Instant = Instant.now(),
 ) : Message(Role.USER, content, name, timestamp)
 
-class AssistantMessage(
+open class AssistantMessage(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
 ) : Message(Role.ASSISTANT, content, name, timestamp)
 
-fun Message.toSpringAiMessage(): SpringAiMessage =
-    when (role) {
-        Role.USER -> UserMessage(content)
-        Role.ASSISTANT -> AssistantMessage(content)
-    }
+/**
+ * Assistant message that result from an agentic execution
+ */
+class AgenticResultAssistantMessage(
+    val dynamicExecutionResult: DynamicExecutionResult,
+    content: String,
+    name: String? = null,
+) : AssistantMessage(content = content, name = name)
+
 
 fun Conversation.promptContributor(
     conversationFormatter: ConversationFormatter = WindowingConversationFormatter()
