@@ -19,6 +19,7 @@ import com.embabel.agent.common.RetryTemplateProvider
 import com.embabel.agent.core.LlmInvocation
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
+import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.ai.model.*
@@ -83,11 +84,11 @@ data class LlmDataBindingProperties(
  *  * can enable a failure result if the LLM does not have enough information to
  *  * create the desired output structure.
  */
-@ConfigurationProperties(prefix = "embabel.llm-operations.maybe-prompt-template")
-data class ChatClientLlmOperationsProperties(
+@ConfigurationProperties(prefix = "embabel.llm-operations.prompts")
+data class LlmOperationsPromptsProperties(
     val maybePromptTemplate: String = "maybe_prompt_contribution",
+    val generateExamplesByDefault: Boolean = true,
 )
-
 
 /**
  * LlmOperations implementation that uses the Spring AI ChatClient
@@ -103,7 +104,7 @@ internal class ChatClientLlmOperations(
     private val templateRenderer: TemplateRenderer,
     private val autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
     private val dataBindingProperties: LlmDataBindingProperties = LlmDataBindingProperties(),
-    private val chatClientLlmOperationsProperties: ChatClientLlmOperationsProperties = ChatClientLlmOperationsProperties(),
+    private val llmOperationsPromptsProperties: LlmOperationsPromptsProperties = LlmOperationsPromptsProperties(),
 ) : AbstractLlmOperations(toolDecorator) {
 
     @Suppress("UNCHECKED_CAST")
@@ -133,7 +134,6 @@ internal class ChatClientLlmOperations(
         }
 
         return dataBindingProperties.retryTemplate().execute<O, DatabindException> {
-
             val callResponse = resources.chatClient
                 .prompt(springAiPrompt)
                 // Try to lock to correct overload. Method overloading is evil.
@@ -149,6 +149,7 @@ internal class ChatClientLlmOperations(
                         delegate = SuppressThinkingConverter(BeanOutputConverter(outputClass)),
                         outputClass = outputClass,
                         ifPossible = false,
+                        generateExamples = shouldGenerateExamples(interaction),
                     ),
                 )
                 re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
@@ -183,7 +184,7 @@ internal class ChatClientLlmOperations(
         llmRequestEvent: LlmRequestEvent<O>,
     ): Result<O> {
         val maybeReturnPromptContribution = templateRenderer.renderLoadedTemplate(
-            chatClientLlmOperationsProperties.maybePromptTemplate,
+            llmOperationsPromptsProperties.maybePromptTemplate,
             emptyMap(),
         )
 
@@ -216,6 +217,7 @@ internal class ChatClientLlmOperations(
                         delegate = SuppressThinkingConverter(BeanOutputConverter(typeReference)),
                         outputClass = outputClass as Class<MaybeReturn<*>>,
                         ifPossible = true,
+                        generateExamples = shouldGenerateExamples(interaction),
                     )
                 )
             responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
@@ -271,6 +273,13 @@ internal class ChatClientLlmOperations(
             )
             .build()
         return LlmInvocationResources(chatClient = chatClient, llm = llm)
+    }
+
+    private fun shouldGenerateExamples(llmCall: LlmCall): Boolean {
+        if (llmOperationsPromptsProperties.generateExamplesByDefault) {
+            return llmCall.generateExamples != false
+        }
+        return llmCall.generateExamples == true
     }
 }
 

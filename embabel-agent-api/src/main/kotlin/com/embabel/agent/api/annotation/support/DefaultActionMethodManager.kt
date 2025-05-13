@@ -110,28 +110,29 @@ internal class DefaultActionMethodManager(
         }
         val result = try {
             ReflectionUtils.invokeMethod(method, instance, *args)
-        } catch (e: CreateObjectPromptException) {
+        } catch (cope: CreateObjectPromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
 
-            val promptContributors = e.promptContributors
+            val promptContributors = cope.promptContributors
 
             val promptRunner = context.promptRunner(
-                llm = e.llm ?: LlmOptions.Companion(),
+                llm = cope.llm ?: LlmOptions.Companion(),
                 // Remember to add tool groups from the context to those the exception specified at the call site
-                toolGroups = e.toolGroups + context.toolGroups,
+                toolGroups = cope.toolGroups + context.toolGroups,
                 toolCallbacks = toolCallbacksToUse,
                 promptContributors = promptContributors,
+                generateExamples = cope.generateExamples == true,
             )
 
-            if (e.requireResult) {
+            if (cope.requireResult) {
                 promptRunner.createObject(
-                    prompt = e.prompt,
-                    outputClass = e.outputClass,
+                    prompt = cope.prompt,
+                    outputClass = cope.outputClass,
                 )
             } else {
                 promptRunner.createObjectIfPossible(
-                    prompt = e.prompt,
+                    prompt = cope.prompt,
                     outputClass = context.outputClass as Class<Any>,
                 )
             }

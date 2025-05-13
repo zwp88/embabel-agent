@@ -43,6 +43,12 @@ interface LlmCall : PromptContributorConsumer, ToolConsumer {
     val llm: LlmOptions?
     override val promptContributors: List<PromptContributor>
 
+    /**
+     * Whether to generate examples for the prompt.
+     * Defaults to unknown: Set to false if generating your own examples.
+     */
+    val generateExamples: Boolean?
+
     companion object {
         operator fun invoke(): LlmCall = LlmCallImpl(name = MobyNameGenerator.generateName())
     }
@@ -54,6 +60,7 @@ private data class LlmCallImpl(
     override val toolGroups: Set<String> = emptySet(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
+    override val generateExamples: Boolean = false,
 ) : LlmCall
 
 /**
@@ -77,6 +84,7 @@ data class LlmInteraction(
     override val toolGroups: Set<String> = emptySet(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
+    override val generateExamples: Boolean? = null,
 ) : LlmCall {
 
     override val name: String = id.value
@@ -88,6 +96,7 @@ data class LlmInteraction(
             toolCallbacks = llm.toolCallbacks,
             toolGroups = llm.toolGroups,
             promptContributors = llm.promptContributors,
+            generateExamples = llm.generateExamples,
         )
     }
 }

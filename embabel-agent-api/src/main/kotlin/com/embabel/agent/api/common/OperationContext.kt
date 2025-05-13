@@ -54,7 +54,8 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         llm: LlmOptions = LlmOptions(),
         toolGroups: Set<String> = emptySet(),
         toolCallbacks: List<ToolCallback> = emptyList(),
-        promptContributors: List<PromptContributor?> = emptyList(),
+        promptContributors: List<PromptContributor> = emptyList(),
+        generateExamples: Boolean = false,
     ): PromptRunner {
 //        val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
         // Add any tool callbacks that are not already in the list
@@ -66,6 +67,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
             toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
             promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
+            generateExamples = generateExamples,
         )
     }
 
@@ -108,7 +110,8 @@ interface ActionContext : OperationContext {
         llm: LlmOptions,
         toolGroups: Set<String>,
         toolCallbacks: List<ToolCallback>,
-        promptContributors: List<PromptContributor?>,
+        promptContributors: List<PromptContributor>,
+        generateExamples: Boolean,
     ): PromptRunner {
         val toolCallbacksToUse = toolCallbacks + toolCallbacksOnDomainObjects()
         val promptContributorsToUse = promptContributors + CurrentDate()
@@ -119,6 +122,7 @@ interface ActionContext : OperationContext {
             toolGroups = this.toolGroups + toolGroups,
             toolCallbacks = toolCallbacksToUse,
             promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
+            generateExamples = generateExamples,
         )
     }
 

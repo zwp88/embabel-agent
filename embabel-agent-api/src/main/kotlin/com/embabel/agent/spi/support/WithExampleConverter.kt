@@ -28,29 +28,17 @@ import org.springframework.ai.converter.StructuredOutputConverter
  * and injects them into the format description returned by [getFormat()].
  *
  * @param T the output type for the converter
- * @property delegate the underlying output converter to which conversion is delegated
- * @property outputClass the class type for which dummy example instances will be generated
- * @property ifPossible determines whether to include both success and failure examples (true) or just a simple example (false)
- *
- * Usage:
+ * @param delegate the underlying output converter to which conversion is delegated
+ * @param outputClass the class type for which dummy example instances will be generated
+ * @param ifPossible determines whether to include both success and failure examples (true) or just a simple example (false)
+ * @param generateExamples whether to generate examples or not. This class does nothing if it is false
  * Wrap an existing StructuredOutputConverter with this class to enhance its format description for LLM prompting.
  */
 class WithExampleConverter<T>(
-    /**
-     * The underlying converter that actually performs the output conversion.
-     * This class delegates all conversion logic to this instance.
-     */
     private val delegate: StructuredOutputConverter<T>,
-    /**
-     * The output type for which dummy example data will be generated.
-     * Used to create illustrative example outputs for the format description.
-     */
     private val outputClass: Class<T>,
-    /**
-     * If true, includes both 'success' and 'failure' examples using a wrapper structure (e.g., MaybeReturn).
-     * If false, includes only a bare example output.
-     */
     private val ifPossible: Boolean,
+    private val generateExamples: Boolean,
 ) : StructuredOutputConverter<T> {
 
     /**
@@ -76,6 +64,11 @@ class WithExampleConverter<T>(
      * @return a string describing the output format, including examples
      */
     override fun getFormat(): String {
+        if (!generateExamples) {
+            // If example generation is disabled, return the delegate's format directly
+            return delegate.format
+        }
+
         // Generate a dummy example instance of the output type using lorem ipsum values for strings
         val example = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(outputClass)
         return if (ifPossible) {

@@ -44,6 +44,11 @@ embabel:
     include-agent-name: false
     include-version: false
 
+  llm-operations:
+    prompts:
+      generate-examples-by-default: true
+
+
   models:
     default-llm: gpt-4.1-mini
     llms:

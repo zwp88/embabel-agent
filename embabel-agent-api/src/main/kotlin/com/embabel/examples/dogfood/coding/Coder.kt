@@ -49,7 +49,7 @@ object CoderConditions {
 }
 
 /**
- * Generic coding support
+ * Embabel coding agent.
  *
  * The Coder agent is responsible for modifying code in a software project based on user requests.
  * The agent flow is as follows:
@@ -184,7 +184,7 @@ class Coder(
         post = [CoderConditions.BUILD_NEEDED],
         toolGroups = [
 //            ToolGroup.GITHUB,
-            ToolGroup.WEB
+//            ToolGroup.WEB
         ]
     )
     fun modifyCode(
@@ -233,7 +233,7 @@ class Coder(
         canRerun = true,
         pre = [CoderConditions.BUILD_FAILED, CoderConditions.BUILD_WAS_LAST_ACTION],
         post = [CoderConditions.BUILD_SUCCEEDED],
-        toolGroups = [ToolGroup.WEB],
+//        toolGroups = [ToolGroup.WEB],
     )
     fun fixBrokenBuild(
         codeModificationRequest: CodeModificationRequest,

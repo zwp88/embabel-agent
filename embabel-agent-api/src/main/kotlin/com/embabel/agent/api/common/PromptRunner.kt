@@ -106,7 +106,8 @@ sealed class ExecutePromptException(
     override val llm: LlmOptions? = null,
     override val outputClass: Class<*>,
     override val toolCallbacks: List<ToolCallback>,
-    override val promptContributors: List<PromptContributor>
+    override val promptContributors: List<PromptContributor>,
+    override val generateExamples: Boolean?,
 ) : LlmObjectCreationRequest, RuntimeException(
     "Not a real failure but meant to be intercepted by infrastructure"
 ) {
@@ -121,13 +122,15 @@ class CreateObjectPromptException(
     outputClass: Class<*>,
     override val toolGroups: Set<String>,
     toolCallbacks: List<ToolCallback>,
-    promptContributors: List<PromptContributor>
+    promptContributors: List<PromptContributor>,
+    generateExamples: Boolean? = null,
 ) : ExecutePromptException(
     requireResult = requireResult,
     llm = llm,
     outputClass = outputClass,
     toolCallbacks = toolCallbacks,
-    promptContributors = promptContributors
+    promptContributors = promptContributors,
+    generateExamples = generateExamples,
 ), LlmCallRequest
 
 class EvaluateConditionPromptException(
@@ -138,11 +141,13 @@ class EvaluateConditionPromptException(
     llm: LlmOptions? = null,
     override val toolGroups: Set<String>,
     toolCallbacks: List<ToolCallback>,
-    promptContributors: List<PromptContributor>
+    promptContributors: List<PromptContributor>,
+    generateExamples: Boolean? = null,
 ) : ExecutePromptException(
     requireResult = requireResult,
     llm = llm,
     outputClass = Determination::class.java,
     toolCallbacks = toolCallbacks,
-    promptContributors = promptContributors
+    promptContributors = promptContributors,
+    generateExamples = generateExamples,
 )

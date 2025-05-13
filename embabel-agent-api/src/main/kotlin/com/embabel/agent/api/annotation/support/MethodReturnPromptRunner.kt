@@ -32,6 +32,7 @@ internal class MethodReturnPromptRunner(
     override val toolGroups: Set<String>,
     override val toolCallbacks: List<ToolCallback>,
     override val promptContributors: List<PromptContributor>,
+    override val generateExamples: Boolean?,
 ) : PromptRunner {
 
     override val name = "MethodReturnPromptRunner"
