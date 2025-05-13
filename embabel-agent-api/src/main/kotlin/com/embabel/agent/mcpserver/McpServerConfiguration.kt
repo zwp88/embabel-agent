@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.mcpserver
 
-import com.embabel.agent.common.LoggingConstants
 import com.embabel.agent.core.ToolCallbackPublisher
+import com.embabel.agent.event.logging.LoggingPersonality.Companion.BANNER_WIDTH
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbackProvider
@@ -47,7 +47,7 @@ class McpServerConfiguration(
     @Bean
     fun callbacks(): ToolCallbackProvider {
         val allToolCallbacks = mcpToolExportCallbackPublishers.flatMap { it.toolCallbacks }
-        val separator = "~".repeat(LoggingConstants.BANNER_WIDTH)
+        val separator = "~".repeat(BANNER_WIDTH)
         loggerFor<McpServerConfiguration>().info(
             "\n${separator}\n{} MCP tool exporters: {}\nExposing a total of {} MCP server tools:\n\t{}\n${separator}",
             mcpToolExportCallbackPublishers.size,

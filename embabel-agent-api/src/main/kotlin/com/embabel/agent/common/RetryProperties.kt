@@ -30,7 +30,7 @@ interface RetryTemplateProvider {
 }
 
 /**
- * Extended by configuration for retry
+ * Extended by configuration that needs retry.
  */
 interface RetryProperties : RetryTemplateProvider {
     val backoffMillis: Long

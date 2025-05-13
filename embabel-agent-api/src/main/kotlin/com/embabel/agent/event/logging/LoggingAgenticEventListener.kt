@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.event.logging
 
-import com.embabel.agent.common.LoggingConstants.lineSeparator
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.EarlyTermination
 import com.embabel.agent.event.*
@@ -39,6 +38,25 @@ interface LoggingPersonality {
      * The logger to use for this personality
      */
     val logger: Logger
+
+    val bannerWidth: Int get() = BANNER_WIDTH
+
+    fun lineSeparator(text: String, bannerChar: String, glyph: String = " ⇩  "): String =
+        Companion.lineSeparator(text, bannerChar, glyph)
+
+    companion object {
+        const val BANNER_WIDTH = 100
+
+        /**
+         * A line separator beginning with the text
+         */
+        private fun lineSeparator(text: String, bannerChar: String, glyph: String = " ⇩  "): String {
+            if (text.isBlank()) {
+                return bannerChar.repeat(BANNER_WIDTH)
+            }
+            return text + glyph + bannerChar.repeat(BANNER_WIDTH - text.length - glyph.length)
+        }
+    }
 }
 
 /**
@@ -350,23 +368,24 @@ open class LoggingAgenticEventListener(
         }
     }
 
-}
+    fun Prompt.toInfoString(): String {
+        val bannerChar = "."
 
-fun Prompt.toInfoString(): String {
-    val bannerChar = "."
-
-    return """|${lineSeparator("Messages ", bannerChar)}
+        return """|${lineSeparator("Messages ", bannerChar)}
            |${
-        this.instructions.joinToString(
-            "\n${
-                lineSeparator(
-                    "",
-                    bannerChar
-                )
-            }\n"
-        ) { "${it.messageType} <${it.text}>" }
-    }
+            this.instructions.joinToString(
+                "\n${
+                    lineSeparator(
+                        "",
+                        bannerChar
+                    )
+                }\n"
+            ) { "${it.messageType} <${it.text}>" }
+        }
            |${lineSeparator("Options", bannerChar)}
            |${this.options}
            |""".trimMargin()
+    }
+
+
 }

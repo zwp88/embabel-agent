@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.event.logging.personality.severance
 
-import com.embabel.agent.common.LoggingConstants
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
+import com.embabel.agent.event.logging.LoggingPersonality.Companion.BANNER_WIDTH
 import com.embabel.common.util.color
 import com.embabel.common.util.hexToRgb
 import org.slf4j.LoggerFactory
@@ -67,13 +67,13 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     welcomeMessage = """
 
 
-        ${BANNER_CHAR.repeat(LoggingConstants.BANNER_WIDTH)}
+        ${BANNER_CHAR.repeat(BANNER_WIDTH)}
         Kier, chosen one, Kier.
         Kier, brilliant one, Kier.
         Brings the bounty to the plain through the torment, through the rains,
         Progress, knowledge show no fear,
         Kier, chosen one, Kier.
-        ${BANNER_CHAR.repeat(LoggingConstants.BANNER_WIDTH)}
+        ${BANNER_CHAR.repeat(BANNER_WIDTH)}
 
         ▗▖   ▗▖ ▗▖▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖
         ▐▌   ▐▌ ▐▌▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌
