@@ -126,6 +126,18 @@ data class Agent(
 
 /**
  * Safely serializable agent metadata
+ *
+ * This class provides a lightweight representation of an Agent that can be
+ * safely serialized and transferred across system boundaries. It contains
+ * only the essential metadata about an agent without any implementation details
+ * or complex references that might cause serialization issues.
+ *
+ * @property name The name of the agent
+ * @property version The version of the agent, defaults to DEFAULT_VERSION
+ * @property description A human-readable description of the agent's purpose and capabilities
+ * @property goals The set of goals this agent can achieve
+ * @property actions A list of metadata about the actions this agent can perform
+ * @property conditions A set of condition names that this agent recognizes
  */
 data class AgentMetadata(
     override val name: String,
@@ -136,6 +148,14 @@ data class AgentMetadata(
     val conditions: Set<String>
 ) : Named, Described {
 
+    /**
+     * Constructs AgentMetadata from a full Agent instance
+     *
+     * This constructor extracts only the serializable metadata from a complete Agent,
+     * making it suitable for API responses and persistence.
+     *
+     * @param agent The complete Agent instance to extract metadata from
+     */
     constructor(agent: Agent) : this(
         name = agent.name,
         version = agent.version,

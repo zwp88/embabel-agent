@@ -112,7 +112,7 @@ class SpringCoder {
 
     @Action(
         pre = [SpringCoderConditions.SpringProjectCreated,
-            CoderConditions.BuildSucceeded],
+            CoderConditions.BUILD_SUCCEEDED],
     )
     @AchievesGoal("Create a new Spring project")
     fun describeShinyNewSpringProject(

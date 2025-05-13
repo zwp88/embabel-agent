@@ -42,10 +42,10 @@ data class CodeModificationReport(
 ) : HasContent
 
 object CoderConditions {
-    const val BuildNeeded = "buildNeeded"
-    const val BuildFailed = "buildFailed"
-    const val BuildSucceeded = "buildSucceeded"
-    const val BuildWasLastAction = "buildWasLastAction"
+    const val BUILD_NEEDED = "buildNeeded"
+    const val BUILD_FAILED = "buildFailed"
+    const val BUILD_SUCCEEDED = "buildSucceeded"
+    const val BUILD_WAS_LAST_ACTION = "buildWasLastAction"
 }
 
 /**
@@ -115,8 +115,8 @@ class Coder(
     @Action(
         cost = 10000.0,
         canRerun = true,
-        pre = [CoderConditions.BuildNeeded],
-        post = [CoderConditions.BuildSucceeded],
+        pre = [CoderConditions.BUILD_NEEDED],
+        post = [CoderConditions.BUILD_SUCCEEDED],
     )
     fun buildWithCommand(
         project: SoftwareProject,
@@ -138,8 +138,8 @@ class Coder(
     @Action(
         cost = 500.0,
         canRerun = true,
-        pre = [CoderConditions.BuildNeeded],
-        post = [CoderConditions.BuildSucceeded],
+        pre = [CoderConditions.BUILD_NEEDED],
+        post = [CoderConditions.BUILD_SUCCEEDED],
     )
     fun build(
         project: SoftwareProject,
@@ -149,7 +149,7 @@ class Coder(
      * Condition that determines if a build is needed
      * Triggered when the last action was a code modification
      */
-    @Condition(name = CoderConditions.BuildNeeded)
+    @Condition(name = CoderConditions.BUILD_NEEDED)
     fun buildNeeded(context: OperationContext): Boolean =
         context.lastResult() is CodeModificationReport
 
@@ -157,7 +157,7 @@ class Coder(
      * Condition that checks if the last action was a build
      * Used to determine the next step in the flow
      */
-    @Condition(name = CoderConditions.BuildWasLastAction)
+    @Condition(name = CoderConditions.BUILD_WAS_LAST_ACTION)
     fun buildWasLastAction(context: OperationContext): Boolean =
         context.lastResult() is BuildResult
 
@@ -165,14 +165,14 @@ class Coder(
      * Condition that checks if the build was successful
      * Used to determine if the agent should proceed to sharing the report
      */
-    @Condition(name = CoderConditions.BuildSucceeded)
+    @Condition(name = CoderConditions.BUILD_SUCCEEDED)
     internal fun buildSucceeded(buildResult: BuildResult): Boolean = buildResult.status?.success == true
 
     /**
      * Condition that checks if the build failed
      * Used to determine if the agent should attempt to fix the build
      */
-    @Condition(name = CoderConditions.BuildFailed)
+    @Condition(name = CoderConditions.BUILD_FAILED)
     fun buildFailed(buildResult: BuildResult): Boolean = buildResult.status?.success == false
 
     /**
@@ -181,7 +181,7 @@ class Coder(
      */
     @Action(
         canRerun = true,
-        post = [CoderConditions.BuildNeeded],
+        post = [CoderConditions.BUILD_NEEDED],
         toolGroups = [
 //            ToolGroup.GITHUB,
             ToolGroup.WEB
@@ -199,7 +199,7 @@ class Coder(
         ).create(
             """
                 Execute the following user request to modify code in the given project.
-                Use the file tools to read code and directories on the local system.
+                Use the file tools to read code and directories on the local system, not GitHub.
                 Use the project information to help you understand the code.
                 The project will be in git so you can safely modify content without worrying about backups.
                 Return an explanation of what you did and why.
@@ -231,8 +231,8 @@ class Coder(
      */
     @Action(
         canRerun = true,
-        pre = [CoderConditions.BuildFailed, CoderConditions.BuildWasLastAction],
-        post = [CoderConditions.BuildSucceeded],
+        pre = [CoderConditions.BUILD_FAILED, CoderConditions.BUILD_WAS_LAST_ACTION],
+        post = [CoderConditions.BUILD_SUCCEEDED],
         toolGroups = [ToolGroup.WEB],
     )
     fun fixBrokenBuild(
@@ -266,7 +266,7 @@ class Coder(
      * Returns the code modification report to the user
      * Only triggered when the build is successful (or not needed)
      */
-    @Action(pre = [CoderConditions.BuildSucceeded])
+    @Action(pre = [CoderConditions.BUILD_SUCCEEDED])
     @AchievesGoal(description = "Modify project code as per user request")
     fun shareCodeModificationReport(codeModificationReport: CodeModificationReport) = codeModificationReport
 

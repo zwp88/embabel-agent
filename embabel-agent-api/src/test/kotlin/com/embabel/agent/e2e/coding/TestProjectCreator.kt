@@ -71,7 +71,7 @@ class TestProjectCreator {
 
     @Action(
         pre = [TestCoderConditions.TestProjectCreated,
-            CoderConditions.BuildSucceeded
+            CoderConditions.BUILD_SUCCEEDED
         ]
     )
     @AchievesGoal("Create a new test project")
