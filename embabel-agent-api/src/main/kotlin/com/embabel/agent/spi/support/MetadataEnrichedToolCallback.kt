@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi
+package com.embabel.agent.spi.support
 
-import com.embabel.agent.core.AgentProcess
-import com.embabel.common.ai.model.LlmOptions
+import com.embabel.agent.core.ToolGroupMetadata
 import org.springframework.ai.tool.ToolCallback
+import org.springframework.ai.tool.definition.ToolDefinition
 
 /**
- * Decorate tools for use on the platform: for example, to time them and emit events.
+ * Add metadata about the tool group to which this tool belongs.
  */
-fun interface ToolDecorator {
+class MetadataEnrichedToolCallback(
+    val toolGroupMetadata: ToolGroupMetadata?,
+    private val delegate: ToolCallback,
+) : ToolCallback {
 
-    /**
-     * Decorate the tool with some extra information.
-     * @param tool The tool to decorate.
-     * @param agentProcess The agent process that is using the tool.
-     * @param llmOptions The LLM options that resulted in the tool being called.
-     * @return The decorated tool.
-     */
-    fun decorate(
-        tool: ToolCallback,
-        agentProcess: AgentProcess,
-        llmOptions: LlmOptions,
-    ): ToolCallback
+    override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
+
+    override fun call(toolInput: String): String = delegate.call(toolInput)
 }

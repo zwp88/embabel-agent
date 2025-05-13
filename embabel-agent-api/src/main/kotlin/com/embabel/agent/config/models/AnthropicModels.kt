@@ -51,7 +51,7 @@ data class AnthropicProperties(
 @ConditionalOnProperty("ANTHROPIC_API_KEY")
 @Profile("!test")
 @ExcludeFromJacocoGeneratedReport(reason = "Anthropic configuration can't be unit tested")
-class AnthropicModels(
+internal class AnthropicModels(
     llms: List<Llm>,
     private val properties: AnthropicProperties,
 ) {

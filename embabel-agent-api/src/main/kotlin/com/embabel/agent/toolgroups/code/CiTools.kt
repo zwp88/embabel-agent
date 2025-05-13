@@ -15,10 +15,10 @@
  */
 package com.embabel.agent.toolgroups.code
 
+import com.embabel.agent.api.common.SelfToolCallbackPublisher
+import com.embabel.agent.api.common.SelfToolGroup
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
-import com.embabel.agent.spi.support.SelfToolCallbackPublisher
-import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.agent.toolgroups.DirectoryBased
 import org.springframework.ai.tool.annotation.Tool
 

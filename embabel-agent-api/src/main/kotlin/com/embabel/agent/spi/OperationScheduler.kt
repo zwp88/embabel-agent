@@ -57,7 +57,7 @@ data class ToolCallSchedule(
 
 
 /**
- * Schedules operations for the agent.
+ * Schedules operations for an AgentProcess.
  */
 interface OperationScheduler {
 

@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory
  * Resolves ToolGroups based on a list.
  * The list is normally Spring-injected,
  * with ToolGroup instances being Spring beans.
+ * @param name The name of the resolver.
+ * @param toolGroups The list of ToolGroups to resolve. Normally Spring-injected from other beans.
  */
 class RegistryToolGroupResolver(
     override val name: String,

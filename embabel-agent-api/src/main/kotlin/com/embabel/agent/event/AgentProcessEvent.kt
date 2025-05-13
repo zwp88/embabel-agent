@@ -31,7 +31,7 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * Event relating to a specific process
+ * Event relating to a specific process. Most events are related to a process.
  */
 interface AgentProcessEvent : AgenticEvent {
 

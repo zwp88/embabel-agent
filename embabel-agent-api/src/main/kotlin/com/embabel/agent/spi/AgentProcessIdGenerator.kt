@@ -22,11 +22,15 @@ import java.util.*
 /**
  * Generate names for agent processes
  */
-fun interface ProcessIdGenerator {
+fun interface AgentProcessIdGenerator {
+
+    /**
+     * Generate a process ID for a new AgentProcess for this given agent and process options.
+     */
     fun createProcessId(agent: Agent, processOptions: ProcessOptions): String
 
     companion object {
-        val RANDOM: ProcessIdGenerator = ProcessIdGenerator { agent, processOptions ->
+        val RANDOM: AgentProcessIdGenerator = AgentProcessIdGenerator { agent, processOptions ->
             UUID.randomUUID().toString()
         }
     }

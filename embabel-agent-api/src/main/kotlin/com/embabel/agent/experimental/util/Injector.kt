@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.common.core.util
+package com.embabel.agent.experimental.util
 
 import org.springframework.beans.factory.annotation.Configurable
 import org.springframework.context.ApplicationContext

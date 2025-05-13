@@ -47,7 +47,7 @@ data class RankingProperties(
  */
 @Configuration
 @EnableConfigurationProperties(ConfigurableModelProviderProperties::class)
-class AgentPlatformConfiguration(
+internal class AgentPlatformConfiguration(
     private val rankingProperties: RankingProperties,
 ) {
 

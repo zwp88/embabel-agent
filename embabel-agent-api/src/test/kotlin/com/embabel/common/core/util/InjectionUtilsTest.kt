@@ -15,6 +15,9 @@
  */
 package com.embabel.common.core.util
 
+import com.embabel.agent.experimental.util.Injectable
+import com.embabel.agent.experimental.util.InjectionUtils
+import com.embabel.agent.experimental.util.Injector
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested

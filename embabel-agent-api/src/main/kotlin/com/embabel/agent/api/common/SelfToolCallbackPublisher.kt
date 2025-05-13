@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi.support
+package com.embabel.agent.api.common
 
 import com.embabel.agent.core.*
 import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Convenient interface a class can implement to publish any @Tool
- * functions automatically.
+ * Convenient interface a class can implement to publish @Tool
+ * functions automatically. Application domain objects can extend this
  */
 interface SelfToolCallbackPublisher : ToolCallbackPublisher {
 

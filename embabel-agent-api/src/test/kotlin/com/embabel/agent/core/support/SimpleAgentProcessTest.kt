@@ -20,6 +20,9 @@ import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.confirm
 import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.annotation.waitFor
+import com.embabel.agent.api.common.StuckHandler
+import com.embabel.agent.api.common.StuckHandlerResult
+import com.embabel.agent.api.common.StuckHandlingResultCode
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.core.*
@@ -30,7 +33,8 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
 import com.embabel.agent.event.logging.personality.severance.SeveranceLoggingAgenticEventListener
-import com.embabel.agent.spi.*
+import com.embabel.agent.spi.OperationScheduler
+import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.EventSavingAgenticEventListener
 import io.mockk.every

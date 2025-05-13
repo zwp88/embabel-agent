@@ -22,7 +22,7 @@ import org.springframework.shell.jline.PromptProvider
 /**
  * Vanilla prompt provider
  */
-class DefaultPromptProvider : PromptProvider {
+internal class DefaultPromptProvider : PromptProvider {
     override fun getPrompt() = AttributedString(
         "embabel> ",
         AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW)

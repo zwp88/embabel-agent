@@ -17,7 +17,7 @@ package com.embabel.agent.support
 
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.spi.support.DefaultProcessIdGenerator
+import com.embabel.agent.spi.support.DefaultAgentProcessIdGenerator
 import com.embabel.agent.spi.support.DefaultProcessIdGeneratorProperties
 import com.embabel.common.core.MobyNameGenerator
 import io.mockk.mockk
@@ -30,7 +30,7 @@ class DefaultProcessIdGeneratorTest {
 
     @Test
     fun `without agent name or version`() {
-        val generator = DefaultProcessIdGenerator(
+        val generator = DefaultAgentProcessIdGenerator(
             properties = DefaultProcessIdGeneratorProperties(
                 includeVersion = false,
                 includeAgentName = false,

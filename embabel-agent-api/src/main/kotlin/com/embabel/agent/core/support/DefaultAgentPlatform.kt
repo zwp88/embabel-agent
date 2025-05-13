@@ -38,7 +38,7 @@ internal class DefaultAgentPlatform(
     private val llmOperations: LlmOperations,
     override val toolGroupResolver: ToolGroupResolver,
     eventListeners: List<AgenticEventListener>,
-    private val processIdGenerator: ProcessIdGenerator = ProcessIdGenerator.RANDOM,
+    private val agentProcessIdGenerator: AgentProcessIdGenerator = AgentProcessIdGenerator.RANDOM,
     private val agentProcessRepository: AgentProcessRepository = InMemoryAgentProcessRepository(),
     private val operationScheduler: OperationScheduler = OperationScheduler.PRONTO,
 ) : AgentPlatform {
@@ -134,7 +134,7 @@ internal class DefaultAgentPlatform(
             agent = agent,
             platformServices = platformServicesToUse,
             blackboard = blackboard,
-            id = processIdGenerator.createProcessId(agent, processOptions),
+            id = agentProcessIdGenerator.createProcessId(agent, processOptions),
             parentId = null,
             processOptions = processOptions,
         )
@@ -154,7 +154,7 @@ internal class DefaultAgentPlatform(
             platformServices = parentAgentProcess.processContext.platformServices,
             blackboard = childBlackboard,
             id = "${parentAgentProcess.agent.name} >> ${
-                processIdGenerator.createProcessId(
+                agentProcessIdGenerator.createProcessId(
                     agent,
                     processOptions,
                 )

@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.agent.spi.StuckHandler
+import com.embabel.agent.api.common.StuckHandler
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.util.ComputerSaysNoSerializer

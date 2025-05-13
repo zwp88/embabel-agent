@@ -17,7 +17,7 @@ package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.spi.ProcessIdGenerator
+import com.embabel.agent.spi.AgentProcessIdGenerator
 import com.embabel.common.core.NameGenerator
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
@@ -28,11 +28,14 @@ data class DefaultProcessIdGeneratorProperties(
     val includeAgentName: Boolean = false,
 )
 
+/**
+ * Create an informative process ID for the agent process.
+ */
 @Service
-internal class DefaultProcessIdGenerator(
+internal class DefaultAgentProcessIdGenerator(
     private val nameGenerator: NameGenerator,
     private val properties: DefaultProcessIdGeneratorProperties,
-) : ProcessIdGenerator {
+) : AgentProcessIdGenerator {
 
     override fun createProcessId(agent: Agent, processOptions: ProcessOptions): String {
         val agentName = if (properties.includeAgentName) {

@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.toolgroups.osx
 
+import com.embabel.agent.api.common.SelfToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
-import com.embabel.agent.spi.support.SelfToolGroup
 import com.embabel.common.core.util.MacOSCondition
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.context.annotation.Conditional

@@ -22,6 +22,9 @@ import org.springframework.stereotype.Component
 /**
  * Services used by the platform and available to user-authored code.
  * @param agentPlatform agent platform executing this agent
+ * @param llmOperations operations to use for LLMs
+ * @param eventListener event listener for agentic events
+ * @param operationScheduler operation scheduler for scheduling operations
  */
 @Component
 data class PlatformServices(

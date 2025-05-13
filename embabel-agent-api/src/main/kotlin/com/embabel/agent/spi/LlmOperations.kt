@@ -92,9 +92,9 @@ data class LlmInteraction(
 
 /**
  * Wraps LLM operations.
- * All LLM operations go through this,
+ * All user-initiated LLM operations go through this,
  * allowing the AgentPlatform to mediate them.
- * Not directly for user code. Prefer PromptRunner
+ * This interface is not directly for use in user code. Prefer PromptRunner
  * An LlmOperations implementation is responsible for resolving all relevant
  * tool callbacks for the current AgentProcess (in addition to those passed in directly),
  * and emitting events.

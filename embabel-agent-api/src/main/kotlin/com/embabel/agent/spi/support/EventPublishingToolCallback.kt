@@ -16,7 +16,6 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.event.AgentProcessToolCallRequestEvent
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
@@ -26,6 +25,9 @@ import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
 
+/**
+ * Decorate tools with metadata and publish events.
+ */
 class DefaultToolDecorator(
     private val toolGroupResolver: ToolGroupResolver? = null,
 ) : ToolDecorator {
@@ -89,14 +91,4 @@ class EventPublishingToolCallback(
             result.getOrThrow()
         }
     }
-}
-
-class MetadataEnrichedToolCallback(
-    val toolGroupMetadata: ToolGroupMetadata?,
-    private val delegate: ToolCallback,
-) : ToolCallback {
-
-    override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
-
-    override fun call(toolInput: String): String = delegate.call(toolInput)
 }

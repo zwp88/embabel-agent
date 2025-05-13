@@ -209,6 +209,9 @@ interface ToolConsumer : ToolCallbackConsumer, ToolGroupConsumer {
     }
 }
 
+/**
+ * Implemented by classes that want to publish tool callbacks
+ */
 interface ToolCallbackPublisher : ToolCallbackSpec {
 
     companion object {

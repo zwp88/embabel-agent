@@ -18,6 +18,9 @@ package com.embabel.agent.spi
 import com.embabel.agent.core.AgentProcess
 import org.springframework.data.repository.Repository
 
+/**
+ * Spring-style repository for agent processes.
+ */
 interface AgentProcessRepository : Repository<AgentProcess, String> {
 
     fun findById(id: String): AgentProcess?

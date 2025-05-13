@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 /**
- * Returns a tool callback for each goal.
+ * Return a tool callback for each goal.
  */
 @Service
 @Profile("!test")
