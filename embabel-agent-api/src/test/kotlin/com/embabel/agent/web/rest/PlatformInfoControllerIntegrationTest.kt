@@ -38,7 +38,7 @@ import kotlin.test.assertEquals
 @ActiveProfiles("test")
 @AutoConfigureMockMvc(addFilters = false)
 @EnableAutoConfiguration
-class PlatformInfoControllerTest(
+class PlatformInfoControllerIntegrationTest(
     @Autowired
     private val mockMvc: MockMvc,
     @Autowired

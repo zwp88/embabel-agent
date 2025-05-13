@@ -18,7 +18,9 @@ package com.embabel.agent.core
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
+import com.embabel.common.core.util.ComputerSaysNoSerializer
 import com.embabel.plan.WorldState
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.time.Duration
 import java.time.Instant
 
@@ -36,6 +38,7 @@ data class ActionInvocation(
 /**
  * Run of an agent
  */
+@JsonSerialize(using = ComputerSaysNoSerializer::class)
 interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentProcessStatusCode>,
     LlmInvocationHistory {
 

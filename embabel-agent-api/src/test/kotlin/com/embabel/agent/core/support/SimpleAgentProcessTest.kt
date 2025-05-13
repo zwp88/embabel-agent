@@ -27,8 +27,8 @@ import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.ConfirmationRequest
-import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.domain.library.Person
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
@@ -37,12 +37,16 @@ import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.EventSavingAgenticEventListener
+import com.embabel.agent.testing.dummyPlatformServices
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.io.IOException
 
 data class LocalPerson(
     override val name: String,
@@ -90,6 +94,25 @@ val DslWaitingAgent = agent("Waiter", description = "Simple test agent that wait
 }
 
 class SimpleAgentProcessTest {
+
+    @Nested
+    inner class Serialization {
+
+        @Test
+        fun `should not be able to serialize AgentProcess`() {
+            val sap = SimpleAgentProcess(
+                id = "test",
+                agent = SimpleTestAgent,
+                processOptions = ProcessOptions(),
+                blackboard = InMemoryBlackboard(),
+                platformServices = dummyPlatformServices(),
+                parentId = null,
+            )
+            assertThrows<IOException> {
+                jacksonObjectMapper().writeValueAsString(sap)
+            }
+        }
+    }
 
     @Nested
     inner class Waiting {
