@@ -20,9 +20,9 @@ import com.embabel.agent.core.Action
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.resultOfType
 
-fun <I, O : Any> Agent.asTransformation(outputClass: Class<O>) = Transformation<I, O> {
+fun <I, O : Any> asTransformation(agent: Agent, outputClass: Class<O>) = Transformation<I, O> {
     val childAgentProcess = it.agentPlatform().createChildProcess(
-        agent = this,
+        agent = agent,
         parentAgentProcess = it.processContext.agentProcess,
     )
     val childProcessResult = childAgentProcess.run()
@@ -40,6 +40,10 @@ inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformatio
     val childProcessResult = childAgentProcess.run()
     childProcessResult.resultOfType()
 }
+
+fun <I, O : Any> asAction(agent: Agent, inputClass: Class<I>, outputClass: Class<O>): Action =
+    agentTransformer<I, O>(agent, inputClass, outputClass)
+
 
 /**
  * Expose this agent as an action of the given transformation type
@@ -68,14 +72,20 @@ fun <I, O : Any> asAction(agentName: String, inputClass: Class<I>, outputClass: 
                 it.processContext.platformServices.agentPlatform.agents().joinToString("\n\t") { it.name }
             }"
         )
-        agent.asTransformation<I, O>(outputClass).transform(it)
+        asTransformation<I, O>(agent, outputClass).transform(it)
     }
 }
 
 inline fun <reified I, reified O : Any> asAction(agentName: String): Action =
     asAction<I, O>(agentName, I::class.java, O::class.java)
 
-inline fun <reified I, reified O : Any> agentTransformer(agent: Agent): Action {
+inline fun <reified I, reified O : Any> agentTransformer(agent: Agent): Action =
+    agentTransformer<I, O>(agent, I::class.java, O::class.java)
+
+fun <I, O : Any> agentTransformer(
+    agent: Agent, inputClass: Class<I>,
+    outputClass: Class<O>,
+): Action {
     return TransformationAction(
         name = "@action-${agent.name}",
         description = "@action-${agent.name}",
@@ -84,12 +94,13 @@ inline fun <reified I, reified O : Any> agentTransformer(agent: Agent): Action {
         cost = 0.0,
         value = 0.0,
         canRerun = true,
-        inputClass = I::class.java,
-        outputClass = O::class.java,
+        inputClass = inputClass,
+        outputClass = outputClass,
         toolGroups = emptySet(),
         toolCallbacks = emptyList(),
     ) {
-        agent.asTransformation<I, O>().transform(it)
+        val tf: Transformation<I, O> = asTransformation<I, O>(agent, outputClass)
+        tf.transform(it)
     }
 }
 

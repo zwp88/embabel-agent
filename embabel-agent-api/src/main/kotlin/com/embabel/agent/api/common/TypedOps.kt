@@ -88,6 +88,18 @@ inline fun <I : Any, reified O : Any> TypedOps.transform(
     )
 }
 
+fun <I : Any, O : Any> TypedOps.transform(
+    input: I,
+    processOptions: ProcessOptions = ProcessOptions(),
+    outputClass: Class<O>,
+): O {
+    return transform(
+        input = input,
+        outputClass = outputClass,
+        processOptions = processOptions,
+    )
+}
+
 /**
  * Turn user input into this type
  */
