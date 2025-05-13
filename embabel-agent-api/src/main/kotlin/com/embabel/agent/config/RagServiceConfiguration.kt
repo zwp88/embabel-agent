@@ -25,6 +25,7 @@ import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.springvector.SpringVectorStoreRagService
 import com.embabel.agent.toolgroups.rag.RagTools
 import org.springframework.ai.vectorstore.VectorStore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.Primary
 class RagServiceConfiguration {
 
     @Bean
+    @ConditionalOnBean(VectorStore::class)
     fun defaultSpringVectorStore(vectorStore: VectorStore): RagService {
         return SpringVectorStoreRagService(vectorStore)
     }

@@ -14,23 +14,3 @@
  * limitations under the License.
  */
 package com.embabel.agent.config
-
-import org.neo4j.driver.Driver
-import org.springframework.ai.embedding.EmbeddingModel
-import org.springframework.ai.vectorstore.VectorStore
-import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-
-@Configuration
-class NeoVectorStoreConfiguration {
-
-    @Bean
-    fun vectorStore(driver: Driver, embeddingModel: EmbeddingModel): VectorStore {
-        return Neo4jVectorStore.builder(
-            driver,
-            embeddingModel,
-        )
-            .build()
-    }
-}

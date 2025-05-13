@@ -13,42 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag
+package com.embabel.agent.config.neo
 
 import com.embabel.common.ai.model.EmbeddingService
-import com.embabel.common.test.ai.FakeEmbeddingModel
+import org.neo4j.driver.Driver
+import org.springframework.ai.vectorstore.VectorStore
+import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
 
 @Configuration
-@Profile("test")
-class FakeEmbeddingConfig {
+@Profile("neo")
+class NeoVectorStoreConfiguration {
 
     @Bean
-    fun fakeEmbeddingService(): EmbeddingService {
-        return EmbeddingService("test", "test-provider", FakeEmbeddingModel())
-    }
-}
-
-@Service
-@Profile("test")
-class FakeRagService : RagService {
-    override val name: String
-        get() = "test"
-
-    override fun search(ragRequest: RagRequest): RagResponse {
-        return RagResponse(
-            service = name,
-            results = emptyList(),
-        )
-    }
-
-    override val description: String
-        get() = "test RAG"
-
-    override fun infoString(verbose: Boolean?): String {
-        return "RAG service: $name"
+    fun vectorStore(driver: Driver, embeddingService: EmbeddingService): VectorStore {
+        return Neo4jVectorStore.builder(
+            driver,
+            embeddingService.model,
+        ).build()
     }
 }

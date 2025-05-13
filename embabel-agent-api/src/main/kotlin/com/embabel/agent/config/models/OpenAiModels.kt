@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.config.models
 
+import com.embabel.common.ai.model.EmbeddingService
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.ai.model.PerTokenPricingModel
@@ -22,10 +23,11 @@ import com.embabel.common.ai.model.config.OpenAiConfiguration
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.chat.model.ChatModel
-import org.springframework.ai.embedding.EmbeddingModel
+import org.springframework.ai.document.MetadataMode
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.OpenAiEmbeddingModel
+import org.springframework.ai.openai.OpenAiEmbeddingOptions
 import org.springframework.ai.openai.api.OpenAiApi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -66,11 +68,6 @@ class OpenAiModels(
     }
 
     @Bean
-    fun embeddingModel(): EmbeddingModel {
-        return OpenAiEmbeddingModel(openAiApi)
-    }
-
-    @Bean
     fun gpt41(): Llm {
         val model = GPT_41
         return Llm(
@@ -104,6 +101,22 @@ class OpenAiModels(
                     usdPer1mOutputTokens = .4,
                 )
             )
+    }
+
+    @Bean
+    fun embeddingService(): EmbeddingService {
+        val model = OpenAiEmbeddingModel(
+            openAiApi,
+            MetadataMode.EMBED,
+            OpenAiEmbeddingOptions.builder()
+                .model("text-embedding-3-small")
+                .build(),
+        )
+        return EmbeddingService(
+            name = "text-embedding-3-small",
+            model = model,
+            provider = PROVIDER,
+        )
     }
 
     private fun chatModelOf(model: String): ChatModel {
