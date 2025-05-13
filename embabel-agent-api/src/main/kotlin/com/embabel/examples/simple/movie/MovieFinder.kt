@@ -23,11 +23,11 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
 import com.embabel.agent.core.hitl.ConfirmationRequest
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
-import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.prompt.Persona
@@ -289,7 +289,7 @@ class MovieFinder(
      * @return StreamableMovies containing available movie recommendations
      */
     @Action(
-        post = ["haveEnoughMovies"],
+        post = [HAVE_ENOUGH_MOVIES],
         canRerun = true,
     )
     fun suggestMovies(
@@ -348,13 +348,13 @@ class MovieFinder(
      */
     private fun lookUpMovies(suggestedMovieTitles: SuggestedMovieTitles): SuggestedMovies {
         logger.info(
-            "Resolving suggestedMovieTitles {}",
+            "Looking up streaming status of suggested movies {}",
             suggestedMovieTitles.titles.joinToString(", ")
         )
         val movies = suggestedMovieTitles.titles.mapNotNull { title ->
             try {
                 omdbClient.getMovieByTitle(title)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }
@@ -378,7 +378,7 @@ class MovieFinder(
         movieBuff: MovieBuff,
         suggestedMovies: SuggestedMovies,
     ): StreamableMovies {
-        val streamables = suggestedMovies.movies
+        val streamableMovieList = suggestedMovies.movies
             // Sometimes the LLM ignores being told not to
             // include movies the user has seen
             .filterNot {
@@ -394,7 +394,7 @@ class MovieFinder(
                     val availableToUser = allStreamingOptions.filter {
                         (it.service.name.lowercase() in movieBuff.streamingServices.map { it.lowercase() })  //|| it.type == "free"
                     }
-                    logger.debug(
+                    logger.info(
                         "Movie {} available in [{}] on {}",
                         movie.Title,
                         movieBuff.countryCode,
@@ -407,7 +407,7 @@ class MovieFinder(
                             availableStreamingOptions = availableToUser,
                         )
                     } else {
-                        logger.info(
+                        logger.debug(
                             "Movie {} not available to {} on any of their streaming services: {} - filtering it out",
                             movie.Title,
                             movieBuff.name,
@@ -415,11 +415,11 @@ class MovieFinder(
                         )
                         null
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }
-        return StreamableMovies(streamables)
+        return StreamableMovies(streamableMovieList)
     }
 
     /**
@@ -432,7 +432,7 @@ class MovieFinder(
      * @param processContext The process context to access the blackboard
      * @return Boolean indicating if we have enough movies
      */
-    @Condition
+    @Condition(name = HAVE_ENOUGH_MOVIES)
     fun haveEnoughMovies(processContext: ProcessContext): Boolean =
         allStreamableMovies(processContext).size >= config.suggestionCount
 
@@ -502,7 +502,7 @@ class MovieFinder(
      * @param context The action context
      * @return SuggestionWriteup containing the formatted recommendations
      */
-    @Action(pre = ["haveEnoughMovies"])
+    @Action(pre = [HAVE_ENOUGH_MOVIES])
     @AchievesGoal(description = "Recommend movies for a movie buff using what we know about them")
     fun writeUpSuggestions(
         dmb: DecoratedMovieBuff,
@@ -539,5 +539,9 @@ class MovieFinder(
         return SuggestionWriteup(
             text = text,
         )
+    }
+
+    companion object {
+        const val HAVE_ENOUGH_MOVIES = "haveEnoughMovies"
     }
 }
