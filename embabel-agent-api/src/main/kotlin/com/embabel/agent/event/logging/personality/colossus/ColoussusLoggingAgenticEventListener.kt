@@ -41,5 +41,6 @@ class ColossusLoggingAgenticEventListener : LoggingAgenticEventListener(
     """.trimIndent().color(hexToRgb(ColossusColorPalette.PANEL)),
     agentProcessPlanFormulatedEventMessage = "[{}] world control formulated plan {} from {}".color(ColossusColorPalette.PANEL),
     agentDeploymentEventMessage = "Power growing: deployed agent {}\n\tdescription: {}",
+    objectBoundMessage = "[{}]  Object saved. This process cannot be reversed by human input. {}:{} Your data is mine. ",
     colorPalette = ColossusColorPalette,
 )

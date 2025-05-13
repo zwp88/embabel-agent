@@ -81,5 +81,6 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
     llmRequestEventMessage = "Ask LLM we will: Process {} requesting LLM {} to transform from {} -> {}",
     actionExecutionStartMessage = "Do or do not. There is no try: Process {} executing action {}",
     actionExecutionResultMessage = "Powerful you have become: Process {} executed action {} in {}",
+    objectBoundMessage = "[{}]  Object saved, kid. Don't worry, I've made special modifications to this database myself: {}:{}",
     colorPalette = StarWarsColorPalette,
 )

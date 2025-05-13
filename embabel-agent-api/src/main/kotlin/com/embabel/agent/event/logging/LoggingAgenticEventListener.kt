@@ -63,7 +63,7 @@ open class LoggingAgenticEventListener(
     private val processFailureMessage: String = "[{}] failed",
     private val earlyTerminationMessage: String = "[{}] early termination by {} for {}",
     private val objectAddedMessage: String = "[{}] object added: {}",
-    private val objectBoundMessage: String = "[{}] object bound: {} to {}",
+    private val objectBoundMessage: String = "[{}] object bound {}:{}",
     private val functionCallRequestEventMessage: String = "[{}] tool {}({})",
     private val functionCallSuccessResponseEventMessage: String = "[{}] tool {} -> {} in {}ms with payload {}",
     private val functionCallFailureResponseEventMessage: String = "[{}] failed tool {} -> {} in {}ms with payload {}",

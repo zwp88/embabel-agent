@@ -60,5 +60,6 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     llmRequestEventMessage = "Strange women lying in ponds: Process {} requesting LLM {} transform from {} -> {}",
     actionExecutionStartMessage = "Run away! Run away! Process {} executing action {}",
     actionExecutionResultMessage = "I fart in your general direction! Process {} executed action {} in {}",
+    objectBoundMessage = "[{}] Object saved! Nudge nudge, wink wink, say no more! {}:{}",
     colorPalette = MontyPythonColorPalette,
 )
