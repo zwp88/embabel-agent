@@ -70,6 +70,16 @@ interface AgentPlatform : AgentScope {
         bindings: Map<String, Any>,
     ): AgentProcess
 
+    fun runAgentWithInput(
+        agent: Agent,
+        processOptions: ProcessOptions = ProcessOptions(),
+        input: Any,
+    ): AgentProcess = runAgentFrom(
+        agent,
+        processOptions,
+        mapOf(IoBinding.DEFAULT_BINDING to input),
+    )
+
     fun createChildProcess(
         agent: Agent,
         parentAgentProcess: AgentProcess,

@@ -65,6 +65,9 @@ enum class ActionStatusCode {
  */
 interface OperationStatus<S> : Timed where S : Enum<S> {
 
+    /**
+     * Status of this operation
+     */
     val status: S
 }
 

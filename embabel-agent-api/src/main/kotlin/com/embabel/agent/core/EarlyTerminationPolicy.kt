@@ -15,8 +15,16 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.core.EarlyTerminationPolicy.Companion.maxActions
 import com.embabel.agent.event.AbstractAgentProcessEvent
 
+/**
+ * Event triggered when an agent process is terminated early by a policy.
+ *
+ * @param agentProcess The agent process that is being terminated
+ * @param reason A human-readable explanation of why the process is being terminated
+ * @param policy The policy that triggered the termination
+ */
 class EarlyTermination(
     agentProcess: AgentProcess,
     val reason: String,
@@ -28,26 +36,53 @@ class EarlyTermination(
 
 /**
  * Enables early termination of an agent process.
+ *
+ * Early termination policies provide a mechanism to stop agent processes before they
+ * naturally complete. This is useful for enforcing constraints like maximum number of actions,
+ * budget limits, or other custom termination conditions.
+ *
+ * Implementations should be stateless and thread-safe.
  */
 interface EarlyTerminationPolicy {
 
+    /**
+     * The name of this policy, used for logging and debugging.
+     * By default, uses the simple class name.
+     */
     val name: String get() = this::class.simpleName ?: "Unknown"
 
     /**
      * Checks if the agent process should be terminated early.
+     *
+     * @param agentProcess The agent process to evaluate
+     * @return An EarlyTermination object if the process should be terminated, or null if it should continue
      */
     fun shouldTerminate(agentProcess: AgentProcess): EarlyTermination?
 
     companion object {
 
+        /**
+         * Default maximum number of actions an agent process can perform before termination.
+         */
         const val DEFAULT_ACTION_LIMIT = 40
 
+        /**
+         * Creates a policy that terminates the process after a maximum number of actions.
+         *
+         * @param maxActions The maximum number of actions allowed
+         * @return An EarlyTerminationPolicy that enforces the action limit
+         */
         @JvmStatic
         fun maxActions(maxActions: Int): EarlyTerminationPolicy =
             MaxActionsEarlyTerminationPolicy(maxActions)
 
         /**
          * Combines multiple early termination policies into one.
+         * The process will terminate if any of the provided policies triggers termination.
+         * Policies are evaluated in the order they are provided.
+         *
+         * @param earlyTerminationPolicies The policies to combine
+         * @return A combined EarlyTerminationPolicy
          */
         @JvmStatic
         fun firstOf(vararg earlyTerminationPolicies: EarlyTerminationPolicy): EarlyTerminationPolicy =
@@ -55,7 +90,10 @@ interface EarlyTerminationPolicy {
 
         /**
          * Fallback budget limit for the agent process.
-         * This is a last resort termination policy.
+         * This is a last resort termination policy to prevent runaway costs.
+         *
+         * @param budget The maximum cost allowed for the process in dollars
+         * @return An EarlyTerminationPolicy that enforces the budget limit
          */
         @JvmStatic
         fun hardBudgetLimit(budget: Double): EarlyTerminationPolicy =
@@ -68,7 +106,7 @@ private data class MaxActionsEarlyTerminationPolicy(
 ) : EarlyTerminationPolicy {
     override fun shouldTerminate(agentProcess: AgentProcess): EarlyTermination? =
         if (agentProcess.history.size >= maxActions) {
-            EarlyTermination(agentProcess, "Max actions reached", this)
+            EarlyTermination(agentProcess, "Max actions of $maxActions reached", this)
         } else null
 
 }
