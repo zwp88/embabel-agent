@@ -34,6 +34,11 @@ import org.springframework.ai.tool.ToolCallback
 interface PromptRunner : LlmCall {
 
     /**
+     * Additional objects with @Tool annotation for use in this PromptRunner
+     */
+    val toolObjects: List<Any>
+
+    /**
      * Generate text
      */
     infix fun generateText(prompt: String): String =
@@ -106,6 +111,7 @@ sealed class ExecutePromptException(
     override val llm: LlmOptions? = null,
     override val outputClass: Class<*>,
     override val toolCallbacks: List<ToolCallback>,
+    val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
     override val generateExamples: Boolean?,
 ) : LlmObjectCreationRequest, RuntimeException(
@@ -122,6 +128,7 @@ class CreateObjectPromptException(
     outputClass: Class<*>,
     override val toolGroups: Set<String>,
     toolCallbacks: List<ToolCallback>,
+    toolObjects: List<Any>,
     promptContributors: List<PromptContributor>,
     generateExamples: Boolean? = null,
 ) : ExecutePromptException(
@@ -129,6 +136,7 @@ class CreateObjectPromptException(
     llm = llm,
     outputClass = outputClass,
     toolCallbacks = toolCallbacks,
+    toolObjects = toolObjects,
     promptContributors = promptContributors,
     generateExamples = generateExamples,
 ), LlmCallRequest
@@ -140,6 +148,7 @@ class EvaluateConditionPromptException(
     requireResult: Boolean,
     llm: LlmOptions? = null,
     override val toolGroups: Set<String>,
+    toolObjects: List<Any>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>,
     generateExamples: Boolean? = null,
@@ -148,6 +157,7 @@ class EvaluateConditionPromptException(
     llm = llm,
     outputClass = Determination::class.java,
     toolCallbacks = toolCallbacks,
+    toolObjects = toolObjects,
     promptContributors = promptContributors,
     generateExamples = generateExamples,
 )

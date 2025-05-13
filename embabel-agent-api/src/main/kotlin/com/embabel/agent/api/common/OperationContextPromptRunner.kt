@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
@@ -32,6 +33,7 @@ internal class OperationContextPromptRunner(
     override val llm: LlmOptions,
     override val toolGroups: Set<String>,
     override val toolCallbacks: List<ToolCallback>,
+    override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
     override val generateExamples: Boolean?,
 ) : PromptRunner {
@@ -53,7 +55,7 @@ internal class OperationContextPromptRunner(
             interaction = LlmInteraction(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
-                toolCallbacks = toolCallbacks,
+                toolCallbacks = toolCallbacks + safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
             ),
@@ -72,7 +74,7 @@ internal class OperationContextPromptRunner(
             interaction = LlmInteraction(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
-                toolCallbacks = toolCallbacks,
+                toolCallbacks = toolCallbacks + safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
             ),

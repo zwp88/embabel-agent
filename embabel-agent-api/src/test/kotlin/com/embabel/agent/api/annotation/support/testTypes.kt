@@ -406,6 +406,36 @@ class FromPersonUsesDomainObjectToolsViaContext {
 }
 
 @AgentCapabilities
+class FromPersonUsesObjectToolsViaUsing {
+
+    @Action
+    fun fromPerson(
+        person: PersonWithReverseTool
+    ): UserInput {
+        return using(toolObjects = listOf(FunnyTool())).createObject("Create a UserInput")
+    }
+}
+
+@AgentCapabilities
+class FromPersonUsesObjectToolsViaContext {
+
+    @Action
+    fun fromPerson(
+        person: PersonWithReverseTool,
+        context: ActionContext,
+    ): UserInput {
+        return context.promptRunner(toolObjects = listOf(FunnyTool())).createObject("Create a UserInput")
+    }
+}
+
+class FunnyTool {
+    @Tool
+    fun thing(): String {
+        return "foobar"
+    }
+}
+
+@AgentCapabilities
 class OneTransformerActionWith2Tools {
 
     @Action

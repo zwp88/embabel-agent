@@ -31,6 +31,7 @@ internal class MethodReturnPromptRunner(
     override val llm: LlmOptions?,
     override val toolGroups: Set<String>,
     override val toolCallbacks: List<ToolCallback>,
+    override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
     override val generateExamples: Boolean?,
 ) : PromptRunner {
@@ -48,6 +49,7 @@ internal class MethodReturnPromptRunner(
             outputClass = outputClass,
             toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
+            toolObjects = toolObjects,
             promptContributors = promptContributors,
         )
     }
@@ -63,6 +65,7 @@ internal class MethodReturnPromptRunner(
             outputClass = outputClass,
             toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
+            toolObjects = toolObjects,
             promptContributors = promptContributors,
         )
     }
@@ -80,6 +83,7 @@ internal class MethodReturnPromptRunner(
             requireResult = false,
             toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
+            toolObjects = toolObjects,
             promptContributors = promptContributors,
         )
     }

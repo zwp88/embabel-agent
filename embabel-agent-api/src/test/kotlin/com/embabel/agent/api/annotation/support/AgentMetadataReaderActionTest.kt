@@ -541,7 +541,17 @@ class AgentMetadataReaderActionTest {
             testToolsAreExposed(FromPersonUsesDomainObjectToolsViaContext())
         }
 
-        private fun testToolsAreExposed(instance: Any) {
+        @Test
+        fun `prompt action invocation with tool object passed in via using`() {
+            testToolsAreExposed(FromPersonUsesObjectToolsViaUsing(), expectedToolCount = 2)
+        }
+
+        @Test
+        fun `prompt action invocation with tool object passed in via context`() {
+            testToolsAreExposed(FromPersonUsesObjectToolsViaContext(), expectedToolCount = 2)
+        }
+
+        private fun testToolsAreExposed(instance: Any, expectedToolCount: Int = 1) {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(instance)
             assertNotNull(metadata)
@@ -590,11 +600,11 @@ class AgentMetadataReaderActionTest {
             assertTrue(pc.blackboard.lastResult() is UserInput)
             assertEquals("John Doe", (pc.blackboard.lastResult() as UserInput).content)
             assertEquals(
-                1,
+                expectedToolCount,
                 llmo.captured.toolCallbacks.size,
-                "Should have one callback, had ${llmo.captured.toolCallbacks.map { it.toolDefinition.name() }}",
+                "Should have $expectedToolCount tools, had ${llmo.captured.toolCallbacks.map { it.toolDefinition.name() }}",
             )
-            assertEquals("reverse", llmo.captured.toolCallbacks.single().toolDefinition.name())
+            assertTrue(llmo.captured.toolCallbacks.any { it.toolDefinition.name() == "reverse" })
             assertEquals(DefaultModelSelectionCriteria, llmo.captured.llm.criteria)
         }
     }

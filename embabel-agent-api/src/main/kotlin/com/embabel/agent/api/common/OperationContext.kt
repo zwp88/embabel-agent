@@ -54,6 +54,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         llm: LlmOptions = LlmOptions(),
         toolGroups: Set<String> = emptySet(),
         toolCallbacks: List<ToolCallback> = emptyList(),
+        toolObjects: List<Any> = emptyList(),
         promptContributors: List<PromptContributor> = emptyList(),
         generateExamples: Boolean = false,
     ): PromptRunner {
@@ -63,6 +64,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
             llm = llm,
             toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
+            toolObjects = toolObjects,
             promptContributors = promptContributorsToUse,
             generateExamples = generateExamples,
         )
@@ -107,6 +109,7 @@ interface ActionContext : OperationContext {
         llm: LlmOptions,
         toolGroups: Set<String>,
         toolCallbacks: List<ToolCallback>,
+        toolObjects: List<Any>,
         promptContributors: List<PromptContributor>,
         generateExamples: Boolean,
     ): PromptRunner {
@@ -119,6 +122,7 @@ interface ActionContext : OperationContext {
             llm = llm,
             toolGroups = this.toolGroups + toolGroups,
             toolCallbacks = toolCallbacksToUse,
+            toolObjects = toolObjects,
             promptContributors = promptContributorsToUse,
             generateExamples = generateExamples,
         )

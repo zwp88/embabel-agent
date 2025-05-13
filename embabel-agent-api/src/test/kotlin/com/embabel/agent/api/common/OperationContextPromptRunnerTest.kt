@@ -55,8 +55,9 @@ class OperationContextPromptRunnerTest {
             llm = LlmOptions(),
             toolGroups = emptySet(),
             toolCallbacks = emptyList(),
+            toolObjects = emptyList(),
             promptContributors = emptyList(),
-            generateExamples = false
+            generateExamples = false,
         )
 
         val result = runner.evaluateCondition("condition", "context", 0.5)

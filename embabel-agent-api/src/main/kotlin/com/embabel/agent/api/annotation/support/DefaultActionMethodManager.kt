@@ -109,10 +109,11 @@ internal class DefaultActionMethodManager(
 
             val promptContributors = cope.promptContributors
             val promptRunner = context.promptRunner(
-                llm = cope.llm ?: LlmOptions.Companion(),
+                llm = cope.llm ?: LlmOptions(),
                 // Remember to add tool groups from the context to those the exception specified at the call site
                 toolGroups = cope.toolGroups + context.toolGroups,
                 toolCallbacks = toolCallbacksToUse,
+                toolObjects = cope.toolObjects,
                 promptContributors = promptContributors,
                 generateExamples = cope.generateExamples == true,
             )

@@ -30,6 +30,7 @@ fun using(
     llm: LlmOptions? = null,
     toolGroups: Set<String> = emptySet(),
     toolCallbacks: List<ToolCallback> = emptyList(),
+    toolObjects: List<Any> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
     generateExamples: Boolean? = null,
 ): PromptRunner =
@@ -37,6 +38,7 @@ fun using(
         llm = llm,
         toolGroups = toolGroups,
         toolCallbacks = toolCallbacks,
+        toolObjects = toolObjects,
         promptContributors = promptContributors,
         generateExamples = generateExamples,
     )
@@ -50,6 +52,7 @@ fun usingModel(
     model: String,
     toolGroups: Set<String> = emptySet(),
     toolCallbacks: List<ToolCallback> = emptyList(),
+    toolObjects: List<Any> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
     generateExamples: Boolean? = null,
 ): PromptRunner =
@@ -57,6 +60,7 @@ fun usingModel(
         llm = LlmOptions(model = model),
         toolGroups = toolGroups,
         toolCallbacks = toolCallbacks,
+        toolObjects = toolObjects,
         promptContributors = promptContributors,
         generateExamples = generateExamples,
     )
@@ -66,6 +70,7 @@ val usingDefaultLlm: PromptRunner =
         llm = null,
         toolGroups = emptySet(),
         toolCallbacks = emptyList(),
+        toolObjects = emptyList(),
         promptContributors = emptyList(),
         generateExamples = null,
     )
