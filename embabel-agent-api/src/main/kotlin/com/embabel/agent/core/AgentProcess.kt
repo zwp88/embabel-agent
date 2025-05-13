@@ -49,6 +49,11 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
     val history: List<ActionInvocation>
 
     /**
+     * If we failed, this may contain the reason for the failure.
+     */
+    val failureInfo: Any?
+
+    /**
      * The last world state that was used to plan the next action
      * Will be non-null if the process is running
      */

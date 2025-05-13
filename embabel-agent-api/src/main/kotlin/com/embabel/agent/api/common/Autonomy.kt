@@ -35,6 +35,7 @@ import com.embabel.plan.goap.WorldStateDeterminer
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 import java.time.Instant
+import kotlin.Throws
 
 /**
  * Successful result of directly trying to execute a goal
@@ -90,7 +91,7 @@ class DynamicExecutionResult private constructor(
                 AgentProcessStatusCode.FAILED -> {
                     throw ProcessExecutionFailedException(
                         agentProcess = agentProcess,
-                        detail = "Process ${agentProcess.id} failed"
+                        detail = "Process ${agentProcess.id} failed: ${agentProcess.failureInfo}",
                     )
                 }
 

@@ -55,6 +55,11 @@ abstract class AbstractAgentProcess(
 
     protected var _status: AgentProcessStatusCode = AgentProcessStatusCode.RUNNING
 
+    private var _failureInfo: Any? = null
+
+    override val failureInfo: Any?
+        get() = _failureInfo
+
     override val lastWorldState: WorldState?
         get() = _lastWorldState
 
@@ -133,6 +138,7 @@ abstract class AbstractAgentProcess(
                     earlyTermination.reason,
                 )
                 platformServices.eventListener.onProcessEvent(earlyTermination)
+                _failureInfo = earlyTermination
                 _status = AgentProcessStatusCode.FAILED
                 return this
             }

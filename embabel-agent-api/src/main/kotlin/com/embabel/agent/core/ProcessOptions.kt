@@ -15,8 +15,6 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.agent.event.AbstractAgentProcessEvent
-
 /**
  * Controls log output.
  */
@@ -33,32 +31,7 @@ enum class Delay {
     NONE, MEDIUM, LONG
 }
 
-class EarlyTermination(
-    agentProcess: AgentProcess,
-    val reason: String,
-    val policy: EarlyTerminationPolicy,
-) : AbstractAgentProcessEvent(agentProcess)
-
-interface EarlyTerminationPolicy {
-    fun shouldTerminate(agentProcess: AgentProcess): EarlyTermination?
-
-    companion object {
-        fun maxActions(maxActions: Int = 40): EarlyTerminationPolicy = MaxActionsEarlyTerminationPolicy(maxActions)
-    }
-}
-
-private data class MaxActionsEarlyTerminationPolicy(
-    private val maxActions: Int,
-) : EarlyTerminationPolicy {
-    override fun shouldTerminate(agentProcess: AgentProcess): EarlyTermination? =
-        if (agentProcess.history.size >= maxActions) {
-            EarlyTermination(agentProcess, "Max actions reached", this)
-        } else null
-
-}
-
 /**
- *  @param maxActions maximum number of actions to run.
  *  Prevents infinite loops
  */
 data class ProcessControl(
@@ -89,6 +62,9 @@ data class ProcessOptions(
     val control: ProcessControl = ProcessControl(
         toolDelay = Delay.NONE,
         operationDelay = Delay.NONE,
-        earlyTerminationPolicy = EarlyTerminationPolicy.maxActions(40),
+        earlyTerminationPolicy = EarlyTerminationPolicy.firstOf(
+            EarlyTerminationPolicy.maxActions(EarlyTerminationPolicy.DEFAULT_ACTION_LIMIT),
+            EarlyTerminationPolicy.hardBudgetLimit(budget = 2.00),
+        )
     ),
 )
