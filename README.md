@@ -24,6 +24,7 @@ with code and domain models. Supports
 intelligent path finding towards goals. Written in Kotlin
 but offers a natural usage
 model from Java.
+From the creator of Spring.
 
 ## Key Concepts
 
@@ -366,6 +367,28 @@ Remember:
 
 - Provide the knowledge cutoff date if you know it
 - Make the configuration class conditional on any required API key.
+
+## Roadmap
+
+This project is in its early stages, but we have big plans.
+The milestones and issues in this repository are a good reference.
+The major themes we want to address are:
+
+- **Become the natural way to Gen AI-enable Java applications**, and especially those built on Spring.
+- **Prove the power of the model**. Demonstrate that this model is the most capable agent
+  model. See the [Dunnart milestone](https://github.com/embabel/embabel-agent/milestone/4) for details.
+  In particular:
+    - Demonstrate the power of extensibility without modification, by adding goals and actions
+    - Demonstrate the potential to become the PaaS for natural language
+    - Demonstrate the potential of agent federation within the GOAP model
+    - Demonstrate budget-aware agents, such as "Research the following topic, spending up to 20c if you are still
+      learning"
+    - Integrate with data stores and demonstrate the power of surfacing existing functionality inside an organization
+- **Take the model to other platforms**: The conceptual framework is not JVM specific. Once established, we intend to
+  create TypeScript
+  and Python projects.
+
+There is a lot to do, and you are awesome. We look forward to your contribution!
 
 ## Application Design
 
