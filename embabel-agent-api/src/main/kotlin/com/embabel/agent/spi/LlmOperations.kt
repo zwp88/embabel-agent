@@ -44,15 +44,17 @@ interface LlmCall : PromptContributorConsumer, ToolConsumer {
     override val promptContributors: List<PromptContributor>
 
     companion object {
-        operator fun invoke(): LlmCall = object : LlmCall {
-            override val name = MobyNameGenerator.generateName()
-            override val llm: LlmOptions? = null
-            override val toolGroups: Set<String> = emptySet()
-            override val toolCallbacks: List<ToolCallback> = emptyList()
-            override val promptContributors: List<PromptContributor> = emptyList()
-        }
+        operator fun invoke(): LlmCall = LlmCallImpl(name = MobyNameGenerator.generateName())
     }
 }
+
+private data class LlmCallImpl(
+    override val name: String,
+    override val llm: LlmOptions? = null,
+    override val toolGroups: Set<String> = emptySet(),
+    override val toolCallbacks: List<ToolCallback> = emptyList(),
+    override val promptContributors: List<PromptContributor> = emptyList(),
+) : LlmCall
 
 /**
  * Encapsulates an interaction with an LLM.
