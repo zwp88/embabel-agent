@@ -36,7 +36,7 @@ class MovieFinderEndToEndTest {
         every { mockOmdbClient.getMovieByTitle(any()) } answers {
             DummyInstanceCreator.LoremIpsum.createDummyInstance(
                 MovieResponse::class.java
-            ) as MovieResponse
+            )
         }
         val movieBuffRepository = InMemoryMovieBuffRepository()
         val mockStreamingAvailabilityClient = mockk<StreamingAvailabilityClient>()
@@ -71,7 +71,7 @@ class MovieFinderEndToEndTest {
         val mockOmdbClient = mockk<OmdbClient>()
         every { mockOmdbClient.getMovieByTitle(any()) } returns DummyInstanceCreator.LoremIpsum.createDummyInstance(
             MovieResponse::class.java
-        ) as MovieResponse
+        )
         val movieBuffRepository = InMemoryMovieBuffRepository()
         val mockStreamingAvailabilityClient = mockk<StreamingAvailabilityClient>()
         every { mockStreamingAvailabilityClient.getShowStreamingIn(any(), any()) } returns emptyList()

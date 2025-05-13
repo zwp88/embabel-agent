@@ -45,30 +45,30 @@ open class DummyInstanceCreator(
      * Create a dummy instance of this class
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> createDummyInstance(clazz: Class<T>): Any {
+    fun <T> createDummyInstance(clazz: Class<T>): T {
         logger.debug("Creating mock instance for class {}", clazz.name)
         // Handle primitive types and common Java types
         when {
-            clazz == String::class.java -> return getRandomString()
-            clazz == Int::class.java || clazz == Integer::class.java -> return random.nextInt(1000)
-            clazz == Long::class.java -> return random.nextLong()
-            clazz == Double::class.java -> return random.nextDouble() * 100
-            clazz == Float::class.java -> return random.nextFloat() * 100
-            clazz == Boolean::class.java -> return random.nextBoolean()
-            clazz == List::class.java -> return listOf(getRandomString())
-            clazz.isEnum -> return clazz.enumConstants?.let { it[random.nextInt(it.size)] } ?: ""
-            clazz == LocalDate::class.java -> return LocalDate.now()
-            clazz == LocalDateTime::class.java -> return LocalDateTime.now()
-            clazz == Instant::class.java -> return Instant.now()
-            clazz == Date::class.java -> return Date()
-            clazz == Duration::class.java -> return Duration.ofMillis(random.nextLong())
+            clazz == String::class.java -> return getRandomString() as T
+            clazz == Int::class.java || clazz == Integer::class.java -> return random.nextInt(1000) as T
+            clazz == Long::class.java -> return random.nextLong() as T
+            clazz == Double::class.java -> return (random.nextDouble() * 100) as T
+            clazz == Float::class.java -> return (random.nextFloat() * 100) as T
+            clazz == Boolean::class.java -> return random.nextBoolean() as T
+            clazz == List::class.java -> return listOf(getRandomString()) as T
+            clazz.isEnum -> return (clazz.enumConstants?.let { it[random.nextInt(it.size)] } ?: "") as T
+            clazz == LocalDate::class.java -> return LocalDate.now() as T
+            clazz == LocalDateTime::class.java -> return LocalDateTime.now() as T
+            clazz == Instant::class.java -> return Instant.now() as T
+            clazz == Date::class.java -> return Date() as T
+            clazz == Duration::class.java -> return Duration.ofMillis(random.nextLong()) as T
         }
 
         // Handle List<T> with reflection
         if (List::class.java.isAssignableFrom(clazz)) {
             val genericType = findListGenericType(clazz)
             genericType?.let { componentType ->
-                return createDummyList(componentType, 3)
+                return createDummyList(componentType, 3) as T
             }
         }
 
@@ -114,7 +114,7 @@ open class DummyInstanceCreator(
         }.toTypedArray()
 
         // Create a new instance with the constructor
-        return constructor.newInstance(*arguments)
+        return constructor.newInstance(*arguments) as T
     }
 
     private fun findListGenericType(clazz: Class<*>): Class<*>? {
@@ -133,7 +133,7 @@ open class DummyInstanceCreator(
         return null
     }
 
-    private fun <T> createDummyList(componentType: Class<T>, size: Int): List<Any> {
+    private fun <T> createDummyList(componentType: Class<T>, size: Int): List<T> {
         return (0 until size).map { createDummyInstance(componentType) }
     }
 
