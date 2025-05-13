@@ -36,8 +36,10 @@ fun safelyGetToolCallbacks(instances: Collection<Any>): List<ToolCallback> {
 
             else -> try {
                 callbacks.addAll(ToolCallbacks.from(it).toList())
-            } catch (e: IllegalStateException) {
-                println(e.message + " for ${it.javaClass.name}")
+            } catch (_: IllegalStateException) {
+                // Ignore this exception from Spring AI.
+                // Passing in object without @Tool annotations is not a problem:
+                // it should simply be ignored
             }
         }
     }
