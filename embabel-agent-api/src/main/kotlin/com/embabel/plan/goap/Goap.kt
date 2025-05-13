@@ -17,6 +17,7 @@ package com.embabel.plan.goap
 
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.*
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 interface GoapPlanner : Planner<GoapPlanningSystem, GoapWorldState, GoapPlan>
 
@@ -126,6 +127,7 @@ private data class SimpleGoapAction(
  */
 interface GoapGoal : GoapStep, Goal {
 
+    @get:JsonIgnore
     override val knownConditions: Set<String>
         get() = preconditions.keys
 

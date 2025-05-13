@@ -18,6 +18,7 @@ package com.embabel.agent.web.rest
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.core.AgentMetadata
 import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.Goal
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -54,5 +55,17 @@ class PlatformInfoControllerTest(
         val content = result.response.contentAsString
         val retrievedAgents = objectMapper.readValue(content, object : TypeReference<List<AgentMetadata>>() {})
         assertTrue(retrievedAgents.isNotEmpty(), "Must have some agents in $content")
+    }
+
+    @Test
+    fun `should return goals`() {
+        agentPlatform.deploy(evenMoreEvilWizard())
+        val result = mockMvc.get("/api/v1/platform-info/goals")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content = result.response.contentAsString
+        val retrievedAgents = objectMapper.readValue(content, object : TypeReference<List<Goal>>() {})
+        assertTrue(retrievedAgents.isNotEmpty(), "Must have some goals in $content")
     }
 }
