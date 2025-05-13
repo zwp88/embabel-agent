@@ -296,11 +296,13 @@ the following tools from the catalog:
 
 ### **IMPORTANT**: Setup GitHub Access Token (required to build Embabel Agent API)
 
-Embabel Agent API project uses dependencies from GitHub Packages Maven Repository. To build successfully, you need to configure Maven with a GitHub Personal Access Token.
+Embabel Agent API project uses dependencies from GitHub Packages Maven Repository. To build successfully, you need to
+configure Maven with a GitHub Personal Access Token.
 
 #### 1. Generate a GitHub Read-Only Token
 
-1. Go to [GitHub Settings → Developer Settings → Personal Access Tokens → Tokens (classic)](https://github.com/settings/tokens)
+1. Go
+   to [GitHub Settings → Developer Settings → Personal Access Tokens → Tokens (classic)](https://github.com/settings/tokens)
 2. Click **Generate new token** → **Generate new token (classic)**
 3. Name your token (e.g., "Maven GitHub Packages Read")
 4. Select only the `read:packages` scope
@@ -312,22 +314,25 @@ Embabel Agent API project uses dependencies from GitHub Packages Maven Repositor
 Add this to your `~/.m2/settings.xml` file:
 
 ```xml
+
 <settings>
-  <servers>
-    <server>
-      <id>github</id>
-      <username>YOUR_GITHUB_USERNAME</username>
-      <password>YOUR_GITHUB_TOKEN</password>
-    </server>
-  </servers>
+    <servers>
+        <server>
+            <id>github</id>
+            <username>YOUR_GITHUB_USERNAME</username>
+            <password>YOUR_GITHUB_TOKEN</password>
+        </server>
+    </servers>
 </settings>
 ```
 
 Replace:
+
 - `YOUR_GITHUB_USERNAME` with your GitHub username
 - `YOUR_GITHUB_TOKEN` with the token you generated
 
 If you don't have a `settings.xml` file:
+
 - Windows: Create at `%USERPROFILE%\.m2\settings.xml`
 - Mac/Linux: Create at `~/.m2/settings.xml`
 
@@ -551,7 +556,9 @@ Interaction profiles:
 Model profiles:
 
 - `ollama`: Looks for Ollama models. You will need to have Ollama installed locally and the relevant models pulled.
-- `docker`: Looks for Docker-managed local models.
+- `docker-desktop`: Looks for Docker-managed local models when running outside Docker but talking to Docker Desktop with
+  the MCP extension. **This is recommended for the best experience, with Docker-provided web tools.**
+- `docker`: Looks for Docker-managed local models when running in a Docker container.
 
 Logging profiles:
 
