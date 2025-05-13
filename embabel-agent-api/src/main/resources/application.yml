@@ -51,6 +51,7 @@ embabel:
 
   models:
     default-llm: gpt-4.1-mini
+    default-embedding-model: text-embedding-3-small
     llms:
       best: gpt-4.1
       cheapest: gpt-4.1-nano

@@ -11,6 +11,7 @@ embabel:
 
   models:
     default-llm: test-llm
+    default-embedding-model: test
     llms:
       best: test-llm
       cheapest: test-llm
