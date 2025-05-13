@@ -69,7 +69,7 @@ class AgentMetadataReaderGoalsTest {
         val mockProcessContext = mockk<ProcessContext>()
         every { mockProcessContext.blackboard } returns InMemoryBlackboard()
         every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            Person::class.java,
+            PersonWithReverseTool::class.java,
         )
         assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
     }
@@ -83,10 +83,10 @@ class AgentMetadataReaderGoalsTest {
         val condition = metadata.conditions.first()
         val mockProcessContext = mockk<ProcessContext>()
         val bb = InMemoryBlackboard()
-        bb += Person("Rod")
+        bb += PersonWithReverseTool("Rod")
         every { mockProcessContext.blackboard } returns bb
         every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            Person::class.java,
+            PersonWithReverseTool::class.java,
         )
         assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
     }
@@ -101,10 +101,10 @@ class AgentMetadataReaderGoalsTest {
         assertEquals("condition1", condition.name)
         val mockProcessContext = mockk<ProcessContext>()
         val bb = InMemoryBlackboard()
-        bb += Person("Rod")
+        bb += PersonWithReverseTool("Rod")
         every { mockProcessContext.blackboard } returns bb
         every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            Person::class.java,
+            PersonWithReverseTool::class.java,
         )
         assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
     }
@@ -118,10 +118,10 @@ class AgentMetadataReaderGoalsTest {
         val condition = metadata.conditions.first()
         val mockProcessContext = mockk<ProcessContext>()
         val bb = InMemoryBlackboard()
-        bb += Person("ted")
+        bb += PersonWithReverseTool("ted")
         every { mockProcessContext.blackboard } returns bb
         every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            Person::class.java,
+            PersonWithReverseTool::class.java,
         )
         assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
     }
@@ -135,10 +135,10 @@ class AgentMetadataReaderGoalsTest {
         val condition = metadata.conditions.first()
         val mockProcessContext = mockk<ProcessContext>()
         val bb = InMemoryBlackboard()
-        bb += Person("Rod")
+        bb += PersonWithReverseTool("Rod")
         every { mockProcessContext.blackboard } returns bb
         every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            Person::class.java, Frog::class.java,
+            PersonWithReverseTool::class.java, Frog::class.java,
         )
         assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
     }
@@ -152,11 +152,11 @@ class AgentMetadataReaderGoalsTest {
         val condition = metadata.conditions.first()
         val mockProcessContext = mockk<ProcessContext>()
         val bb = InMemoryBlackboard()
-        bb += Person("Rod")
+        bb += PersonWithReverseTool("Rod")
         bb += Frog("Kermit")
         every { mockProcessContext.blackboard } returns bb
         every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            Person::class.java, Frog::class.java,
+            PersonWithReverseTool::class.java, Frog::class.java,
         )
         assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
     }

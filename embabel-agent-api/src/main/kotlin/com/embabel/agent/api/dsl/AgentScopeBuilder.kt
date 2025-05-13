@@ -23,6 +23,7 @@ import com.embabel.agent.api.common.support.SupplierAction
 import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.Rerun
+import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.common.core.MobyNameGenerator
 import org.springframework.ai.tool.ToolCallback
 
@@ -264,9 +265,8 @@ data class BiInputActionContext<A1, A2>(
 
     override val inputs: List<Any> get() = listOfNotNull(input1, input2)
 
-    override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
-        return actionContext.toolCallbacksOnDomainObjects()
-    }
+    override fun toolCallbacksOnDomainObjects(): List<ToolCallback> =
+        safelyGetToolCallbacks(setOfNotNull(input1, input2))
 }
 
 inline fun <reified A1, reified A2, reified B : Any, reified C> biAggregate(

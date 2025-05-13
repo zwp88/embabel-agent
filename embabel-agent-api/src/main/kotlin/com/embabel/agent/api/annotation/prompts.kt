@@ -22,7 +22,8 @@ import com.embabel.common.ai.prompt.PromptContributor
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Return an ambient prompt runner for use to return in an @Action method.
+ * Return a prompt runner for use to return in an @Action method, specifying
+ * LLM options.
  */
 @JvmOverloads
 fun using(

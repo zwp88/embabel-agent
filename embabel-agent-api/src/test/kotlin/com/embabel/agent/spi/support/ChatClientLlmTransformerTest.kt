@@ -47,7 +47,7 @@ class MutableLlmInvocationHistory : LlmInvocationHistory {
 
 }
 
-data class Person(val name: String)
+data class SpiPerson(val name: String)
 
 data class WierdPerson(val name: String, val age: Int, val weirdness: String)
 
@@ -68,7 +68,7 @@ class ChatClientLlmTransformerTest {
 
             @Test
             fun `happy path`() {
-                val person = Person("John")
+                val person = SpiPerson("John")
                 val result = runWithPromptReturning(jacksonObjectMapper().writeValueAsString(person))
                 assertEquals(person, result)
             }
@@ -76,7 +76,7 @@ class ChatClientLlmTransformerTest {
             @Test
             fun `events emitted`() {
                 val ese = EventSavingAgenticEventListener()
-                val person = Person("John")
+                val person = SpiPerson("John")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(person),
                     eventListener = ese,
@@ -87,7 +87,7 @@ class ChatClientLlmTransformerTest {
 
             @Test
             fun `records usage`() {
-                val person = Person("John")
+                val person = SpiPerson("John")
                 val result = runWithPromptReturning(jacksonObjectMapper().writeValueAsString(person))
                 assertEquals(person, result)
                 assertTrue(llmInvocationHistory.invocations.isNotEmpty())
@@ -164,7 +164,7 @@ class ChatClientLlmTransformerTest {
                 interaction = LlmInteraction(id = InteractionId("test")),
                 agentProcess = mockAgentProcess,
                 action = null,
-                outputClass = Person::class.java,
+                outputClass = SpiPerson::class.java,
             )
         }
     }
@@ -177,10 +177,10 @@ class ChatClientLlmTransformerTest {
 
             @Test
             fun `happy path`() {
-                val person = Person("John")
+                val person = SpiPerson("John")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(person)),
-                    outputClass = Person::class.java,
+                    outputClass = SpiPerson::class.java,
                 )
                 assertEquals(Result.success(person), result.result)
             }
@@ -188,11 +188,11 @@ class ChatClientLlmTransformerTest {
             @Test
             fun `events emitted`() {
                 val ese = EventSavingAgenticEventListener()
-                val person = Person("John")
+                val person = SpiPerson("John")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(person)),
                     eventListener = ese,
-                    outputClass = Person::class.java,
+                    outputClass = SpiPerson::class.java,
                 )
                 assertEquals(Result.success(person), result.result)
                 assertEquals(3, ese.processEvents.size)
@@ -200,11 +200,11 @@ class ChatClientLlmTransformerTest {
 
             @Test
             fun `records usage`() {
-                val person = Person("John")
+                val person = SpiPerson("John")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(person)),
                     eventListener = EventSavingAgenticEventListener(),
-                    outputClass = Person::class.java,
+                    outputClass = SpiPerson::class.java,
                 )
                 assertEquals(Result.success(person), result.result)
                 assertTrue(llmInvocationHistory.invocations.isNotEmpty())
@@ -257,7 +257,7 @@ class ChatClientLlmTransformerTest {
             fun `non JSON return`() {
                 val result = runWithPromptReturning(
                     llmReturn = "This ain't no JSON",
-                    outputClass = Person::class.java,
+                    outputClass = SpiPerson::class.java,
                 )
             }
 
@@ -270,7 +270,7 @@ class ChatClientLlmTransformerTest {
                             "foo" to "bar",
                         ),
                     ),
-                    outputClass = Person::class.java,
+                    outputClass = SpiPerson::class.java,
                 )
             }
 

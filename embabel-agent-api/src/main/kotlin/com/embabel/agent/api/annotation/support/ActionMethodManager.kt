@@ -27,6 +27,9 @@ interface ActionMethodManager {
 
     /**
      * Create an Action from a method
+     * @param method the method to create an action from
+     * @param instance instance of Agent or AgentCapabilities-annotated class
+     * @param toolCallbacksOnInstance tool callbacks to use from instance level
      */
     fun createAction(
         method: Method,
@@ -34,10 +37,12 @@ interface ActionMethodManager {
         toolCallbacksOnInstance: List<ToolCallback>,
     ): Action
 
+    /**
+     * Invoke the action method on the given instance.
+     */
     fun <O> invokeActionMethod(
         method: Method,
         instance: Any,
         context: TransformationActionContext<List<Any>, O>,
-        toolCallbacks: List<ToolCallback>,
     ): O
 }

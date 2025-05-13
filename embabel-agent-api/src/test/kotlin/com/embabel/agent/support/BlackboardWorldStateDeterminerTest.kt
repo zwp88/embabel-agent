@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.support
 
-import com.embabel.agent.api.annotation.support.Person
+import com.embabel.agent.api.annotation.support.PersonWithReverseTool
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.Blackboard
@@ -37,20 +37,20 @@ import kotlin.test.assertEquals
 
 data class AllOfTheAbove(
     val userInput: UserInput,
-    val person: Person,
+    val person: PersonWithReverseTool,
 ) : Aggregation
 
 val SimpleTestAgent = agent("SimpleTest", description = "Simple test agent") {
-    transformation<UserInput, Person>(name = "thing") {
-        Person(name = "Rod")
+    transformation<UserInput, PersonWithReverseTool>(name = "thing") {
+        PersonWithReverseTool(name = "Rod")
     }
 
-    transformation<AllOfTheAbove, Person>(name = "reverse-name") {
-        Person(it.input.person.name.reversed())
+    transformation<AllOfTheAbove, PersonWithReverseTool>(name = "reverse-name") {
+        PersonWithReverseTool(it.input.person.name.reversed())
 
     }
 
-    goal(name = "done", description = "done", satisfiedBy = Person::class)
+    goal(name = "done", description = "done", satisfiedBy = PersonWithReverseTool::class)
 }
 
 interface Fancy
@@ -118,7 +118,7 @@ class BlackboardWorldStateDeterminerTest {
                 worldState.containsAll(
                     mapOf(
                         "it:${UserInput::class.qualifiedName}" to ConditionDetermination.FALSE,
-                        "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
+                        "it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.FALSE,
                     )
                 ),
                 "World state must use qualified names",
@@ -138,7 +138,7 @@ class BlackboardWorldStateDeterminerTest {
                 worldState.containsAll(
                     mapOf(
                         "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
-                        "it:${Person::class.qualifiedName}" to ConditionDetermination.FALSE,
+                        "it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.FALSE,
                     )
                 ),
                 "World state must use qualified names"
@@ -152,13 +152,13 @@ class BlackboardWorldStateDeterminerTest {
             val bsb = blackboardWorldStateDeterminer(blackboard)
 
             blackboard["input"] = UserInput("xyz")
-            blackboard["person"] = Person("Rod")
+            blackboard["person"] = PersonWithReverseTool("Rod")
             val worldState = bsb.determineWorldState()
             assertTrue(
                 worldState.state.containsAll(
                     mapOf(
                         "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
-                        "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                        "it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.TRUE,
                     )
                 ),
                 "World state must use qualified names",
@@ -179,8 +179,8 @@ class BlackboardWorldStateDeterminerTest {
             val bsb = blackboardWorldStateDeterminer(blackboard)
 
             blackboard["input"] = UserInput("xyz")
-            blackboard["person"] = Person("Rod")
-            val pc = bsb.determineCondition("it:Person")
+            blackboard["person"] = PersonWithReverseTool("Rod")
+            val pc = bsb.determineCondition("it:${PersonWithReverseTool::class.simpleName}")
             assertEquals(ConditionDetermination.TRUE, pc)
         }
 
@@ -191,11 +191,11 @@ class BlackboardWorldStateDeterminerTest {
 
             blackboard["input"] = UserInput("xyz")
             blackboard["person"] = FancyPerson("Rod")
-            val pc = bsb.determineCondition("it:FancyPerson")
+            val pc = bsb.determineCondition("it:${FancyPerson::class.simpleName}")
             assertEquals(ConditionDetermination.FALSE, bsb.determineCondition("it:Person"))
             assertEquals(ConditionDetermination.TRUE, pc)
             assertEquals(
-                ConditionDetermination.TRUE, bsb.determineCondition("it:Fancy"),
+                ConditionDetermination.TRUE, bsb.determineCondition("it:${Fancy::class.simpleName}"),
                 "Should match against interface",
             )
         }
@@ -208,10 +208,10 @@ class BlackboardWorldStateDeterminerTest {
         val bsb = blackboardWorldStateDeterminer(blackboard)
 
         blackboard["input"] = UserInput("xyz")
-        blackboard["person"] = Person("Rod")
+        blackboard["person"] = PersonWithReverseTool("Rod")
         assertEquals(
             ConditionDetermination.TRUE,
-            bsb.determineCondition("it:${Person::class.qualifiedName}"),
+            bsb.determineCondition("it:${PersonWithReverseTool::class.qualifiedName}"),
             "Should match against fully qualified name",
         )
     }

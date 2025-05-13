@@ -25,11 +25,20 @@ import org.springframework.ai.tool.ToolCallback
 fun safelyGetToolCallbacks(instances: Collection<Any>): List<ToolCallback> {
     val callbacks = mutableListOf<ToolCallback>()
     instances.forEach {
-        if (it is ToolCallback) {
-            callbacks.add(it)
-        } else try {
-            callbacks.addAll(ToolCallbacks.from(it).toList())
-        } catch (_: IllegalStateException) {
+        when (it) {
+            is ToolCallback ->
+                callbacks.add(it)
+
+            is List<*> -> {
+                val all = it.filterNotNull().flatMap { e -> safelyGetToolCallbacksFrom(e) }
+                callbacks.addAll(all)
+            }
+
+            else -> try {
+                callbacks.addAll(ToolCallbacks.from(it).toList())
+            } catch (e: IllegalStateException) {
+                println(e.message + " for ${it.javaClass.name}")
+            }
         }
     }
 

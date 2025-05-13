@@ -34,7 +34,7 @@ class AgentMetadataReaderTest {
         @Test
         fun `no annotation`() {
             val reader = AgentMetadataReader()
-            val metadata = reader.createAgentMetadata(Person("John Doe"))
+            val metadata = reader.createAgentMetadata(PersonWithReverseTool("John Doe"))
             assertNull(metadata)
         }
 
@@ -93,7 +93,7 @@ class AgentMetadataReaderTest {
             val g = metadata.goals.single()
             assertEquals("Creating a person", g.description)
             assertTrue(
-                g.preconditions.containsAll(mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE)),
+                g.preconditions.containsAll(mapOf("it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.TRUE)),
                 "Should have precondition for Person",
             )
         }
@@ -108,7 +108,7 @@ class AgentMetadataReaderTest {
             val g = metadata.goals.single()
             assertEquals("Creating a person", g.description)
             val expected = mapOf(
-                "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                "it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.TRUE,
                 Rerun.hasRunCondition(action) to ConditionDetermination.TRUE
             )
             assertTrue(
@@ -134,7 +134,7 @@ class AgentMetadataReaderTest {
             assertTrue(
                 personGoal.preconditions.containsAll(
                     mapOf(
-                        "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                        "it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.TRUE,
 //                        "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE
                     )
                 ),
@@ -169,7 +169,7 @@ class AgentMetadataReaderTest {
             assertTrue(
                 personGoal.preconditions.containsAll(
                     mapOf(
-                        "it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE,
+                        "it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.TRUE,
 //                        "it:${UserInput::class.qualifiedName}" to ConditionDetermination.TRUE,
                     )
                 ),
@@ -178,7 +178,7 @@ class AgentMetadataReaderTest {
             assertEquals("Also to person", alsoGoal.description)
             assertTrue(
                 alsoGoal.preconditions.containsAll(
-                    mapOf("it:${Person::class.qualifiedName}" to ConditionDetermination.TRUE)
+                    mapOf("it:${PersonWithReverseTool::class.qualifiedName}" to ConditionDetermination.TRUE)
                 ),
                 "Should have precondition for alsoPerson",
             )

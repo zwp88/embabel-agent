@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.support
 
-import com.embabel.agent.api.annotation.support.Person
+import com.embabel.agent.api.annotation.support.PersonWithReverseTool
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.special.UserInput
@@ -37,7 +37,7 @@ class BlackboardTest {
                 bb.getValue(
                     IoBinding.DEFAULT_BINDING,
                     "AllOfTheAbove",
-                    listOf(AllOfTheAbove::class.java, UserInput::class.java, Person::class.java),
+                    listOf(AllOfTheAbove::class.java, UserInput::class.java, PersonWithReverseTool::class.java),
                 )
             )
         }
@@ -50,7 +50,7 @@ class BlackboardTest {
                 bb.getValue(
                     IoBinding.DEFAULT_BINDING,
                     "AllOfTheAbove",
-                    listOf(AllOfTheAbove::class.java, UserInput::class.java, Person::class.java),
+                    listOf(AllOfTheAbove::class.java, UserInput::class.java, PersonWithReverseTool::class.java),
                 )
             )
         }
@@ -59,11 +59,11 @@ class BlackboardTest {
         fun satisfied() {
             val bb = InMemoryBlackboard()
             bb += UserInput("John is a man")
-            bb += Person("John")
+            bb += PersonWithReverseTool("John")
             val aota = bb.getValue(
                 IoBinding.DEFAULT_BINDING,
                 "AllOfTheAbove",
-                listOf(AllOfTheAbove::class.java, UserInput::class.java, Person::class.java),
+                listOf(AllOfTheAbove::class.java, UserInput::class.java, PersonWithReverseTool::class.java),
             )
             assertNotNull(aota)
             aota as AllOfTheAbove
@@ -86,15 +86,22 @@ class BlackboardTest {
         @Test
         fun `empty blackboard, relevant domain object`() {
             val bb = InMemoryBlackboard()
-            assertNull(bb.getValue(IoBinding.DEFAULT_BINDING, "Person", listOf(Person::class.java)))
+            assertNull(bb.getValue(IoBinding.DEFAULT_BINDING, "Person", listOf(PersonWithReverseTool::class.java)))
         }
 
         @Test
         fun `exact type match on it`() {
             val bb = InMemoryBlackboard()
-            val john = Person("John")
+            val john = PersonWithReverseTool("John")
             bb += john
-            assertEquals(john, bb.getValue(IoBinding.DEFAULT_BINDING, "Person", listOf(Person::class.java)))
+            assertEquals(
+                john,
+                bb.getValue(
+                    IoBinding.DEFAULT_BINDING,
+                    PersonWithReverseTool::class.java.simpleName,
+                    listOf(PersonWithReverseTool::class.java)
+                )
+            )
         }
 
         @Test
@@ -125,9 +132,9 @@ class BlackboardTest {
         @Test
         fun `no type match`() {
             val bb = InMemoryBlackboard()
-            val john = Person("John")
+            val john = PersonWithReverseTool("John")
             bb += john
-            assertNull(bb.getValue("person", "Point", listOf(Person::class.java, Point::class.java)))
+            assertNull(bb.getValue("person", "Point", listOf(PersonWithReverseTool::class.java, Point::class.java)))
         }
 
 

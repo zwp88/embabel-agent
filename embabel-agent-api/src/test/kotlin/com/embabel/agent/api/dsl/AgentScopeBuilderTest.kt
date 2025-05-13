@@ -18,7 +18,7 @@ package com.embabel.agent.api.dsl
 import com.embabel.agent.api.common.support.Branch
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.special.UserInput
-import com.embabel.agent.spi.support.Person
+import com.embabel.agent.spi.support.SpiPerson
 import com.embabel.agent.testing.createAgentPlatform
 import com.embabel.common.core.MobyNameGenerator
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -60,7 +60,7 @@ class AgentScopeBuilderTest {
                 result.processContext.agentProcess.history.size,
                 "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
             )
-            assertTrue(result.lastResult() is Person)
+            assertTrue(result.lastResult() is SpiPerson)
         }
     }
 
@@ -290,17 +290,17 @@ data class AllNames(val accepted: List<GeneratedName>, val rejected: List<Genera
 fun userInputToFrogOrPersonBranch() = agent("brancher", description = "brancher0") {
 
     flow {
-        branch<UserInput, Person, Frog> { Branch(Person(it.input.content)) }
+        branch<UserInput, SpiPerson, Frog> { Branch(SpiPerson(it.input.content)) }
     }
 
-    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = Person::class)
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = SpiPerson::class)
 }
 
 fun userInputToFrogChain() = agent("uitf", description = "Evil frogly wizard") {
 
     flow {
-        chain<UserInput, Person, Frog>(
-            { Person(it.input.content) },
+        chain<UserInput, SpiPerson, Frog>(
+            { SpiPerson(it.input.content) },
             { Frog(it.input.name) },
         )
     }

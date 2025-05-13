@@ -57,16 +57,13 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         promptContributors: List<PromptContributor> = emptyList(),
         generateExamples: Boolean = false,
     ): PromptRunner {
-//        val updatedToolCallbacks = toolCallbacksOnDomainObjects().toMutableList()
-        // Add any tool callbacks that are not already in the list
-//        updatedToolCallbacks += toolCallbacks.filter { tc -> !updatedToolCallbacks.any { it.toolDefinition.name() == tc.toolDefinition.name() } }
-        val promptContributorsToUse = promptContributors + CurrentDate()
+        val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
         return OperationContextPromptRunner(
             this,
             llm = llm,
             toolGroups = toolGroups,
             toolCallbacks = toolCallbacks,
-            promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
+            promptContributors = promptContributorsToUse,
             generateExamples = generateExamples,
         )
     }
@@ -113,15 +110,16 @@ interface ActionContext : OperationContext {
         promptContributors: List<PromptContributor>,
         generateExamples: Boolean,
     ): PromptRunner {
-        val toolCallbacksToUse = toolCallbacks + toolCallbacksOnDomainObjects()
-        val promptContributorsToUse = promptContributors + CurrentDate()
+        val toolCallbacksToUse =
+            (toolCallbacks + toolCallbacksOnDomainObjects()).distinctBy { it.toolDefinition.name() }
+        val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
 
         return OperationContextPromptRunner(
             this,
             llm = llm,
             toolGroups = this.toolGroups + toolGroups,
             toolCallbacks = toolCallbacksToUse,
-            promptContributors = promptContributorsToUse.filterNotNull().distinctBy { it.promptContribution().role },
+            promptContributors = promptContributorsToUse,
             generateExamples = generateExamples,
         )
     }
@@ -139,10 +137,10 @@ interface InputsActionContext : ActionContext {
     override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
         val instances = mutableListOf<Any>()
         inputs.forEach { input ->
-            when (input) {
-                is Array<*> -> instances += input.toList()
-                is Collection<*> -> instances += input
-                else -> instances += input
+            instances += when (input) {
+                is Array<*> -> input.toList()
+                is Collection<*> -> input
+                else -> input
             }
         }
         return safelyGetToolCallbacks(instances)

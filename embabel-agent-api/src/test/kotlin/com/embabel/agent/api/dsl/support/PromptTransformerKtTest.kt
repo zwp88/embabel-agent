@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.ai.tool.ToolCallback
 
 
-data class Person(val name: String, val age: Int)
+data class PromptPerson(val name: String, val age: Int)
 data class Summary(val text: String)
 
 class PromptTransformerKtTest {
@@ -79,11 +79,11 @@ class PromptTransformerKtTest {
 
         @Test
         fun `transformer should use custom input and output variable names`() {
-            val transformer = promptTransformer<Person, Summary>(
+            val transformer = promptTransformer<PromptPerson, Summary>(
                 name = "summarizer",
                 inputVarName = "person",
                 outputVarName = "summary",
-                inputClass = Person::class.java,
+                inputClass = PromptPerson::class.java,
                 outputClass = Summary::class.java,
             ) {
                 "Summarize information about ${it.input.name} who is ${it.input.age} years old"
@@ -92,7 +92,7 @@ class PromptTransformerKtTest {
 //            assertEquals("person", transformer.inputVarName)
 //            assertEquals("summary", transformer.outputVarName)
 
-            val person = Person(name = "John", age = 30)
+            val person = PromptPerson(name = "John", age = 30)
             val summary = Summary(text = "John is 30 years old")
             val mockAgentProcess = mockk<AgentProcess>()
             val processContext = mockk<ProcessContext>()
@@ -100,7 +100,7 @@ class PromptTransformerKtTest {
             every { mockAgentProcess.processContext } returns processContext
             every { processContext.blackboard } returns InMemoryBlackboard()
             every { processContext.agentProcess } returns mockAgentProcess
-            every { processContext.getValue("person", Person::class.java.name) } returns person
+            every { processContext.getValue("person", PromptPerson::class.java.name) } returns person
             every {
                 processContext.createObject(
                     any(),
@@ -113,7 +113,7 @@ class PromptTransformerKtTest {
 
             transformer.execute(processContext = processContext, outputTypes = emptyMap(), action = transformer)
 
-            verify { processContext.getValue("person", Person::class.java.name) }
+            verify { processContext.getValue("person", PromptPerson::class.java.name) }
         }
 
         @Test
@@ -180,6 +180,7 @@ class PromptTransformerKtTest {
         @Test
         fun `transformer should handle tool groups and callbacks`() {
             val toolCallback = mockk<ToolCallback>()
+            every { toolCallback.toolDefinition.name() } returns "test"
             val toolGroups = setOf("math", "web")
 
             val transformer = promptTransformer<MagicVictim, Frog>(

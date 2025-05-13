@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.api.annotation.support.Person
+import com.embabel.agent.api.annotation.support.PersonWithReverseTool
 import com.embabel.agent.core.ActionStatusCode
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
@@ -39,7 +39,7 @@ val oneAction = agent(
     name = "oneAction",
     description = "one action agent",
 ) {
-    transformation<Person, Person>(name = "reverser") { payload ->
+    transformation<PersonWithReverseTool, PersonWithReverseTool>(name = "reverser") { payload ->
         payload.input.copy(name = "foo")
     }
 }
@@ -48,7 +48,7 @@ val oneActionAndOneGoal = agent(
     name = "oneActionAndOneGoal",
     description = "one action agent",
 ) {
-    transformation<Person, Dog>(name = "reverser") { payload ->
+    transformation<PersonWithReverseTool, Dog>(name = "reverser") { payload ->
         Dog(name = payload.input.name)
     }
 
@@ -103,7 +103,7 @@ class AgentBuilderTest {
             val action = agent.actions.find { it.name == "thing" }
                 ?: error("Action not found: ${agent.actions.map { it.name }}")
             val blackboard = InMemoryBlackboard()
-            blackboard += Person("foo")
+            blackboard += PersonWithReverseTool("foo")
             val platformServices = PlatformServices(
                 eventListener = EventSavingAgenticEventListener(),
                 llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum,

@@ -29,7 +29,7 @@ import com.embabel.common.ai.model.LlmOptions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.ai.tool.annotation.Tool
 
-data class Person(val name: String) {
+data class PersonWithReverseTool(val name: String) {
 
     @Tool
     fun reverse() = name.reversed()
@@ -45,7 +45,7 @@ class OneGoalOnly {
     val thing1 = Goal.createInstance(
         name = "thing1",
         description = "Thanks to Dr Seuss",
-        type = Person::class.java,
+        type = PersonWithReverseTool::class.java,
     ).withValue(30.0)
 }
 
@@ -54,11 +54,11 @@ class TwoGoalsOnly {
 
     val thing1 = Goal.createInstance(
         description = "Thanks to Dr Seuss",
-        type = Person::class.java,
+        type = PersonWithReverseTool::class.java,
     )
     val thing2 = Goal.createInstance(
         description = "Thanks again to Dr Seuss",
-        type = Person::class.java,
+        type = PersonWithReverseTool::class.java,
     )
 }
 
@@ -67,8 +67,8 @@ class ActionGoal {
 
     @Action
     @AchievesGoal(description = "Creating a person")
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -78,13 +78,13 @@ class TwoActionGoals {
 
     @Action
     @AchievesGoal(description = "Creating a person")
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
     @Action
     @AchievesGoal(description = "Creating a frog")
-    fun toFrog(person: Person): Frog {
+    fun toFrog(person: PersonWithReverseTool): Frog {
         return Frog(person.name)
     }
 
@@ -95,13 +95,13 @@ class TwoActuallyNonConflictingActionGoalsWithSameOutput {
 
     @Action
     @AchievesGoal(description = "Creating a person")
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
     @Action
     @AchievesGoal(description = "Also to person")
-    fun alsoToPerson(person: Person): Person {
+    fun alsoToPerson(person: PersonWithReverseTool): PersonWithReverseTool {
         return person
     }
 
@@ -112,14 +112,14 @@ class TwoConflictingActionGoals {
 
     @Action
     @AchievesGoal(description = "Creating a person")
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
     @Action
     @AchievesGoal(description = "Also to person")
-    fun alsoToPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun alsoToPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -131,7 +131,7 @@ class NoConditions {
     val g = Goal.createInstance(
         name = "thing1",
         description = "Thanks to Dr Seuss",
-        type = Person::class.java,
+        type = PersonWithReverseTool::class.java,
     ).withValue(30.0)
 
 }
@@ -150,7 +150,7 @@ class OneProcessContextConditionOnly {
 class ConditionFromBlackboard {
 
     @Condition
-    fun condition1(person: Person): Boolean {
+    fun condition1(person: PersonWithReverseTool): Boolean {
         return person.name == "Rod"
     }
 
@@ -160,7 +160,7 @@ class ConditionFromBlackboard {
 class CustomNameConditionFromBlackboard {
 
     @Condition(name = "condition1")
-    fun `this is a weird name no one will see`(person: Person): Boolean {
+    fun `this is a weird name no one will see`(person: PersonWithReverseTool): Boolean {
         return person.name == "Rod"
     }
 
@@ -170,7 +170,7 @@ class CustomNameConditionFromBlackboard {
 class ConditionsFromBlackboard {
 
     @Condition
-    fun condition1(person: Person, frog: Frog): Boolean {
+    fun condition1(person: PersonWithReverseTool, frog: Frog): Boolean {
         return person.name == "Rod"
     }
 
@@ -180,8 +180,8 @@ class ConditionsFromBlackboard {
 class OneTransformerActionOnly {
 
     @Action(cost = 500.0)
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -192,9 +192,9 @@ class OneTransformerActionTakingPayloadOnly {
     @Action(cost = 500.0)
     fun toPerson(
         userInput: UserInput,
-        payload: TransformationActionContext<UserInput, Person>,
-    ): Person {
-        return Person(userInput.content)
+        payload: TransformationActionContext<UserInput, PersonWithReverseTool>,
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -206,8 +206,8 @@ class OneTransformerActionTakingOperationPayload {
     fun toPerson(
         userInput: UserInput,
         payload: ActionContext,
-    ): Person {
-        return Person(userInput.content)
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -216,8 +216,8 @@ class OneTransformerActionTakingOperationPayload {
 class OneTransformerActionReferencingConditionByName {
 
     @Action(pre = ["condition1"])
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -226,8 +226,8 @@ class OneTransformerActionReferencingConditionByName {
 class OneTransformerActionWithCustomToolGroupOnly {
 
     @Action(cost = 500.0, toolGroups = ["magic"])
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -237,7 +237,7 @@ class OneTransformerActionTakingInterfaceWithCustomToolGroupOnly {
 
     @AchievesGoal(description = "Creating a frog")
     @Action(cost = 500.0, toolGroups = ["magic"])
-    fun toPerson(person: Person): Frog {
+    fun toPerson(person: PersonWithReverseTool): Frog {
         return Frog(person.name)
     }
 
@@ -248,7 +248,7 @@ class OneTransformerActionTakingInterfaceWithExpectationCustomToolGroupOnly {
 
     @AchievesGoal(description = "Creating a frog")
     @Action(cost = 500.0, toolGroups = ["magic"])
-    fun toPerson(person: Person, context: OperationContext): Frog {
+    fun toPerson(person: PersonWithReverseTool, context: OperationContext): Frog {
         val pr = context.promptRunner()
         assertEquals(setOf("magic"), pr.toolGroups.toSet())
 //        assertFalse(pr.toolCallbacks.isEmpty(), "ToolCallbacks should be expanded")
@@ -268,8 +268,8 @@ data class Task(
 class AgentWithOneTransformerActionWith2ArgsOnly {
 
     @Action(cost = 500.0)
-    fun toPerson(userInput: UserInput, task: Task): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput, task: Task): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -281,8 +281,8 @@ class OneTransformerActionWith2ArgsAndCustomInputBindings {
     fun toPerson(
         @RequireNameMatch userInput: UserInput,
         @RequireNameMatch task: Task,
-    ): Person {
-        return Person(userInput.content)
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -291,8 +291,8 @@ class OneTransformerActionWith2ArgsAndCustomInputBindings {
 class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 
     @Action(outputBinding = "person")
-    fun toPerson(userInput: UserInput, task: Task): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput, task: Task): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
 }
@@ -307,7 +307,7 @@ class OnePromptActionOnly(
     )
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): Person {
+    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
         return promptRunner.createObject("Generated prompt for ${userInput.content}")
     }
 
@@ -318,10 +318,10 @@ class AwaitableOne(
 ) {
 
     @Action(cost = 500.0)
-    fun waitForPersonConfirmation(userInput: UserInput): Person {
+    fun waitForPersonConfirmation(userInput: UserInput): PersonWithReverseTool {
         return waitFor(
             ConfirmationRequest(
-                payload = Person(userInput.content),
+                payload = PersonWithReverseTool(userInput.content),
                 message = "Is this dude the right person?",
             )
         )
@@ -334,7 +334,7 @@ class Combined {
 
     val planner = Goal.createInstance(
         description = "Create a person",
-        type = Person::class.java,
+        type = PersonWithReverseTool::class.java,
     ).withValue(30.0)
 
     // Can reuse this or inject
@@ -349,12 +349,12 @@ class Combined {
     }
 
     @Action
-    fun toPerson(userInput: UserInput): Person {
-        return Person(userInput.content)
+    fun toPerson(userInput: UserInput): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): Person {
+    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
         return magicalLlm.createObject("Generated prompt for ${userInput.content}")
     }
 
@@ -370,7 +370,7 @@ class OnePromptActionWithToolOnly(
 ) {
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): Person {
+    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
         return usingDefaultLlm createObject
                 "Generated prompt for ${userInput.content}"
     }
@@ -387,9 +387,21 @@ class FromPersonUsesDomainObjectTools {
 
     @Action
     fun fromPerson(
-        person: Person
+        person: PersonWithReverseTool
     ): UserInput {
         return using().createObject("Create a UserInput")
+    }
+}
+
+@AgentCapabilities
+class FromPersonUsesDomainObjectToolsViaContext {
+
+    @Action
+    fun fromPerson(
+        person: PersonWithReverseTool,
+        context: ActionContext,
+    ): UserInput {
+        return context.promptRunner().createObject("Create a UserInput")
     }
 }
 
@@ -400,8 +412,8 @@ class OneTransformerActionWith2Tools {
     fun toPerson(
         @RequireNameMatch userInput: UserInput,
         @RequireNameMatch task: Task,
-    ): Person {
-        return Person(userInput.content)
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
     }
 
     @Tool
@@ -418,8 +430,8 @@ class ToolMethodsOnDomainObject {
     @Action
     fun toPerson(
         wumpty: Wumpus,
-    ): Person {
-        return Person(wumpty.name)
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(wumpty.name)
     }
 
     @Action
@@ -445,7 +457,7 @@ class ToolMethodsOnDomainObjects {
 
     @Action
     fun toFrog(
-        wumpty: Wumpus, person: Person,
+        wumpty: Wumpus, person: PersonWithReverseTool,
     ): Frog {
         return Frog(wumpty.name)
     }
@@ -459,16 +471,19 @@ data class NoTools(val x: Int)
 class DefineFlowTest {
 
     @Action
-    fun toPerson(userInput: UserInput, context: TransformationActionContext<UserInput, Person>): Person {
-        return chain<UserInput, Person, Frog>(
-            { Person(it.input.content) },
+    fun toPerson(
+        userInput: UserInput,
+        context: TransformationActionContext<UserInput, PersonWithReverseTool>
+    ): PersonWithReverseTool {
+        return chain<UserInput, PersonWithReverseTool, Frog>(
+            { PersonWithReverseTool(it.input.content) },
             { Frog(it.input.name) },
         ).run(context)
     }
 
     @AchievesGoal(description = "Creating a person")
     @Action
-    fun done(person: Person): Person {
+    fun done(person: PersonWithReverseTool): PersonWithReverseTool {
         return person
     }
 }

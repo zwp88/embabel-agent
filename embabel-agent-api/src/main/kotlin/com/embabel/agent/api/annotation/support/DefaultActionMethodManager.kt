@@ -22,7 +22,6 @@ import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.support.expandInputBindings
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
@@ -82,8 +81,6 @@ internal class DefaultActionMethodManager(
                 method = method,
                 instance = instance,
                 context = context,
-                // Get the tool callbacks from the real instance, which we now have access to
-                toolCallbacks = safelyGetToolCallbacksFrom(context.input),
             )
         }
     }
@@ -93,15 +90,11 @@ internal class DefaultActionMethodManager(
         method: Method,
         instance: Any,
         context: TransformationActionContext<List<Any>, O>,
-        toolCallbacks: List<ToolCallback>,
     ): O {
         logger.debug("Invoking action method {} with payload {}", method.name, context.input)
 
-        val toolCallbacksOnRealDomainObjects = context.input.flatMap { safelyGetToolCallbacksFrom(it) }
-        logger.debug("Tool callbacks on real domain objects: {}", toolCallbacksOnRealDomainObjects)
-        val toolCallbacksToUse =
-            (toolCallbacks + toolCallbacksOnRealDomainObjects)
-                .distinctBy { it.toolDefinition.name() }
+        val toolCallbacksToUse = context.toolCallbacksOnDomainObjects()
+        logger.debug("Tool callbacks on domain objects: {}", toolCallbacksToUse)
 
         var args = context.input.toTypedArray()
         if (method.parameters.any { OperationContext::class.java.isAssignableFrom(it.type) }) {
@@ -115,7 +108,6 @@ internal class DefaultActionMethodManager(
             // It is not a failure
 
             val promptContributors = cope.promptContributors
-
             val promptRunner = context.promptRunner(
                 llm = cope.llm ?: LlmOptions.Companion(),
                 // Remember to add tool groups from the context to those the exception specified at the call site

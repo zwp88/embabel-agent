@@ -39,7 +39,7 @@ class AgentMetadataReaderImportTest {
             ),
         )
         assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
-        assertTrue(result.lastResult() is Person)
+        assertTrue(result.lastResult() is PersonWithReverseTool)
     }
 
     @Test

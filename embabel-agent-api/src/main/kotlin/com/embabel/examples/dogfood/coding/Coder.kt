@@ -184,7 +184,7 @@ class Coder(
         post = [CoderConditions.BUILD_NEEDED],
         toolGroups = [
 //            ToolGroup.GITHUB,
-//            ToolGroup.WEB
+            ToolGroup.WEB
         ]
     )
     fun modifyCode(
@@ -198,26 +198,26 @@ class Coder(
             promptContributors = listOf(project),
         ).create(
             """
-                Execute the following user request to modify code in the given project.
-                Use the file tools to read code and directories on the local system, not GitHub.
-                Use the project information to help you understand the code.
-                The project will be in git so you can safely modify content without worrying about backups.
-                Return an explanation of what you did and why.
+            Execute the following user request to modify code in the given project.
+            Use the file tools to read code and directories on the local system, not GitHub.
+            Use the project information to help you understand the code.
+            The project will be in git so you can safely modify content without worrying about backups.
+            Return an explanation of what you did and why.
 
-                DO NOT ASK FOR USER INPUT: DO WHAT YOU THINK IS NEEDED TO MODIFY THE PROJECT.
+            DO NOT ASK FOR USER INPUT: DO WHAT YOU THINK IS NEEDED TO MODIFY THE PROJECT.
 
-                Use the web tools if you are asked to use a technology you don't know about.
-                ALWAYS LOOK FOR THE FILES IN THE PROJECT LOCALLY USING FILE TOOLS, NOT THE WEB.
+            Use the web tools if you are asked to use a technology you don't know about.
+            ALWAYS LOOK FOR THE FILES IN THE PROJECT LOCALLY USING FILE TOOLS, NOT THE WEB.
 
-                DO NOT BUILD THE PROJECT UNLESS THE USER HAS REQUESTED IT
-                AND IT IS NECESSARY TO DECIDE WHAT TO MODIFY.
-                IF BUILDING IS NEEDED, BE SURE TO RUN UNIT TESTS.
-                DO NOT BUILD *AFTER* MODIFYING CODE.
+            DO NOT BUILD THE PROJECT UNLESS THE USER HAS REQUESTED IT
+            AND IT IS NECESSARY TO DECIDE WHAT TO MODIFY.
+            IF BUILDING IS NEEDED, BE SURE TO RUN UNIT TESTS.
+            DO NOT BUILD *AFTER* MODIFYING CODE.
 
-                Make multiple small, focused edits if you can.
+            Make multiple small, focused edits if you can.
 
-                User request:
-                "${codeModificationRequest.request}"
+            User request:
+            "${codeModificationRequest.request}"
             }
             """.trimIndent(),
         )
@@ -233,7 +233,7 @@ class Coder(
         canRerun = true,
         pre = [CoderConditions.BUILD_FAILED, CoderConditions.BUILD_WAS_LAST_ACTION],
         post = [CoderConditions.BUILD_SUCCEEDED],
-//        toolGroups = [ToolGroup.WEB],
+        toolGroups = [ToolGroup.WEB],
     )
     fun fixBrokenBuild(
         codeModificationRequest: CodeModificationRequest,

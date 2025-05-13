@@ -26,64 +26,73 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.lang.NonNull;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 /**
  * Java syntax sugar for running prompts.
  * We use lower case to create a DSL style.
  */
-public class Using implements PromptRunner {
+public record Using(
+        LlmOptions llmOptions,
+        Set<String> toolGroups,
+        List<ToolCallback> toolCallbacks,
+        List<PromptContributor> promptContributors,
+        Boolean generateExamples
+) implements PromptRunner {
 
-    public static Using DEFAULT_LLM = new Using();
+    public static final Using DEFAULT_LLM = new Using(
+            new BuildableLlmOptions(),
+            Collections.emptySet(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            null
+    );
 
     public static Using llm(@NonNull LlmOptions llmOptions) {
-        return new Using(llmOptions);
+        return new Using(
+                llmOptions,
+                Collections.emptySet(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                null
+        );
     }
 
-    private final LlmOptions llmOptions;
-
-    private final Set<String> toolGroups = new HashSet<>();
-
-    private final List<ToolCallback> toolCallbacks = new ArrayList<>();
-
-    private final List<PromptContributor> promptContributors = new ArrayList<>();
-
-    private Boolean generateExamples = null;
-
-    /**
-     * Constructor for WithLlm.
-     *
-     * @param llmOptions the LLM options to use
-     */
-    private Using(@NonNull LlmOptions llmOptions) {
-        this.llmOptions = llmOptions;
+    public Using() {
+        this(
+                new BuildableLlmOptions(),
+                Collections.emptySet(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                null
+        );
     }
 
-    private Using() {
-        this(new BuildableLlmOptions());
+    public Using withToolGroups(@NonNull List<String> newToolGroups) {
+        Set<String> merged = new HashSet<>(toolGroups == null ? Collections.emptySet() : toolGroups);
+        merged.addAll(newToolGroups);
+        return new Using(llmOptions, Collections.unmodifiableSet(merged), toolCallbacks, promptContributors, generateExamples);
     }
 
-    public Using withToolGroups(@NonNull List<String> toolGroups) {
-        this.toolGroups.addAll(toolGroups);
-        return this;
+    public Using withToolCallbacks(@NonNull List<ToolCallback> newToolCallbacks) {
+        List<ToolCallback> merged = new ArrayList<>(toolCallbacks == null ? Collections.emptyList() : toolCallbacks);
+        merged.addAll(newToolCallbacks);
+        return new Using(llmOptions, toolGroups, Collections.unmodifiableList(merged), promptContributors, generateExamples);
     }
 
-    public Using withToolCallbacks(@NonNull List<ToolCallback> toolCallbacks) {
-        this.toolCallbacks.addAll(toolCallbacks);
-        return this;
-    }
-
-    public Using withPromptContributors(@NonNull List<PromptContributor> promptContributors) {
-        this.promptContributors.addAll(promptContributors);
-        return this;
+    public Using withPromptContributors(@NonNull List<PromptContributor> newPromptContributors) {
+        List<PromptContributor> merged = new ArrayList<>(promptContributors == null ? Collections.emptyList() : promptContributors);
+        merged.addAll(newPromptContributors);
+        return new Using(llmOptions, toolGroups, toolCallbacks, Collections.unmodifiableList(merged), generateExamples);
     }
 
     public Using withGenerateExamples(boolean generateExamples) {
-        this.generateExamples = generateExamples;
-        return this;
+        return new Using(llmOptions, toolGroups, toolCallbacks, promptContributors, generateExamples);
     }
 
     @Override
