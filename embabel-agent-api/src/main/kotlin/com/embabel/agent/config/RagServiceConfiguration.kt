@@ -24,10 +24,7 @@ import com.embabel.agent.rag.MultiIngester
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.springvector.SpringVectorStoreRagService
 import com.embabel.agent.toolgroups.rag.RagTools
-import org.neo4j.driver.Driver
-import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.ai.vectorstore.VectorStore
-import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -75,12 +72,4 @@ class RagServiceConfiguration {
         return MultiIngester(ragServices)
     }
 
-    @Bean
-    fun vectorStore(driver: Driver, embeddingModel: EmbeddingModel): VectorStore {
-        return Neo4jVectorStore.builder(
-            driver,
-            embeddingModel,
-        )
-            .build()
-    }
 }
