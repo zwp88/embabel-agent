@@ -139,7 +139,7 @@ abstract class AbstractAgentProcess(
                 )
                 platformServices.eventListener.onProcessEvent(earlyTermination)
                 _failureInfo = earlyTermination
-                _status = AgentProcessStatusCode.FAILED
+                _status = AgentProcessStatusCode.TERMINATED
                 return this
             }
             tick()
@@ -157,7 +157,7 @@ abstract class AbstractAgentProcess(
                 platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
             }
 
-            AgentProcessStatusCode.KILLED -> {
+            AgentProcessStatusCode.TERMINATED -> {
                 // Event will have been raised at the point of termination
             }
 

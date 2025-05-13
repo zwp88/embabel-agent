@@ -243,7 +243,7 @@ class AgentMetadataReader(
         instance: Any,
         processContext: ProcessContext,
     ): Boolean {
-        logger.debug("Invoking condition method {}", method.name)
+        logger.debug("Invoking condition method {} on {}", method.name, instance.javaClass.name)
         val args = mutableListOf<Any>()
         val operationContext = OperationContext(
             operation = object : Named {
@@ -301,16 +301,18 @@ class AgentMetadataReader(
             }
         }
         return try {
-            ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray()) as Boolean
+            val evaluationResult = ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray()) as Boolean
+            logger.debug(
+                "Condition evaluated to {}, calling {} on {} using args {}",
+                evaluationResult,
+                method.name,
+                instance.javaClass.name,
+                args,
+            )
+            evaluationResult
         } catch (e: EvaluateConditionPromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
-
-            // TODO or default options
-//            val toolCallbacks =
-//                (actionToolCallbacks + e.toolCallbacks).distinctBy { it.toolDefinition.name() }
-//            val promptContributors = e.promptContributors
-//
             val promptRunner = operationContext.promptRunner(
                 llm = e.llm ?: LlmOptions(),
                 toolCallbacks = emptyList(),

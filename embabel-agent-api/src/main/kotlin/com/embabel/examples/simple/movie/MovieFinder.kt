@@ -352,11 +352,7 @@ class MovieFinder(
             suggestedMovieTitles.titles.joinToString(", ")
         )
         val movies = suggestedMovieTitles.titles.mapNotNull { title ->
-            try {
-                omdbClient.getMovieByTitle(title)
-            } catch (_: Exception) {
-                null
-            }
+            omdbClient.getMovieByTitle(title)
         }
         return SuggestedMovies(movies)
     }
@@ -407,7 +403,7 @@ class MovieFinder(
                             availableStreamingOptions = availableToUser,
                         )
                     } else {
-                        logger.debug(
+                        logger.info(
                             "Movie {} not available to {} on any of their streaming services: {} - filtering it out",
                             movie.Title,
                             movieBuff.name,
@@ -433,8 +429,11 @@ class MovieFinder(
      * @return Boolean indicating if we have enough movies
      */
     @Condition(name = HAVE_ENOUGH_MOVIES)
-    fun haveEnoughMovies(processContext: ProcessContext): Boolean =
-        allStreamableMovies(processContext).size >= config.suggestionCount
+    fun haveEnoughMovies(processContext: ProcessContext): Boolean {
+        val allStreamableMovies = allStreamableMovies(processContext)
+        logger.debug("Have {} streamable movies", allStreamableMovies.size)
+        return allStreamableMovies.size >= config.suggestionCount
+    }
 
     /**
      * Helper method to collect all streamable movies from the blackboard.

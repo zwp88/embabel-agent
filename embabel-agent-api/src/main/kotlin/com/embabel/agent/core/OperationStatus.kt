@@ -32,7 +32,7 @@ enum class AgentProcessStatusCode {
     FAILED,
 
     /** The process has been killed by an early termination policy */
-    KILLED,
+    TERMINATED,
 
     /** The process cannot formulate a plan to progress. This does not necessarily mean failure. Something might change */
     STUCK,

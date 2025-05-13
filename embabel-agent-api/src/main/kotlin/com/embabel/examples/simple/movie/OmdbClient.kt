@@ -29,21 +29,16 @@ class OmdbClient(
     private val apiKey: String = System.getenv("OMDB_API_KEY"),
 ) {
 
-    fun omdbRestClient(): RestClient {
-        return RestClient.builder()
+    private val omdbRestClient: RestClient = run {
+        RestClient.builder()
             .baseUrl("http://omdbapi.com")
             .defaultHeader("Accept", "application/json")
             .build()
     }
 
 
-    fun filmName(name: String): MovieResponse {
-        val response = getMovieByTitle(name)
-        return response
-    }
-
     fun getMovieById(imdb: String): MovieResponse {
-        return omdbRestClient().get()
+        return omdbRestClient.get()
             .uri { uriBuilder ->
                 uriBuilder
                     .queryParam("apikey", apiKey)
@@ -55,8 +50,8 @@ class OmdbClient(
             ?: throw RuntimeException("Failed to fetch movie data")
     }
 
-    fun getMovieByTitle(title: String): MovieResponse {
-        return omdbRestClient().get()
+    fun getMovieByTitle(title: String): MovieResponse? {
+        return omdbRestClient.get()
             .uri { uriBuilder ->
                 uriBuilder
                     .queryParam("apikey", apiKey)
@@ -65,7 +60,6 @@ class OmdbClient(
             }
             .retrieve()
             .body(MovieResponse::class.java)
-            ?: throw RuntimeException("Failed to fetch movie data")
     }
 
 }
