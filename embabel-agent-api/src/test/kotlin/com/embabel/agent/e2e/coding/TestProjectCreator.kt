@@ -17,9 +17,8 @@ package com.embabel.agent.e2e.coding
 
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agentic
+import com.embabel.agent.api.annotation.AgentCapabilities
 import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.toolgroups.file.FileTools
 import com.embabel.agent.toolgroups.file.FileWriteTools
 import com.embabel.examples.dogfood.coding.CodeExplanation
 import com.embabel.examples.dogfood.coding.CoderConditions
@@ -36,7 +35,7 @@ object TestCoderConditions {
     const val TestProjectCreated = "testProjectCreated"
 }
 
-@Agentic(scan = false)
+@AgentCapabilities(scan = false)
 @Profile("!test")
 class TestProjectCreator {
 

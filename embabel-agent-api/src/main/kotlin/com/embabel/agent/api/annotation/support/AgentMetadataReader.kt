@@ -42,17 +42,17 @@ data class AgenticInfo(
     val type: Class<*>,
 ) {
 
-    val agenticAnnotation: Agentic? = type.getAnnotation(Agentic::class.java)
+    val agentCapabilitiesAnnotation: AgentCapabilities? = type.getAnnotation(AgentCapabilities::class.java)
     val agentAnnotation: Agent? = type.getAnnotation(Agent::class.java)
 
     /**
      * Is this type agentic at all?
      */
-    fun agentic() = agenticAnnotation != null || agentAnnotation != null
+    fun agentic() = agentCapabilitiesAnnotation != null || agentAnnotation != null
 
     fun validationErrors(): Collection<String> {
         val errors = mutableListOf<String>()
-        if (agenticAnnotation != null && agentAnnotation != null) {
+        if (agentCapabilitiesAnnotation != null && agentAnnotation != null) {
             errors += "Both @Agentic and @Agent annotations found on ${type.name}. Treating class as Agent, but both should not be used"
         }
         if (agentAnnotation != null && agentAnnotation.description.isBlank()) {
@@ -61,7 +61,7 @@ data class AgenticInfo(
         return errors
     }
 
-    fun noAutoScan() = agenticAnnotation?.scan == false || agentAnnotation?.scan == false
+    fun noAutoScan() = agentCapabilitiesAnnotation?.scan == false || agentAnnotation?.scan == false
 }
 
 /**
@@ -99,7 +99,7 @@ class AgentMetadataReader(
         if (!agenticInfo.agentic()) {
             logger.debug(
                 "No @{} or @{} annotation found on {}",
-                Agentic::class.simpleName,
+                AgentCapabilities::class.simpleName,
                 Agent::class.simpleName,
                 agenticInfo.type.name,
             )
@@ -108,7 +108,7 @@ class AgentMetadataReader(
         if (agenticInfo.validationErrors().isNotEmpty()) {
             logger.warn(
                 agenticInfo.validationErrors().joinToString("\n"),
-                Agentic::class.simpleName,
+                AgentCapabilities::class.simpleName,
                 Agent::class.simpleName,
                 agenticInfo.type.name,
             )

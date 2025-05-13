@@ -23,9 +23,9 @@ import org.springframework.stereotype.Component
 
 
 /**
- * Indicates that this class exposes agentic functions.
- * This is a Spring stereotype annotation, so will be picked up on the classpath and injected
- * if it's on the configuration classpath.
+ * Indicates that this class exposes actions, goals and conditions that may be used
+ * by agents, but is not an agent in itself.
+ * This is a Spring stereotype annotation, so annotated classes will be picked up on the classpath and injected
  * @param scan Whether to find this agent in the classpath. If false, it will not be found by classpath scanning.
  * This is useful for testing
  * [com.embabel.agent.api.annotation.support.AgentMetadataReader] will still process it if asked directly.
@@ -35,15 +35,16 @@ import org.springframework.stereotype.Component
     AnnotationTarget.CLASS,
 )
 @Component
-annotation class Agentic(
+annotation class AgentCapabilities(
     val scan: Boolean = true,
 )
 
 /**
  * Indicates that this class is an agent.
- * It doesn't just contribution actions, goals and conditions:
+ * It doesn't just contribute actions, goals and conditions:
  * it is an agent in itself.
- * Either @Agent or @Agentic should be used: not both
+ * This is a Spring stereotype annotation, so annotated classes will be picked up on the classpath and injected
+ * Either @Agent or @AgentCapabilities should be used: not both
  * @param name Name of the agent. If not provided, the name will be the class FQN
  * @param description Description of the agent. This is used for documentation purposes and to choose an agent
  * @param scan Whether to find this agent in the classpath. If false, it will not be found by the agent manager.
@@ -136,7 +137,7 @@ annotation class AchievesGoal(
 /**
  * Annotation that can added to parameters of an @Action method
  * to indicate that the parameter name must match the input binding.
- * Otherwise, it can match the current ("it") value.
+ * Otherwise, it can match the latest ("it") value.
  * @see IoBinding
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)

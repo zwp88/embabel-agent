@@ -36,10 +36,10 @@ data class Person(val name: String) {
 
 }
 
-@Agentic
+@AgentCapabilities
 class NoMethods
 
-@Agentic
+@AgentCapabilities
 class OneGoalOnly {
 
     val thing1 = Goal.createInstance(
@@ -49,7 +49,7 @@ class OneGoalOnly {
     ).withValue(30.0)
 }
 
-@Agentic
+@AgentCapabilities
 class TwoGoalsOnly {
 
     val thing1 = Goal.createInstance(
@@ -62,7 +62,7 @@ class TwoGoalsOnly {
     )
 }
 
-@Agentic
+@AgentCapabilities
 class ActionGoal {
 
     @Action
@@ -73,7 +73,7 @@ class ActionGoal {
 
 }
 
-@Agentic
+@AgentCapabilities
 class TwoActionGoals {
 
     @Action
@@ -90,7 +90,7 @@ class TwoActionGoals {
 
 }
 
-@Agentic
+@AgentCapabilities
 class TwoActuallyNonConflictingActionGoalsWithSameOutput {
 
     @Action
@@ -107,7 +107,7 @@ class TwoActuallyNonConflictingActionGoalsWithSameOutput {
 
 }
 
-@Agentic
+@AgentCapabilities
 class TwoConflictingActionGoals {
 
     @Action
@@ -124,7 +124,7 @@ class TwoConflictingActionGoals {
 
 }
 
-@Agentic
+@AgentCapabilities
 class NoConditions {
 
     // A goal makes it legal
@@ -136,7 +136,7 @@ class NoConditions {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneProcessContextConditionOnly {
 
     @Condition(cost = .5)
@@ -146,7 +146,7 @@ class OneProcessContextConditionOnly {
 
 }
 
-@Agentic
+@AgentCapabilities
 class ConditionFromBlackboard {
 
     @Condition
@@ -156,7 +156,7 @@ class ConditionFromBlackboard {
 
 }
 
-@Agentic
+@AgentCapabilities
 class CustomNameConditionFromBlackboard {
 
     @Condition(name = "condition1")
@@ -166,7 +166,7 @@ class CustomNameConditionFromBlackboard {
 
 }
 
-@Agentic
+@AgentCapabilities
 class ConditionsFromBlackboard {
 
     @Condition
@@ -176,7 +176,7 @@ class ConditionsFromBlackboard {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionOnly {
 
     @Action(cost = 500.0)
@@ -186,7 +186,7 @@ class OneTransformerActionOnly {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionTakingPayloadOnly {
 
     @Action(cost = 500.0)
@@ -199,7 +199,7 @@ class OneTransformerActionTakingPayloadOnly {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionTakingOperationPayload {
 
     @Action(cost = 500.0)
@@ -212,7 +212,7 @@ class OneTransformerActionTakingOperationPayload {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionReferencingConditionByName {
 
     @Action(pre = ["condition1"])
@@ -222,7 +222,7 @@ class OneTransformerActionReferencingConditionByName {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionWithCustomToolGroupOnly {
 
     @Action(cost = 500.0, toolGroups = ["magic"])
@@ -274,7 +274,7 @@ class AgentWithOneTransformerActionWith2ArgsOnly {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionWith2ArgsAndCustomInputBindings {
 
     @Action
@@ -287,7 +287,7 @@ class OneTransformerActionWith2ArgsAndCustomInputBindings {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 
     @Action(outputBinding = "person")
@@ -297,7 +297,7 @@ class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OnePromptActionOnly(
 ) {
 
@@ -313,7 +313,7 @@ class OnePromptActionOnly(
 
 }
 
-@Agentic
+@AgentCapabilities
 class AwaitableOne(
 ) {
 
@@ -329,7 +329,7 @@ class AwaitableOne(
 
 }
 
-@Agentic
+@AgentCapabilities
 class Combined {
 
     val planner = Goal.createInstance(
@@ -365,7 +365,7 @@ class Combined {
 
 }
 
-@Agentic
+@AgentCapabilities
 class OnePromptActionWithToolOnly(
 ) {
 
@@ -382,7 +382,7 @@ class OnePromptActionWithToolOnly(
 
 }
 
-@Agentic
+@AgentCapabilities
 class FromPersonUsesDomainObjectTools {
 
     @Action
@@ -393,7 +393,7 @@ class FromPersonUsesDomainObjectTools {
     }
 }
 
-@Agentic
+@AgentCapabilities
 class OneTransformerActionWith2Tools {
 
     @Action
@@ -412,7 +412,7 @@ class OneTransformerActionWith2Tools {
 
 }
 
-@Agentic
+@AgentCapabilities
 class ToolMethodsOnDomainObject {
 
     @Action
@@ -440,7 +440,7 @@ class Wumpus(val name: String) {
     fun toolWithArg(location: String) = location
 }
 
-@Agentic
+@AgentCapabilities
 class ToolMethodsOnDomainObjects {
 
     @Action

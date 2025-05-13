@@ -17,7 +17,7 @@ package com.embabel.examples.dogfood.coding
 
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agentic
+import com.embabel.agent.api.annotation.AgentCapabilities
 import com.embabel.agent.api.annotation.fromForm
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.toolgroups.file.FileWriteTools
@@ -40,7 +40,7 @@ object SpringCoderConditions {
     const val SpringProjectCreated = "springProjectCreated"
 }
 
-@Agentic(
+@AgentCapabilities(
     scan = false
 )
 @Profile("!test")
