@@ -372,7 +372,7 @@ Remember:
 
 This project is in its early stages, but we have big plans.
 The milestones and issues in this repository are a good reference.
-The major themes we want to address are:
+Our key goals:
 
 - **Become the natural way to Gen AI-enable Java applications**, and especially those built on Spring.
 - **Prove the power of the model**. Demonstrate that this model is the most capable agent
@@ -417,9 +417,8 @@ for documentation of the library used.
 You can use the Embabel agent platform as an MCP server from a
 UI like Claude Desktop.
 
-Because Claude
-
-https://makhlevich.substack.com/p/converting-an-mcp-server-from-sse
+Because Claude only presently works over stdio, and we rightly ignore stdio in favor of SSE, you will need
+to use a [layer in between](https://makhlevich.substack.com/p/converting-an-mcp-server-from-sse).
 
 ## Consuming MCP Servers
 
