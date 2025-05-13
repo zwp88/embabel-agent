@@ -205,7 +205,7 @@ class StarNewsFinder(
      * @return A collection of relevant news stories with summaries and URLs
      */
     // toolGroups specifies tools that are required for this action to run
-    @Action(toolGroups = [ToolGroup.WEB])
+    @Action(toolGroups = [ToolGroup.WEB, "rag"])
     internal fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
         usingModel(model).createObject(
             """

@@ -17,6 +17,7 @@ package com.embabel.agent.testing
 
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.support.DefaultAgentPlatform
+import com.embabel.agent.rag.RagService
 import io.mockk.mockk
 
 fun createAgentPlatform(): AgentPlatform {
@@ -25,5 +26,6 @@ fun createAgentPlatform(): AgentPlatform {
         llmOperations = llmOperations,
         eventListeners = listOf(EventSavingAgenticEventListener()),
         toolGroupResolver = mockk(),
+        ragService = RagService.empty(),
     )
 }

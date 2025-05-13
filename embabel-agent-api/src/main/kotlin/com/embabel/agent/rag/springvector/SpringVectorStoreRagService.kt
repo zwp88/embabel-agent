@@ -1,0 +1,74 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.embabel.agent.rag.springvector
+
+import com.embabel.agent.rag.Chunk
+import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.RagResponse
+import com.embabel.agent.rag.WritableRagService
+import com.embabel.common.core.types.SimilarityResult
+import com.embabel.common.core.types.ZeroToOne
+import org.slf4j.LoggerFactory
+import org.springframework.ai.document.Document
+import org.springframework.ai.vectorstore.SearchRequest
+import org.springframework.ai.vectorstore.VectorStore
+
+class SpringVectorStoreRagService(
+    private val vectorStore: VectorStore,
+    override val description: String = vectorStore.javaClass.name,
+) : WritableRagService {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    override val name: String
+        get() = vectorStore.name
+
+    override fun search(ragRequest: RagRequest): RagResponse {
+        val searchRequest = SearchRequest
+            .builder()
+            .query(ragRequest.query)
+            .similarityThreshold(ragRequest.similarityThreshold)
+            .topK(ragRequest.topK)
+            .build()
+        val results: List<Document> = vectorStore.similaritySearch(searchRequest)!!
+        return RagResponse(
+            service = name,
+            results = results.map { it ->
+                DocumentSimilarityResult(
+                    document = it,
+                    score = it.score!!,
+                )
+            }
+        )
+    }
+
+    override fun accept(documents: List<Document>) {
+        logger.info("Writing ${documents.size} documents into Spring vector store")
+        vectorStore.accept(documents)
+    }
+
+    override fun infoString(verbose: Boolean?): String {
+        return "${vectorStore.name}: ${vectorStore.javaClass.name}"
+    }
+}
+
+private class DocumentSimilarityResult(
+    private val document: Document,
+    override val score: ZeroToOne,
+) : SimilarityResult<Chunk> {
+
+    override val match: Chunk = Chunk(document.text!!)
+}

@@ -19,6 +19,7 @@ import com.embabel.agent.core.*
 import com.embabel.agent.event.AgentDeploymentEvent
 import com.embabel.agent.event.AgentProcessCreationEvent
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
@@ -41,6 +42,7 @@ internal class DefaultAgentPlatform(
     private val agentProcessIdGenerator: AgentProcessIdGenerator = AgentProcessIdGenerator.RANDOM,
     private val agentProcessRepository: AgentProcessRepository = InMemoryAgentProcessRepository(),
     private val operationScheduler: OperationScheduler = OperationScheduler.PRONTO,
+    private val ragService: RagService,
 ) : AgentPlatform {
 
     private val logger = LoggerFactory.getLogger(DefaultAgentPlatform::class.java)
@@ -60,6 +62,7 @@ internal class DefaultAgentPlatform(
         agentPlatform = this,
         eventListener = eventListener,
         operationScheduler = operationScheduler,
+        ragService = ragService,
     )
 
     init {

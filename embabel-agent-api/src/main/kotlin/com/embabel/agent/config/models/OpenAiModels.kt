@@ -22,8 +22,10 @@ import com.embabel.common.ai.model.config.OpenAiConfiguration
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.chat.model.ChatModel
+import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
+import org.springframework.ai.openai.OpenAiEmbeddingModel
 import org.springframework.ai.openai.api.OpenAiApi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -61,6 +63,11 @@ class OpenAiModels(
                 usdPer1mOutputTokens = 1.6,
             )
         )
+    }
+
+    @Bean
+    fun embeddingModel(): EmbeddingModel {
+        return OpenAiEmbeddingModel(openAiApi)
     }
 
     @Bean
