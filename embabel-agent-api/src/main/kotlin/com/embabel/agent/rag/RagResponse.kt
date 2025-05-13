@@ -18,6 +18,7 @@ package com.embabel.agent.rag
 import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.*
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.ai.document.DocumentWriter
 
 sealed interface Retrieved : HasInfoString
 
@@ -101,6 +102,15 @@ interface RagResponse {
     }
 }
 
+
+object DefaultRagResponseFormatter : RagResponseFormatter {
+    override fun format(ragResponse: RagResponse): String {
+        return "Rag results:\n\n" + ragResponse.results.joinToString("\n\n") {
+            "score=${it.score}:\n${it.match.infoString()}"
+        }
+    }
+}
+
 private data class RagResponseImpl(
     override val service: String,
     override val results: List<SimilarityResult<out Retrieved>>,
@@ -108,7 +118,7 @@ private data class RagResponseImpl(
 
 
 data class RagRequest(
-    val content: String,
+    val query: String,
     override val similarityThreshold: ZeroToOne = .8,
     override val topK: Int = 8,
 ) : SimilarityCutoff
@@ -130,6 +140,13 @@ interface RagService : Described, HasInfoString {
         }
     }
 }
+
+interface Ingester : DocumentWriter {
+
+    fun ingest(resourcePath: String)
+}
+
+interface WritableRagService : RagService, DocumentWriter
 
 private data class EmptyRagService(
     override val name: String,

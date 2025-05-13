@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.rag
 
-import com.embabel.agent.spi.support.SelfToolCallbackPublisher
+import com.embabel.agent.api.common.SelfToolCallbackPublisher
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 

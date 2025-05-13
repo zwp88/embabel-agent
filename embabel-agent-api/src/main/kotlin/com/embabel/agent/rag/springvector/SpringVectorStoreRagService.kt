@@ -18,9 +18,10 @@ package com.embabel.agent.rag.springvector
 import com.embabel.agent.rag.Chunk
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
-import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.WritableRagService
 import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.ZeroToOne
+import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
@@ -28,7 +29,9 @@ import org.springframework.ai.vectorstore.VectorStore
 class SpringVectorStoreRagService(
     private val vectorStore: VectorStore,
     override val description: String = vectorStore.javaClass.name,
-) : RagService {
+) : WritableRagService {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     override val name: String
         get() = vectorStore.name
@@ -36,7 +39,7 @@ class SpringVectorStoreRagService(
     override fun search(ragRequest: RagRequest): RagResponse {
         val searchRequest = SearchRequest
             .builder()
-            .query(ragRequest.content)
+            .query(ragRequest.query)
             .similarityThreshold(ragRequest.similarityThreshold)
             .topK(ragRequest.topK)
             .build()
@@ -50,6 +53,11 @@ class SpringVectorStoreRagService(
                 )
             }
         )
+    }
+
+    override fun accept(documents: List<Document>) {
+        logger.info("Writing ${documents.size} documents into Spring vector store")
+        vectorStore.accept(documents)
     }
 
     override fun infoString(verbose: Boolean?): String {

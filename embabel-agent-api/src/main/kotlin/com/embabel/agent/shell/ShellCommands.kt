@@ -19,7 +19,9 @@ import com.embabel.agent.api.common.*
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.InternetResources
-import com.embabel.agent.event.logging.LoggingAgenticEventListener
+import com.embabel.agent.event.logging.LoggingPersonality
+import com.embabel.agent.event.logging.personality.ColorPalette
+import com.embabel.agent.rag.Ingester
 import com.embabel.chat.agent.LastMessageIntentAgentPlatformChatSession
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.util.bold
@@ -40,7 +42,9 @@ class ShellCommands(
     private val terminalServices: TerminalServices,
     private val environment: ConfigurableEnvironment,
     private val objectMapper: ObjectMapper,
-    private val loggingPersonality: LoggingAgenticEventListener,
+    private val colorPalette: ColorPalette,
+    private val loggingPersonality: LoggingPersonality,
+    private val ingester: Ingester,
 ) {
 
     private val logger: Logger = loggingPersonality.logger
@@ -103,7 +107,7 @@ class ShellCommands(
             processOptions = processOptions,
             goalChoiceApprover = terminalServices,
         )
-        return terminalServices.chat(chatSession, loggingPersonality.colorPalette)
+        return terminalServices.chat(chatSession, colorPalette)
     }
 
     @ShellMethod("List agents")
@@ -151,7 +155,7 @@ class ShellCommands(
             val fmt = goalSeeker.rankings.rankings.joinToString("\n") {
                 it.infoString(verbose = true)
             }
-            return fmt.color(loggingPersonality.colorPalette.color2) + "\n" + goalSeeker.agent.infoString(verbose = true)
+            return fmt.color(colorPalette.color2) + "\n" + goalSeeker.agent.infoString(verbose = true)
         } catch (gna: GoalNotApproved) {
             return "Goal not approved. Rankings were:\n${gna.goalRankings.infoString(verbose = true)}"
         } catch (ngf: NoGoalFound) {
@@ -223,6 +227,21 @@ class ShellCommands(
     fun ragService(): String =
         autonomy.agentPlatform.platformServices.ragService.infoString(verbose = true)
 
+    @ShellMethod("ingest")
+    fun ingest(
+        @ShellOption(
+            value = ["-u", "--u"],
+            help = "File to ingest. Spring resource path or URL",
+        ) url: String,
+    ): String {
+        return try {
+            ingester.ingest(url)
+            "Ingested $url"
+        } catch (e: Exception) {
+            "Failed to ingest $url: ${e.message}"
+        }
+    }
+
     @ShellMethod("Show options")
     fun showOptions(): String {
         // Don't show the blackboard as it's long
@@ -234,7 +253,7 @@ class ShellCommands(
         """.trimIndent(), """
             "blackboard" : <${blackboard?.let { "${it.objects.size} entries" } ?: "empty"}>
         """.trimIndent())
-            .color(loggingPersonality.colorPalette.color2)
+            .color(colorPalette.color2)
     }
 
     @ShellMethod(
@@ -276,7 +295,7 @@ class ShellCommands(
                 operationDelay = if (operationDelay) Delay.MEDIUM else Delay.NONE,
             )
         )
-        return "Options updated:\nOpen mode:$openMode\n${showOptions()}".color(loggingPersonality.colorPalette.color2)
+        return "Options updated:\nOpen mode:$openMode\n${showOptions()}".color(colorPalette.color2)
     }
 
     @ShellMethod(
@@ -330,7 +349,7 @@ class ShellCommands(
             objectMapper.writeValueAsString(processOptions)
         }
         logger.info(
-            "Created process options: $opt".color(loggingPersonality.colorPalette.highlight)
+            "Created process options: $opt".color(colorPalette.highlight)
         )
 
         return runProcess(verbosity = processOptions.verbosity, basis = intent) {
@@ -426,10 +445,10 @@ class ShellCommands(
             // TODO naive Markdown test
             output += if (result.output.text.contains("#")) {
                 "\n" + markdownToConsole(result.output.text)
-                    .color(loggingPersonality.colorPalette.color2)
+                    .color(colorPalette.color2)
             } else {
                 WordUtils.wrap(result.output.text, 140).color(
-                    loggingPersonality.colorPalette.color2,
+                    colorPalette.color2,
                 )
             }
 
@@ -437,7 +456,7 @@ class ShellCommands(
                 output += "\n\n" + result.output.links.joinToString("\n") {
                     "- ${it.url}: ${
                         it.summary.color(
-                            loggingPersonality.colorPalette.color2
+                            colorPalette.color2
                         )
                     }"
                 }
@@ -448,9 +467,9 @@ class ShellCommands(
             )
         }
         return """|
-                    |You asked: ${basis.toString().color(loggingPersonality.colorPalette.highlight)}
+                    |You asked: ${basis.toString().color(colorPalette.highlight)}
                     |
-                    |${output.color(loggingPersonality.colorPalette.color2)}
+                    |${output.color(colorPalette.color2)}
                     |
                     |${result.agentProcess.costInfoString(verbose = true)}
                     |""".trimMargin()

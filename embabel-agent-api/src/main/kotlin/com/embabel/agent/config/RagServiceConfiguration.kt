@@ -15,9 +15,15 @@
  */
 package com.embabel.agent.config
 
+import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.ToolGroupDescription
+import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.rag.ConsensusRagService
+import com.embabel.agent.rag.Ingester
+import com.embabel.agent.rag.MultiIngester
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.springvector.SpringVectorStoreRagService
+import com.embabel.agent.toolgroups.rag.RagTools
 import org.neo4j.driver.Driver
 import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.ai.vectorstore.VectorStore
@@ -40,6 +46,33 @@ class RagServiceConfiguration {
         ragServices: List<RagService>,
     ): RagService {
         return ConsensusRagService(ragServices)
+    }
+
+    @Bean
+    fun ragToolGroup(ragService: RagService): ToolGroup {
+        return ToolGroup(
+            metadata = ToolGroupMetadata(
+                description = ToolGroupDescription(
+                    description = "RAG service",
+                    role = "rag",
+                ),
+                artifact = "rag",
+                provider = "embabel",
+                version = "1.0.0",
+                permissions = setOf(),
+            ),
+            toolCallbacks = RagTools(
+                ragService = ragService,
+            ).toolCallbacks,
+        )
+    }
+
+    @Bean
+    @Primary
+    fun ingester(
+        ragServices: List<RagService>,
+    ): Ingester {
+        return MultiIngester(ragServices)
     }
 
     @Bean
