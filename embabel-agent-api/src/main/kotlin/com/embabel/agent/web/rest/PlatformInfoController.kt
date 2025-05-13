@@ -86,7 +86,7 @@ class PlatformInfoController(
             ApiResponse(responseCode = "200", description = "List of actions returned successfully")
         ]
     )
-    fun getActions(): List<Action> = agentPlatform.actions
+    fun getActions(): List<ActionMetadata> = agentPlatform.actions.map { ActionMetadata(it) }.sortedBy { it.name }
 
     /**
      * Returns general platform information, including the number of agents, actions, goals, and conditions.
@@ -105,9 +105,12 @@ class PlatformInfoController(
     )
     fun getPlatformInfo(): PlatformInfoSummary = PlatformInfoSummary(
         agentCount = agentPlatform.agents().size,
+        agentNames = agentPlatform.agents().map { it.name }.toSet(),
         actionCount = agentPlatform.actions.size,
         goalCount = agentPlatform.goals.size,
-        conditionCount = agentPlatform.conditions.size
+        conditionCount = agentPlatform.conditions.size,
+        name = agentPlatform.name,
+        domainTypes = agentPlatform.domainTypes.map { it.name }.toSet(),
     )
 
     /**
@@ -133,7 +136,10 @@ class PlatformInfoController(
  */
 data class PlatformInfoSummary(
     val agentCount: Int,
+    val agentNames: Set<String>,
     val actionCount: Int,
     val goalCount: Int,
-    val conditionCount: Int
+    val conditionCount: Int,
+    val name: String,
+    val domainTypes: Set<String>,
 )

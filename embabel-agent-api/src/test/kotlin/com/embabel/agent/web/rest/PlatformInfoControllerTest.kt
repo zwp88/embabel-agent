@@ -16,6 +16,7 @@
 package com.embabel.agent.web.rest
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
+import com.embabel.agent.core.ActionMetadata
 import com.embabel.agent.core.AgentMetadata
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.Goal
@@ -31,6 +32,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import kotlin.test.assertEquals
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -65,7 +67,34 @@ class PlatformInfoControllerTest(
                 status().isOk()
             }.andReturn()
         val content = result.response.contentAsString
-        val retrievedAgents = objectMapper.readValue(content, object : TypeReference<List<Goal>>() {})
-        assertTrue(retrievedAgents.isNotEmpty(), "Must have some goals in $content")
+        val retrievedGoals = objectMapper.readValue(content, object : TypeReference<List<Goal>>() {})
+        assertTrue(retrievedGoals.isNotEmpty(), "Must have some goals in $content")
+    }
+
+    @Test
+    fun `should return actions`() {
+        agentPlatform.deploy(evenMoreEvilWizard())
+        val result = mockMvc.get("/api/v1/platform-info/actions")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content = result.response.contentAsString
+        val retrievedActions = objectMapper.readValue(content, object : TypeReference<List<ActionMetadata>>() {})
+        assertTrue(retrievedActions.isNotEmpty(), "Must have some actions in $content")
+    }
+
+    @Test
+    fun `should return PlatformInfo`() {
+        agentPlatform.deploy(evenMoreEvilWizard())
+        val result = mockMvc.get("/api/v1/platform-info")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content = result.response.contentAsString
+        val platformInfo = objectMapper.readValue(content, PlatformInfoSummary::class.java)
+        assertEquals(1, platformInfo.agentCount)
+        assertTrue(platformInfo.actionCount > 1)
+//        assertTrue(platformInfo.goalCount > 1)
+        assertTrue(platformInfo.domainTypes.isNotEmpty())
     }
 }

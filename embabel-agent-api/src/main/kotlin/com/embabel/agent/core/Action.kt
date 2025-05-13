@@ -19,6 +19,7 @@ import com.embabel.agent.core.support.SerializableAction
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
+import com.embabel.plan.goap.EffectSpec
 import com.embabel.plan.goap.GoapAction
 import com.embabel.plan.goap.GoapStep
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -133,4 +134,36 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
     override fun infoString(verbose: Boolean?): String =
         "$name - pre=${preconditions} post=${effects}"
 
+}
+
+/**
+ * Serializable action metadata
+ */
+data class ActionMetadata(
+    val name: String,
+    val description: String,
+    val inputs: Set<IoBinding>,
+    val outputs: Set<IoBinding>,
+    val preconditions: EffectSpec,
+    val effects: EffectSpec,
+    val cost: ZeroToOne,
+    val value: ZeroToOne,
+    val canRerun: Boolean,
+    val qos: ActionQos,
+) {
+
+    constructor(
+        action: Action,
+    ) : this(
+        name = action.name,
+        description = action.description,
+        inputs = action.inputs,
+        outputs = action.outputs,
+        preconditions = action.preconditions,
+        effects = action.effects,
+        cost = action.cost,
+        value = action.value,
+        canRerun = action.canRerun,
+        qos = action.qos,
+    )
 }

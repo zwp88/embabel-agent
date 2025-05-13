@@ -129,10 +129,10 @@ data class Agent(
  */
 data class AgentMetadata(
     override val name: String,
-    val version: String,
+    val version: String = DEFAULT_VERSION,
     override val description: String,
-    val goals: List<String>,
-    val actions: List<String>,
+    val goals: Set<Goal>,
+    val actions: List<ActionMetadata>,
     val conditions: Set<String>
 ) : Named, Described {
 
@@ -140,8 +140,8 @@ data class AgentMetadata(
         name = agent.name,
         version = agent.version,
         description = agent.description,
-        goals = agent.goals.map { it.infoString(verbose = false) }.sorted(),
-        actions = agent.actions.map { it.name }.sorted(),
+        goals = agent.goals,
+        actions = agent.actions.map { ActionMetadata(it) },
         conditions = agent.conditions.map { it.name }.toSet()
     )
 }
