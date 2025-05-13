@@ -24,7 +24,7 @@ import com.embabel.agent.api.dsl.*
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.common.ai.model.LlmOptions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.ai.tool.annotation.Tool

@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.special
+package com.embabel.agent.domain.library
 
-import com.embabel.common.core.types.Timestamped
+import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import java.time.Instant
 
-/**
- * Special class that represents a single user input
- * Starting point for many flows.
- */
-data class UserInput(
-    @get:JsonPropertyDescription("user input")
-    val content: String,
-    override val timestamp: Instant = Instant.now(),
-) : Timestamped
+@JsonClassDescription("Internet resource")
+data class InternetResource(
+    @get:JsonPropertyDescription("url of the resource")
+    val url: String,
+    @get: JsonPropertyDescription("concise summary of the resource")
+    val summary: String,
+)
+
+interface InternetResources {
+
+    @get:JsonPropertyDescription("internet resources")
+    val links: List<InternetResource>
+}

@@ -13,32 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.library
+package com.embabel.agent.domain.io
+
+import com.embabel.common.core.types.Timestamped
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import java.time.Instant
+
+interface SystemInput : Timestamped
 
 /**
- * Interface when an object has a single important text component.
+ * Special class that represents a single user input
+ * Starting point for many flows.
  */
-interface HasContent {
-
-    val text: String
-}
-
-
-interface Person {
-
-    val name: String
-
-}
-
-data class PersonImpl(override val name: String) : Person
-
-
-data class RelevantNewsStories(
-    val items: List<NewsStory>
-)
-
-data class NewsStory(
-    val url: String,
-    val title: String,
-    val summary: String,
-)
+data class UserInput(
+    @get:JsonPropertyDescription("user input")
+    val content: String,
+    override val timestamp: Instant = Instant.now(),
+) : SystemInput

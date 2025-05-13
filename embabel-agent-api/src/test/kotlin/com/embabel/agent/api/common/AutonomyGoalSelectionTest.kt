@@ -17,7 +17,7 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.library.HasContent
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings

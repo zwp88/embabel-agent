@@ -17,7 +17,7 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.support.Branch
 import com.embabel.agent.core.*
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.spi.support.SpiPerson
 import com.embabel.agent.testing.createAgentPlatform
 import com.embabel.common.core.MobyNameGenerator

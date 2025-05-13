@@ -18,7 +18,7 @@ package com.embabel.agent.support
 import com.embabel.agent.api.annotation.support.PersonWithReverseTool
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.support.InMemoryBlackboard
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested

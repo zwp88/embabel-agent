@@ -13,32 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.library
+package com.embabel.agent.domain.io
 
-/**
- * Interface when an object has a single important text component.
- */
-interface HasContent {
+import com.embabel.common.core.types.Timestamped
 
-    val text: String
-}
-
-
-interface Person {
-
-    val name: String
-
-}
-
-data class PersonImpl(override val name: String) : Person
-
-
-data class RelevantNewsStories(
-    val items: List<NewsStory>
-)
-
-data class NewsStory(
-    val url: String,
-    val title: String,
-    val summary: String,
-)
+interface SystemOutput : Timestamped

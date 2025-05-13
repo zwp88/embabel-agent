@@ -20,7 +20,7 @@ import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.library.HasContent
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.ObjectMapper

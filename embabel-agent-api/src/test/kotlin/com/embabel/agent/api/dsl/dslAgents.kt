@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 
 data class MagicVictim(
     val name: String,

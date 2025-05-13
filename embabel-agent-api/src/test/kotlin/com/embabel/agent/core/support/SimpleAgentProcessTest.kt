@@ -28,7 +28,7 @@ import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.library.Person
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent

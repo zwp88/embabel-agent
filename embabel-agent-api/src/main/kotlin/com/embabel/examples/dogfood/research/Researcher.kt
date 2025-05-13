@@ -22,7 +22,7 @@ import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.ResearchReport
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.agent.experimental.prompt.PromptUtils
 import com.embabel.agent.experimental.prompt.ResponseFormat

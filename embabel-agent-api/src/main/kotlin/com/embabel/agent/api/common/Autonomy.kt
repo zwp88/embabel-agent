@@ -18,7 +18,7 @@ package com.embabel.agent.api.common
 import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.Awaitable
 import com.embabel.agent.core.hitl.AwaitableResponse
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.AgentPlatformEvent
 import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.RankingChoiceRequestEvent
@@ -35,7 +35,6 @@ import com.embabel.plan.goap.WorldStateDeterminer
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 import java.time.Instant
-import kotlin.Throws
 
 /**
  * Successful result of directly trying to execute a goal

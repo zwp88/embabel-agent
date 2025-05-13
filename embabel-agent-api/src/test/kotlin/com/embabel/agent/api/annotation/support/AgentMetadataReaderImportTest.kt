@@ -19,7 +19,7 @@ import com.embabel.agent.api.dsl.SnakeMeal
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.testing.createAgentPlatform
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

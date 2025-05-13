@@ -20,7 +20,7 @@ import com.embabel.agent.config.models.OpenAiModels;
 import com.embabel.agent.core.ToolGroup;
 import com.embabel.agent.domain.library.PersonImpl;
 import com.embabel.agent.domain.library.RelevantNewsStories;
-import com.embabel.agent.domain.special.UserInput;
+import com.embabel.agent.domain.io.UserInput;
 import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.common.ai.model.ModelSelectionCriteria;
 import com.embabel.examples.simple.horoscope.HoroscopeService;

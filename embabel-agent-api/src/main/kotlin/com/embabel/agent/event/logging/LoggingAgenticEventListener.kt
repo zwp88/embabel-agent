@@ -310,7 +310,7 @@ open class LoggingAgenticEventListener(
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
                     val promptInfo = "using ${event.interaction.llm.criteria.toString().color(AnsiColor.GREEN)}\n${
                         event.springAiPrompt.toInfoString().color(AnsiColor.GREEN)
-                    }\nprompt id: ${event.interaction.id}\ntools: [${
+                    }\nprompt id: '${event.interaction.id}'\ntools: [${
                         event.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
                             .color(AnsiColor.BRIGHT_MAGENTA)
                     }]"

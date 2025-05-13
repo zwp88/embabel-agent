@@ -24,7 +24,7 @@ import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.ResearchReport
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.toolgroups.web.domain.DomainChecker
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.examples.dogfood.research.Researcher

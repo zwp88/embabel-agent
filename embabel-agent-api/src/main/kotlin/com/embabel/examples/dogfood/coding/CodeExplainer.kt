@@ -24,7 +24,7 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.InternetResource
 import com.embabel.agent.domain.library.InternetResources
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import org.springframework.context.annotation.Profile
 
 data class CodeExplanation(

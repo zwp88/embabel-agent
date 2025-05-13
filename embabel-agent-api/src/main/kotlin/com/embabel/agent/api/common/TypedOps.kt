@@ -17,7 +17,7 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import java.util.function.BiFunction
 
 

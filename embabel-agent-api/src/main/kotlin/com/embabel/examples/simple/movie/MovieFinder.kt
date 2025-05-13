@@ -27,7 +27,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
-import com.embabel.agent.domain.special.UserInput
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.prompt.Persona
