@@ -159,6 +159,10 @@ class AutonomyGoalSelectionTest {
         // Create event listener mock to verify event publication
         val eventListener = mockk<AgenticEventListener>(relaxUnitFun = true)
 
+        every {
+            agentPlatform.platformServices.eventListener
+        } returns eventListener
+
         // Create the Autonomy instance to test with different thresholds
         // to verify the comparison logic is working
         val autonomy = Autonomy(
@@ -168,7 +172,6 @@ class AutonomyGoalSelectionTest {
                 goalConfidenceCutOff = 0.5,  // Our test goal (0.8) should be above this
                 agentConfidenceCutOff = 0.5
             ),
-            eventListener = eventListener
         )
 
         // Execute the real method - no mocking of chooseAndAccomplishGoal
@@ -311,13 +314,15 @@ class AutonomyGoalSelectionTest {
         every {
             agentPlatform.runAgentFrom(any(), any(), any())
         } returns mockProcess
+        every {
+            agentPlatform.platformServices.eventListener
+        } returns eventListener
 
         // Create autonomy instance
         val autonomy = Autonomy(
             agentPlatform = agentPlatform,
             ranker = lowScoreRanker,
             properties = AutonomyProperties(goalConfidenceCutOff = 0.5),
-            eventListener = eventListener
         )
 
         // Execute and verify the exception is thrown

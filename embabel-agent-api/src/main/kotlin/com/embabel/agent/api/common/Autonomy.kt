@@ -20,7 +20,6 @@ import com.embabel.agent.core.hitl.Awaitable
 import com.embabel.agent.core.hitl.AwaitableResponse
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.agent.event.AgentPlatformEvent
-import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.RankingChoiceRequestEvent
 import com.embabel.agent.spi.Ranker
@@ -238,8 +237,9 @@ class Autonomy(
     val agentPlatform: AgentPlatform,
     private val ranker: Ranker,
     val properties: AutonomyProperties,
-    private val eventListener: AgenticEventListener,
 ) {
+
+    private val eventListener = agentPlatform.platformServices.eventListener
 
     /**
      * Choose a goal based on the user input and try to achieve it.

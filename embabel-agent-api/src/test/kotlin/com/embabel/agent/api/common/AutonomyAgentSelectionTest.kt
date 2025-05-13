@@ -143,12 +143,15 @@ class AutonomyAgentSelectionTest {
         // Create event listener mock to verify event publication
         val eventListener = mockk<AgenticEventListener>(relaxUnitFun = true)
 
+        every {
+            agentPlatform.platformServices.eventListener
+        } returns eventListener
+
         // Create the Autonomy instance to test
         val autonomy = Autonomy(
             agentPlatform = agentPlatform,
             ranker = highScoreRanker,
             properties = AutonomyProperties(agentConfidenceCutOff = 0.5),
-            eventListener = eventListener
         )
 
         // Execute the real method - no mocking of chooseAndRunAgent
@@ -239,6 +242,7 @@ class AutonomyAgentSelectionTest {
         val agentPlatform = mockk<AgentPlatform>()
         every { agentPlatform.agents() } returns setOf(lowConfidenceAgent)
 
+
         // Create a ranker that returns low confidence scores (below threshold)
         val lowScoreRanker = object : FakeRanker {
             override fun <T> rank(
@@ -252,13 +256,15 @@ class AutonomyAgentSelectionTest {
 
         // Create event listener
         val eventListener = mockk<AgenticEventListener>(relaxUnitFun = true)
+        every {
+            agentPlatform.platformServices.eventListener
+        } returns eventListener
 
         // Create the Autonomy instance to test
         val autonomy = Autonomy(
             agentPlatform = agentPlatform,
             ranker = lowScoreRanker,
             properties = AutonomyProperties(agentConfidenceCutOff = 0.5),
-            eventListener = eventListener
         )
 
         // Execute and verify exception is thrown
