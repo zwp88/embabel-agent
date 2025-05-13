@@ -19,6 +19,7 @@ import com.embabel.agent.common.RetryTemplateProvider
 import com.embabel.agent.core.LlmInvocation
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
+import com.embabel.agent.spi.AutoLlmSelectionCriteriaResolver
 import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
