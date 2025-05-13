@@ -8,7 +8,9 @@ embabel:
   agent-platform:
     scanning:
       auto: false
-  model:
+
+  models:
+    default-llm: test-llm
     llms:
       best: test-llm
       cheapest: test-llm

@@ -47,7 +47,7 @@ data class RankingProperties(
  * Core configuration for AgentPlatform
  */
 @Configuration
-@EnableConfigurationProperties(ModelProperties::class)
+@EnableConfigurationProperties(ConfigurableModelProviderProperties::class)
 class AgentPlatformConfiguration(
     private val rankingProperties: RankingProperties,
 ) {
@@ -117,11 +117,15 @@ class AgentPlatformConfiguration(
     fun modelProvider(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,
-        properties: ModelProperties,
+        properties: ConfigurableModelProviderProperties,
     ): ModelProvider = ConfigurableModelProvider(
         llms = llms,
         embeddingServices = embeddingServices,
         properties = properties,
     )
+
+    @Bean
+    fun autoLlmSelectionCriteriaResolver(
+    ): AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT
 
 }

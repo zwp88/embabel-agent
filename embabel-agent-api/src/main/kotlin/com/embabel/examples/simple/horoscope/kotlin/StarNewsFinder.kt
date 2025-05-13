@@ -26,6 +26,7 @@ import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.special.UserInput
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.Auto
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.ux.form.Text
 import com.fasterxml.jackson.annotation.JsonClassDescription
@@ -115,7 +116,7 @@ class StarNewsFinder(
     @Action
     fun extractPerson(userInput: UserInput): PersonImpl? =
         // All prompts are typesafe
-        usingModel(model).createObjectIfPossible(
+        usingDefaultLlm.createObjectIfPossible(
             """
             Create a person from this user input, extracting their name:
             ${userInput.content}
@@ -171,7 +172,7 @@ class StarNewsFinder(
      */
     @Action
     fun extractStarPerson(userInput: UserInput): StarPerson? =
-        usingModel(model).createObjectIfPossible(
+        using(LlmOptions(Auto)).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name and star sign:
             ${userInput.content}

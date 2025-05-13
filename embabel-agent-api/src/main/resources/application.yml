@@ -62,7 +62,9 @@ embabel:
   process-id-generation:
     include-agent-name: false
     include-version: false
-  model:
+
+  models:
+    default-llm: gpt-4.1-mini
     llms:
       best: gpt-4.1
       cheapest: gpt-4.1-nano

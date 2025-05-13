@@ -21,10 +21,7 @@ import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelProvider
-import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole
+import com.embabel.common.ai.model.*
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.DatabindException
 import org.slf4j.LoggerFactory
@@ -104,6 +101,7 @@ internal class ChatClientLlmOperations(
     private val modelProvider: ModelProvider,
     toolDecorator: ToolDecorator,
     private val templateRenderer: TemplateRenderer,
+    private val autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
     private val dataBindingProperties: LlmDataBindingProperties = LlmDataBindingProperties(),
     private val chatClientLlmOperationsProperties: ChatClientLlmOperationsProperties = ChatClientLlmOperationsProperties(),
 ) : AbstractLlmOperations(toolDecorator) {
@@ -254,7 +252,14 @@ internal class ChatClientLlmOperations(
     private fun getLlmInvocationResources(
         llmOptions: LlmOptions,
     ): LlmInvocationResources {
-        val llm = modelProvider.getLlm(llmOptions.criteria ?: byRole(ModelProvider.BEST_ROLE))
+        val crit: ModelSelectionCriteria = when (llmOptions.criteria) {
+            null -> DefaultModelSelectionCriteria
+            is AutoModelSelectionCriteria ->
+                autoLlmSelectionCriteriaResolver.resolveAutoLlm()
+
+            else -> llmOptions.criteria ?: DefaultModelSelectionCriteria
+        }
+        val llm = modelProvider.getLlm(crit)
         val chatClient = ChatClient
             .builder(llm.model)
             .defaultOptions(

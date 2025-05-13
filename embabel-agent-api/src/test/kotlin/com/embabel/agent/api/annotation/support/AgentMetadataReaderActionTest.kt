@@ -25,8 +25,7 @@ import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.testing.createAgentPlatform
-import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
+import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
 import io.mockk.mockk
@@ -473,7 +472,7 @@ class AgentMetadataReaderActionTest {
             val result = action.execute(pc, mockk(), action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(Person("John Doe"), pc.blackboard.lastResult())
-            assertEquals(byName(LlmOptions.DEFAULT_MODEL), llmo.captured.llm.criteria)
+            assertEquals(DefaultModelSelectionCriteria, llmo.captured.llm.criteria)
             assertEquals(1.7, llmo.captured.llm.temperature)
         }
 
@@ -527,7 +526,7 @@ class AgentMetadataReaderActionTest {
             assertEquals(Person("John Doe"), pc.blackboard.lastResult())
 //                assertEquals(1, llmi.captured.toolCallbacks.size)
 //                assertEquals("thing", llmi.captured.toolCallbacks.single().toolDefinition.name())
-            assertEquals(byName(LlmOptions.DEFAULT_MODEL), llmi.captured.llm.criteria)
+            assertEquals(DefaultModelSelectionCriteria, llmi.captured.llm.criteria)
         }
 
         @Test
@@ -585,7 +584,7 @@ class AgentMetadataReaderActionTest {
                 "Should have one callback, had ${llmo.captured.toolCallbacks.map { it.toolDefinition.name() }}",
             )
             assertEquals("reverse", llmo.captured.toolCallbacks.single().toolDefinition.name())
-            assertEquals(byName(LlmOptions.DEFAULT_MODEL), llmo.captured.llm.criteria)
+            assertEquals(DefaultModelSelectionCriteria, llmo.captured.llm.criteria)
         }
 
     }
