@@ -137,10 +137,8 @@ open class DummyInstanceCreator(
         return (0 until size).map { createDummyInstance(componentType) }
     }
 
-    private fun getRandomString(): String {
-        val wordCount = random.nextInt(5) + 3 // Between 3 and 7 words
-        return (0 until wordCount).joinToString(" ") { stringsToUse[random.nextInt(stringsToUse.size)] }
-    }
+    private fun getRandomString(): String =
+        stringsToUse.random()
 
     companion object {
 
@@ -153,11 +151,28 @@ open class DummyInstanceCreator(
             "non proident sunt", "in culpa qui officia", "deserunt mollit anim", "id est laborum"
         )
 
+        val BigLebowskiQuotes = listOf(
+            "This is not Nam", "This is bowling", "There are rules",
+            "The Dude abides", "That rug really tied the room together",
+            "Obviously you're not a golfer", "Careful man, there's a beverage here",
+            "I'm the Dude", "Far out", "This aggression will not stand",
+            "You're out of your element", "Shut up Donny", "Mark it zero",
+            "It really tied the room together", "New information has come to light",
+            "That's just like, your opinion, man", "The Dude minds"
+        )
+
         /**
          * A dummy instance creator that uses Lorem Ipsum strings
          */
         val LoremIpsum = DummyInstanceCreator(
             stringsToUse = LoremIpsums,
+        )
+
+        /**
+         * A dummy instance creator that uses Big Lebowski quotes
+         */
+        val BigLebowski = DummyInstanceCreator(
+            stringsToUse = BigLebowskiQuotes,
         )
     }
 }

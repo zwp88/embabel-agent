@@ -34,7 +34,7 @@ class MovieFinderEndToEndTest {
         val ap = createAgentPlatform()
         val mockOmdbClient = mockk<OmdbClient>()
         every { mockOmdbClient.getMovieByTitle(any()) } answers {
-            DummyInstanceCreator.LoremIpsum.createDummyInstance(
+            DummyInstanceCreator.BigLebowski.createDummyInstance(
                 MovieResponse::class.java
             )
         }
@@ -44,9 +44,9 @@ class MovieFinderEndToEndTest {
         every { mockStreamingOption.service.name } returns "Netflix"
         every { mockStreamingOption.link } returns "https://www.netflix.com"
         every { mockStreamingAvailabilityClient.getShowStreamingIn(any(), any()) } answers {
-            // 9/10 of the time it will not return a streaming option
+            // 2/3 of the time it will not return a streaming option
             buildList {
-                repeat(9) {
+                repeat(2) {
                     add(emptyList())
                 }
                 add(listOf(mockStreamingOption))
@@ -69,7 +69,7 @@ class MovieFinderEndToEndTest {
     fun `test kills process that isn't terminating`() {
         val ap = createAgentPlatform()
         val mockOmdbClient = mockk<OmdbClient>()
-        every { mockOmdbClient.getMovieByTitle(any()) } returns DummyInstanceCreator.LoremIpsum.createDummyInstance(
+        every { mockOmdbClient.getMovieByTitle(any()) } returns DummyInstanceCreator.BigLebowski.createDummyInstance(
             MovieResponse::class.java
         )
         val movieBuffRepository = InMemoryMovieBuffRepository()
