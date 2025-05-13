@@ -19,12 +19,27 @@ import com.embabel.agent.common.LoggingConstants.lineSeparator
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.EarlyTermination
 import com.embabel.agent.event.*
-import com.embabel.agent.event.logging.personality.severance.LumonColors
+import com.embabel.agent.event.logging.personality.ColorPalette
+import com.embabel.agent.event.logging.personality.DefaultColorPalette
+import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.prompt.Prompt
+
+interface LoggingPersonality {
+
+    /**
+     * The color palette to use for this personality
+     */
+    val colorPalette: ColorPalette
+
+    /**
+     * The logger to use for this personality
+     */
+    val logger: Logger
+}
 
 /**
  * Default implementation of the AgenticEventListener
@@ -57,8 +72,9 @@ open class LoggingAgenticEventListener(
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
     private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
     private val progressUpdateEventMessage: String = "[{}] progress: {}",
-    val logger: Logger = LoggerFactory.getLogger("Embabel"),
-) : AgenticEventListener {
+    override val logger: Logger = LoggerFactory.getLogger("Embabel"),
+    override val colorPalette: ColorPalette = DefaultColorPalette(),
+) : AgenticEventListener, LoggingPersonality {
 
     init {
         welcomeMessage?.let {
@@ -324,7 +340,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     progressUpdateEventMessage,
                     event.processId,
-                    event.createProgressBar(length = 50).color(LumonColors.MEMBRANE),
+                    event.createProgressBar(length = 50).color(LumonColorPalette.MEMBRANE),
                 )
             }
 

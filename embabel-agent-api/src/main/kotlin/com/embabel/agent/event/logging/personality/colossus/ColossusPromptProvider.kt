@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("colossus")
-object ColossusColors : ColorPalette {
+object ColossusColorPalette : ColorPalette {
     const val PANEL: Int = 0x84a396
 
     override val highlight: Int
@@ -36,7 +36,7 @@ object ColossusColors : ColorPalette {
 @Component
 @Profile("colossus")
 class ColossusPromptProvider : MessageGeneratorPromptProvider(
-    color = ColossusColors.PANEL,
+    color = ColossusColorPalette.PANEL,
     prompt = "Colossus",
     messageGenerator = RandomFromFileMessageGenerator(
         url = "logging/colossus.txt"

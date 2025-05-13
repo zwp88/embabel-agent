@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("starwars")
-object StarWarsColors : ColorPalette {
+object StarWarsColorPalette : ColorPalette {
     const val YELLOW_ACCENT: Int = 0xFFD100
     const val TATOOINE_ORANGE: Int = 0xAD7D37
 
@@ -37,7 +37,7 @@ object StarWarsColors : ColorPalette {
 @Component
 @Profile("starwars")
 class StarWarsPromptProvider : MessageGeneratorPromptProvider(
-    color = StarWarsColors.YELLOW_ACCENT,
+    color = StarWarsColorPalette.YELLOW_ACCENT,
     prompt = "starwars",
     messageGenerator = RandomFromFileMessageGenerator(
         url = "logging/starwars.txt"

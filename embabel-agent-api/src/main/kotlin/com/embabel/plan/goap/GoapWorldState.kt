@@ -120,8 +120,10 @@ data class GoapWorldState(
     }
 
     override fun infoString(verbose: Boolean?): String {
+        val stateToShow =
+            state.filter { it.value != ConditionDetermination.FALSE }
         return if (verbose == true) jacksonObjectMapper().writerWithDefaultPrettyPrinter()
-            .writeValueAsString(state) else state.toString()
+            .writeValueAsString(stateToShow) else stateToShow.toString()
     }
 
     operator fun plus(pair: Pair<String, ConditionDetermination>): GoapWorldState =

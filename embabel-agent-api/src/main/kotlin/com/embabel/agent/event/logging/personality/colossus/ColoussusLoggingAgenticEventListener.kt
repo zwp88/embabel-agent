@@ -38,7 +38,8 @@ class ColossusLoggingAgenticEventListener : LoggingAgenticEventListener(
 
     I am a machine vastly superior to humans.
 
-    """.trimIndent().color(hexToRgb(ColossusColors.PANEL)),
-    agentProcessPlanFormulatedEventMessage = "[{}] world control formulated plan {} from {}".color(ColossusColors.PANEL),
+    """.trimIndent().color(hexToRgb(ColossusColorPalette.PANEL)),
+    agentProcessPlanFormulatedEventMessage = "[{}] world control formulated plan {} from {}".color(ColossusColorPalette.PANEL),
     agentDeploymentEventMessage = "Power growing: deployed agent {}\n\tdescription: {}",
+    colorPalette = ColossusColorPalette,
 )

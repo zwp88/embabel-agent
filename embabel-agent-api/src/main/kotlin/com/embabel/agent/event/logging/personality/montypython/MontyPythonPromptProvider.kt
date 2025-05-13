@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("montypython")
-object MontyPythonColors : ColorPalette {
+object MontyPythonColorPalette : ColorPalette {
     // Holy Grail-inspired colors
     const val BRIGHT_RED = 0xE50000     // Knight who says Ni! red
     const val ROYAL_BLUE = 0x0038A8     // King Arthur's blue
@@ -38,7 +38,7 @@ object MontyPythonColors : ColorPalette {
 @Component
 @Profile("montypython")
 class MontyPythonPromptProvider : MessageGeneratorPromptProvider(
-    color = MontyPythonColors.BRIGHT_RED,
+    color = MontyPythonColorPalette.BRIGHT_RED,
     prompt = "pythons",
     messageGenerator = RandomFromFileMessageGenerator(
         url = "logging/montypython.txt"

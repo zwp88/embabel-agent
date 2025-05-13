@@ -52,7 +52,7 @@ val CompletionMessages = listOf(
     """.trimIndent()
 )
 
-fun highlight(text: String) = "<$text>".color(LumonColors.MEMBRANE)
+fun highlight(text: String) = "<$text>".color(LumonColorPalette.MEMBRANE)
 
 const val BANNER_CHAR = "."
 
@@ -80,7 +80,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ▐▌   ▐▌ ▐▌▐▌  ▐▌▐▌ ▐▌▐▌ ▝▜▌
         ▐▙▄▄▖▝▚▄▞▘▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌
 
-    """.trimIndent().color(hexToRgb(LumonColors.MEMBRANE)),
+    """.trimIndent().color(hexToRgb(LumonColorPalette.MEMBRANE)),
     agentDeploymentEventMessage = "${highlight("WILES")}: Deployed agent {}\n\tdescription: {}",
     rankingChoiceRequestEventMessage = kier("Choosing {} based on {}"),
     rankingChoiceMadeEventMessage = kier(
@@ -98,12 +98,14 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
                     """.trimIndent()
     ),
     agentProcessReadyToPlanEventMessage = "[{}] ${highlight("WIT")}  ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "[{}] ${highlight("WILES")}: formulated plan {} from {}".color(LumonColors.MEMBRANE),
+    agentProcessPlanFormulatedEventMessage = "[{}] ${highlight("WILES")}: formulated plan {} from {}".color(
+        LumonColorPalette.MEMBRANE
+    ),
     processCompletionMessage = """
         [{}] completed in {}
         ${CompletionMessages.random()}
 
-        ${"The Board has concluded the call.".color(LumonColors.MEMBRANE)}
+        ${"The Board has concluded the call.".color(LumonColorPalette.MEMBRANE)}
 
         """.trimIndent(),
     processFailureMessage = "[{}] ${highlight("WOE")}: failed",
@@ -127,4 +129,5 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
     actionExecutionStartMessage = "[{}] ${highlight("VERVE")}: executing action {}",
     actionExecutionResultMessage = "[{}] ${highlight("CHEER")}: completed action {} in {}",
     progressUpdateEventMessage = "[{}] Industry: {}",
+    colorPalette = LumonColorPalette,
 )

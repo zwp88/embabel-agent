@@ -68,7 +68,7 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
 ⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⡄⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠛⠛⢯⡉⠉⠉⠉⠉⠛⢼⣿⠿⠿⠦⡙⣿⡆⢹⣷⣤⡀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠿⠄⠈⠻⠿⠿⠿⠿⠿⠿⠛⠛⠿⠛⠉⠁⠀⠀⠀⠀⠀⠀⠻⠿⠿⠿⠿⠟⠉⠀⠀⠤⠴⠶⠌⠿⠘⠿⠿⠿⠿⠶⠤⠀⠀⠀⠀
 
-    """.trimIndent().color(StarWarsColors.highlight),
+    """.trimIndent().color(StarWarsColorPalette.highlight),
     agentDeploymentEventMessage = "Deployed an agent I have: {}\n\tdescription: {}",
     rankingChoiceMadeEventMessage = "Chosen {} I have with confidence {} based on {}",
     dynamicAgentCreationMessage = "You will find only what you bring in: Created agent instance {}",
@@ -81,4 +81,5 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
     llmRequestEventMessage = "Ask LLM we will: Process {} requesting LLM {} to transform from {} -> {}",
     actionExecutionStartMessage = "Do or do not. There is no try: Process {} executing action {}",
     actionExecutionResultMessage = "Powerful you have become: Process {} executed action {} in {}",
+    colorPalette = StarWarsColorPalette,
 )

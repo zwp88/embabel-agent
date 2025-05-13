@@ -24,11 +24,11 @@ import com.embabel.common.util.italic
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
-fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColors.MEMBRANE)}"
+fun kier(text: String) = "🧔🏼‍♂️ ${"Kier".bold()} ${text.italic().color(LumonColorPalette.MEMBRANE)}"
 
 @Component
 @Profile("severance")
-object LumonColors : ColorPalette {
+object LumonColorPalette : ColorPalette {
     const val MEMBRANE: Int = 0xbeb780
     const val GREEN: Int = 0x7da17e
 
@@ -54,7 +54,7 @@ val LumonDepartments = listOf(
 @Component
 @Profile("severance")
 class SeverancePromptProvider : MessageGeneratorPromptProvider(
-    color = LumonColors.MEMBRANE,
+    color = LumonColorPalette.MEMBRANE,
     prompt = LumonDepartments.random(),
     messageGenerator = RandomFromFileMessageGenerator(
         url = "logging/severance.txt"

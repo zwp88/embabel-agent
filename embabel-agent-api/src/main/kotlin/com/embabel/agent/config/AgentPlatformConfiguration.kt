@@ -17,7 +17,6 @@ package com.embabel.agent.config
 
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
@@ -71,7 +70,7 @@ class AgentPlatformConfiguration(
      */
     @Bean
     @ConditionalOnMissingBean(LoggingAgenticEventListener::class)
-    fun defaultLogger(): AgenticEventListener = LoggingAgenticEventListener()
+    fun defaultLogger(): LoggingAgenticEventListener = LoggingAgenticEventListener()
 
     /**
      * Fallback if we don't have a more interesting prompt provider

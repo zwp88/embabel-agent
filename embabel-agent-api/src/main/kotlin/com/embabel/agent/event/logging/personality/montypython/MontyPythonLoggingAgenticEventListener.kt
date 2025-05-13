@@ -47,7 +47,7 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     |  FLYING  |                                       |  CIRCUS  |
     |__________|                                       |__________|
 
-    """.trimIndent().color(MontyPythonColors.BRIGHT_RED),
+    """.trimIndent().color(MontyPythonColorPalette.BRIGHT_RED),
     agentDeploymentEventMessage = "Found a parrot: {}\n\tdescription: {}",
     rankingChoiceMadeEventMessage = "You don't vote for kings. We have chosen {} with {} certainty based on {}",
     dynamicAgentCreationMessage = "It's not dead yet: Created agent {}",
@@ -60,4 +60,5 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     llmRequestEventMessage = "Strange women lying in ponds: Process {} requesting LLM {} transform from {} -> {}",
     actionExecutionStartMessage = "Run away! Run away! Process {} executing action {}",
     actionExecutionResultMessage = "I fart in your general direction! Process {} executed action {} in {}",
+    colorPalette = MontyPythonColorPalette,
 )
