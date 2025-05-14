@@ -17,15 +17,18 @@ package com.embabel.agent.testing
 
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.support.DefaultAgentPlatform
+import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.PlatformServices
 import io.mockk.mockk
 
-fun createAgentPlatform(): AgentPlatform {
+fun createAgentPlatform(
+    listener: AgenticEventListener? = null,
+): AgentPlatform {
     val llmOperations = DummyObjectCreatingLlmOperations.Companion.LoremIpsum
     return DefaultAgentPlatform(
         llmOperations = llmOperations,
-        eventListeners = listOf(EventSavingAgenticEventListener()),
+        eventListeners = listOfNotNull(EventSavingAgenticEventListener(), listener),
         toolGroupResolver = mockk(),
         ragService = RagService.empty(),
     )

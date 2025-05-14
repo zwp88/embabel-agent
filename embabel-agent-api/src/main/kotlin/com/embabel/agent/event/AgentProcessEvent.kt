@@ -26,6 +26,7 @@ import com.embabel.common.util.VisualizableTask
 import com.embabel.plan.Goal
 import com.embabel.plan.Plan
 import com.embabel.plan.WorldState
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.ai.chat.prompt.Prompt
 import java.time.Duration
 import java.time.Instant
@@ -42,6 +43,7 @@ interface AgentProcessEvent : AgenticEvent {
  * Convenient superclass for AgentProcessEvent implementations
  */
 abstract class AbstractAgentProcessEvent(
+    @JsonIgnore
     val agentProcess: AgentProcess,
 ) : AgentProcessEvent {
 
