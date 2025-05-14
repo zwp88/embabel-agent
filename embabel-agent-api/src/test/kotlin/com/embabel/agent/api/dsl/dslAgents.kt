@@ -50,7 +50,7 @@ fun evenMoreEvilWizard() = agent("EvenMoreEvilWizard", description = "Turn a per
     flow {
         aggregate<MagicVictim, Frog, SnakeMeal>(
             transforms = listOf({ Frog("1") }, { Frog("2") }, { Frog("3") }),
-            merge = { frogs -> SnakeMeal(frogs) },
+            merge = { frogs, _ -> SnakeMeal(frogs) },
         ).parallelize()
     }
 

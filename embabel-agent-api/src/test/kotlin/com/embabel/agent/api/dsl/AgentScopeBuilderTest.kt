@@ -320,9 +320,9 @@ fun simpleNamer() = agent("Thing namer", description = "Name a thing, using inte
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },
                 { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
-            merge = { generatedNamesList ->
+            merge = { list, _ ->
                 AllNames(
-                    accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },
+                    accepted = list.flatMap { it.names }.distinctBy { it.name },
                     rejected = emptyList()
                 )
             },
@@ -382,7 +382,7 @@ fun nestingByName() = agent("nesting test", description = "Nesting test") {
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },
                 { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
-            merge = { generatedNamesList ->
+            merge = { generatedNamesList, _ ->
                 AllNames(
                     accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },
                     rejected = emptyList()
@@ -408,7 +408,7 @@ fun nestingByReference() = agent("nesting test", description = "Nesting test") {
             transforms = listOf(
                 { GeneratedNames(names = emptyList()) },
                 { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
-            merge = { generatedNamesList ->
+            merge = { generatedNamesList, _ ->
                 AllNames(
                     accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },
                     rejected = emptyList()

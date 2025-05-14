@@ -61,10 +61,10 @@ fun factCheckerAgent(
                     discernFactualAssertions(llm, context)
                 }
             },
-            merge = { factualAssertions ->
+            merge = { list, _ ->
                 // TODO merge
                 FactualAssertions(
-                    factualAssertions = factualAssertions.flatMap { it.factualAssertions }
+                    factualAssertions = list.flatMap { it.factualAssertions }
                 )
             },
         ).parallelize()
@@ -78,7 +78,7 @@ fun factCheckerAgent(
             Provide a list of factual assertions that are true or false.
 
             # Input
-            ${context.input.factualAssertions.joinToString("\n")}
+            ${context.input.factualAssertions.joinToString("\n") { "- " + it.standaloneAssertion }}
             """.trimIndent()
     }
 

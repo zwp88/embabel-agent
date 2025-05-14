@@ -120,7 +120,7 @@ inline fun <reified A, reified B, reified C> chain(
 
 fun <A, B, C> aggregate(
     transforms: List<(context: InputActionContext<A>) -> B>,
-    merge: (list: List<B>) -> C,
+    merge: (list: List<B>, context: OperationContext) -> C,
     aClass: Class<A>,
     bClass: Class<B>,
     cClass: Class<C>,
@@ -151,21 +151,19 @@ fun <A, B, C> aggregate(
         }
     }
     actions += transformActions
-    val mergeAction = TransformationAction(
+    val mergeAction = SupplierAction<C>(
         name = "List<${bClass.name}>=>${cClass.name}",
         description = "Aggregate list $bClass to $cClass",
         pre = transformActions.map { Rerun.hasRunCondition(it) } + allCompletedCondition.name,
-        post = emptyList(),
+        post = listOf(allCompletedCondition.name),
         cost = 0.0,
         value = 0.0,
         canRerun = true,
-        inputClass = bClass,
         outputClass = cClass,
         toolGroups = emptySet(),
         toolCallbacks = emptyList(),
-    ) {
-        val cList = it.objects.filterIsInstance<B>(bClass)
-        merge(cList)
+    ) { context ->
+        merge(context.objects.filterIsInstance(bClass), context)
     }
     actions += mergeAction
     return AgentScopeBuilder(
@@ -246,7 +244,7 @@ fun <A1, A2, B : Any, C> biAggregate(
  */
 inline fun <reified A, reified B, reified C> aggregate(
     transforms: List<(context: InputActionContext<A>) -> B>,
-    noinline merge: (list: List<B>) -> C,
+    noinline merge: (list: List<B>, context: OperationContext) -> C,
 ): AgentScopeBuilder {
     return aggregate(
         transforms, merge, A::class.java, B::class.java, C::class.java
