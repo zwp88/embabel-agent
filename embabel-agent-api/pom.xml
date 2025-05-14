@@ -12,8 +12,10 @@
     <packaging>jar</packaging>
     <name>Embabel Agent API</name>
     <description>Fluent DSL and Kotlin DSL for Agentic Flows</description>
+    
     <properties>
         <embabel-common.version>1.0.0-SNAPSHOT</embabel-common.version>
+        <mockk.version>1.13.3</mockk.version>
     </properties>
 
     <dependencies>
@@ -55,6 +57,11 @@
         </dependency>
 
         <!-- Kotlin Dependencies -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
@@ -132,6 +139,12 @@
         <dependency>
             <groupId>info.schnatterer.moby-names-generator</groupId>
             <artifactId>moby-names-generator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk-jvm</artifactId>
+            <version>${mockk.version}</version>
         </dependency>
 
         <!-- Unit and Integration Testing -->
