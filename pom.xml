@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <name>Embabel Agent Parent</name>
     <description>Parent POM for Embabel Agent Modules</description>
+
     <properties>
         <embabel-common.version>1.0.0-SNAPSHOT</embabel-common.version>
     </properties>
@@ -106,21 +107,16 @@
         </plugins>
     </build>
 
-    <repositories>
+    
+   <repositories>
         <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/embabel/embabel-build</url>
+            <id>embabel-snapshots</id>
+            <url>https://repo.embabel.com/artifactory/libs-snapshot</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
 
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/embabel/embabel-agent</url>
-        </repository>
-    </distributionManagement>
 
 </project>
