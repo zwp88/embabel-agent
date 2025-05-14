@@ -150,7 +150,7 @@ class ConditionTest {
         val trueComputedCondition = ComputedBooleanCondition(
             name = "IsPositive",
             cost = 0.5,
-            evaluator = { true }
+            evaluator = { it, condition -> true }
         )
         assertEquals(ConditionDetermination.TRUE, trueComputedCondition.evaluate(mockProcessContext))
 
@@ -158,7 +158,7 @@ class ConditionTest {
         val falseComputedCondition = ComputedBooleanCondition(
             name = "IsNegative",
             cost = 0.3,
-            evaluator = { false }
+            evaluator = { it, condition -> false }
         )
         assertEquals(ConditionDetermination.FALSE, falseComputedCondition.evaluate(mockProcessContext))
 

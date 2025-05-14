@@ -47,7 +47,7 @@ class OperationContextPromptRunnerTest {
                 explanation = "Mocked explanation"
             )
         }
-        every { mockOperationContext.operation } returns Operation("testOperation")
+        every { mockOperationContext.operation } returns mockk<Operation>(relaxed = true)
 
         val runner = OperationContextPromptRunner(
             context = mockOperationContext,

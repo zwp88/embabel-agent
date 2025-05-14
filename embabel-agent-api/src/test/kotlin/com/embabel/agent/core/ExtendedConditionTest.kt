@@ -45,7 +45,7 @@ class ExtendedConditionTest {
 
     @Test
     fun `test condition inverse operator (not)`() {
-        val condition = ComputedBooleanCondition("testCondition") { true }
+        val condition = ComputedBooleanCondition("testCondition") { it, condition -> true }
         val inverse = !condition
 
         assertEquals("!testCondition", inverse.name)
@@ -56,7 +56,7 @@ class ExtendedConditionTest {
 
     @Test
     fun `test condition bitwise inverse operator (unknown)`() {
-        val condition = ComputedBooleanCondition("testCondition") { true }
+        val condition = ComputedBooleanCondition("testCondition") { it, condition -> true }
         val unknown = condition.inv()
 
         assertEquals("!testCondition", unknown.name)
@@ -69,8 +69,8 @@ class ExtendedConditionTest {
     fun `test OR operator short-circuit evaluation`() {
         var secondEvaluated = false
 
-        val first = ComputedBooleanCondition("first") { true }
-        val second = ComputedBooleanCondition("second") {
+        val first = ComputedBooleanCondition("first") { it, condition -> true }
+        val second = ComputedBooleanCondition("second") { it, condition ->
             secondEvaluated = true
             false
         }
@@ -89,8 +89,8 @@ class ExtendedConditionTest {
     fun `test AND operator short-circuit evaluation`() {
         var secondEvaluated = false
 
-        val first = ComputedBooleanCondition("first") { false }
-        val second = ComputedBooleanCondition("second") {
+        val first = ComputedBooleanCondition("first") { it, condition -> false }
+        val second = ComputedBooleanCondition("second") { it, condition ->
             secondEvaluated = true
             true
         }
@@ -107,9 +107,9 @@ class ExtendedConditionTest {
 
     @Test
     fun `test complex condition chains`() {
-        val a = ComputedBooleanCondition("a") { true }
-        val b = ComputedBooleanCondition("b") { false }
-        val c = ComputedBooleanCondition("c") { true }
+        val a = ComputedBooleanCondition("a") { it, condition -> true }
+        val b = ComputedBooleanCondition("b") { it, condition -> false }
+        val c = ComputedBooleanCondition("c") { it, condition -> true }
 
         // (a AND !b) OR c
         val complex = (a and !b) or c
@@ -140,19 +140,19 @@ class ExtendedConditionTest {
         assertEquals(ConditionDetermination.UNKNOWN, notUnknown.evaluate(mockProcessContext))
 
         // Test AND with UNKNOWN
-        val trueCondition = ComputedBooleanCondition("true") { true }
+        val trueCondition = ComputedBooleanCondition("true") { it, condition -> true }
         val unknownAndTrue = unknownCondition and trueCondition
         assertEquals(ConditionDetermination.UNKNOWN, unknownAndTrue.evaluate(mockProcessContext))
 
         // Test OR with UNKNOWN
-        val falseCondition = ComputedBooleanCondition("false") { false }
+        val falseCondition = ComputedBooleanCondition("false") { it, condition -> false }
         val unknownOrFalse = unknownCondition or falseCondition
         assertEquals(ConditionDetermination.UNKNOWN, unknownOrFalse.evaluate(mockProcessContext))
     }
 
     @Test
     fun `test condition infoString`() {
-        val condition = ComputedBooleanCondition("testCondition", cost = 0.5) { true }
+        val condition = ComputedBooleanCondition("testCondition", cost = 0.5) { it, condition -> true }
         val infoString = condition.infoString(null)
 
         assertTrue(infoString.contains("testCondition"))

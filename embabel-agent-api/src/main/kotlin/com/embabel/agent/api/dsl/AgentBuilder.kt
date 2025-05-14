@@ -295,7 +295,7 @@ class AgentBuilder(
         return ConditionDelegateProvider(
             name,
             {
-                object : Condition {
+                val condition = object : Condition {
                     override val name = it
                     override val cost = cost
                     override fun evaluate(processContext: ProcessContext): ConditionDetermination =
@@ -303,11 +303,12 @@ class AgentBuilder(
                             block(
                                 ConditionContext(
                                     processContext = processContext,
-                                    operation = Operation(it),
+                                    operation = this,
                                 )
                             )
                         )
                 }
+                condition
             },
             this.conditions
         )

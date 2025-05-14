@@ -17,7 +17,6 @@ package com.embabel.agent.core
 
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.common.core.types.HasInfoString
-import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -33,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     JsonSubTypes.Type(value = PromptCondition::class),
 )
-interface Condition : Named, HasInfoString {
+interface Condition : Operation, HasInfoString {
 
     /**
      * Cost of evaluating the condition. 0 is cheap, 1 is expensive.
@@ -66,15 +65,17 @@ interface Condition : Named, HasInfoString {
 
 /**
  * Convenient class for a condition that evaluates to true or false.
+ * @param evaluator evaluation method. Takes condition (this) for use
+ * by anonymous inner classes.
  */
 class ComputedBooleanCondition(
     override val name: String,
     override val cost: ZeroToOne = 0.0,
-    private val evaluator: (ProcessContext) -> Boolean,
+    private val evaluator: (processContext: ProcessContext, condition: Condition) -> Boolean,
 ) : Condition {
 
     override fun evaluate(processContext: ProcessContext): ConditionDetermination =
-        ConditionDetermination(evaluator(processContext))
+        ConditionDetermination(evaluator(processContext, this))
 
     override fun toString(): String = "${javaClass.simpleName}(name='$name', cost=$cost)"
 }

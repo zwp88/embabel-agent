@@ -127,7 +127,7 @@ fun <A, B, C> aggregate(
 ): AgentScopeBuilder {
     val allCompletedCondition = ComputedBooleanCondition(
         name = "List<${bClass.name}>=>${cClass.name}",
-        evaluator = {
+        evaluator = { it, condition ->
             it.blackboard.all(bClass).size == transforms.size
         }
     )
@@ -189,7 +189,7 @@ fun <A1, A2, B : Any, C> biAggregate(
 ): AgentScopeBuilder {
     val allCompletedCondition = ComputedBooleanCondition(
         name = "List<${bClass.name}>=>${cClass.name}",
-        evaluator = {
+        evaluator = { it, condition ->
             it.blackboard.all(bClass).size == transforms.size
         }
     )
@@ -325,7 +325,7 @@ fun <C> repeat(
     val conditionName = "repeat-until-${cClass.name}"
     val untilCondition = ComputedBooleanCondition(
         name = conditionName,
-        evaluator = {
+        evaluator = { it, condition ->
             val input = it.blackboard.last(cClass)
             if (input == null) {
                 return@ComputedBooleanCondition false

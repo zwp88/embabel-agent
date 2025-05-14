@@ -16,12 +16,12 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.Condition
 import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.core.*
+import com.embabel.agent.core.AgentScope
+import com.embabel.agent.core.ComputedBooleanCondition
+import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
@@ -34,6 +34,7 @@ import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
 import com.embabel.agent.core.Action as CoreAction
 import com.embabel.agent.core.Agent as CoreAgent
+import com.embabel.agent.core.Condition as CoreCondition
 import com.embabel.agent.core.Goal as AgentCoreGoal
 
 /**
@@ -232,11 +233,12 @@ class AgentMetadataReader(
             },
             cost = conditionAnnotation.cost,
         )
-        { processContext ->
+        { processContext, condition ->
             invokeConditionMethod(
                 method = method,
                 instance = instance,
                 processContext = processContext,
+                condition = condition,
             )
         }
     }
@@ -245,12 +247,13 @@ class AgentMetadataReader(
     private fun invokeConditionMethod(
         method: Method,
         instance: Any,
+        condition: CoreCondition,
         processContext: ProcessContext,
     ): Boolean {
         logger.debug("Invoking condition method {} on {}", method.name, instance.javaClass.name)
         val args = mutableListOf<Any>()
         val operationContext = OperationContext(
-            operation = Operation(method.name),
+            operation = condition,
             processContext = processContext,
             toolGroups = emptySet(),
         )

@@ -16,13 +16,10 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.core.support.SerializableAction
-import com.embabel.common.core.types.Described
-import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.EffectSpec
 import com.embabel.plan.goap.GoapAction
-import com.embabel.plan.goap.GoapStep
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import kotlin.reflect.KClass
@@ -71,32 +68,6 @@ value class IoBinding(val value: String) {
 
 }
 
-/**
- * Named operation in agent system: Action, Goal or Condition
- */
-sealed interface Operation : Named {
-    companion object {
-        operator fun invoke(
-            name: String,
-        ): Operation = IdentifiedOperation(name)
-    }
-}
-
-private data class IdentifiedOperation(
-    override val name: String,
-) : Operation
-
-
-interface AgentSystemStep : GoapStep, Described, Operation {
-
-    /**
-     * Data inputs to this set.
-     * Will be used to build preconditions
-     * in addition to explicit preconditions.
-     */
-    val inputs: Set<IoBinding>
-
-}
 
 /**
  * Core Action model in Agent system.
