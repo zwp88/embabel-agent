@@ -416,9 +416,20 @@ class ShellCommands(
                 )
             }
             return "I'm sorry. I don't know how to do that.\n"
-        } catch (_: ProcessExecutionStuckException) {
+        } catch (pese: ProcessExecutionStuckException) {
+            pese.agentProcess?.let {
+                recordAgentProcess(it)
+            }
             return "I'm sorry. I don't know how to proceed.\n"
+        } catch (pete: ProcessExecutionTerminatedException) {
+            pete.agentProcess?.let {
+                recordAgentProcess(it)
+            }
+            return "The process was terminated. Not my fault.\n\t${pete.detail.color(colorPalette.color2)}\n"
         } catch (pwe: ProcessWaitingException) {
+            pwe.agentProcess?.let {
+                recordAgentProcess(it)
+            }
             val awaitableResponse = terminalServices.handleProcessWaitingException(pwe)
             if (awaitableResponse == null) {
                 return "Operation cancelled.\n"

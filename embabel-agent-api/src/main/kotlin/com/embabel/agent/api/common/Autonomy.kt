@@ -102,8 +102,15 @@ class DynamicExecutionResult private constructor(
                     )
                 }
 
+                AgentProcessStatusCode.TERMINATED -> {
+                    throw ProcessExecutionTerminatedException(
+                        agentProcess = agentProcess,
+                        detail = "Process ${agentProcess.id} was terminated: ${agentProcess.failureInfo}",
+                    )
+                }
+
                 else -> {
-                    TODO("Handle other statuses: ${agentProcess.status}")
+                    error("Unexpected process status: ${agentProcess.status}")
                 }
             }
     }
@@ -146,6 +153,11 @@ class ProcessExecutionFailedException(
     agentProcess: AgentProcess,
     val detail: String,
 ) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} failed: $detail")
+
+class ProcessExecutionTerminatedException(
+    agentProcess: AgentProcess,
+    val detail: String,
+) : ProcessExecutionException(agentProcess, "Process ${agentProcess.id} terminated: $detail")
 
 class ProcessExecutionStuckException(
     agentProcess: AgentProcess,
