@@ -164,7 +164,7 @@ internal class ChatClientLlmOperations(
         chatResponse: ChatResponse,
         llmRequestEvent: LlmRequestEvent<*>?,
     ) {
-        logger.info("Usage is ${chatResponse.metadata.usage}")
+        logger.debug("Usage is {}", chatResponse.metadata.usage)
         llmRequestEvent?.let {
             val llmi = LlmInvocation(
                 llm = llm,
