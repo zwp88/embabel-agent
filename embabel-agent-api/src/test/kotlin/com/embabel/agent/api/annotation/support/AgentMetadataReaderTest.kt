@@ -225,5 +225,21 @@ class AgentMetadataReaderTest {
                 metadata.name,
             )
         }
+
+        @Test
+        fun `support agent with custom name, provider and version`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(AgentWithCustomName())
+            assertNotNull(metadata)
+            assertTrue(metadata is CoreAgent, "@Agent should create an agent")
+            metadata as CoreAgent
+            assertEquals(1, metadata.actions.size)
+            assertEquals("magic", metadata.provider)
+            assertEquals("1.1.1", metadata.version.value)
+            assertEquals(
+                "myAgentWithCustomName",
+                metadata.name,
+            )
+        }
     }
 }

@@ -297,6 +297,21 @@ data class Task(
     val what: String,
 )
 
+@Agent(
+    name = "myAgentWithCustomName",
+    provider = "magic",
+    version = "1.1.1",
+    description = "one transformer action only",
+)
+class AgentWithCustomName {
+
+    @Action(cost = 500.0)
+    fun toPerson(userInput: UserInput, task: Task): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
+    }
+
+}
+
 
 @Agent(
     description = "one transformer action only",

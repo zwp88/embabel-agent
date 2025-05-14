@@ -150,7 +150,7 @@ class AgentPlatformIntegrationTest(
         fun `run Kotlin star finder as transform by name`() {
             val writeup = typedOps.asFunction<UserInput, HasContent>(
                 outputClass = HasContent::class.java,
-                agentName = com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder::class.simpleName!!,
+                agentName = "StarNewsFinder",
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
                 ProcessOptions(test = true),
