@@ -19,8 +19,8 @@ import com.embabel.agent.api.common.Autonomy
 import com.embabel.agent.api.common.AutonomyProperties
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.api.dsl.userInputToFrogOrPersonBranch
+import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.agent.testing.RandomRanker
-import com.embabel.agent.testing.createAgentPlatform
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,7 +30,7 @@ class PerGoalToolCallbackProviderTest {
 
     @Test
     fun `test function per goal`() {
-        val agentPlatform = createAgentPlatform()
+        val agentPlatform = dummyAgentPlatform()
         agentPlatform.deploy(evenMoreEvilWizard())
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())

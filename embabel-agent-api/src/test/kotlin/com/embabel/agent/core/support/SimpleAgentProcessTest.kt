@@ -37,7 +37,7 @@ import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.EventSavingAgenticEventListener
-import com.embabel.agent.testing.dummyPlatformServices
+import com.embabel.agent.testing.IntegrationTestUtils.dummyPlatformServices
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk

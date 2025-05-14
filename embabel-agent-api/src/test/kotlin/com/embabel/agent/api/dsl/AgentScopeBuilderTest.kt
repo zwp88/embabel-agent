@@ -19,7 +19,7 @@ import com.embabel.agent.api.common.support.Branch
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.spi.support.SpiPerson
-import com.embabel.agent.testing.createAgentPlatform
+import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.core.MobyNameGenerator
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -45,7 +45,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `agent runs`() {
             val agent: Agent = userInputToFrogOrPersonBranch()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(
                 agent = agent,
@@ -80,7 +80,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `agent runs`() {
             val agent: Agent = userInputToFrogChain()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(
                 agent = agent,
@@ -115,7 +115,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `agent runs`() {
             val agent: Agent = simpleNamer()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(
                 agent = agent,
@@ -148,7 +148,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `agent runs`() {
             val agent: Agent = biAggregate()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(
                 agent = agent,
@@ -181,7 +181,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `fails without agent`() {
             val agent = nestingByName()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             assertThrows<IllegalArgumentException> {
                 ap.runAgentFrom(
@@ -197,7 +197,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `by reference - agent runs`() {
             val agent = nestingByReference()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(
                 agent = agent,
@@ -220,7 +220,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `by name - agent runs`() {
             val agent = nestingByName()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             ap.deploy(agent(name = "foobar", description = "doesn't matter here") {
                 transformation<UserInput, Thing>("foobar") {
                     Thing(it.input.content)
@@ -263,7 +263,7 @@ class AgentScopeBuilderTest {
         @Test
         fun `agent runs`() {
             val agent: Agent = redoNamer()
-            val ap = createAgentPlatform()
+            val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(
                 agent = agent,

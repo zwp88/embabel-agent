@@ -17,7 +17,7 @@ package com.embabel.agent.event
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.domain.io.UserInput
-import com.embabel.agent.testing.createAgentPlatform
+import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -42,7 +42,7 @@ class AgentProcessEventSerializationTest {
                 assertTrue(s.contains("\"processId\""), "Process id is required")
             }
         }
-        val ap = createAgentPlatform(listener = serializingListener)
+        val ap = dummyAgentPlatform(listener = serializingListener)
         // If it doesn't die we're happy
         ap.runAgentWithInput(evenMoreEvilWizard(), input = UserInput("anything at all"))
         assertTrue(serializingListener.count > 0, "Events were serialized")

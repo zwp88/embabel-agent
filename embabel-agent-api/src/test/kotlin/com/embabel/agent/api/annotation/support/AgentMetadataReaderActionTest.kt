@@ -24,7 +24,7 @@ import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
-import com.embabel.agent.testing.createAgentPlatform
+import com.embabel.agent.testing.IntegrationTestUtils
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
@@ -127,7 +127,7 @@ class AgentMetadataReaderActionTest {
         )
         assertEquals(1, action.toolGroups.size)
         assertEquals("magic", action.toolGroups.single())
-        val ap = createAgentPlatform()
+        val ap = IntegrationTestUtils.dummyAgentPlatform()
         val agentProcess =
             ap.runAgentFrom(metadata as CoreAgent, ProcessOptions(), mapOf("it" to PersonWithReverseTool("John Doe")))
         assertEquals(AgentProcessStatusCode.COMPLETED, agentProcess.status)
@@ -152,7 +152,7 @@ class AgentMetadataReaderActionTest {
         )
         assertEquals(1, action.toolGroups.size)
         assertEquals("magic", action.toolGroups.single())
-        val ap = createAgentPlatform()
+        val ap = IntegrationTestUtils.dummyAgentPlatform()
         val agentProcess =
             ap.runAgentFrom(metadata as CoreAgent, ProcessOptions(), mapOf("it" to PersonWithReverseTool("John Doe")))
         assertEquals(AgentProcessStatusCode.COMPLETED, agentProcess.status)

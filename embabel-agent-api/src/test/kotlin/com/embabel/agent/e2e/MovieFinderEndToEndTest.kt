@@ -19,7 +19,7 @@ import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.domain.io.UserInput
-import com.embabel.agent.testing.createAgentPlatform
+import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.core.util.DummyInstanceCreator
 import com.embabel.examples.simple.movie.*
 import io.mockk.every
@@ -31,7 +31,7 @@ class MovieFinderEndToEndTest {
 
     @Test
     fun `test run process`() {
-        val ap = createAgentPlatform()
+        val ap = dummyAgentPlatform()
         val mockOmdbClient = mockk<OmdbClient>()
         every { mockOmdbClient.getMovieByTitle(any()) } answers {
             DummyInstanceCreator.BigLebowski.createDummyInstance(
@@ -67,7 +67,7 @@ class MovieFinderEndToEndTest {
 
     @Test
     fun `test kills process that isn't terminating`() {
-        val ap = createAgentPlatform()
+        val ap = dummyAgentPlatform()
         val mockOmdbClient = mockk<OmdbClient>()
         every { mockOmdbClient.getMovieByTitle(any()) } returns DummyInstanceCreator.BigLebowski.createDummyInstance(
             MovieResponse::class.java

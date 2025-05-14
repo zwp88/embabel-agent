@@ -16,7 +16,7 @@
 package com.embabel.examples.simple.horoscope
 
 import com.embabel.agent.domain.library.RelevantNewsStories
-import com.embabel.agent.testing.captureLlmCall
+import com.embabel.agent.testing.UnitTestUtils
 import com.embabel.examples.simple.horoscope.kotlin.Horoscope
 import com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder
 import com.embabel.examples.simple.horoscope.kotlin.StarPerson
@@ -47,7 +47,7 @@ class StarNewsFinderTest {
             val starNewsFinder = StarNewsFinder(horoscopeService = horoscopeService, storyCount = 5, wordCount = 100)
             var starPerson = StarPerson(name = "Rod", sign = "Cancer")
             val relevantNewsStories = RelevantNewsStories(emptyList())
-            val llmCall = captureLlmCall {
+            val llmCall = UnitTestUtils.captureLlmCall {
                 starNewsFinder.starNewsWriteup(
                     person = starPerson,
                     relevantNewsStories = relevantNewsStories,

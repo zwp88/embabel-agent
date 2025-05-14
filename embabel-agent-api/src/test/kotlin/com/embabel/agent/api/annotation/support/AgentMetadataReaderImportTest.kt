@@ -20,7 +20,7 @@ import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.UserInput
-import com.embabel.agent.testing.createAgentPlatform
+import com.embabel.agent.testing.IntegrationTestUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
@@ -31,7 +31,7 @@ class AgentMetadataReaderImportTest {
     fun `define flow`() {
         val reader = AgentMetadataReader()
         val agent = reader.createAgentMetadata(DefineFlowTest()) as Agent
-        val ap = createAgentPlatform()
+        val ap = IntegrationTestUtils.dummyAgentPlatform()
         val result = ap.runAgentFrom(
             agent, processOptions = ProcessOptions(),
             bindings = mapOf(
@@ -46,7 +46,7 @@ class AgentMetadataReaderImportTest {
     fun `local agent`() {
         val reader = AgentMetadataReader()
         val agent = reader.createAgentMetadata(LocalAgentTest()) as Agent
-        val ap = createAgentPlatform()
+        val ap = IntegrationTestUtils.dummyAgentPlatform()
         val result = ap.runAgentFrom(
             agent, processOptions = ProcessOptions(),
             bindings = mapOf(
