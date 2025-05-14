@@ -25,8 +25,22 @@ fun interface NameGenerator {
 
     companion object {
         @JvmStatic
-        operator fun invoke() = NameGenerator { instance, name ->
-            "${instance.javaClass.name}.$name"
+        operator fun invoke(): NameGenerator = FromClassAndMethodNameGenerator
+    }
+}
+
+internal object FromClassAndMethodNameGenerator : NameGenerator {
+    override fun generateName(instance: Any, name: String): String {
+        // Strip the $ suffix from Kotlin internal methods
+        return "${instance.javaClass.name}.${stripDollarSign(name)}"
+    }
+
+    private fun stripDollarSign(input: String): String {
+        val dollarIndex = input.indexOf('$')
+        return if (dollarIndex >= 0) {
+            input.substring(0, dollarIndex)
+        } else {
+            input
         }
     }
 }
