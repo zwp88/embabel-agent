@@ -12,6 +12,6 @@ if "%OPENAI_API_KEY%"=="" (
 pushd .
 cd ..
 set SPRING_PROFILES_ACTIVE=shell,severance
-start cmd /k mvn spring-boot:run
+start cmd /k mvnw spring-boot:run
 set SPRING_PROFILES_ACTIVE=
 popd
