@@ -16,6 +16,8 @@
 package com.embabel.agent.api.common
 
 import com.embabel.agent.core.*
+import com.embabel.common.core.types.AssetCoordinates
+import com.embabel.common.core.types.Semver
 import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.ToolCallback
 
@@ -29,22 +31,22 @@ interface SelfToolCallbackPublisher : ToolCallbackPublisher {
         get() = ToolCallbacks.from(this).toList()
 }
 
-interface SelfToolGroup : SelfToolCallbackPublisher, ToolGroup {
+interface SelfToolGroup : SelfToolCallbackPublisher, ToolGroup, AssetCoordinates {
 
     val description: ToolGroupDescription
 
-    val artifact: String get() = javaClass.name
+    override val name: String get() = javaClass.name
 
-    val provider: String get() = "Embabel"
+    override val provider: String
 
-    val version: String get() = DEFAULT_VERSION
+    override val version: Semver
 
     val permissions: Set<ToolGroupPermission>
 
     override val metadata: ToolGroupMetadata
         get() = ToolGroupMetadata(
             description = description,
-            artifact = artifact,
+            name = name,
             provider = provider,
             permissions = permissions,
             version = version,

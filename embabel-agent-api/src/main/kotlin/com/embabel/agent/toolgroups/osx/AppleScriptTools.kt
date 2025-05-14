@@ -16,8 +16,10 @@
 package com.embabel.agent.toolgroups.osx
 
 import com.embabel.agent.api.common.SelfToolGroup
+import com.embabel.agent.common.Constants
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
+import com.embabel.common.core.types.Semver
 import com.embabel.common.core.util.MacOSCondition
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.context.annotation.Conditional
@@ -31,6 +33,10 @@ import org.springframework.stereotype.Service
 @Profile("!test")
 @Conditional(MacOSCondition::class)
 class AppleScriptTools : SelfToolGroup {
+
+    override val version = Semver(0, 1, 0)
+
+    override val provider = Constants.EMBABEL_PROVIDER
 
     override val description: ToolGroupDescription
         get() = ToolGroupDescription(role = "AppleScript", description = "Run AppleScript commands")

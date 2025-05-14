@@ -27,6 +27,7 @@ import com.embabel.agent.spi.LlmCall
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
+import com.embabel.common.core.types.Semver
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import org.slf4j.LoggerFactory
@@ -52,7 +53,8 @@ typealias ConditionPredicate = (
  */
 class AgentBuilder(
     val name: String,
-    val version: String = DEFAULT_VERSION,
+    val provider: String = "embabel",
+    val version: Semver = Semver(),
     val description: String,
     toolGroups: List<String> = emptyList(),
     toolCallbacks: Collection<ToolCallback>,
@@ -338,6 +340,7 @@ class AgentBuilder(
     fun build(): Agent {
         return Agent(
             name = name,
+            provider = provider,
             version = version,
             description = description,
             conditions = conditions,

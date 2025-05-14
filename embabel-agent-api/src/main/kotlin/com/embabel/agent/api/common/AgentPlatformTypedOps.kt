@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.common.Constants
 import com.embabel.agent.core.*
 import org.slf4j.LoggerFactory
 
@@ -70,6 +71,7 @@ private class AgentPlatformBackedAgentFunction<I : Any, O>(
     override fun apply(input: I, processOptions: ProcessOptions): O {
         val goalAgent = agentPlatform.createAgent(
             name = "goal-${outputClass.simpleName}",
+            provider = Constants.EMBABEL_PROVIDER,
             description = "Goal agent for ${outputClass.simpleName}",
         )
             .withSingleGoal(

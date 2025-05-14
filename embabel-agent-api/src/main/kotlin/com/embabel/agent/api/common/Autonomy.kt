@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.common.Constants
 import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.Awaitable
 import com.embabel.agent.core.hitl.AwaitableResponse
@@ -502,6 +503,7 @@ class Autonomy(
     ): Agent {
         return agentScope.createAgent(
             name = "goal-${goal.name}",
+            provider = Constants.EMBABEL_PROVIDER,
             description = goal.description,
         )
             .withSingleGoal(goal)

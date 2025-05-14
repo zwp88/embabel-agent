@@ -60,7 +60,7 @@ internal class ToolGroupsConfiguration(
         )
         return McpToolGroup(
             description = ToolGroup.WEB_DESCRIPTION,
-            artifact = "docker-web",
+            name = "docker-web",
             provider = "Docker",
             permissions = setOf(
                 ToolGroupPermission.INTERNET_ACCESS
@@ -77,7 +77,7 @@ internal class ToolGroupsConfiguration(
     fun browserAutomationWebToolsGroup(): ToolGroup {
         return McpToolGroup(
             description = ToolGroup.BROWSER_AUTOMATION_DESCRIPTION,
-            artifact = "docker-puppeteer",
+            name = "docker-puppeteer",
             provider = "Docker",
             permissions = setOf(
                 ToolGroupPermission.INTERNET_ACCESS
@@ -101,7 +101,7 @@ internal class ToolGroupsConfiguration(
     fun githubToolsGroup(): ToolGroup {
         return McpToolGroup(
             description = ToolGroup.GITHUB_DESCRIPTION,
-            artifact = "docker-github",
+            name = "docker-github",
             provider = "Docker",
             permissions = setOf(
                 ToolGroupPermission.INTERNET_ACCESS

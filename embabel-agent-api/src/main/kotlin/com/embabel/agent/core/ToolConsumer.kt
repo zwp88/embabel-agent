@@ -16,7 +16,9 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.common.core.types.AssetCoordinates
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.Semver
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
@@ -71,22 +73,7 @@ enum class ToolGroupPermission {
  * Metadata about a tool group. Interface as platforms
  * may extend it
  */
-interface ToolGroupMetadata : ToolGroupDescription, HasInfoString {
-
-    /**
-     * Name of the tool group
-     */
-    val artifact: String
-
-    /**
-     * Provider of the tool group
-     */
-    val provider: String
-
-    /**
-     * Version of the tool group
-     */
-    val version: String
+interface ToolGroupMetadata : ToolGroupDescription, AssetCoordinates, HasInfoString {
 
     /**
      * What this tool group's tools can do.
@@ -97,14 +84,14 @@ interface ToolGroupMetadata : ToolGroupDescription, HasInfoString {
         operator fun invoke(
             description: String,
             role: String,
-            artifact: String,
+            name: String,
             provider: String,
             permissions: Set<ToolGroupPermission>,
-            version: String = DEFAULT_VERSION,
+            version: Semver = Semver(),
         ): ToolGroupMetadata = MinimalToolGroupMetadata(
             description = description,
             role = role,
-            artifact = artifact,
+            name = name,
             provider = provider,
             permissions = permissions,
             version = version,
@@ -112,14 +99,14 @@ interface ToolGroupMetadata : ToolGroupDescription, HasInfoString {
 
         operator fun invoke(
             description: ToolGroupDescription,
-            artifact: String,
+            name: String,
             provider: String,
             permissions: Set<ToolGroupPermission>,
-            version: String = DEFAULT_VERSION,
+            version: Semver = Semver(),
         ): ToolGroupMetadata = MinimalToolGroupMetadata(
             description = description.description,
             role = description.role,
-            artifact = artifact,
+            name = name,
             provider = provider,
             permissions = permissions,
             version = version,
@@ -131,14 +118,14 @@ interface ToolGroupMetadata : ToolGroupDescription, HasInfoString {
 private data class MinimalToolGroupMetadata(
     override val description: String,
     override val role: String,
-    override val artifact: String,
+    override val name: String,
     override val provider: String,
     override val permissions: Set<ToolGroupPermission>,
-    override val version: String = DEFAULT_VERSION,
+    override val version: Semver,
 ) : ToolGroupMetadata {
 
     override fun infoString(verbose: Boolean?): String {
-        return "role:$role, artifact:$artifact, version:$version, provider:$provider - $description"
+        return "role:$role, artifact:$name, version:$version, provider:$provider - $description"
     }
 }
 

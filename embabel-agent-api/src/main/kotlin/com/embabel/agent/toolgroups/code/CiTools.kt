@@ -20,6 +20,7 @@ import com.embabel.agent.api.common.SelfToolGroup
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.toolgroups.DirectoryBased
+import com.embabel.common.core.types.Semver
 import org.springframework.ai.tool.annotation.Tool
 
 /**
@@ -91,7 +92,9 @@ interface CiTools : SelfToolCallbackPublisher, DirectoryBased {
          */
         fun toolGroup(root: String): ToolGroup = object : CiTools, SelfToolGroup {
             override val root: String = root
-            override val artifact: String = "pluggable-ci"
+            override val provider: String = "embabel"
+            override val name: String = "pluggable-ci"
+            override val version = Semver(0, 1, 0)
 
             override val description
                 get() = ToolGroup.CI_DESCRIPTION

@@ -19,6 +19,7 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.core.ToolGroupPermission
+import com.embabel.common.core.types.Semver
 import com.embabel.common.util.loggerFor
 import io.modelcontextprotocol.client.McpSyncClient
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider
@@ -27,7 +28,7 @@ import org.springframework.ai.tool.ToolCallback
 class McpToolGroup(
     description: ToolGroupDescription,
     provider: String,
-    artifact: String,
+    name: String,
     permissions: Set<ToolGroupPermission>,
     private val clients: List<McpSyncClient>,
     filter: ((ToolCallback) -> Boolean),
@@ -35,9 +36,9 @@ class McpToolGroup(
 
     override val metadata: ToolGroupMetadata = ToolGroupMetadata(
         description = description,
-        artifact = artifact,
+        name = name,
         provider = provider,
-        version = "0.0.1",
+        version = Semver(0, 1, 0),
         permissions = permissions,
     )
 

@@ -373,6 +373,7 @@ inline fun <reified C> repeat(
 
 data class AgentScopeBuilder(
     val name: String,
+    val provider: String = "embabel",
     val actions: List<Action> = emptyList(),
     val goals: Set<Goal> = emptySet(),
     val conditions: Set<Condition> = emptySet(),
@@ -412,6 +413,7 @@ data class AgentScopeBuilder(
         )
         val agent = withExtraGoal.createAgent(
             name = name,
+            provider = provider,
             description = name,
         )
         val singleAction = agent.asAction<Any, O>()

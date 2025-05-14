@@ -16,16 +16,18 @@
 package com.embabel.agent.api.dsl
 
 import com.embabel.agent.core.Agent
-import com.embabel.agent.core.DEFAULT_VERSION
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.core.types.Semver
 import org.springframework.ai.tool.ToolCallback
 
 /**
  * Surface area of DSL for creating an agent.
+ * @param name The name of the agent.
  */
 fun agent(
     name: String,
-    version: String = DEFAULT_VERSION,
+    provider: String = "embabel",
+    version: Semver = Semver(),
     description: String,
     toolGroups: List<String> = emptyList(),
     toolCallbacks: Collection<ToolCallback> = emptyList(),

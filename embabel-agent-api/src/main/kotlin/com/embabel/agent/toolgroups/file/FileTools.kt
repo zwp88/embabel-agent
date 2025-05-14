@@ -21,6 +21,7 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.toolgroups.DirectoryBased
+import com.embabel.common.core.types.Semver
 import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
@@ -51,7 +52,9 @@ interface FileTools : FileReadTools, FileWriteTools {
 
 private class DefaultFileTools(
     override val root: String,
-    override val artifact: String = "io-file",
+    override val name: String = "io-file",
+    override val provider: String = "embabel",
+    override val version: Semver = Semver(0, 1, 0),
     override val description: ToolGroupDescription = ToolGroup.FILE_DESCRIPTION,
     override val permissions: Set<ToolGroupPermission> = setOf(ToolGroupPermission.HOST_ACCESS),
     override val fileContentTransformers: List<FileContentTransformer> = emptyList(),

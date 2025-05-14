@@ -25,6 +25,7 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.core.types.Semver
 import com.embabel.common.core.util.NameUtils
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -142,9 +143,12 @@ class AgentMetadataReader(
 
         if (agenticInfo.agentAnnotation != null) {
             return CoreAgent(
-                name = agenticInfo.agentAnnotation.name.ifBlank { agenticInfo.type.name },
+                name = agenticInfo.agentAnnotation.name.ifBlank { agenticInfo.type.simpleName },
+                provider = agenticInfo.agentAnnotation.provider.ifBlank {
+                    instance.javaClass.`package`.name
+                },
                 description = agenticInfo.agentAnnotation.description,
-                version = agenticInfo.agentAnnotation.version,
+                version = Semver(agenticInfo.agentAnnotation.version),
                 conditions = conditions,
                 actions = actions,
                 goals = goals.toSet(),

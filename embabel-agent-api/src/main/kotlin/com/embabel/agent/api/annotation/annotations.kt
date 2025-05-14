@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.api.annotation
 
-import com.embabel.agent.core.DEFAULT_VERSION
 import com.embabel.agent.core.IoBinding
+import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
 import com.embabel.common.core.types.ZeroToOne
 import org.springframework.core.annotation.AliasFor
 import org.springframework.stereotype.Component
@@ -45,9 +45,10 @@ annotation class AgentCapabilities(
  * it is an agent in itself.
  * This is a Spring stereotype annotation, so annotated classes will be picked up on the classpath and injected
  * Either @Agent or @AgentCapabilities should be used: not both
- * @param name Name of the agent. If not provided, the name will be the class FQN
- * @param description Description of the agent. This is used for documentation purposes and to choose an agent
- * @param scan Whether to find this agent in the classpath. If false, it will not be found by the agent manager.
+ * @param name Name of the agent. If not provided, the name will be the class simple name
+ * @param provider provider of the agent. If not provided, will default to the package this annotation is used in
+ * @param description Description of the agent. Required. This is used for documentation purposes and to choose an agent
+ * @param scan Whether to find this agent in the classpath. If false, it will not be found by the agent manager. Defaults to true
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(
@@ -56,6 +57,7 @@ annotation class AgentCapabilities(
 @Component
 annotation class Agent(
     val name: String = "",
+    val provider: String = "",
     val description: String,
     val version: String = DEFAULT_VERSION,
     val scan: Boolean = true,

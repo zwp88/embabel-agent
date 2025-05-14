@@ -16,8 +16,8 @@
 package com.embabel.agent.api.common
 
 import com.embabel.agent.core.*
-import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
@@ -98,6 +98,7 @@ class AutonomyAgentSelectionTest {
         val realAgent = spyk(
             Agent(
                 name = "realTestAgent",
+                provider = "test",
                 description = "Real Test Agent",
                 actions = emptyList(),
                 goals = setOf(testGoal),
@@ -229,6 +230,7 @@ class AutonomyAgentSelectionTest {
             Agent(
                 name = "lowConfidenceAgent",
                 description = "Agent with low confidence score",
+                provider = "test",
                 actions = emptyList(),
                 goals = emptySet(),
                 conditions = emptySet(),

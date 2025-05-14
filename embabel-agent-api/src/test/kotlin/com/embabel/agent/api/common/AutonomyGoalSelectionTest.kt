@@ -16,8 +16,8 @@
 package com.embabel.agent.api.common
 
 import com.embabel.agent.core.*
-import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
@@ -100,6 +100,7 @@ class AutonomyGoalSelectionTest {
             Agent(
                 name = "realAgent",
                 description = "Real Agent",
+                provider = "test",
                 actions = emptyList(),
                 goals = setOf(testGoal),
             )
@@ -111,7 +112,7 @@ class AutonomyGoalSelectionTest {
         // Mock the scope
         val agentScope = mockk<AgentScope>()
         every { agentScope.goals } returns setOf(testGoal)
-        every { agentScope.createAgent(any(), any()) } returns realAgent
+        every { agentScope.createAgent(any(), any(), any()) } returns realAgent
 
         // Mock process with expected return value
         val testProcess = mockk<AgentProcess>()
@@ -193,7 +194,7 @@ class AutonomyGoalSelectionTest {
             agentScope.goals
 
             // Verify agent creation
-            agentScope.createAgent(any(), any())
+            agentScope.createAgent(any(), any(), any())
 
             // Verify goal selection
             realAgent.withSingleGoal(testGoal)
@@ -263,6 +264,7 @@ class AutonomyGoalSelectionTest {
         val agent = spyk(
             Agent(
                 name = "testAgent",
+                provider = "test",
                 description = "Test agent",
                 actions = emptyList(),
                 goals = setOf(testGoal),
@@ -296,7 +298,7 @@ class AutonomyGoalSelectionTest {
 
         // Mock agent creation
         every {
-            agentScope.createAgent(any(), any())
+            agentScope.createAgent(name = any(), provider = any(), description = any())
         } returns agent
 
         // Mock process with all necessary methods

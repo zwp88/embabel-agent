@@ -27,6 +27,7 @@ import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.support.Dog
 import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
 import com.embabel.agent.testing.EventSavingAgenticEventListener
+import com.embabel.common.core.types.Semver
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
@@ -69,7 +70,7 @@ class AgentBuilderTest {
             val agent = emptyAgent
             assertEquals("foo", agent.name)
             assertEquals("bar", agent.description)
-            assertEquals(_root_ide_package_.com.embabel.agent.core.DEFAULT_VERSION, agent.version)
+            assertEquals(Semver.DEFAULT_VERSION, agent.version.value)
             assertTrue(agent.actions.isEmpty(), "Should be no actions")
             assertTrue(agent.goals.isEmpty(), "Should be no goals")
         }
@@ -83,7 +84,7 @@ class AgentBuilderTest {
             val agent = oneAction
             assertEquals("oneAction", agent.name)
             assertEquals("one action agent", agent.description)
-            assertEquals(_root_ide_package_.com.embabel.agent.core.DEFAULT_VERSION, agent.version)
+            assertEquals(Semver.DEFAULT_VERSION, agent.version.value)
             assertEquals(1, agent.actions.size)
             assertTrue(agent.goals.isEmpty())
         }

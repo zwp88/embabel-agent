@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.config
 
+import com.embabel.agent.common.Constants
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupMetadata
@@ -24,6 +25,7 @@ import com.embabel.agent.rag.MultiIngester
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.springvector.SpringVectorStoreRagService
 import com.embabel.agent.toolgroups.rag.RagTools
+import com.embabel.common.core.types.Semver
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Bean
@@ -55,9 +57,9 @@ class RagServiceConfiguration {
                     description = "RAG service",
                     role = "rag",
                 ),
-                artifact = "rag",
-                provider = "embabel",
-                version = "1.0.0",
+                name = "rag",
+                provider = Constants.EMBABEL_PROVIDER,
+                version = Semver("1.0.0"),
                 permissions = setOf(),
             ),
             toolCallbacks = RagTools(

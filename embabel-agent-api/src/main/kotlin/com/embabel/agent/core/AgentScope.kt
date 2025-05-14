@@ -44,7 +44,7 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
         get() = actions.flatMap { it.domainTypes }.distinct()
 
     override fun infoString(verbose: Boolean?): String =
-        "%s:\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdata types: %s".format(
+        "%s\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdata types: %s".format(
             name,
             goals.sortedBy { it.name }
                 .joinToString("\n\t\t") { it.infoString(verbose = verbose) },
@@ -61,10 +61,12 @@ interface AgentScope : Named, GoalSource, ConditionSource, ActionSource, DataDic
      */
     fun createAgent(
         name: String,
+        provider: String,
         description: String,
     ): Agent {
         val newAgent = Agent(
             name = name,
+            provider = provider,
             description = name,
             actions = actions,
             goals = goals,

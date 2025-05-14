@@ -16,24 +16,22 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.api.common.StuckHandler
+import com.embabel.common.core.types.AssetCoordinates
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.Semver
 import com.embabel.common.core.util.ComputerSaysNoSerializer
 import com.embabel.plan.goap.GoapPlanningSystem
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import org.slf4j.LoggerFactory
 
 /**
- * Default version for anything versioned
- */
-const val DEFAULT_VERSION = "0.1.0-SNAPSHOT"
-
-/**
  * An agent defines a set of actions and conditions
  * that enable planning.
- * @param name The name of the agent
- * @param version The version of the agent
- * @param description A description of the agent
+ * @param name The name of the agent.
+ * @param provider The provider of the agent.
+ * @param version The version of the agent. Defaults to 0.1.0
+ * @param description A description of the agent. Required
  * @param goals The goals the agent can achieve
  * @param stuckHandler The handler to call when the agent is stuck, provided
  * @param conditions Well known conditions that can be referenced by actions
@@ -43,7 +41,8 @@ const val DEFAULT_VERSION = "0.1.0-SNAPSHOT"
 @JsonSerialize(using = ComputerSaysNoSerializer::class)
 data class Agent(
     override val name: String,
-    val version: String = DEFAULT_VERSION,
+    override val provider: String,
+    override val version: Semver = Semver(),
     override val description: String,
     override val conditions: Set<Condition> = emptySet(),
     override val actions: List<Action>,
@@ -54,7 +53,7 @@ data class Agent(
         defaultDataTypes = emptyList(),
         actions = actions,
     ),
-) : Described, AgentScope {
+) : Described, AssetCoordinates, AgentScope {
 
     /**
      * Return a version of the agent with the single goal
@@ -81,7 +80,9 @@ data class Agent(
         }
 
     override fun infoString(verbose: Boolean?): String {
-        return "description: ${description}\n\tname: " + super.infoString(verbose)
+        return "description: ${description}\n\tprovider: $provider\n\tversion: $version\n\tname: " + super.infoString(
+            verbose
+        )
     }
 
     private companion object {
@@ -141,12 +142,13 @@ data class Agent(
  */
 data class AgentMetadata(
     override val name: String,
-    val version: String = DEFAULT_VERSION,
+    override val provider: String,
+    override val version: Semver,
     override val description: String,
     val goals: Set<Goal>,
     val actions: List<ActionMetadata>,
     val conditions: Set<String>
-) : Named, Described {
+) : Named, Described, AssetCoordinates {
 
     /**
      * Constructs AgentMetadata from a full Agent instance
@@ -158,6 +160,7 @@ data class AgentMetadata(
      */
     constructor(agent: Agent) : this(
         name = agent.name,
+        provider = agent.provider,
         version = agent.version,
         description = agent.description,
         goals = agent.goals,
