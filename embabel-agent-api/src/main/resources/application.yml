@@ -35,7 +35,9 @@ embabel:
       annotation: true
       bean: true
     ranking:
-      llm: gpt-4.1
+      llm: gpt-4.1-mini
+      max-attempts: 5
+
 
   autonomy:
     agent-confidence-cut-off: 0.6
@@ -73,4 +75,5 @@ logging:
     # Embabel classes that can be useful to turn up to DEBUG
     com.embabel.agent.core.support.BlackboardWorldStateDeterminer: INFO
     com.embabel.agent.api.annotation.support.AgentMetadataReader: INFO
+    com.embabel.agent.spi.support.LlmRanker: INFO
 

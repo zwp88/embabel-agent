@@ -76,7 +76,7 @@ data class AgenticInfo(
 @Service
 class AgentMetadataReader(
     private val actionMethodManager: ActionMethodManager = DefaultActionMethodManager(),
-    private val nameGenerator: NameGenerator = NameGenerator(),
+    private val nameGenerator: MethodDefinedOperationNameGenerator = MethodDefinedOperationNameGenerator(),
 ) {
 
     private val logger = LoggerFactory.getLogger(AgentMetadataReader::class.java)

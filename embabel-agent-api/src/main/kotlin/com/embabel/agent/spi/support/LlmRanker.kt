@@ -15,27 +15,36 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.common.RetryProperties
 import com.embabel.agent.spi.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import org.springframework.retry.support.RetryTemplate
-import org.springframework.retry.support.RetryTemplateBuilder
+import org.slf4j.LoggerFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
+
+@ConfigurationProperties("embabel.agent-platform.ranking")
+data class RankingProperties(
+    val llm: String,
+    override val maxAttempts: Int = 5,
+    override val backoffMillis: Long = 100L,
+    override val backoffMultiplier: Double = 5.0,
+    override val backoffMaxInterval: Long = 180000L,
+) : RetryProperties
 
 /**
  * Use an LLM to rank things
  */
 internal class LlmRanker(
     private val llmOperations: LlmOperations,
-    private val llm: LlmOptions = LlmOptions(),
-    private val maxAttempts: Int = 3,
+    private val rankingProperties: RankingProperties,
 ) : Ranker {
 
-    private val retryTemplate: RetryTemplate =
-        RetryTemplateBuilder().maxAttempts(maxAttempts).fixedBackoff(20)
-            .build()
+    private val logger = LoggerFactory.getLogger(this.javaClass)
+
+    private val llm = LlmOptions(rankingProperties.llm)
 
     override fun <T> rank(
         description: String,
@@ -45,7 +54,7 @@ internal class LlmRanker(
         if (rankables.isEmpty()) {
             return Rankings(emptyList())
         }
-        return retryTemplate.execute<Rankings<T>, Exception> {
+        return rankingProperties.retryTemplate().execute<Rankings<T>, Exception> {
             rankThingsInternal(
                 description = description,
                 userInput = userInput,
@@ -64,17 +73,19 @@ internal class LlmRanker(
 
         val prompt =
             """
-            Given the user input, choose the $description that best reflects the user's intent.
+            Your job is rank objects of type $type ($description) based on user input.
+            Given the user input, choose the name that best reflects the user's intent.
 
-            User input: $userInput
+            User input: <$userInput>
 
-            Available choices:
+            Available choices, in format <name>: <description>:
             ${rankables.joinToString("\n") { "- ${it.name}: ${it.description}" }}
 
             Return the name of the chosen $type and the confidence score from 0-1.
             IMPORTANT: The fully qualified name must be exactly the same as in the list.
             """.trimIndent()
-        val grr = llmOperations.doTransform(
+        logger.debug("{} ranking prompt: {}", type, prompt)
+        val rankingResponse = llmOperations.doTransform(
             prompt = prompt,
             interaction = LlmInteraction(
                 id = InteractionId("rank-${type}s"),
@@ -83,19 +94,22 @@ internal class LlmRanker(
             outputClass = RankingsResponse::class.java,
             llmRequestEvent = null,
         )
+        logger.debug("{} ranking response: {}", type, rankingResponse)
+
         val thingNames = rankables.map { it.name }
-        val bogus = grr.rankings.find { rankingChoice -> thingNames.none { rankingChoice.name == it } }
-        if (bogus != null) {
+        val bogusRanking =
+            rankingResponse.rankings.find { rankedChoiceResponse -> thingNames.none { rankedChoiceResponse.name == it } }
+        if (bogusRanking != null) {
             throw IllegalStateException(
-                "Ranker returned choice '$bogus' not in the list of available ${type}s: ${
-                    thingNames
-                }, raw=$grr"
+                "Ranker returned choice '$bogusRanking' not in the list of available ${type}s: ${
+                    thingNames.map { "'$it'" }
+                }, raw=$rankingResponse"
             )
             return Rankings(emptyList())
         }
 
         return Rankings(
-            rankings = grr.rankings.map {
+            rankings = rankingResponse.rankings.map {
                 Ranking(
                     match = rankables.single { thing -> thing.name == it.name },
                     score = it.confidence,

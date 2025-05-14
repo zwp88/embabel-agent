@@ -38,7 +38,7 @@ class LlmGoalRankerTest {
         @Test
         fun `no goals`() {
             val llmt = mockk<LlmOperations>()
-            val ranker = LlmRanker(llmt)
+            val ranker = LlmRanker(llmt, RankingProperties(llm = "whatever"))
             val result = ranker.rank(
                 "goal",
                 userInput = "whatever", emptySet(),
@@ -66,7 +66,7 @@ class LlmGoalRankerTest {
                     llmRequestEvent = null,
                 )
             } returns llmr
-            val ranker = LlmRanker(llmt)
+            val ranker = LlmRanker(llmt, RankingProperties(llm = "whatever"))
             val rankings = ranker.rank(
                 "goal",
                 "What is my horoscope for today?",

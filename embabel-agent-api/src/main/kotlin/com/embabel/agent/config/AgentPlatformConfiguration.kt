@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.config
 
-import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.event.logging.personality.ColorPalette
@@ -29,7 +28,6 @@ import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -37,18 +35,12 @@ import org.springframework.context.annotation.DependsOn
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.web.client.RestTemplate
 
-@ConfigurationProperties("embabel.agent-platform.ranking")
-data class RankingProperties(
-    val llm: String = OpenAiModels.GPT_41_MINI,
-)
-
 /**
  * Core configuration for AgentPlatform
  */
 @Configuration
 @EnableConfigurationProperties(ConfigurableModelProviderProperties::class)
 internal class AgentPlatformConfiguration(
-    private val rankingProperties: RankingProperties,
 ) {
 
     /**
@@ -87,10 +79,9 @@ internal class AgentPlatformConfiguration(
     fun restTemplate() = RestTemplate()
 
     @Bean
-    fun ranker(llmOperations: LlmOperations): Ranker = LlmRanker(
+    fun ranker(llmOperations: LlmOperations, rankingProperties: RankingProperties): Ranker = LlmRanker(
         llmOperations = llmOperations,
-        llm = LlmOptions(rankingProperties.llm),
-        maxAttempts = 3,
+        rankingProperties = rankingProperties,
     )
 
     @Bean

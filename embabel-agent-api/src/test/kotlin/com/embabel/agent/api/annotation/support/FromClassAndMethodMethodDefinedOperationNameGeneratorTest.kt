@@ -19,11 +19,11 @@ import com.embabel.agent.support.Dog
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class FromClassAndMethodNameGeneratorTest {
+class FromClassAndMethodMethodDefinedOperationNameGeneratorTest {
 
     @Test
     fun `should generate method name from class and method without $ prefix`() {
-        val generator = FromClassAndMethodNameGenerator
+        val generator = FromClassAndMethodMethodDefinedOperationNameGenerator
         val name = generator.generateName(
             Dog("Disco"),
             "bark"
@@ -33,7 +33,7 @@ class FromClassAndMethodNameGeneratorTest {
 
     @Test
     fun `should generate method name from class and method with Kotlin internal $ prefix`() {
-        val name = FromClassAndMethodNameGenerator.generateName(
+        val name = FromClassAndMethodMethodDefinedOperationNameGenerator.generateName(
             Dog("Duke"),
             "bark\$special_package"
         )
@@ -42,7 +42,7 @@ class FromClassAndMethodNameGeneratorTest {
 
     @Test
     fun `should respect inner class name`() {
-        val generator = FromClassAndMethodNameGenerator
+        val generator = FromClassAndMethodMethodDefinedOperationNameGenerator
         val name = generator.generateName(
             Thing.InnerClass(),
             "getHomePage"

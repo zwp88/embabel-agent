@@ -33,7 +33,7 @@ import java.lang.reflect.Method
  * before re-reading the tool callbacks from the actual domain object instances at invocation time.
  */
 internal class DefaultActionMethodManager(
-    val nameGenerator: NameGenerator = NameGenerator()
+    val nameGenerator: MethodDefinedOperationNameGenerator = MethodDefinedOperationNameGenerator()
 ) : ActionMethodManager {
 
     private val logger = LoggerFactory.getLogger(DefaultActionMethodManager::class.java)

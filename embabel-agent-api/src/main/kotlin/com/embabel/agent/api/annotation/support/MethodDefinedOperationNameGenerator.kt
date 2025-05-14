@@ -15,7 +15,10 @@
  */
 package com.embabel.agent.api.annotation.support
 
-fun interface NameGenerator {
+/**
+ * Define names for operations defined in methods.
+ */
+fun interface MethodDefinedOperationNameGenerator {
     /**
      * Generate a qualified name to avoid name clashes.
      * @param instance The instance of the class we are reading
@@ -25,11 +28,12 @@ fun interface NameGenerator {
 
     companion object {
         @JvmStatic
-        operator fun invoke(): NameGenerator = FromClassAndMethodNameGenerator
+        operator fun invoke(): MethodDefinedOperationNameGenerator =
+            FromClassAndMethodMethodDefinedOperationNameGenerator
     }
 }
 
-internal object FromClassAndMethodNameGenerator : NameGenerator {
+internal object FromClassAndMethodMethodDefinedOperationNameGenerator : MethodDefinedOperationNameGenerator {
     override fun generateName(instance: Any, name: String): String {
         // Strip the $ suffix from Kotlin internal methods
         return "${instance.javaClass.name}.${stripDollarSign(name)}"
