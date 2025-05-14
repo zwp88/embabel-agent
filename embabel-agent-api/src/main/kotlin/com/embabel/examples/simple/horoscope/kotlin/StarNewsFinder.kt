@@ -20,17 +20,17 @@ import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
-import com.embabel.agent.domain.library.PersonImpl
 import com.embabel.agent.domain.library.RelevantNewsStories
-import com.embabel.agent.domain.io.UserInput
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.Auto
 import com.embabel.examples.simple.horoscope.HoroscopeService
 import com.embabel.ux.form.Text
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.springframework.beans.factory.annotation.Value
 
 /**
@@ -49,6 +49,7 @@ data class Starry(
  * person-related operations.
  */
 @JsonClassDescription("Person with astrology details")
+@JsonDeserialize(`as` = StarPerson::class)
 data class StarPerson(
     override val name: String,
     @get:JsonPropertyDescription("Star sign")
@@ -111,10 +112,10 @@ class StarNewsFinder(
      * the agent workflow when only basic person information is available.
      *
      * @param userInput The user's text input
-     * @return A PersonImpl object if extraction is successful, null otherwise
+     * @return A Person object if extraction is successful, null otherwise
      */
     @Action
-    fun extractPerson(userInput: UserInput): PersonImpl? =
+    fun extractPerson(userInput: UserInput): Person? =
         // All prompts are typesafe
         usingDefaultLlm.createObjectIfPossible(
             """

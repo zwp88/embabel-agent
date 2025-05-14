@@ -50,8 +50,15 @@ class AgentMetadataReaderTest {
         }
 
         @Test
-        @Disabled
-        fun invalidActionSignature() {
+        fun `invalid action signature returning interface without serialization annotation`() {
+            val reader = AgentMetadataReader()
+            assertNull(reader.createAgentMetadata(InvalidActionNoDeserializationInInterfaceGoal()))
+        }
+
+        @Test
+        fun `valid action signature returning interface with serialization annotation`() {
+            val reader = AgentMetadataReader()
+            assertNotNull(reader.createAgentMetadata(ValidActionWithDeserializationInInterfaceGoal()))
         }
 
     }

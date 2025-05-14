@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.domain.library
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+
 /**
  * Interface when an object has a single important text component.
  */
@@ -24,6 +26,7 @@ interface HasContent {
 }
 
 
+@JsonDeserialize(`as` = PersonImpl::class)
 interface Person {
 
     val name: String

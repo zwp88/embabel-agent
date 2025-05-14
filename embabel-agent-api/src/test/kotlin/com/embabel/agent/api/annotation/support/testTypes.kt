@@ -26,6 +26,7 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.common.ai.model.LlmOptions
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.ai.tool.annotation.Tool
 
@@ -69,6 +70,41 @@ class ActionGoal {
     @AchievesGoal(description = "Creating a person")
     fun toPerson(userInput: UserInput): PersonWithReverseTool {
         return PersonWithReverseTool(userInput.content)
+    }
+
+}
+
+interface InterfaceWithNoDeser {
+    val content: String
+}
+
+@AgentCapabilities
+class InvalidActionNoDeserializationInInterfaceGoal {
+
+    @Action
+    @AchievesGoal(description = "Creating a weird thing")
+    fun createWeirdThing(userInput: UserInput): InterfaceWithNoDeser {
+        TODO()
+    }
+
+}
+
+@JsonDeserialize(`as` = MyInterfaceWithDeser::class)
+interface InterfaceWithDeser {
+    val content: String
+}
+
+data class MyInterfaceWithDeser(
+    override val content: String,
+) : InterfaceWithDeser
+
+@AgentCapabilities
+class ValidActionWithDeserializationInInterfaceGoal {
+
+    @Action
+    @AchievesGoal(description = "Creating a weird thing")
+    fun createWeirdThing(userInput: UserInput): InterfaceWithDeser {
+        TODO()
     }
 
 }

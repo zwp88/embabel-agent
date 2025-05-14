@@ -26,7 +26,8 @@ import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
 /**
- * Uses the platform's LlmOperations to execute the prompt
+ * Uses the platform's LlmOperations to execute the prompt.
+ * Prompt running ends up through here.
  */
 internal class OperationContextPromptRunner(
     private val context: OperationContext,

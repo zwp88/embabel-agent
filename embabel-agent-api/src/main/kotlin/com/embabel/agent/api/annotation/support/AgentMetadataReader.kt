@@ -27,6 +27,8 @@ import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.util.NameUtils
+import com.embabel.common.util.loggerFor
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
@@ -178,7 +180,10 @@ class AgentMetadataReader(
             // Make sure we only get annotated methods from this type, not supertypes
             { method ->
                 method.isAnnotationPresent(Action::class.java) &&
-                        type.declaredMethods.contains(method)
+                        type.declaredMethods.contains(method) &&
+                        (!method.returnType.isInterface || hasRequiredJsonDeserializeAnnotationOnInterfaceReturnType(
+                            method
+                        ))
             })
         if (actionMethods.isEmpty()) {
             logger.debug("No methods annotated with @{} found in {}", Action::class.simpleName, type)
@@ -357,4 +362,22 @@ class AgentMetadataReader(
             pre = setOf(Rerun.hasRunCondition(action)) + action.preconditions.keys.toSet(),
         )
     }
+}
+
+/**
+ * Checks if a method returning an interface returns a type with a @JsonDeserialize annotation.
+ * @param method The Java method to check.
+ * @return true if the return type has a @JsonDeserialize annotation, false otherwise
+ */
+private fun hasRequiredJsonDeserializeAnnotationOnInterfaceReturnType(method: Method): Boolean {
+    val hasRequiredAnnotation = method.returnType.isAnnotationPresent(JsonDeserialize::class.java)
+    if (!hasRequiredAnnotation) {
+        loggerFor<AgentMetadataReader>().warn(
+            "❓Interface {} used as return type of {}.{} must have @JsonDeserialize annotation",
+            method.returnType,
+            method.declaringClass,
+            method.name,
+        )
+    }
+    return hasRequiredAnnotation
 }
