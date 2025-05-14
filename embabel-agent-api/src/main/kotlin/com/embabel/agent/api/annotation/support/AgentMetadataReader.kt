@@ -82,6 +82,10 @@ class AgentMetadataReader(
 
     private val logger = LoggerFactory.getLogger(AgentMetadataReader::class.java)
 
+    fun createAgentScopes(vararg instances: Any): List<AgentScope> =
+        instances.mapNotNull { createAgentMetadata(it) }
+
+
     /**
      * Given this configured instance, find all the methods annotated with @Action and @Condition
      * The instance will have been previous injected by Spring if it's Spring-managed.

@@ -121,7 +121,7 @@ class AutonomyAgentSelectionTest {
 
         // Mock platform to return available agents and execute our test agent
         val agentPlatform = mockk<AgentPlatform>()
-        every { agentPlatform.agents() } returns setOf(realAgent)
+        every { agentPlatform.agents() } returns listOf(realAgent)
         every {
             agentPlatform.runAgentFrom(
                 processOptions = any(),
@@ -135,7 +135,7 @@ class AutonomyAgentSelectionTest {
             override fun <T> rank(
                 description: String,
                 userInput: String,
-                rankables: Set<T>
+                rankables: Collection<T>
             ): Rankings<T> where T : com.embabel.common.core.types.Named, T : com.embabel.common.core.types.Described {
                 return Rankings(rankables.map { Ranking(it, 0.8) })
             }
@@ -242,7 +242,7 @@ class AutonomyAgentSelectionTest {
 
         // Mock platform to return our agent
         val agentPlatform = mockk<AgentPlatform>()
-        every { agentPlatform.agents() } returns setOf(lowConfidenceAgent)
+        every { agentPlatform.agents() } returns listOf(lowConfidenceAgent)
 
 
         // Create a ranker that returns low confidence scores (below threshold)
@@ -250,7 +250,7 @@ class AutonomyAgentSelectionTest {
             override fun <T> rank(
                 description: String,
                 userInput: String,
-                rankables: Set<T>
+                rankables: Collection<T>
             ): Rankings<T> where T : com.embabel.common.core.types.Named, T : com.embabel.common.core.types.Described {
                 return Rankings(rankables.map { Ranking(it, 0.3) })
             }

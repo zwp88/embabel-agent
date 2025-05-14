@@ -37,7 +37,7 @@ interface AgentPlatform : AgentScope {
      */
     fun getAgentProcess(id: String): AgentProcess?
 
-    fun agents(): Set<Agent>
+    fun agents(): List<Agent>
 
     fun deploy(agent: Agent): AgentPlatform
 

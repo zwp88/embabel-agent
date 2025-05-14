@@ -41,7 +41,7 @@ value class Semver(val value: String = DEFAULT_VERSION) {
 }
 
 /**
- * A versioned object has a name and a version.
+ * A versioned asset has a name and a version.
  * The combination should be unique, but there is also an id
  * Each version is immutable.
  */

@@ -21,15 +21,14 @@ import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.examples.simple.horoscope.HoroscopeService
-import com.embabel.examples.simple.horoscope.java.StarNewsFinder
 import com.embabel.examples.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -63,18 +62,18 @@ class FakeConfig {
         override fun <T> rank(
             description: String,
             userInput: String,
-            rankables: Set<T>
+            rankables: Collection<T>
         ): Rankings<T> where T : Named, T : Described {
             when (description) {
                 "agent" -> {
-                    val a = rankables.single { it.name.contains("Star") }!!
+                    val a = rankables.first { it.name.contains("Star") }
                     return Rankings(
                         rankings = listOf(Ranking(a, .9))
                     )
                 }
 
                 "goal" -> {
-                    val g = rankables.single { it.description.contains("horoscope") }!!
+                    val g = rankables.first { it.description.contains("horoscope") }
                     return Rankings(
                         rankings = listOf(Ranking(g, .9))
                     )
@@ -112,11 +111,14 @@ class AgentPlatformIntegrationTest(
 
     @BeforeEach
     fun setup() {
-        val amd = agentMetadataReader.createAgentMetadata(
-            StarNewsFinder(horoscopeService, 5)
-        )
-        assertNotNull(amd)
-        agentPlatform.deploy(amd)
+        agentMetadataReader.createAgentScopes(
+            com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder(
+                horoscopeService,
+                wordCount = 100,
+                storyCount = 5,
+            ),
+            com.embabel.examples.simple.horoscope.java.StarNewsFinder(horoscopeService, 5),
+        ).forEach { agentPlatform.deploy(it) }
     }
 
     @Nested
@@ -132,10 +134,23 @@ class AgentPlatformIntegrationTest(
     inner class Transforms {
 
         @Test
-        fun `run star finder as transform by name`() {
+        fun `run Java star finder as transform by name`() {
             val writeup = typedOps.asFunction<UserInput, HasContent>(
                 outputClass = HasContent::class.java,
-                agentName = com.embabel.examples.simple.horoscope.java.StarNewsFinder::class.qualifiedName!!,
+                agentName = "JavaStarNewsFinder",
+            ).apply(
+                UserInput("Lynda is a Scorpio, find some news for her"),
+                ProcessOptions(test = true),
+            )
+            assertNotNull(writeup)
+            assertNotNull(writeup.text)
+        }
+
+        @Test
+        fun `run Kotlin star finder as transform by name`() {
+            val writeup = typedOps.asFunction<UserInput, HasContent>(
+                outputClass = HasContent::class.java,
+                agentName = com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder::class.simpleName!!,
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
                 ProcessOptions(test = true),
@@ -152,18 +167,6 @@ class AgentPlatformIntegrationTest(
                     agentName = "stuff and nonsense",
                 )
             }
-        }
-
-        @Test
-        fun `run star finder as AgentPlatform transform`() {
-            val writeup = typedOps.asFunction<UserInput, com.embabel.examples.simple.horoscope.java.Writeup>(
-                outputClass = com.embabel.examples.simple.horoscope.java.Writeup::class.java,
-            ).apply(
-                UserInput("Lynda is a Scorpio, find some news for her"),
-                ProcessOptions(test = true),
-            )
-            assertNotNull(writeup)
-            assertNotNull(writeup.text)
         }
 
         @Test

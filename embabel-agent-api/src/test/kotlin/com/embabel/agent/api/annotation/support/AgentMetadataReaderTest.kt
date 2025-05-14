@@ -221,7 +221,7 @@ class AgentMetadataReaderTest {
             metadata as CoreAgent
             assertEquals(1, metadata.actions.size)
             assertEquals(
-                AgentWithOneTransformerActionWith2ArgsOnly::class.java.name,
+                AgentWithOneTransformerActionWith2ArgsOnly::class.java.simpleName,
                 metadata.name,
             )
         }

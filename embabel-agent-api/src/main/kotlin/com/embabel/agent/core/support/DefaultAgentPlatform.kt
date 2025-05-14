@@ -73,8 +73,8 @@ internal class DefaultAgentPlatform(
         return agentProcessRepository.findById(id)
     }
 
-    override fun agents(): Set<Agent> =
-        agents.values.toSet()
+    override fun agents(): List<Agent> =
+        agents.values.sortedBy { it.name }
 
     override fun deploy(agent: Agent): DefaultAgentPlatform {
         agents[agent.name] = agent

@@ -19,11 +19,10 @@ import com.embabel.agent.common.Constants
 import com.embabel.agent.core.*
 import org.slf4j.LoggerFactory
 
-fun AgentPlatform.typedOps() = AgentPlatformTypedOps(this)
-
 class NoSuchAgentException(
-    agentName: String,
-) : IllegalArgumentException("No such agent: $agentName")
+    val agentName: String,
+    val knownAgents: String
+) : IllegalArgumentException("No such agent: '$agentName'. Known agents: $knownAgents")
 
 
 /**
@@ -48,7 +47,7 @@ class AgentPlatformTypedOps(
         agentName: String,
     ): AgentFunction<I, O> {
         val agent = agentPlatform.agents().firstOrNull { it.name == agentName }
-            ?: throw NoSuchAgentException(agentName)
+            ?: throw NoSuchAgentException(agentName, agentPlatform.agents().joinToString { it.name })
         logger.info("Creating function for agent $agentName")
         return AgentBackedAgentFunction(
             outputClass = outputClass,

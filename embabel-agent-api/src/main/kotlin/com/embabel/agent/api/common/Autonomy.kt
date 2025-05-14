@@ -330,7 +330,10 @@ class Autonomy(
         )
         eventListener.onPlatformEvent(agentChoiceEvent)
         val agentRankings = rankerToUse
-            .rank(description = "agent", userInput = userInput.content, rankables = agentPlatform.agents())
+            .rank(
+                description = "agent", userInput = userInput.content,
+                rankables = agentPlatform.agents()
+            )
         val credibleAgents = agentRankings
             .rankings
             .filter { it.score > properties.agentConfidenceCutOff }

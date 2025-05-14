@@ -33,7 +33,7 @@ interface Ranker {
     fun <T> rank(
         description: String,
         userInput: String,
-        rankables: Set<T>,
+        rankables: Collection<T>,
     ): Rankings<T> where T : Named, T : Described
 }
 

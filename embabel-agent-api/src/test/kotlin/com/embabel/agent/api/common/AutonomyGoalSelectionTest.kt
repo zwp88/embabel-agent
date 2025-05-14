@@ -143,7 +143,7 @@ class AutonomyGoalSelectionTest {
             override fun <T> rank(
                 description: String,
                 userInput: String,
-                rankables: Set<T>
+                rankables: Collection<T>
             ): Rankings<T> where T : com.embabel.common.core.types.Named, T : com.embabel.common.core.types.Described {
                 // Create a map of rankings with different scores
                 val rankings = rankables.mapIndexed { index, item ->
@@ -280,7 +280,7 @@ class AutonomyGoalSelectionTest {
             override fun <T> rank(
                 description: String,
                 userInput: String,
-                rankables: Set<T>
+                rankables: Collection<T>
             ): Rankings<T> where T : com.embabel.common.core.types.Named, T : com.embabel.common.core.types.Described {
                 // Return 0.3 which is below the 0.5 threshold
                 return Rankings(rankables.map { Ranking(it, 0.3) })

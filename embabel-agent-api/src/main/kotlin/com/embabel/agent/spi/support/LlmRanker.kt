@@ -49,7 +49,7 @@ internal class LlmRanker(
     override fun <T> rank(
         description: String,
         userInput: String,
-        rankables: Set<T>
+        rankables: Collection<T>
     ): Rankings<T> where T : Named, T : Described {
         if (rankables.isEmpty()) {
             return Rankings(emptyList())
@@ -66,7 +66,7 @@ internal class LlmRanker(
     private fun <T> rankThingsInternal(
         description: String,
         userInput: String,
-        rankables: Set<T>,
+        rankables: Collection<T>,
     ): Rankings<T> where T : Named, T : Described {
         val type = rankables.firstOrNull()?.javaClass?.simpleName
             ?: throw IllegalArgumentException("Rankables must not be empty")
