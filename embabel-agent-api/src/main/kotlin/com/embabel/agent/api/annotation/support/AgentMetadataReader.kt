@@ -16,16 +16,15 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.Condition
 import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.core.AgentScope
-import com.embabel.agent.core.ComputedBooleanCondition
-import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.*
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.core.types.Named
 import com.embabel.common.core.util.NameUtils
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -251,9 +250,7 @@ class AgentMetadataReader(
         logger.debug("Invoking condition method {} on {}", method.name, instance.javaClass.name)
         val args = mutableListOf<Any>()
         val operationContext = OperationContext(
-            operation = object : Named {
-                override val name: String = method.name
-            },
+            operation = Operation(method.name),
             processContext = processContext,
             toolGroups = emptySet(),
         )

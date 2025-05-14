@@ -27,7 +27,6 @@ import com.embabel.agent.spi.LlmCall
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
-import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import org.slf4j.LoggerFactory
@@ -40,7 +39,7 @@ import kotlin.reflect.KProperty
  */
 data class ConditionContext(
     override val processContext: ProcessContext,
-    override val operation: Named,
+    override val operation: Operation,
     override val toolGroups: Set<String> = emptySet(),
 ) : OperationContext, Blackboard by processContext.blackboard
 
@@ -304,9 +303,7 @@ class AgentBuilder(
                             block(
                                 ConditionContext(
                                     processContext = processContext,
-                                    operation = object : Named {
-                                        override val name: String = it
-                                    }
+                                    operation = Operation(it),
                                 )
                             )
                         )

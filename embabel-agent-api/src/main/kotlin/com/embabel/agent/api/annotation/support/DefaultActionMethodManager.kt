@@ -19,6 +19,7 @@ import com.embabel.agent.api.annotation.RequireNameMatch
 import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
+import com.embabel.agent.api.common.support.MultiTransformationAction
 import com.embabel.agent.api.common.support.expandInputBindings
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.IoBinding

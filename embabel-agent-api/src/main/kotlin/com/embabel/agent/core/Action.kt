@@ -17,6 +17,7 @@ package com.embabel.agent.core
 
 import com.embabel.agent.core.support.SerializableAction
 import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.EffectSpec
@@ -70,7 +71,23 @@ value class IoBinding(val value: String) {
 
 }
 
-interface AgentSystemStep : GoapStep, Described {
+/**
+ * Named operation in agent system: Action, Goal or Condition
+ */
+sealed interface Operation : Named {
+    companion object {
+        operator fun invoke(
+            name: String,
+        ): Operation = IdentifiedOperation(name)
+    }
+}
+
+private data class IdentifiedOperation(
+    override val name: String,
+) : Operation
+
+
+interface AgentSystemStep : GoapStep, Described, Operation {
 
     /**
      * Data inputs to this set.

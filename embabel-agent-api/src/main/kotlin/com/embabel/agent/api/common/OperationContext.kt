@@ -15,16 +15,12 @@
  */
 package com.embabel.agent.api.common
 
-import com.embabel.agent.core.Action
-import com.embabel.agent.core.Blackboard
-import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.ToolGroupConsumer
+import com.embabel.agent.core.*
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.CurrentDate
 import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.core.types.Named
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -38,7 +34,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     /**
      * Action or operation that is being executed.
      */
-    val operation: Named
+    val operation: Operation
 
     /**
      * Create a prompt runner for this context.
@@ -73,10 +69,10 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     companion object {
         operator fun invoke(
             processContext: ProcessContext,
-            operation: Named,
+            operation: Operation,
             toolGroups: Set<String>,
         ): OperationContext =
-            SimpleOperationContext(
+            MinimalOperationContext(
                 processContext = processContext,
                 operation = operation,
                 toolGroups = toolGroups,
@@ -84,13 +80,13 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     }
 }
 
-private class SimpleOperationContext(
+private class MinimalOperationContext(
     override val processContext: ProcessContext,
-    override val operation: Named,
+    override val operation: Operation,
     override val toolGroups: Set<String>,
 ) : OperationContext, Blackboard by processContext.agentProcess {
     override fun toString(): String {
-        return "SimpleOperationContext(processContext=$processContext)"
+        return "MinimalOperationContext(processContext=$processContext, operation=${operation.name})"
     }
 }
 
@@ -134,6 +130,9 @@ interface ActionContext : OperationContext {
 
 }
 
+/**
+ * ActionContext with multiple inputs
+ */
 interface InputsActionContext : ActionContext {
     val inputs: List<Any>
 
@@ -153,7 +152,7 @@ interface InputsActionContext : ActionContext {
 }
 
 /**
- * Takes a single input
+ * ActionContext with a single input
  */
 interface InputActionContext<I> : InputsActionContext {
     val input: I

@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.core.Operation
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.core.types.Named
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -47,9 +47,8 @@ class OperationContextPromptRunnerTest {
                 explanation = "Mocked explanation"
             )
         }
-        every { mockOperationContext.operation } returns object : Named {
-            override val name = "testOperation"
-        }
+        every { mockOperationContext.operation } returns Operation("testOperation")
+
         val runner = OperationContextPromptRunner(
             context = mockOperationContext,
             llm = LlmOptions(),
