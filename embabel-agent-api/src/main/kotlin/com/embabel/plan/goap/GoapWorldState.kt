@@ -15,6 +15,8 @@
  */
 package com.embabel.plan.goap
 
+import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
+import com.embabel.common.util.color
 import com.embabel.plan.WorldState
 import java.time.Instant
 
@@ -119,12 +121,10 @@ data class GoapWorldState(
     }
 
     override fun infoString(verbose: Boolean?): String {
-        val stateToShow =
-            state.filter { it.value != ConditionDetermination.FALSE }
         return if (verbose == true)
-            "\n\t" + stateToShow.entries
-                .joinToString("\n\t") { (k, v) -> "$k: $v" }
-        else stateToShow.toString()
+            "\n\t" + state.entries.sortedByDescending { it.value }
+                .joinToString("\n\t") { (k, v) -> if (v == ConditionDetermination.TRUE) "$k: $v".color(LumonColorPalette.MEMBRANE) else "$k: $v" }
+        else state.toString()
     }
 
     operator fun plus(pair: Pair<String, ConditionDetermination>): GoapWorldState =
