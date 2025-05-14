@@ -197,7 +197,7 @@ internal class ChatClientLlmOperations(
                 if (promptContributions.isNotEmpty()) {
                     add(SystemMessage(promptContributions))
                 }
-                add(UserMessage("$prompt\n$maybeReturnPromptContribution"))
+                add(UserMessage("Instruction: <$prompt>\n\n$maybeReturnPromptContribution"))
             }
         )
         llmRequestEvent.agentProcess.processContext.onProcessEvent(

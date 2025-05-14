@@ -16,6 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.common.core.util.DummyInstanceCreator
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.ai.converter.StructuredOutputConverter
 
@@ -69,8 +70,21 @@ class WithExampleConverter<T>(
             return delegate.format
         }
 
+        val outputClassToUse: Class<*> = when {
+            // Look for a deserialization annotation
+            outputClass.isInterface -> {
+                outputClass.getAnnotation(JsonDeserialize::class.java)?.`as`?.java
+                    ?: error(
+                        "An interface used for prompt return needs deserialization information: $outputClass"
+                    )
+            }
+
+            else -> outputClass
+        }
+
         // Generate a dummy example instance of the output type using lorem ipsum values for strings
-        val example = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(outputClass)
+        // The output is always a dummy instance of the most specific output class, even if it was a interface
+        val example = DummyInstanceCreator.Companion.LoremIpsum.createDummyInstance(outputClassToUse)
         return if (ifPossible) {
             // If possible, show both a success and a failure example using a wrapper structure.
             // The MaybeReturn class is assumed to be a generic wrapper for success/failure outputs.
