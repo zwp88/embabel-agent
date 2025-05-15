@@ -27,6 +27,7 @@ import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.Semver
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
 import com.embabel.examples.dogfood.factchecker.FactCheck
+import com.embabel.examples.dogfood.factchecker.FactCheckerProperties
 import com.embabel.examples.dogfood.factchecker.factCheckerAgent
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -144,7 +145,7 @@ class AgentScopeBuilderTest {
 
         @Test
         fun `agent runs with listMaker`() {
-            val agent: Agent = factCheckerAgent(listOf(mockk()))
+            val agent: Agent = factCheckerAgent(listOf(mockk()), FactCheckerProperties())
             val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(

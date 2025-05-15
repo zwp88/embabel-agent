@@ -30,6 +30,7 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
 import com.embabel.common.core.types.ZeroToOne
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -58,16 +59,35 @@ data class FactCheck(
     val checks: List<AssertionCheck>,
 )
 
+@ConfigurationProperties("embabel.fact-checker")
+data class FactCheckerProperties(
+    val reasoningWordCount: Int = 30,
+    val trustedSources: List<String> = listOf(
+        "Wikipedia",
+        "Wikidata",
+        "Britannica",
+        "BBC",
+        "Reuters",
+        "ABC Australia",
+    ),
+    val untrustedSources: List<String> = listOf(
+        "Reddit",
+        "4chan",
+        "Twitter",
+    )
+)
+
 @Configuration
 @Profile("!test")
 class FactCheckerAgentConfiguration {
     @Bean
-    fun factChecker(): Agent {
+    fun factChecker(factCheckerProperties: FactCheckerProperties): Agent {
         return factCheckerAgent(
             llms = listOf(
                 LlmOptions(AnthropicModels.CLAUDE_35_HAIKU).withTemperature(.3),
                 LlmOptions(AnthropicModels.CLAUDE_35_HAIKU).withTemperature(.0),
-            )
+            ),
+            properties = factCheckerProperties,
         )
     }
 }
@@ -78,7 +98,7 @@ class FactCheckerAgentConfiguration {
  */
 fun factCheckerAgent(
     llms: List<LlmOptions>,
-    reasoningWordCount: Int = 30,
+    properties: FactCheckerProperties,
 ) = agent(
     name = "FactChecker",
     description = "Check content for factual accuracy",
@@ -96,7 +116,7 @@ fun factCheckerAgent(
             Given the following content, identify any factual assertions.
             Phrase them as standalone assertions.
 
-            # Input
+            # Content
             ${context.input.content}
             """.trimIndent()
                     )
@@ -108,7 +128,7 @@ fun factCheckerAgent(
                     Given the following factual assertions, merge them into a single list if
                     any are the same. Count the number you merged.
 
-                    # Input
+                    # Assertions
                     ${list.flatMap { it.factualAssertions }.joinToString("\n") { "- " + it.standaloneAssertion }}
                     """.trimIndent()
                 )
@@ -124,8 +144,11 @@ fun factCheckerAgent(
         val checks = operationContext.input.factualAssertions.mapParallel(operationContext) { assertion ->
             promptRunner.createObject<AssertionCheck>(
                 """
-                Given the following assertion, check if it is true or false and explain why in $reasoningWordCount words
-                ${assertion.standaloneAssertion}
+                Given the following assertion, check if it is true or false and explain why in ${properties.reasoningWordCount} words
+                Use web tools. Be guided by the following regarding sources:
+                - Trusted sources: ${properties.trustedSources.joinToString(", ")}
+                - Untrusted sources: ${properties.untrustedSources.joinToString(", ")}
+                Assertion: <${assertion.standaloneAssertion}>
                 """
             )
         }
