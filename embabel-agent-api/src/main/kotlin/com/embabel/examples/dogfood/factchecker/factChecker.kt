@@ -23,6 +23,9 @@ import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.domain.library.InternetResource
+import com.embabel.agent.domain.library.InternetResources
+
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
 import com.embabel.common.core.types.ZeroToOne
@@ -35,6 +38,12 @@ data class FactualAssertion(val standaloneAssertion: String)
 
 data class FactualAssertions(val factualAssertions: List<FactualAssertion>)
 
+data class RationalizedFactualAssertions(
+    val factualAssertions: List<FactualAssertion>,
+    @JsonPropertyDescription("factual assertions that were merged")
+    val numberMerged: Int,
+)
+
 data class AssertionCheck(
     val assertion: String,
     val isTrue: Boolean,
@@ -42,7 +51,8 @@ data class AssertionCheck(
     val confidence: ZeroToOne,
     @JsonPropertyDescription("reasoning for your scoring")
     val reasoning: String,
-)
+    override val links: List<InternetResource>,
+) : InternetResources
 
 data class FactCheck(
     val checks: List<AssertionCheck>,
@@ -78,7 +88,7 @@ fun factCheckerAgent(
 
 //        referencedAgentAction<UserInput, ResearchReport>(agentName = Researcher::class.java.name)
 
-        aggregate<UserInput, FactualAssertions, FactualAssertions>(
+        aggregate<UserInput, FactualAssertions, RationalizedFactualAssertions>(
             transforms = llms.map { llm ->
                 { context ->
                     context.promptRunner(llm = llm, toolGroups = setOf(ToolGroup.WEB)).createObject(
@@ -93,10 +103,10 @@ fun factCheckerAgent(
                 }
             },
             merge = { list, context ->
-                context.promptRunner().createObject<FactualAssertions>(
+                context.promptRunner().createObject<RationalizedFactualAssertions>(
                     """
                     Given the following factual assertions, merge them into a single list if
-                    any are the same.
+                    any are the same. Count the number you merged.
 
                     # Input
                     ${list.flatMap { it.factualAssertions }.joinToString("\n") { "- " + it.standaloneAssertion }}
@@ -106,9 +116,7 @@ fun factCheckerAgent(
         ).parallelize()
     }
 
-    transformation<FactualAssertions, FactCheck>(
-        name = "foo",
-    ) { operationContext ->
+    transformation<RationalizedFactualAssertions, FactCheck> { operationContext ->
         val promptRunner = operationContext.promptRunner(
             LlmOptions(ModelSelectionCriteria.Auto),
             toolGroups = setOf(ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION),

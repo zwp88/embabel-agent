@@ -23,6 +23,7 @@ import com.embabel.agent.event.logging.personality.DefaultColorPalette
 import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.prompt.Prompt
@@ -290,11 +291,6 @@ open class LoggingAgenticEventListener(
 
             is LlmRequestEvent<*> -> {
                 var message = llmRequestEventMessage
-//                if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
-//                    message += "\nPrompt ${event.interaction.id}:\n${
-//                        event.prompt.color(AnsiColor.GREEN)
-//                    }\ntools: ${event.interaction.toolCallbacks.map { it.toolDefinition.name() }}"
-//                }
                 logger.info(
                     message,
                     event.processId,
@@ -326,7 +322,7 @@ open class LoggingAgenticEventListener(
                 var message = llmResponseEventMessage()
                 if (event.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
                     message += "\nResponse from prompt ${event.interaction.id}:\n${
-                        ("" + event.response).color(
+                        (jacksonObjectMapper().writeValueAsString(event.response)).color(
                             color = AnsiColor.YELLOW
                         )
                     }"

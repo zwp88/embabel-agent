@@ -37,6 +37,7 @@ import java.time.Instant
 interface AgentProcessEvent : AgenticEvent {
 
     val processId: String
+
 }
 
 /**

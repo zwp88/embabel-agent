@@ -126,7 +126,7 @@ fun <A, B, C> aggregate(
     cClass: Class<C>,
 ): AgentScopeBuilder {
     val allCompletedCondition = ComputedBooleanCondition(
-        name = "List<${bClass.name}>=>${cClass.name}",
+        name = "All<${bClass.name}=>${cClass.name}",
         evaluator = { it, condition ->
             it.blackboard.all(bClass).size == transforms.size
         }
@@ -137,7 +137,6 @@ fun <A, B, C> aggregate(
         TransformationAction(
             name = "${aClass.name}=>${bClass.name}-$index",
             description = "Transform $aClass to $bClass",
-            pre = emptyList(),
             post = listOf(allCompletedCondition.name),
             cost = 0.0,
             value = 0.0,

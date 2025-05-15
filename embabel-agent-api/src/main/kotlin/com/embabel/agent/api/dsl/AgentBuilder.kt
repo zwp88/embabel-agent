@@ -153,9 +153,10 @@ class AgentBuilder(
      * Add an action that is a transformation NOT using an LLM.
      */
     inline fun <reified I, reified O : Any> transformation(
-        name: String,
+        name: String = "${I::class.simpleName}-${O::class.simpleName}",
         description: String = name,
-        pre: List<Condition> = emptyList(),
+        preConditions: List<Condition> = emptyList(),
+        pre: List<String> = emptyList(),
         post: List<Condition> = emptyList(),
         inputVarName: String = IoBinding.DEFAULT_BINDING,
         outputVarName: String? = IoBinding.DEFAULT_BINDING,
@@ -169,7 +170,7 @@ class AgentBuilder(
         val action = TransformationAction(
             name = name,
             description = description,
-            pre = pre.map { it.name },
+            pre = pre + preConditions.map { it.name },
             post = post.map { it.name },
             cost = cost,
             qos = qos,
