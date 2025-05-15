@@ -102,15 +102,6 @@ interface RagResponse {
     }
 }
 
-
-object DefaultRagResponseFormatter : RagResponseFormatter {
-    override fun format(ragResponse: RagResponse): String {
-        return "Rag results:\n\n" + ragResponse.results.joinToString("\n\n") {
-            "score=${it.score}:\n${it.match.infoString()}"
-        }
-    }
-}
-
 private data class RagResponseImpl(
     override val service: String,
     override val results: List<SimilarityResult<out Retrieved>>,

@@ -16,20 +16,24 @@
 package com.embabel.agent.toolgroups.rag
 
 import com.embabel.agent.api.common.SelfToolCallbackPublisher
-import com.embabel.agent.rag.DefaultRagResponseFormatter
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponseFormatter
 import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.SimpleRagRagResponseFormatter
 import org.springframework.ai.tool.annotation.Tool
+import org.springframework.ai.tool.annotation.ToolParam
 
+/**
+ * Expose the given RagService as tools.
+ */
 class RagTools(
     private val ragService: RagService,
-    private val ragResponseFormatter: RagResponseFormatter = DefaultRagResponseFormatter,
+    private val ragResponseFormatter: RagResponseFormatter = SimpleRagRagResponseFormatter,
 ) : SelfToolCallbackPublisher {
 
     @Tool(description = "Query the RAG service")
     fun ragQuery(
-        query: String,
+        @ToolParam(description = "query to the RAG service") query: String,
     ): String {
         val rr = RagRequest(
             query = query,

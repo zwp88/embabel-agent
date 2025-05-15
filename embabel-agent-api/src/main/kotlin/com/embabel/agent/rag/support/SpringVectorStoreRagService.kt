@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag.springvector
+package com.embabel.agent.rag.support
 
 import com.embabel.agent.rag.Chunk
 import com.embabel.agent.rag.RagRequest
@@ -26,6 +26,9 @@ import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
 
+/**
+ * RagService wrapping a Spring VectorStore.
+ */
 class SpringVectorStoreRagService(
     private val vectorStore: VectorStore,
     override val description: String = vectorStore.javaClass.name,
@@ -44,7 +47,7 @@ class SpringVectorStoreRagService(
             .topK(ragRequest.topK)
             .build()
         val results: List<Document> = vectorStore.similaritySearch(searchRequest)!!
-        return RagResponse(
+        return RagResponse.Companion(
             service = name,
             results = results.map { it ->
                 DocumentSimilarityResult(

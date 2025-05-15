@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag
+package com.embabel.agent.rag.tools
 
 import com.embabel.agent.api.common.SelfToolCallbackPublisher
+import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.RagResponseFormatter
+import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.SimpleRagRagResponseFormatter
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 
@@ -38,28 +42,17 @@ interface RagServiceTools : SelfToolCallbackPublisher {
         return toolFormatter.format(ragService.search(RagRequest(query)))
     }
 
-}
+    companion object {
 
-fun interface RagResponseFormatter {
-    fun format(ragResponse: RagResponse): String
-}
-
-val SimpleRagRagResponseFormatter = RagResponseFormatter { ragResponse ->
-    val results = ragResponse.results
-    if (results.isEmpty()) {
-        "No results found"
-    } else {
-        results.joinToString(separator = "\n\n") { result ->
-            when (val match = result.match) {
-                is EntityData -> {
-                    val properties = match.properties.entries.joinToString(", ") { "${it.key}=${it.value}" }
-                    "${result.score}: ${match.infoString(verbose = true)} ($properties)"
-                }
-
-                is Chunk -> {
-                    "${result.score}: $match"
-                }
+        operator fun invoke(
+            ragService: RagService,
+            toolFormatter: RagResponseFormatter = SimpleRagRagResponseFormatter,
+        ): RagServiceTools {
+            return object : RagServiceTools {
+                override val ragService: RagService = ragService
+                override val toolFormatter: RagResponseFormatter = toolFormatter
             }
         }
     }
+
 }

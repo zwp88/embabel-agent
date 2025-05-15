@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag
+package com.embabel.agent.rag.support
+
+import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.RagResponse
+import com.embabel.agent.rag.RagService
 
 /**
  * Rag service that combines multiple RagServices and returns the best results
@@ -29,7 +33,7 @@ class ConsensusRagService(
             ragService.search(ragRequest).results
         }
         // TODO Count and commend duplicates
-        return RagResponse(
+        return RagResponse.Companion(
             service = name,
             results = allResults,
         )

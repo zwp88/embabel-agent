@@ -19,8 +19,12 @@ import com.embabel.agent.common.Constants
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupMetadata
-import com.embabel.agent.rag.*
-import com.embabel.agent.rag.springvector.SpringVectorStoreRagService
+import com.embabel.agent.rag.Ingester
+import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.WritableRagService
+import com.embabel.agent.rag.support.ConsensusRagService
+import com.embabel.agent.rag.support.MultiIngester
+import com.embabel.agent.rag.support.SpringVectorStoreRagService
 import com.embabel.agent.toolgroups.rag.RagTools
 import com.embabel.common.core.types.Semver
 import org.springframework.ai.vectorstore.VectorStore

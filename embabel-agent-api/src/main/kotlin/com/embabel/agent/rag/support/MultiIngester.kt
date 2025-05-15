@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag
+package com.embabel.agent.rag.support
 
+import com.embabel.agent.rag.Ingester
+import com.embabel.agent.rag.IngestionResult
+import com.embabel.agent.rag.WritableRagService
 import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
 import org.springframework.ai.reader.TextReader
@@ -22,7 +25,7 @@ import org.springframework.ai.transformer.splitter.TextSplitter
 import org.springframework.ai.transformer.splitter.TokenTextSplitter
 
 /**
- * Write to all RAG services that implement [WritableRagService].
+ * Write to all RAG services that implement [com.embabel.agent.rag.WritableRagService].
  */
 class MultiIngester(
     override val ragServices: List<WritableRagService>,
