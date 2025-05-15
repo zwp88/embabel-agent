@@ -151,7 +151,12 @@ data class IngestionResult(
     }
 }
 
-interface Ingester : DocumentWriter {
+interface Ingester : DocumentWriter, HasInfoString {
+
+    /**
+     * Is this ingester presently active?
+     */
+    fun active(): Boolean
 
     val ragServices: List<WritableRagService>
 
@@ -164,6 +169,7 @@ private data class EmptyRagService(
     override val name: String,
     override val description: String,
 ) : RagService {
+
     override fun search(ragRequest: RagRequest): RagResponse {
         return RagResponse(
             service = name,

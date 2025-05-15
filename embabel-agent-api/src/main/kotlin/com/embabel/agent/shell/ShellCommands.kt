@@ -231,12 +231,15 @@ class ShellCommands(
             help = "File to ingest. Spring resource path or URL",
         ) url: String,
     ): String {
+        if (!ingester.active()) {
+            return "Cannot ingest: ${ingester.infoString(verbose = true)}"
+        }
         return try {
             val ingestionResult = ingester.ingest(url)
             if (ingestionResult.success()) {
-                "Ingested $url"
+                "Ingested $url as ${ingestionResult.documentsWritten} documents to ${ingestionResult.storesWrittenTo} stores"
             } else {
-                "Could not process ingestion. You have ${ingester.ragServices.size} writable RAG services"
+                "Could not process ingestion."
             }
         } catch (e: Exception) {
             "Failed to ingest $url: ${e.message}"

@@ -31,6 +31,8 @@ class MultiIngester(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    override fun active(): Boolean = ragServices.isNotEmpty()
+
     override fun ingest(resourceUrl: String): IngestionResult {
         val sourceDocs = TextReader(resourceUrl).get()
         val documents = splitter.split(sourceDocs)
@@ -53,4 +55,8 @@ class MultiIngester(
             storesWrittenTo = storesWrittenTo.toSet(),
         )
     }
+
+    override fun infoString(verbose: Boolean?): String =
+        if (ragServices.isEmpty()) "No RAG services" else
+            "Multi ingester of ${ragServices.joinToString(",") { it.infoString(verbose = verbose) }}"
 }
