@@ -295,6 +295,8 @@ Optional:
 
 - `ANTHROPIC_API_KEY`: For the Anthropic API. Necessary for the coding agent.
 
+> We strongly recommend providing both an OpenAI and Anthropic key, as some demos require both.
+
 You will also need Docker Desktop with the Docker MCP extension installed for
 Docker MCP tools such as web search tools. Be sure to activate
 the following tools from the catalog:
@@ -350,11 +352,24 @@ agent for each command.
 Example commands within the shell:
 
 ```
-execute "explain this project for a five your old"
+# Perplexity style deep research
+# Requires both OpenAI and Anthropic keys and Docker Desktop with the MCP extension (or your own web tools)
+execute "research the recent australian federal election. what is the position of the greens party?"
 
-execute "take the StarNewsFinder kotlin example of the agent framework. create a parallel .java package beside its and create a java version of the same agent use the same annotations and other classes. use records for the data classes. make it modern java"
+# x is a shortcut for execute
+x "fact check the following: holden cars are still made in australia; the koel is a bird native only to australia; fidel castro is justin trudeau's father"
 
-execute "consider the StarNewsFinder kotlin class. This is intended as an example. Is there anything you could do to make it simpler? Include suggested API changes. Do not change code"
+```
+
+Try the [coding agent](https://www.github.com/embabel/embabel-coding-agent) with commands such as:
+
+```
+
+x "explain this project for a five your old"
+
+x "take the StarNewsFinder kotlin example of the agent framework. create a parallel .java package beside its and create a java version of the same agent use the same annotations and other classes. use records for the data classes. make it modern java"
+
+x "consider the StarNewsFinder kotlin class. This is intended as an example. Is there anything you could do to make it simpler? Include suggested API changes. Do not change code"
 ```
 
 ### Bringing in additional LLMs
