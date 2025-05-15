@@ -47,7 +47,7 @@ Models agentic flows in terms of:
 > as most conditions result from data flow defined in code, allowing the system to infer
 > pre and post conditions.
 
-These concepts deliver the following differentiators versus other agentic systems:
+These concepts underpin the following differentiators versus other agentic systems:
 
 - **Sophisticated planning.** Goes beyond a finite state machine or sequential execution
   with nesting by introducing a true planning step, using a
@@ -56,7 +56,7 @@ These concepts deliver the following differentiators versus other agentic system
   a novel order, as well as make decisions about parallelization and other runtime behavior.
 - **Superior extensibility and reuse**: Because of dynamic planning, adding more domain objects, actions, goals and
   conditions
-  can extend the capability of the system, _without editing FSM definitions._
+  can extend the capability of the system, _without editing FSM definitions_ or existing code.
 - **Strong typing and the benefits of object orientation**: Actions, goals and conditions are informed by a domain
   model, which can
   include behavior. Everything is strongly typed and prompts and
@@ -66,9 +66,11 @@ Other benefits:
 
 - **Platform abstraction**: Clean separation between programming model and platform concept allow running locally while
   potentially offering higher QoS changing application code.
-- **Designed for LLM mixing**: It is easy to build applications that mix LLMs, ensuring the most cost effective yet
+- **Designed for LLM mixing**: It is easy to build applications that mix LLMs, ensuring the most cost-effective yet
   capable solution.
-  models. This enables the system to leverage the strengths of different models for different tasks.
+  This enables the system to leverage the strengths of different models for different tasks. In particular, it
+  facilitates
+  the use of local models for point tasks.
 - **Built on Spring and the JVM,** making it easy to access existing enterprise functionality and capabilities.
   For example:
     - Spring can inject and manage agents, including using Spring AOP to decorate functions.
@@ -77,11 +79,12 @@ Other benefits:
 
 Flows can be authored in one of two ways:
 
-- Annotation-based model similar to Spring MVC, with types annotated with `@Agent` with `@Goal`, `@Condition` and
+- An annotation-based model similar to Spring MVC, with types annotated with the Spring stereotype `@Agent`, using
+  `@Goal`, `@Condition` and
   `@Action` methods.
 - Kotlin DSL.
 
-Either way, flows are backed by a domain model of objects that can defined behavior.
+Either way, flows are backed by a true domain model of objects that can have rich behavior.
 
 > We are working toward allowing natural language actions and goals to be deployed.
 
@@ -96,20 +99,22 @@ Goals, actions and plans are independent of GOAP. Future planning options includ
 
 - Plans created by a reasoning model such as OpenAI o1 or DeepSeek R1.
 
-The framework executes via `AgentPlatform` implementation.
+The framework executes via an `AgentPlatform` implementation.
 
 An agent platform supports the following modes of execution:
 
 - **Focused**, where user code requests particular functionality: User code calls a method to run a particular agent,
-  passing in input.
-- **Closed**, where user intent is classified to choose an agent: The user expresses an intent and the platform tries to
+  passing in input. This is ideal for code-driven flows such as a flow invoked in response to an incoming event.
+- **Closed**, where user intent (or another incoming event) is classified to choose an agent. The platform tries to
   find a
-  suitable agent among all the agent it knows about. It will run the agent.
-  Thus agent choice is dynamic, but only the actions within the particular agent
-  can be run.
-- **Open**, where the user's goal is determined and the platform uses all its resources to try to achieve it: The user
-  expresses an intent and the platform tries to find a
-  suitable goal among all the goals it knows about.
+  suitable agent among all the agents it knows about.
+  Agent choice is dynamic, but only actions defined within the particular agent
+  will run.
+- **Open**, where the user's intent is assessed and the platform uses _all_ its resources to try to achieve it. The
+  platform tries to find a
+  suitable goal among all the goals it knows about and builds a custom agent to achieve it from the start state,
+  including relevant actions and conditions. The platform will not proceed if it is unconvinced as to the applicability
+  of any goal. The `GoalChoiceApprover` interface provides developers a way to limit goal choice further.
 
 Open mode is the most powerful, but least deterministic.
 > In open mode, the platform is capable of finding novel paths that were not envisioned by developers, and even
@@ -120,11 +125,14 @@ that have been specified. (Of course, steps may themselves be LLM
 transforms, in which case the prompts are controlled by user code but the
 results are still non-deterministic.)
 
-A further mode is planned in future:
+Possible future modes:
 
 - **Evolving** mode: Where the platform can work with multiple goals in the same process and modify a running process to
   add further goals and agents.
   For example, an action can realize that it has become important to achieve additional goals.
+
+Embabel agent systems will also support federation, both with other Embabel systems (allowing planning to incorporate
+remote actions and goals) and third party agent frameworks.
 
 ## Show Me The Code
 
