@@ -20,6 +20,7 @@
 
     <modules>
         <module>embabel-agent-api</module>
+        <module>embabel-agent-rag</module>
         <module>embabel-agent-docs</module>
         <module>embabel-agent-shell</module>
         <module>embabel-agent-starter</module>
