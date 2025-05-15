@@ -18,7 +18,6 @@ package com.embabel.agent.spi
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
-import org.springframework.stereotype.Component
 
 /**
  * Services used by the platform and available to user-authored code.
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Component
  * @param eventListener event listener for agentic events
  * @param operationScheduler operation scheduler for scheduling operations
  */
-@Component
 data class PlatformServices(
     val agentPlatform: AgentPlatform,
     val llmOperations: LlmOperations,
