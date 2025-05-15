@@ -232,8 +232,12 @@ class ShellCommands(
         ) url: String,
     ): String {
         return try {
-            ingester.ingest(url)
-            "Ingested $url"
+            val ingestionResult = ingester.ingest(url)
+            if (ingestionResult.success()) {
+                "Ingested $url"
+            } else {
+                "Could not process ingestion. You have ${ingester.ragServices.size} writable RAG services"
+            }
         } catch (e: Exception) {
             "Failed to ingest $url: ${e.message}"
         }

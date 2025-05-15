@@ -141,9 +141,21 @@ interface RagService : Described, HasInfoString {
     }
 }
 
+data class IngestionResult(
+    val documentsWritten: Int,
+    val storesWrittenTo: Set<String>,
+) {
+
+    fun success(): Boolean {
+        return storesWrittenTo.isNotEmpty()
+    }
+}
+
 interface Ingester : DocumentWriter {
 
-    fun ingest(resourcePath: String)
+    val ragServices: List<WritableRagService>
+
+    fun ingest(resourcePath: String): IngestionResult
 }
 
 interface WritableRagService : RagService, DocumentWriter

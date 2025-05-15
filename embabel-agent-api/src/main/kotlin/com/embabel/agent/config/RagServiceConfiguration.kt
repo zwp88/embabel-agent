@@ -19,10 +19,7 @@ import com.embabel.agent.common.Constants
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupMetadata
-import com.embabel.agent.rag.ConsensusRagService
-import com.embabel.agent.rag.Ingester
-import com.embabel.agent.rag.MultiIngester
-import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.*
 import com.embabel.agent.rag.springvector.SpringVectorStoreRagService
 import com.embabel.agent.toolgroups.rag.RagTools
 import com.embabel.common.core.types.Semver
@@ -71,7 +68,7 @@ class RagServiceConfiguration {
     @Bean
     @Primary
     fun ingester(
-        ragServices: List<RagService>,
+        ragServices: List<WritableRagService>,
     ): Ingester {
         return MultiIngester(ragServices)
     }

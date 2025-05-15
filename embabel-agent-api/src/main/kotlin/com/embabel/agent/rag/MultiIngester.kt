@@ -25,20 +25,32 @@ import org.springframework.ai.transformer.splitter.TokenTextSplitter
  * Write to all RAG services that implement [WritableRagService].
  */
 class MultiIngester(
-    private val ragServices: List<RagService>,
+    override val ragServices: List<WritableRagService>,
     private val splitter: TextSplitter = TokenTextSplitter.builder().withChunkSize(800).build(),
 ) : Ingester {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    override fun ingest(resourceUrl: String) {
+    override fun ingest(resourceUrl: String): IngestionResult {
         val sourceDocs = TextReader(resourceUrl).get()
         val documents = splitter.split(sourceDocs)
         logger.info("Split {} into {} documents from {}", sourceDocs.size, documents.size, resourceUrl)
-        accept(documents)
+        return writeToStores(documents)
     }
 
     override fun accept(documents: List<Document>) {
-        ragServices.filterIsInstance<WritableRagService>().forEach { it.write(documents) }
+        writeToStores(documents)
+    }
+
+    private fun writeToStores(documents: List<Document>): IngestionResult {
+        val storesWrittenTo = ragServices
+            .map {
+                it.write(documents)
+                it.name
+            }
+        return IngestionResult(
+            documentsWritten = documents.size,
+            storesWrittenTo = storesWrittenTo.toSet(),
+        )
     }
 }
