@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class LlmGoalRankerTest {
+class LlmRankerTest {
 
     @Nested
     inner class Errors {

@@ -80,7 +80,7 @@ fun simpleNamingAgent(
 
     flow {
 
-        referencedAgentAction<UserInput, ResearchReport>(agentName = Researcher::class.java.name)
+        referencedAgentAction<UserInput, ResearchReport>(agentName = Researcher::class.java.simpleName)
 
         biAggregate<UserInput, ResearchReport, GeneratedNames, AllNames>(
             transforms = llms.map { llm ->
