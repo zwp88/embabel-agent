@@ -1,7 +1,9 @@
 # Embabel Agent Framework
 
 ![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=embabel_embabel-agent)](https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=bugs)](https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent)
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-dark.svg)](https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent)
 
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
