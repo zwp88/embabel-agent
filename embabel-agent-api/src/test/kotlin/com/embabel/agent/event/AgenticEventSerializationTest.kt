@@ -28,7 +28,7 @@ import kotlin.test.assertTrue
  * Check that we can safely serialize AgentProcessEvent.
  * We don't need to deserialize it.
  */
-class AgentProcessEventSerializationTest {
+class AgenticEventSerializationTest {
 
     @Test
     fun `test process events can be serialized`() {
@@ -38,13 +38,30 @@ class AgentProcessEventSerializationTest {
             override fun onProcessEvent(event: AgentProcessEvent) {
                 val s = om.writeValueAsString(event)
                 count++
-                loggerFor<AgentProcessEventSerializationTest>().info("Serialized event: $s")
+                loggerFor<AgenticEventSerializationTest>().info("Serialized event: $s")
                 assertTrue(s.contains("\"processId\""), "Process id is required")
             }
         }
         val ap = dummyAgentPlatform(listener = serializingListener)
         // If it doesn't die we're happy
         ap.runAgentWithInput(evenMoreEvilWizard(), input = UserInput("anything at all"))
+        assertTrue(serializingListener.count > 0, "Events were serialized")
+    }
+
+    @Test
+    fun `test platform events can be serialized`() {
+        val om = jacksonObjectMapper().registerModule(JavaTimeModule())
+        val serializingListener = object : AgenticEventListener {
+            var count = 0
+            override fun onPlatformEvent(event: AgentPlatformEvent) {
+                val s = om.writeValueAsString(event)
+                count++
+                loggerFor<AgenticEventSerializationTest>().info("Serialized event: $s")
+            }
+        }
+        val ap = dummyAgentPlatform(listener = serializingListener)
+        // If it doesn't die we're happy
+        ap.deploy(evenMoreEvilWizard())
         assertTrue(serializingListener.count > 0, "Events were serialized")
     }
 

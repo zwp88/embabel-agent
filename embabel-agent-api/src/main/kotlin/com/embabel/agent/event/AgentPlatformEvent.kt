@@ -22,6 +22,7 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.ZeroToOne
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.Instant
 
 /**
@@ -29,11 +30,13 @@ import java.time.Instant
  */
 interface AgentPlatformEvent : AgenticEvent {
 
+    @get:JsonIgnore
     val agentPlatform: AgentPlatform
 }
 
 data class AgentDeploymentEvent(
     override val agentPlatform: AgentPlatform,
+    @get:JsonIgnore
     val agent: Agent,
 ) : AgentPlatformEvent {
     override val timestamp: Instant = Instant.now()
@@ -110,6 +113,7 @@ class RankingChoiceCouldNotBeMadeEvent<T>(
  */
 data class DynamicAgentCreationEvent(
     override val agentPlatform: AgentPlatform,
+    @get:JsonIgnore
     val agent: Agent,
     val basis: Any,
     override val timestamp: Instant = Instant.now(),
