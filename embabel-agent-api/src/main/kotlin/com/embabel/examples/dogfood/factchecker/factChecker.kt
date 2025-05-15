@@ -19,18 +19,57 @@ import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.aggregate
+import com.embabel.agent.api.dsl.mapParallel
+import com.embabel.agent.config.models.AnthropicModels
+import com.embabel.agent.config.models.OpenAiModels
+import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 data class FactualAssertion(val standaloneAssertion: String)
+
 data class FactualAssertions(val factualAssertions: List<FactualAssertion>)
+
+data class AssertionCheck(
+    val assertion: String,
+    val isTrue: Boolean,
+    @JsonPropertyDescription("confidence in your judgment as to whether it's true or false")
+    val confidence: Double,
+    @JsonPropertyDescription("reasoning for your scoring")
+    val reasoning: String,
+)
+
+data class FactCheck(
+    val checks: List<AssertionCheck>,
+)
+
+@Configuration
+@Profile("!test")
+class FactCheckerAgentConfiguration {
+    @Bean
+    fun factChecker(): Agent {
+        return factCheckerAgent(
+            llms = listOf(
+                LlmOptions.Companion(OpenAiModels.Companion.GPT_41_MINI).withTemperature(.3),
+                LlmOptions.Companion(AnthropicModels.Companion.CLAUDE_35_HAIKU).withTemperature(.0),
+            )
+        )
+    }
+}
+
 
 /**
  * Naming agent that generates names for a company or project.
  */
 fun factCheckerAgent(
     llms: List<LlmOptions>,
+    reasoningWordCount: Int = 30,
 ) = agent(
     name = "FactChecker",
     description = "Check content for factual accuracy",
@@ -61,31 +100,42 @@ fun factCheckerAgent(
                     discernFactualAssertions(llm, context)
                 }
             },
-            merge = { list, _ ->
-                // TODO merge
-                FactualAssertions(
-                    factualAssertions = list.flatMap { it.factualAssertions }
+            merge = { list, context ->
+                context.promptRunner().createObject<FactualAssertions>(
+                    """
+                    Given the following factual assertions, merge them into a single list if
+                    any are the same.
+
+                    # Input
+                    ${list.flatMap { it.factualAssertions }.joinToString("\n") { "- " + it.standaloneAssertion }}
+                    """.trimIndent()
                 )
             },
         ).parallelize()
     }
 
-    promptedTransformer<FactualAssertions, FactualAssertions>(
-        name = "mergeAssertions",
-    ) { context ->
-        """
-            Given the following factual assertions, check them for accuracy.
-            Provide a list of factual assertions that are true or false.
-
-            # Input
-            ${context.input.factualAssertions.joinToString("\n") { "- " + it.standaloneAssertion }}
-            """.trimIndent()
+    transformation<FactualAssertions, FactCheck>(
+        name = "foo",
+    ) { operationContext ->
+        val promptRunner = operationContext.promptRunner(
+            LlmOptions(ModelSelectionCriteria.Auto),
+            toolGroups = setOf(ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION),
+        )
+        val checks = operationContext.input.factualAssertions.mapParallel(operationContext) { assertion ->
+            promptRunner.createObject<AssertionCheck>(
+                """
+                Given the following assertion, check if it is true or false and explain why in $reasoningWordCount words
+                ${assertion.standaloneAssertion}
+                """
+            )
+        }
+        FactCheck(checks)
     }
 
     goal(
         name = "factCheckingDone",
         description = "Content was fact checked",
-        satisfiedBy = FactualAssertions::class,
+        satisfiedBy = FactCheck::class,
     )
 
 }

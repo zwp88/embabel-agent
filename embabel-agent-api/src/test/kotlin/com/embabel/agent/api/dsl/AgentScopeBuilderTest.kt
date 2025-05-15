@@ -26,6 +26,9 @@ import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.Semver
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
+import com.embabel.examples.dogfood.factchecker.FactCheck
+import com.embabel.examples.dogfood.factchecker.factCheckerAgent
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -136,6 +139,35 @@ class AgentScopeBuilderTest {
             )
             assertTrue(result.lastResult() is AllNames)
         }
+
+        @Test
+        fun `agent runs with listMaker`() {
+            val agent: Agent = factCheckerAgent(listOf(mockk()))
+            val ap = dummyAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(
+                AgentProcessStatusCode.COMPLETED,
+                result.status,
+                "Result wasn't completed: ${result.failureInfo}",
+            )
+//            assertEquals(
+//                3,
+//                result.processContext.agentProcess.history.size,
+//                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+//            )
+            assertTrue(
+                result.lastResult() is FactCheck,
+                "Result wasn't fact check: ${result.lastResult()}",
+            )
+            println(result.lastResult())
+        }
     }
 
     @Nested
@@ -144,7 +176,7 @@ class AgentScopeBuilderTest {
         fun `metadata is correct`() {
             val agent: Agent = biAggregate()
             assertEquals("biAggregate", agent.name)
-            assertEquals(Semver.DEFAULT_VERSION, agent.version.value)
+            assertEquals(DEFAULT_VERSION, agent.version.value)
             assertEquals(1, agent.conditions.size, "Should have join condition")
             assertEquals(4, agent.actions.size, "Should have actions")
             assertEquals(1, agent.goals.size)
@@ -331,6 +363,7 @@ fun simpleNamer() = agent("Thing namer", description = "Name a thing, using inte
 
     goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
 }
+
 
 fun redoNamer() =
     agent(

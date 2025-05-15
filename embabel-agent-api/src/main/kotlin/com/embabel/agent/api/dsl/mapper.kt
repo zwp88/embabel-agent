@@ -15,23 +15,26 @@
  */
 package com.embabel.agent.api.dsl
 
-import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.api.common.OperationContext
 import kotlinx.coroutines.*
 
-fun <T, R> Collection<T>.mapManaged(
-    processContext: ProcessContext,
+/**
+ * Map parallel. Block on all results
+ */
+fun <T, R> Collection<T>.mapParallel(
+    operationContext: OperationContext,
     concurrencyLevel: Int = 10, // Control parallelization
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
-    transform: suspend (T) -> R
+    transform: suspend (T) -> R,
 ): List<R> =
-    runBlocking { mapAsync(processContext, concurrencyLevel, dispatcher, transform) }
+    runBlocking { mapAsync(operationContext, concurrencyLevel, dispatcher, transform) }
 
 
 /**
  * Map async, using the agent process
  */
 suspend fun <T, R> Collection<T>.mapAsync(
-    processContext: ProcessContext,
+    context: OperationContext,
     concurrencyLevel: Int = 10, // Control parallelization
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
     transform: suspend (T) -> R
