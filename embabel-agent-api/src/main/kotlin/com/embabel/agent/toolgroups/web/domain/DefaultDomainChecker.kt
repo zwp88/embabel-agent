@@ -17,6 +17,8 @@ package com.embabel.agent.toolgroups.web.domain
 
 
 import com.embabel.common.util.loggerFor
+import org.springframework.ai.tool.annotation.Tool
+import org.springframework.ai.tool.annotation.ToolParam
 import org.springframework.stereotype.Service
 import java.net.InetAddress
 import java.net.Socket
@@ -30,7 +32,10 @@ internal class DefaultDomainChecker : DomainChecker {
 
     private val logger = loggerFor<DefaultDomainChecker>()
 
-    override fun isDomainAvailable(domain: String): Boolean =
+    @Tool(description = "Check if a domain is available")
+    override fun isDomainAvailable(
+        @ToolParam(description = "the domain name, such as thing.com") domain: String,
+    ): Boolean =
         isDomainAvailableByDns(domain) && isDomainAvailableByWhois(domain)
 
 

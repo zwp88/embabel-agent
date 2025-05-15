@@ -28,19 +28,35 @@ import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.toolgroups.web.domain.DomainChecker
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.examples.dogfood.research.Researcher
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
-data class GeneratedName(val name: String, val reason: String)
+data class GeneratedName(
+    val name: String,
+    @JsonPropertyDescription("the essential domain name, like 'embabel.com'")
+    val domain: String,
+    val reason: String,
+)
+
 data class GeneratedNames(val names: List<GeneratedName>)
 data class AllNames(val accepted: List<GeneratedName>, val rejected: List<GeneratedName>)
+
+@ConfigurationProperties("embabel.examples.namer")
+data class NamingProperties(
+    val namesRequired: Int = 10,
+)
 
 @Configuration
 @Profile("!test")
 class NamerAgentConfiguration {
     @Bean
-    fun namingAgent(domainChecker: DomainChecker): Agent {
+    fun namingAgent(
+        domainChecker: DomainChecker,
+        namingProperties: NamingProperties,
+    ): Agent {
         return simpleNamingAgent(
             llms = listOf(
                 LlmOptions(OpenAiModels.GPT_41_MINI).withTemperature(.3),
@@ -50,6 +66,7 @@ class NamerAgentConfiguration {
                 LlmOptions("ai/llama3.2").withTemperature(.3),
             ),
             domainChecker = domainChecker,
+            namingProperties = namingProperties,
         )
     }
 }
@@ -60,15 +77,24 @@ class NamerAgentConfiguration {
 fun simpleNamingAgent(
     llms: List<LlmOptions>,
     domainChecker: DomainChecker,
+    namingProperties: NamingProperties,
 ) = agent(
     name = "CompanyNamer",
     description = "Name a company or project, using internet research"
 ) {
 
     fun generateNamesWith(llm: LlmOptions, context: BiInputActionContext<UserInput, ResearchReport>): GeneratedNames {
-        return context.promptRunner(llm = llm, toolGroups = setOf(ToolGroup.WEB)).createObject(
+        return context.promptRunner(
+            llm = llm,
+            toolGroups = setOf(
+                ToolGroup.WEB
+            ),
+            toolObjects = listOf(domainChecker),
+        ).createObject(
             """
-            Generate a list of names for a company or project, based on the following input.
+            Generate a list of ${namingProperties.namesRequired} names for a company or project, based on the following input.
+            Each name return must include a primary domain name, which would be essential
+            to the company.
             Consider the following research report:
             ${context.input2.text}
 
@@ -89,9 +115,15 @@ fun simpleNamingAgent(
                 }
             },
             merge = { generatedNamesList ->
+                val accepted = generatedNamesList.flatMap { it.names }
+                    .distinctBy { it.name }
+                    .filter { domainChecker.isDomainAvailable(it.domain) }
+                val rejected = generatedNamesList.flatMap { it.names }
+                    .distinctBy { it.name }
+                    .filterNot { domainChecker.isDomainAvailable(it.domain) }
                 AllNames(
-                    accepted = generatedNamesList.flatMap { it.names }.distinctBy { it.name },
-                    rejected = emptyList()
+                    accepted = accepted,
+                    rejected = rejected,
                 )
             },
         ).parallelize()
