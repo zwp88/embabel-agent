@@ -155,7 +155,6 @@ fun <A, B, C> aggregate(
         name = "List<${bClass.name}>=>${cClass.name}",
         description = "Aggregate list $bClass to $cClass",
         pre = transformActions.map { Rerun.hasRunCondition(it) } + allCompletedCondition.name,
-        post = listOf(allCompletedCondition.name),
         cost = 0.0,
         value = 0.0,
         canRerun = true,

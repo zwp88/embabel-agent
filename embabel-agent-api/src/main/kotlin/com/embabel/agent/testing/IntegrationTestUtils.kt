@@ -20,9 +20,10 @@ import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.LlmOperations
+import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ToolGroupResolver
-import io.mockk.mockk
+import com.embabel.agent.spi.support.RegistryToolGroupResolver
 
 object IntegrationTestUtils {
     /**
@@ -40,7 +41,7 @@ object IntegrationTestUtils {
         return DefaultAgentPlatform(
             llmOperations = llmOperations ?: DummyObjectCreatingLlmOperations.Companion.LoremIpsum,
             eventListeners = listOfNotNull(EventSavingAgenticEventListener(), listener),
-            toolGroupResolver = toolGroupResolver ?: mockk(),
+            toolGroupResolver = toolGroupResolver ?: RegistryToolGroupResolver("empty", emptyList()),
             ragService = ragService ?: RagService.empty(),
         )
     }
@@ -51,7 +52,7 @@ object IntegrationTestUtils {
             agentPlatform = dummyAgentPlatform(),
             llmOperations = DummyObjectCreatingLlmOperations.Companion.LoremIpsum,
             eventListener = EventSavingAgenticEventListener(),
-            operationScheduler = mockk(),
+            operationScheduler = OperationScheduler.PRONTO,
             ragService = RagService.empty(),
         )
     }

@@ -15,18 +15,17 @@
  */
 package com.embabel.examples.dogfood.factchecker
 
-import com.embabel.agent.api.common.InputActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.aggregate
 import com.embabel.agent.api.dsl.mapParallel
 import com.embabel.agent.config.models.AnthropicModels
-import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.embabel.common.core.types.ZeroToOne
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -39,8 +38,8 @@ data class FactualAssertions(val factualAssertions: List<FactualAssertion>)
 data class AssertionCheck(
     val assertion: String,
     val isTrue: Boolean,
-    @JsonPropertyDescription("confidence in your judgment as to whether it's true or false")
-    val confidence: Double,
+    @JsonPropertyDescription("confidence in your judgment as to whether it's true or false. From 0-1")
+    val confidence: ZeroToOne,
     @JsonPropertyDescription("reasoning for your scoring")
     val reasoning: String,
 )
@@ -56,8 +55,8 @@ class FactCheckerAgentConfiguration {
     fun factChecker(): Agent {
         return factCheckerAgent(
             llms = listOf(
-                LlmOptions.Companion(OpenAiModels.Companion.GPT_41_MINI).withTemperature(.3),
-                LlmOptions.Companion(AnthropicModels.Companion.CLAUDE_35_HAIKU).withTemperature(.0),
+                LlmOptions(AnthropicModels.CLAUDE_35_HAIKU).withTemperature(.3),
+                LlmOptions(AnthropicModels.CLAUDE_35_HAIKU).withTemperature(.0),
             )
         )
     }
@@ -75,21 +74,6 @@ fun factCheckerAgent(
     description = "Check content for factual accuracy",
 ) {
 
-    fun discernFactualAssertions(
-        llm: LlmOptions,
-        context: InputActionContext<UserInput>
-    ): FactualAssertions {
-        return context.promptRunner(llm = llm, toolGroups = setOf(ToolGroup.WEB)).createObject(
-            """
-            Given the following content, identify any factual assertions.
-            Phrase them as standalone assertions.
-
-            # Input
-            ${context.input.content}
-            """.trimIndent()
-        )
-    }
-
     flow {
 
 //        referencedAgentAction<UserInput, ResearchReport>(agentName = Researcher::class.java.name)
@@ -97,7 +81,15 @@ fun factCheckerAgent(
         aggregate<UserInput, FactualAssertions, FactualAssertions>(
             transforms = llms.map { llm ->
                 { context ->
-                    discernFactualAssertions(llm, context)
+                    context.promptRunner(llm = llm, toolGroups = setOf(ToolGroup.WEB)).createObject(
+                        """
+            Given the following content, identify any factual assertions.
+            Phrase them as standalone assertions.
+
+            # Input
+            ${context.input.content}
+            """.trimIndent()
+                    )
                 }
             },
             merge = { list, context ->

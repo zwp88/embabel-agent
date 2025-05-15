@@ -122,7 +122,8 @@ class AgentScopeBuilderTest {
 
         @Test
         fun `agent runs`() {
-            val agent: Agent = simpleNamer()
+            var count = 0
+            val agent: Agent = simpleNamer { ++count }
             val ap = dummyAgentPlatform()
             val processOptions = ProcessOptions()
             val result = ap.runAgentFrom(
@@ -133,6 +134,7 @@ class AgentScopeBuilderTest {
                 ),
             )
             assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(2, count, "All transforms should have been invoked")
             assertEquals(
                 3, result.processContext.agentProcess.history.size,
                 "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
@@ -345,24 +347,38 @@ fun userInputToFrogChain() = agent("uitf", description = "Evil frogly wizard") {
     goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = Frog::class)
 }
 
-fun simpleNamer() = agent("Thing namer", description = "Name a thing, using internet research") {
+fun simpleNamer(transformListener: () -> Unit = {}) =
+    agent("Thing namer", description = "Name a thing, using internet research") {
 
-    flow {
-        aggregate<UserInput, GeneratedNames, AllNames>(
-            transforms = listOf(
-                { GeneratedNames(names = emptyList()) },
-                { GeneratedNames(names = listOf(GeneratedName("money.com", "Helps make money"))) }),
-            merge = { list, _ ->
-                AllNames(
-                    accepted = list.flatMap { it.names }.distinctBy { it.name },
-                    rejected = emptyList()
-                )
-            },
-        ).parallelize()
+        flow {
+            aggregate<UserInput, GeneratedNames, AllNames>(
+                transforms = listOf(
+                    {
+                        transformListener()
+                        GeneratedNames(names = emptyList())
+                    },
+                    {
+                        transformListener()
+                        GeneratedNames(
+                            names = listOf(
+                                GeneratedName(
+                                    "money.com",
+                                    "Helps make money"
+                                )
+                            )
+                        )
+                    }),
+                merge = { list, _ ->
+                    AllNames(
+                        accepted = list.flatMap { it.names }.distinctBy { it.name },
+                        rejected = emptyList()
+                    )
+                },
+            ).parallelize()
+        }
+
+        goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
     }
-
-    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
-}
 
 
 fun redoNamer() =
