@@ -1,8 +1,8 @@
 # Embabel Agent Framework
 
 ![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=alert_status&token=d275d89d09961c114b8317a4796f84faf509691c)](https://sonarcloud.io/summary/new_code?id=embabel_kg-core)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=bugs&token=d275d89d09961c114b8317a4796f84faf509691c)](https://sonarcloud.io/summary/new_code?id=embabel_kg-core)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent)[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=bugs&token=d275d89d09961c114b8317a4796f84faf509691c)](https://sonarcloud.io/summary/new_code?id=embabel_kg-core)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=bugs)](https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent)
 
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
