@@ -126,7 +126,8 @@ fun factCheckerAgent(
                 context.promptRunner().createObject<RationalizedFactualAssertions>(
                     """
                     Given the following factual assertions, merge them into a single list if
-                    any are the same. Count the number you merged.
+                    any are the same. Condense into one assertion if one assertion negates another.
+                    Count the number you merged.
 
                     # Assertions
                     ${list.flatMap { it.factualAssertions }.joinToString("\n") { "- " + it.standaloneAssertion }}
