@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="embabel-horoscope-example" />
+        <module name="embabel-agent-rag" />
         <module name="embabel-agent-api" />
         <module name="embabel-movie-example" />
         <module name="embabel-agent-shell" />

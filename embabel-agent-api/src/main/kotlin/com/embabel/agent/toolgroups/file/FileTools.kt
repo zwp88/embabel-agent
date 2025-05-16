@@ -16,12 +16,7 @@
 package com.embabel.agent.toolgroups.file
 
 import com.embabel.agent.api.common.SelfToolCallbackPublisher
-import com.embabel.agent.api.common.SelfToolGroup
-import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.core.ToolGroupDescription
-import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.toolgroups.DirectoryBased
-import com.embabel.common.core.types.Semver
 import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
@@ -35,30 +30,44 @@ import java.nio.file.Paths
 import java.util.zip.ZipInputStream
 
 /**
- * Something that can edit a file
+ * Function that can edit a file. Functions can be changed.
  */
 typealias FileContentTransformer = (raw: String) -> String
 
 /**
- * File tools. Extend FileReadTools for safe read only use
+ * Read and Write file tools. Extend FileReadTools for safe read only use
  */
 interface FileTools : FileReadTools, FileWriteTools {
 
     companion object {
 
-        fun toolGroup(root: String): ToolGroup = DefaultFileTools(root)
+        /**
+         * Create a FileReadTools instance with the given root directory.
+         */
+        fun readOnly(
+            root: String,
+            fileContentTransformers: List<FileContentTransformer> = emptyList(),
+        ): FileReadTools {
+            return object : FileReadTools {
+                override val root: String = root
+                override val fileContentTransformers: List<FileContentTransformer> = emptyList()
+            }
+        }
+
+        /**
+         * Create a readwrite FileTools instance with the given root directory.
+         */
+        fun readWrite(
+            root: String,
+            fileContentTransformers: List<FileContentTransformer> = emptyList(),
+        ): FileTools {
+            return object : FileTools {
+                override val root: String = root
+                override val fileContentTransformers: List<FileContentTransformer> = emptyList()
+            }
+        }
     }
 }
-
-private class DefaultFileTools(
-    override val root: String,
-    override val name: String = "io-file",
-    override val provider: String = "embabel",
-    override val version: Semver = Semver(0, 1, 0),
-    override val description: ToolGroupDescription = ToolGroup.FILE_DESCRIPTION,
-    override val permissions: Set<ToolGroupPermission> = setOf(ToolGroupPermission.HOST_ACCESS),
-    override val fileContentTransformers: List<FileContentTransformer> = emptyList(),
-) : FileTools, SelfToolGroup
 
 /**
  * LLM-ready ToolCallbacks and convenience methods for file operations.
