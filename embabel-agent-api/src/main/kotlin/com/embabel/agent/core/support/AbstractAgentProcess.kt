@@ -184,7 +184,12 @@ abstract class AbstractAgentProcess(
     protected fun handleStuck(agent: Agent) {
         val stuckHandler = agent.stuckHandler
         if (stuckHandler == null) {
-            logger.warn("Process {} is stuck: no handler", this.id)
+            logger.warn(
+                "Process {} is stuck: no handler. History ({}):\n\t{}",
+                this.id,
+                history.size,
+                history.joinToString("\n\t") { it.actionName },
+            )
             return
         }
         val result = stuckHandler.handleStuck(this)

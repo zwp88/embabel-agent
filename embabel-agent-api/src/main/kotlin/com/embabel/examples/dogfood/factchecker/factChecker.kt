@@ -18,7 +18,7 @@ package com.embabel.examples.dogfood.factchecker
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.api.dsl.aggregate
-import com.embabel.agent.api.dsl.mapParallel
+import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.CoreToolGroups
@@ -141,13 +141,13 @@ fun factCheckerAgent(
             LlmOptions(ModelSelectionCriteria.Auto),
             toolGroups = setOf(CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION),
         )
-        val checks = operationContext.input.factualAssertions.mapParallel(operationContext) { assertion ->
+        val checks = operationContext.input.factualAssertions.parallelMap(operationContext) { assertion ->
             promptRunner.createObject<AssertionCheck>(
                 """
                 Given the following assertion, check if it is true or false and explain why in ${properties.reasoningWordCount} words
                 Express your confidence in your determination as a number between 0 and 1.
                 Use web tools.
-                
+
                 Be guided by the following regarding sources:
                 - Trusted sources: ${properties.trustedSources.joinToString(", ")}
                 - Untrusted sources: ${properties.untrustedSources.joinToString(", ")}

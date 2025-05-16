@@ -21,7 +21,7 @@ import kotlinx.coroutines.*
 /**
  * Map parallel. Block on all results
  */
-fun <T, R> Collection<T>.mapParallel(
+fun <T, R> Collection<T>.parallelMap(
     operationContext: OperationContext,
     concurrencyLevel: Int = 10, // Control parallelization
     dispatcher: CoroutineDispatcher = Dispatchers.Default,

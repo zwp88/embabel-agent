@@ -22,8 +22,51 @@ import com.embabel.agent.core.*
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.common.core.MobyNameGenerator
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 import java.util.function.Function as JavaFunction
+
+inline fun <reified A, reified B> doSplit(
+    noinline splitter: (InputActionContext<A>) -> List<B>,
+): AgentScopeBuilder<Unit> = doSplit(
+    splitter = splitter,
+    aClass = A::class.java,
+    bClass = B::class.java,
+)
+
+fun <A, B> doSplit(
+    splitter: (InputActionContext<A>) -> List<B>,
+    aClass: Class<A>,
+    bClass: Class<B>,
+): AgentScopeBuilder<Unit> {
+    val a = ConsumerAction(
+        name = "${aClass.name}-<=${bClass.name}",
+        description = "${aClass.name}-<=${bClass.name}",
+        pre = emptyList(),
+        post = emptyList(),
+        cost = 0.0,
+        value = 0.0,
+        canRerun = true,
+        inputClass = aClass,
+        toolGroups = emptySet(),
+        toolCallbacks = emptyList(),
+    ) {
+        val list = splitter(it)
+        list.filterNotNull()
+            .forEach { item ->
+                it += item
+            }
+    }
+    return AgentScopeBuilder(
+        name = a.name,
+        actions = listOf(a),
+    )
+}
+
+inline fun <reified A, reified B> split(
+    noinline splitter: (a: A) -> List<B>,
+
+    ): AgentScopeBuilder<Unit> = doSplit({ splitter(it.input) }, A::class.java, B::class.java)
 
 inline infix fun <reified A, reified B, reified C> ((A) -> B).andThenDo(
     crossinline that: (InputActionContext<B>) -> C
@@ -413,6 +456,10 @@ inline fun <reified C> repeat(
     return repeat(what, until, C::class.java)
 }
 
+/**
+ * AgentScopeBuilder that emits actions and can be built on further.
+ * @param O the output type of the actions
+ */
 data class AgentScopeBuilder<O>(
     val name: String,
     val provider: String = "embabel",
@@ -469,15 +516,19 @@ data class AgentScopeBuilder<O>(
         )
     }
 
-    /**
-     * Changes output
-     */
-    fun <F> andThen(fn: (e: O) -> F, fClass: Class<F>): AgentScopeBuilder<F> {
+    inline infix fun <reified F> andThenDo(
+        fn: Transformation<O, F>,
+    ): AgentScopeBuilder<F> = andThenDo(fn, F::class.java)
+
+    fun <F> andThenDo(
+        fn: Transformation<O, F>,
+        fClass: Class<F>
+    ): AgentScopeBuilder<F> {
         // TODO is this safe?
         val lastAction = actions.last()
         val extraAction = TransformationAction(
-            name = "repeat",
-            description = "Repeat until condition is met",
+            name = "extra=>${fClass.name}",
+            description = "Extra step to ${fClass.name}",
             pre = listOf(Rerun.hasRunCondition(lastAction)),
             post = emptyList(),
             cost = 0.0,
@@ -489,10 +540,17 @@ data class AgentScopeBuilder<O>(
             toolGroups = emptySet(),
             toolCallbacks = emptyList(),
         ) {
-            fn(it.input as O)
+            loggerFor<AgentScopeBuilder<*>>().info("Running extra action {}", name)
+            fn.transform(it as TransformationActionContext<O, F>)
         }
         return this.copy(actions = this.actions + extraAction) as AgentScopeBuilder<F>
     }
+
+    /**
+     * Changes output
+     */
+    fun <F> andThen(fn: (e: O) -> F, fClass: Class<F>): AgentScopeBuilder<F> =
+        andThenDo({ fn(it.input) }, fClass)
 
 
     inline infix fun <reified F> andThen(noinline fn: (e: O) -> F): AgentScopeBuilder<F> {

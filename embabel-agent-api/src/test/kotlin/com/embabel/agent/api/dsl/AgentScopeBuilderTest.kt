@@ -40,6 +40,39 @@ import kotlin.test.assertEquals
 class AgentScopeBuilderTest {
 
     @Nested
+    inner class Split {
+        @Test
+        fun `metadata is correct`() {
+            val agent: Agent = splitGarden()
+            assertEquals("splitter", agent.name)
+            assertEquals("splitter0", agent.description)
+            assertEquals(Semver.DEFAULT_VERSION, agent.version.value)
+            assertEquals(0, agent.conditions.size, "Should have no conditions")
+            assertEquals(3, agent.actions.size, "Should have 3 actions")
+            assertEquals(1, agent.goals.size)
+        }
+
+        @Test
+        fun `agent runs`() {
+            val agent: Agent = splitGarden()
+            val ap = dummyAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentWithInput(
+                agent = agent,
+                processOptions = processOptions,
+                input = UserInput("do something"),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                3,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is SnakeMeal)
+        }
+    }
+
+    @Nested
     inner class Branch {
         @Test
         fun `metadata is correct`() {
@@ -404,6 +437,27 @@ class AgentScopeBuilderTest {
 data class GeneratedName(val name: String, val reason: String)
 data class GeneratedNames(val names: List<GeneratedName>)
 data class AllNames(val accepted: List<GeneratedName>, val rejected: List<GeneratedName>)
+
+data class Garden(val name: String)
+
+fun splitGarden() = agent("splitter", description = "splitter0") {
+
+    transformation<UserInput, Garden> { Garden(it.input.content) }
+
+    flow {
+        split<Garden, Frog> {
+            listOf(Frog("Kermit"), Frog("Freddo"))
+        } andThenDo {
+            SnakeMeal(it.objects.filterIsInstance<Frog>())
+        }
+    }
+
+    goal(
+        name = "snakeFed",
+        description = "We are satisfied with generated names",
+        satisfiedBy = SnakeMeal::class,
+    )
+}
 
 fun userInputToFrogOrPersonBranch() = agent("brancher", description = "brancher0") {
 
