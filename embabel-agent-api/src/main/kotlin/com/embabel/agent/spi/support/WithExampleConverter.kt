@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
-import com.embabel.common.core.util.DummyInstanceCreator
+import com.embabel.common.util.DummyInstanceCreator
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.ai.converter.StructuredOutputConverter

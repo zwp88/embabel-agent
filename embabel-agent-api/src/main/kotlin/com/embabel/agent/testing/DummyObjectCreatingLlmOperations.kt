@@ -20,7 +20,7 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
-import com.embabel.common.core.util.DummyInstanceCreator
+import com.embabel.common.util.DummyInstanceCreator
 
 /**
  * Fake LLM transformer that generates valid classes with random strings.

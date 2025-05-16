@@ -20,7 +20,7 @@ import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
-import com.embabel.common.core.util.DummyInstanceCreator
+import com.embabel.common.util.DummyInstanceCreator
 import com.embabel.examples.simple.movie.*
 import io.mockk.every
 import io.mockk.mockk
