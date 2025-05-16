@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.core.support
 
-import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.ToolCallback
+import org.springframework.ai.tool.ToolCallbacks
 
 /**
  * ToolCallbacks.from complains if no tools.
