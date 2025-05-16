@@ -175,6 +175,7 @@ fun <A, B, C> aggregate(
 /**
  * Aggregate taking 2 inputs
  */
+@Suppress("UNCHECKED_CAST")
 fun <A1, A2, B : Any, C> biAggregate(
     transforms: List<(context: BiInputActionContext<A1, A2>) -> B>,
     merge: (list: List<B>) -> C,
