@@ -20,7 +20,7 @@ import com.embabel.agent.common.Constants
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.common.core.types.Semver
-import com.embabel.common.core.util.MacOSCondition
+import com.embabel.common.util.MacOSCondition
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.context.annotation.Conditional
 import org.springframework.context.annotation.Profile

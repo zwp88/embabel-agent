@@ -20,7 +20,7 @@ import com.embabel.common.core.types.AssetCoordinates
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.Semver
-import com.embabel.common.core.util.ComputerSaysNoSerializer
+import com.embabel.common.util.ComputerSaysNoSerializer
 import com.embabel.plan.goap.GoapPlanningSystem
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import org.slf4j.LoggerFactory

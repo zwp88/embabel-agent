@@ -26,7 +26,7 @@ import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Semver
-import com.embabel.common.core.util.NameUtils
+import com.embabel.common.util.NameUtils
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.slf4j.LoggerFactory

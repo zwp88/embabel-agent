@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.experimental.prompt
 
-import com.embabel.common.core.util.DummyInstanceCreator
+import com.embabel.common.util.DummyInstanceCreator
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 

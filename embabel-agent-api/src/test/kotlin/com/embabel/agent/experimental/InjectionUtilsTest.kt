@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.common.core.util
+package com.embabel.agent.experimental.util
 
-import com.embabel.agent.experimental.util.Injectable
-import com.embabel.agent.experimental.util.InjectionUtils
-import com.embabel.agent.experimental.util.Injector
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
