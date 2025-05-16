@@ -233,6 +233,13 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
             role = WEB,
         )
 
+        const val RAG = "rag"
+
+        val RAG_DESCRIPTION = ToolGroupDescription(
+            description = "RAG query tools",
+            role = RAG,
+        )
+
         const val GITHUB = "github"
 
         val GITHUB_DESCRIPTION = ToolGroupDescription(
@@ -245,18 +252,6 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
         val BROWSER_AUTOMATION_DESCRIPTION = ToolGroupDescription(
             description = "Browser automation tools",
             role = BROWSER_AUTOMATION,
-        )
-
-        const val FILE = "file"
-        val FILE_DESCRIPTION = ToolGroupDescription(
-            description = "Tools for file and directory operations",
-            role = FILE,
-        )
-
-        const val CI = "code"
-        val CI_DESCRIPTION = ToolGroupDescription(
-            description = "Tools for running CI on a project",
-            role = CI,
         )
     }
 

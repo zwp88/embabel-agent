@@ -17,7 +17,7 @@ package com.embabel.agent.config
 
 import com.embabel.agent.common.Constants
 import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.core.ToolGroupDescription
+import com.embabel.agent.core.ToolGroup.Companion.RAG_DESCRIPTION
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.rag.Ingester
 import com.embabel.agent.rag.RagService
@@ -57,13 +57,10 @@ class RagServiceConfiguration {
     fun ragToolGroup(ragService: RagService): ToolGroup {
         return ToolGroup(
             metadata = ToolGroupMetadata(
-                description = ToolGroupDescription(
-                    description = "RAG service",
-                    role = "rag",
-                ),
+                description = RAG_DESCRIPTION,
                 name = "rag",
                 provider = Constants.EMBABEL_PROVIDER,
-                version = Semver("1.0.0"),
+                version = Semver(0, 1, 0),
                 permissions = setOf(),
             ),
             toolCallbacks = RagServiceTools(
