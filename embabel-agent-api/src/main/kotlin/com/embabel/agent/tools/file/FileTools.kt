@@ -20,6 +20,7 @@ import com.embabel.agent.tools.DirectoryBased
 import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
+import org.springframework.ai.tool.annotation.ToolParam
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -81,6 +82,13 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
      * as this will break editing if editing is done in the same session.
      */
     val fileContentTransformers: List<FileContentTransformer>
+
+    /**
+     * Does this file exist?
+     */
+    fun exists(): Boolean {
+        return Files.exists(resolvePath(""))
+    }
 
     @Tool(description = "Find files using glob patterns. Return absolute paths")
     fun findFiles(glob: String): List<String> {
@@ -191,17 +199,31 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
     }
 
     @Tool(description = "Edit the file at the given location. Replace oldContent with newContent. oldContent is typically just a part of the file. e.g. use it to replace a particular method to add another method")
-    fun editFile(path: String, oldContent: String, newContent: String): String {
+    fun editFile(
+        path: String,
+        @ToolParam(description = "content to replace") oldContent: String,
+        @ToolParam(description = "replacement content") newContent: String
+    ): String {
         logger.info("Editing file at path {}", path)
         logger.debug("File edit at path {}: {} -> {}", path, oldContent, newContent)
         val resolvedPath = resolveAndValidateFile(root = root, path = path)
 
-        val currentContent = Files.readString(resolvedPath)
-        val newFileContent = currentContent.replace(oldContent, newContent)
+        val oldFileContent = Files.readString(resolvedPath)
+        val newFileContent = oldFileContent.replace(oldContent, newContent)
 
-        Files.writeString(resolvedPath, newFileContent)
-        logger.info("Edited file at path: $path")
-        return "file edited"
+        return if (newFileContent == oldFileContent) {
+            logger.warn(
+                "editFile on {} produced no changes: oldContent=[{}], newContent=[{}]",
+                resolvedPath,
+                oldContent,
+                newContent,
+            )
+            "no changes made"
+        } else {
+            Files.writeString(resolvedPath, newFileContent)
+            logger.info("Edited file at {}", path)
+            return "file edited"
+        }
     }
 
     // April 25 2005: This method is the first method added to
@@ -257,7 +279,7 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
          * @param zipFile the zip file to extract
          * @param tempDir directory to extract it under
          * @param delete if true, delete the zip file after extraction
-         * @return the path to the extracted file
+         * @return the path to the extracted file content
          */
         fun extractZipFile(
             zipFile: File,

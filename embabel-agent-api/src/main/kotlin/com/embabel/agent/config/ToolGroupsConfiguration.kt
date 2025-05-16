@@ -19,6 +19,7 @@ package com.embabel.agent.config
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
+import com.embabel.agent.tools.math.MathTools
 import com.embabel.agent.tools.mcp.McpToolGroup
 import io.modelcontextprotocol.client.McpSyncClient
 import org.slf4j.LoggerFactory
@@ -40,6 +41,9 @@ internal class ToolGroupsConfiguration(
             mcpSyncClients.map { it.serverInfo }.joinToString("\n"),
         )
     }
+
+    @Bean
+    fun mathToolGroup() = MathTools()
 
     @Bean
     fun mcpWebToolsGroup(): ToolGroup {

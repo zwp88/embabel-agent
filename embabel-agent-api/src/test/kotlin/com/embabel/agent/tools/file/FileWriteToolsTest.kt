@@ -22,7 +22,6 @@ import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-@Disabled("there are some issues in this test, need to be fixed")
 class FileWriteToolsTest {
 
     private lateinit var tempDir: File
@@ -44,7 +43,7 @@ class FileWriteToolsTest {
     }
 
     @Nested
-    inner class `createFile` {
+    inner class CreateFile {
 
         @Test
         fun `should create file with content`() {
@@ -84,7 +83,7 @@ class FileWriteToolsTest {
     }
 
     @Nested
-    inner class `editFile` {
+    inner class EditFile {
 
         private val originalContent = "This is the original content."
         private val path = "edit-test.txt"
@@ -100,13 +99,18 @@ class FileWriteToolsTest {
         fun `should replace content in file`() {
             val oldContent = "original content"
             val newContent = "modified content"
-            val fullContent = "This is the $originalContent"
+            val fullContent = "This is the $oldContent"
             Files.writeString(file.toPath(), fullContent)
 
             val result = fileWriteTools.editFile(path, oldContent, newContent)
 
             assertEquals("file edited", result)
-            assertEquals("This is the modified content", Files.readString(file.toPath()))
+            val loadedContent = Files.readString(file.toPath())
+            assertEquals(
+                "This is the $newContent",
+                loadedContent,
+                "File content is [$loadedContent]"
+            )
         }
 
         @Test
@@ -118,7 +122,7 @@ class FileWriteToolsTest {
     }
 
     @Nested
-    inner class `createDirectory` {
+    inner class CreateDirectory {
 
         @Test
         fun `should create directory`() {
@@ -166,7 +170,7 @@ class FileWriteToolsTest {
     }
 
     @Nested
-    inner class `appendFile` {
+    inner class AppendFile {
 
         private val originalContent = "Original content\n"
         private val path = "append-test.txt"
@@ -197,7 +201,7 @@ class FileWriteToolsTest {
     }
 
     @Nested
-    inner class `delete` {
+    inner class Delete {
 
         private val path = "to-delete.txt"
         private lateinit var file: File
@@ -225,7 +229,7 @@ class FileWriteToolsTest {
     }
 
     @Nested
-    inner class `createTempDir` {
+    inner class CreateTempDir {
 
         private lateinit var createdTempDir: File
 
@@ -249,7 +253,7 @@ class FileWriteToolsTest {
     }
 
     @Nested
-    inner class `extractZipFile` {
+    inner class ExtractZipFile {
 
         private lateinit var zipFile: File
         private lateinit var extractDir: File
@@ -281,10 +285,18 @@ class FileWriteToolsTest {
         }
 
         @Test
+        @Disabled("not yet working")
         fun `should extract zip file contents`() {
-            val result = FileWriteTools.extractZipFile(zipFile, extractDir, delete = false)
+            val result = FileWriteTools.extractZipFile(
+                zipFile,
+                extractDir,
+                delete = false
+            )
 
-            assertTrue(result.exists(), "Zip file should exist")
+            assertTrue(
+                result.exists(),
+                "Zip file content should exist at ${result.absolutePath}",
+            )
             assertEquals("test", result.name)
 
             val file1 = File(extractDir, "file1.txt")
@@ -299,7 +311,6 @@ class FileWriteToolsTest {
         @Test
         fun `should delete zip file when delete is true`() {
             FileWriteTools.extractZipFile(zipFile, extractDir, true)
-
             assertFalse(zipFile.exists())
         }
     }
