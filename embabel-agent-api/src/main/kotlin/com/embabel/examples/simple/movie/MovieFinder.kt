@@ -19,8 +19,8 @@ import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.config.models.OpenAiModels
+import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.all
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
@@ -249,7 +249,7 @@ class MovieFinder(
      * @param userInput The original user input for additional context
      * @return RelevantNewsStories containing news that might inspire recommendations
      */
-    @Action(toolGroups = [ToolGroup.WEB])
+    @Action(toolGroups = [CoreToolGroups.WEB])
     fun findNewsStories(
         dmb: DecoratedMovieBuff,
         userInput: UserInput

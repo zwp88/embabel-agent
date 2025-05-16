@@ -16,8 +16,8 @@
 package com.embabel.agent.config
 
 import com.embabel.agent.common.Constants
+import com.embabel.agent.core.CoreToolGroups.RAG_DESCRIPTION
 import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.core.ToolGroup.Companion.RAG_DESCRIPTION
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.rag.Ingester
 import com.embabel.agent.rag.RagService

@@ -22,7 +22,7 @@ import com.embabel.agent.api.dsl.biAggregate
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Agent
-import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.tools.web.domain.DomainChecker
@@ -87,7 +87,7 @@ fun simpleNamingAgent(
         return context.promptRunner(
             llm = llm,
             toolGroups = setOf(
-                ToolGroup.WEB
+                CoreToolGroups.WEB
             ),
             toolObjects = listOf(domainChecker),
         ).createObject(

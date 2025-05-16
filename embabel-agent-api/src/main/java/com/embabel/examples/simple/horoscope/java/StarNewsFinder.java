@@ -17,7 +17,7 @@ package com.embabel.examples.simple.horoscope.java;
 
 import com.embabel.agent.api.annotation.*;
 import com.embabel.agent.config.models.OpenAiModels;
-import com.embabel.agent.core.ToolGroup;
+import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.domain.io.UserInput;
 import com.embabel.agent.domain.library.PersonImpl;
 import com.embabel.agent.domain.library.RelevantNewsStories;
@@ -90,7 +90,7 @@ public class StarNewsFinder {
     }
 
     // toolGroups specifies tools that are required for this action to run
-    @Action(toolGroups = {ToolGroup.WEB})
+    @Action(toolGroups = {CoreToolGroups.WEB})
     public RelevantNewsStories findNewsStories(StarPerson person, Horoscope horoscope) {
         var prompt = """
                 %s is an astrology believer with the sign %s.

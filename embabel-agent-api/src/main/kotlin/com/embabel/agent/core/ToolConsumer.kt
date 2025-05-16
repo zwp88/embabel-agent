@@ -213,9 +213,6 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
 
     val metadata: ToolGroupMetadata
 
-    /**
-     * Define well known tool groups
-     */
     companion object {
 
         operator fun invoke(
@@ -224,34 +221,6 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
         ): ToolGroup = ToolGroupImpl(
             metadata = metadata,
             toolCallbacks = toolCallbacks,
-        )
-
-        const val WEB = "web"
-
-        val WEB_DESCRIPTION = ToolGroupDescription(
-            description = "Tools for web search and scraping",
-            role = WEB,
-        )
-
-        const val RAG = "rag"
-
-        val RAG_DESCRIPTION = ToolGroupDescription(
-            description = "RAG query tools",
-            role = RAG,
-        )
-
-        const val GITHUB = "github"
-
-        val GITHUB_DESCRIPTION = ToolGroupDescription(
-            description = "Integration with GitHub APIs",
-            role = GITHUB,
-        )
-
-        const val BROWSER_AUTOMATION = "browser_automation"
-
-        val BROWSER_AUTOMATION_DESCRIPTION = ToolGroupDescription(
-            description = "Browser automation tools",
-            role = BROWSER_AUTOMATION,
         )
     }
 

@@ -19,7 +19,7 @@ import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
 import com.embabel.agent.config.models.OpenAiModels
-import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
@@ -206,7 +206,7 @@ class StarNewsFinder(
      * @return A collection of relevant news stories with summaries and URLs
      */
     // toolGroups specifies tools that are required for this action to run
-    @Action(toolGroups = [ToolGroup.WEB, ToolGroup.BROWSER_AUTOMATION, "rag"])
+    @Action(toolGroups = [CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION, "rag"])
     internal fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
         usingModel(model).createObject(
             """

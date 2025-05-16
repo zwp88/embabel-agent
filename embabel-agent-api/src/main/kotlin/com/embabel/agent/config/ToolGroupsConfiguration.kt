@@ -16,6 +16,7 @@
 package com.embabel.agent.config
 
 
+import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
 import com.embabel.agent.tools.mcp.McpToolGroup
@@ -49,7 +50,7 @@ internal class ToolGroupsConfiguration(
             "search_wikipedia",
         )
         return McpToolGroup(
-            description = ToolGroup.WEB_DESCRIPTION,
+            description = CoreToolGroups.WEB_DESCRIPTION,
             name = "docker-web",
             provider = "Docker",
             permissions = setOf(
@@ -66,7 +67,7 @@ internal class ToolGroupsConfiguration(
     @Bean
     fun browserAutomationWebToolsGroup(): ToolGroup {
         return McpToolGroup(
-            description = ToolGroup.BROWSER_AUTOMATION_DESCRIPTION,
+            description = CoreToolGroups.BROWSER_AUTOMATION_DESCRIPTION,
             name = "docker-puppeteer",
             provider = "Docker",
             permissions = setOf(
@@ -90,7 +91,7 @@ internal class ToolGroupsConfiguration(
     @Bean
     fun githubToolsGroup(): ToolGroup {
         return McpToolGroup(
-            description = ToolGroup.GITHUB_DESCRIPTION,
+            description = CoreToolGroups.GITHUB_DESCRIPTION,
             name = "docker-github",
             provider = "Docker",
             permissions = setOf(
