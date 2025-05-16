@@ -47,7 +47,7 @@ data class RationalizedFactualAssertions(
 data class AssertionCheck(
     val assertion: String,
     val isTrue: Boolean,
-    @JsonPropertyDescription("confidence in your judgment as to whether it's true or false. From 0-1")
+    @JsonPropertyDescription("confidence in your judgment as to whether the assertion true or false. From 0-1")
     val confidence: ZeroToOne,
     @JsonPropertyDescription("reasoning for your scoring")
     val reasoning: String,
@@ -145,7 +145,10 @@ fun factCheckerAgent(
             promptRunner.createObject<AssertionCheck>(
                 """
                 Given the following assertion, check if it is true or false and explain why in ${properties.reasoningWordCount} words
-                Use web tools. Be guided by the following regarding sources:
+                Express your confidence in your determination as a number between 0 and 1.
+                Use web tools.
+                
+                Be guided by the following regarding sources:
                 - Trusted sources: ${properties.trustedSources.joinToString(", ")}
                 - Untrusted sources: ${properties.untrustedSources.joinToString(", ")}
                 Assertion: <${assertion.standaloneAssertion}>

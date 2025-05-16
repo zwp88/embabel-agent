@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
+
 import com.embabel.agent.api.common.*
 import com.embabel.agent.api.common.support.*
 import com.embabel.agent.core.*
@@ -22,6 +23,59 @@ import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.common.core.MobyNameGenerator
 import org.springframework.ai.tool.ToolCallback
+import java.util.function.Function as JavaFunction
+
+inline infix fun <reified A, reified B, reified C> ((A) -> B).andThenDo(
+    crossinline that: (InputActionContext<B>) -> C
+): AgentScopeBuilder<C> {
+    val javaFunction1 = JavaFunction<InputActionContext<A>, B> { ctx -> this(ctx.input) }
+    val javaFunction2 = JavaFunction<InputActionContext<B>, C> { ctx -> that(ctx) }
+
+    return chain(
+        { javaFunction1.apply(it) },
+        { javaFunction2.apply(it) },
+        A::class.java,
+        B::class.java,
+        C::class.java
+    )
+}
+
+inline infix fun <reified A, reified B, reified C> ((A) -> B).andThen(
+    crossinline that: (B) -> C
+): AgentScopeBuilder<C> {
+    val javaFunction1 = JavaFunction<InputActionContext<A>, B> { ctx -> this(ctx.input) }
+    val javaFunction2 = JavaFunction<InputActionContext<B>, C> { ctx -> that(ctx.input) }
+
+    return chain(
+        { javaFunction1.apply(it) },
+        { javaFunction2.apply(it) },
+        A::class.java,
+        B::class.java,
+        C::class.java
+    )
+}
+
+
+inline fun <reified A, reified B, reified C> JavaFunction<InputActionContext<A>, B>.javaAndThen(
+    that: JavaFunction<InputActionContext<B>, C>,
+): AgentScopeBuilder<C> {
+    return chain({ this.apply(it) }, { that.apply(it) }, A::class.java, B::class.java, C::class.java)
+}
+
+inline fun <reified A, reified B, reified C> JavaFunction<A, B>.andThen(
+    that: JavaFunction<InputActionContext<B>, C>,
+): AgentScopeBuilder<C> {
+    return chain({ this.apply(it.input) }, { that.apply(it) }, A::class.java, B::class.java, C::class.java)
+}
+
+fun <A, B, C> JavaFunction<InputActionContext<A>, B>.andThen(
+    that: JavaFunction<InputActionContext<B>, C>,
+    aClass: Class<A>,
+    bClass: Class<B>,
+    cClass: Class<C>,
+): AgentScopeBuilder<C> {
+    return chain({ this.apply(it) }, { that.apply(it) }, aClass, bClass, cClass)
+}
 
 /**
  * Creates a chain from A to B via C. Emits actions.
@@ -32,7 +86,7 @@ fun <A, B, C> chain(
     aClass: Class<A>,
     bClass: Class<B>,
     cClass: Class<C>,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     val actions: List<Action> = listOf(
         TransformationAction(
             name = "chain-0",
@@ -76,7 +130,7 @@ fun <A, B, C> branch(
     aClass: Class<A>,
     bClass: Class<B>,
     cClass: Class<C>,
-): AgentScopeBuilder {
+): AgentScopeBuilder<Branch<B, C>> {
     val branchAction =
         BranchingAction<A, B, C>(
             name = "chain-0",
@@ -103,7 +157,7 @@ fun <A, B, C> branch(
  */
 inline fun <reified A, reified B, reified C> branch(
     noinline a: (context: InputActionContext<A>) -> Branch<B, C>,
-): AgentScopeBuilder {
+): AgentScopeBuilder<Branch<B, C>> {
     return branch(a, A::class.java, B::class.java, C::class.java)
 }
 
@@ -113,7 +167,7 @@ inline fun <reified A, reified B, reified C> branch(
 inline fun <reified A, reified B, reified C> chain(
     noinline a: (context: InputActionContext<A>) -> B,
     noinline b: (context: InputActionContext<B>) -> C,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     return chain(a, b, A::class.java, B::class.java, C::class.java)
 }
 
@@ -124,7 +178,7 @@ fun <A, B, C> aggregate(
     aClass: Class<A>,
     bClass: Class<B>,
     cClass: Class<C>,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     val allCompletedCondition = ComputedBooleanCondition(
         name = "All<${bClass.name}=>${cClass.name}",
         evaluator = { it, condition ->
@@ -183,7 +237,7 @@ fun <A1, A2, B : Any, C> biAggregate(
     a2Class: Class<A2>,
     bClass: Class<B>,
     cClass: Class<C>,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     val allCompletedCondition = ComputedBooleanCondition(
         name = "List<${bClass.name}>=>${cClass.name}",
         evaluator = { it, condition ->
@@ -244,7 +298,7 @@ fun <A1, A2, B : Any, C> biAggregate(
 inline fun <reified A, reified B, reified C> aggregate(
     transforms: List<(context: InputActionContext<A>) -> B>,
     noinline merge: (list: List<B>, context: OperationContext) -> C,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     return aggregate(
         transforms, merge, A::class.java, B::class.java, C::class.java
     )
@@ -265,7 +319,7 @@ data class BiInputActionContext<A1, A2>(
 inline fun <reified A1, reified A2, reified B : Any, reified C> biAggregate(
     transforms: List<(context: BiInputActionContext<A1, A2>) -> B>,
     noinline merge: (list: List<B>) -> C,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     return biAggregate<A1, A2, B, C>(
         transforms,
         merge,
@@ -284,7 +338,7 @@ inline fun <reified A, reified B : Any, reified C> repeatableAggregate(
     startWith: C,
     transforms: List<(context: BiInputActionContext<A, C>) -> B>,
     noinline merge: (list: List<B>) -> C,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     val asb = biAggregate<A, C, B, C>(
         transforms,
         merge,
@@ -314,11 +368,11 @@ inline fun <reified A, reified B : Any, reified C> repeatableAggregate(
 
 
 fun <C> repeat(
-    what: () -> AgentScopeBuilder,
+    what: () -> AgentScopeBuilder<C>,
     // TODO gather this
     until: (c: C, context: ProcessContext) -> Boolean,
     cClass: Class<C>,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     val conditionName = "repeat-until-${cClass.name}"
     val untilCondition = ComputedBooleanCondition(
         name = conditionName,
@@ -353,33 +407,24 @@ fun <C> repeat(
 }
 
 inline fun <reified C> repeat(
-    noinline what: () -> AgentScopeBuilder,
+    noinline what: () -> AgentScopeBuilder<C>,
     noinline until: (c: C, processContext: ProcessContext) -> Boolean,
-): AgentScopeBuilder {
+): AgentScopeBuilder<C> {
     return repeat(what, until, C::class.java)
 }
 
-//inline fun <reified A, reified B> withAll(
-//    vararg transforms: (a: A) -> B,
-//): Aggregated<A, B> {
-//    return Aggregated(
-//        transforms.map { transform -> { a: A, context: OperationContext -> transform(a) } },
-//        A::class.java, B::class.java,
-//    )
-//}
-
-data class AgentScopeBuilder(
+data class AgentScopeBuilder<O>(
     val name: String,
     val provider: String = "embabel",
     val actions: List<Action> = emptyList(),
     val goals: Set<Goal> = emptySet(),
     val conditions: Set<Condition> = emptySet(),
 ) {
-    fun parallelize(): AgentScopeBuilder {
+    fun parallelize(): AgentScopeBuilder<O> {
         return this
     }
 
-    fun errorHandling(): AgentScopeBuilder {
+    fun errorHandling(): AgentScopeBuilder<O> {
         return this
     }
 
@@ -422,6 +467,36 @@ data class AgentScopeBuilder(
         return context.last<O>() ?: throw IllegalStateException(
             "No output of type ${O::class.java} found in context"
         )
+    }
+
+    /**
+     * Changes output
+     */
+    fun <F> andThen(fn: (e: O) -> F, fClass: Class<F>): AgentScopeBuilder<F> {
+        // TODO is this safe?
+        val lastAction = actions.last()
+        val extraAction = TransformationAction(
+            name = "repeat",
+            description = "Repeat until condition is met",
+            pre = listOf(Rerun.hasRunCondition(lastAction)),
+            post = emptyList(),
+            cost = 0.0,
+            value = 0.0,
+            canRerun = true,
+            // TODO this is nasty
+            inputClass = (lastAction as TransformationAction<*, *>).outputClass,
+            outputClass = fClass,
+            toolGroups = emptySet(),
+            toolCallbacks = emptyList(),
+        ) {
+            fn(it.input as O)
+        }
+        return this.copy(actions = this.actions + extraAction) as AgentScopeBuilder<F>
+    }
+
+
+    inline infix fun <reified F> andThen(noinline fn: (e: O) -> F): AgentScopeBuilder<F> {
+        return andThen(fn, F::class.java)
     }
 }
 

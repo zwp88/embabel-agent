@@ -28,6 +28,9 @@ import org.slf4j.LoggerFactory
 object Rerun {
     const val HAS_RUN_CONDITION_PREFIX = "hasRun_"
 
+    /**
+     * Compute the name of the condition for this action having run
+     */
     fun hasRunCondition(action: Action): String {
         return "$HAS_RUN_CONDITION_PREFIX${action.name}"
     }

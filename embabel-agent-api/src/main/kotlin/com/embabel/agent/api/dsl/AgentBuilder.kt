@@ -139,7 +139,7 @@ class AgentBuilder(
      * Add a pattern builder, such as an aggregation flow, to the agent.
      * Must be used if you have multiple actions
      */
-    fun flow(block: AgentBuilder.() -> AgentScopeBuilder) {
+    fun flow(block: AgentBuilder.() -> AgentScopeBuilder<*>) {
         val agentScope = block().build()
         logger.info(
             "Adding actions from agent scope {}: {}",

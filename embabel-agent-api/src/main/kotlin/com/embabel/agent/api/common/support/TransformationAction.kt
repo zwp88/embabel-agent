@@ -67,7 +67,7 @@ open class TransformationAction<I, O>(
     canRerun: Boolean = false,
     qos: ActionQos = ActionQos(),
     private val inputClass: Class<I>,
-    private val outputClass: Class<O>,
+    val outputClass: Class<O>,
     private val inputVarName: String = IoBinding.DEFAULT_BINDING,
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,

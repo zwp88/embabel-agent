@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.dsl
 
+import com.embabel.agent.api.annotation.support.Wumpus
 import com.embabel.agent.api.common.support.Branch
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
@@ -105,6 +106,83 @@ class AgentScopeBuilderTest {
                 "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
             )
             assertTrue(result.lastResult() is Frog)
+        }
+    }
+
+    @Nested
+    inner class AndThen {
+        @Test
+        fun `metadata is correct`() {
+            val agent: Agent = userInputToFrogAndThenDo()
+            assertEquals("uitf", agent.name)
+            assertEquals("Evil frogly wizard", agent.description)
+            assertEquals(Semver.DEFAULT_VERSION, agent.version.value)
+            assertEquals(0, agent.conditions.size, "Should have no conditions")
+            assertEquals(2, agent.actions.size, "Should have 2 actions")
+            assertEquals(1, agent.goals.size)
+        }
+
+        @Test
+        fun `agent runs andThen`() {
+            val agent: Agent = userInputToFrogAndThen()
+            val ap = dummyAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                2,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is Frog)
+        }
+
+        @Test
+        fun `agent runs andThenDo`() {
+            val agent: Agent = userInputToFrogAndThenDo()
+            val ap = dummyAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                2,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is Frog)
+        }
+
+        @Test
+        fun `agent runs andThen chain`() {
+            val agent: Agent = userInputToFrogAndThenAgain()
+            val ap = dummyAgentPlatform()
+            val processOptions = ProcessOptions()
+            val result = ap.runAgentFrom(
+                agent = agent,
+                processOptions = processOptions,
+                bindings = mapOf(
+                    "it" to UserInput("do something")
+                ),
+            )
+            assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
+            assertEquals(
+                3,
+                result.processContext.agentProcess.history.size,
+                "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
+            )
+            assertTrue(result.lastResult() is Wumpus)
         }
     }
 
@@ -346,6 +424,42 @@ fun userInputToFrogChain() = agent("uitf", description = "Evil frogly wizard") {
     }
 
     goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = Frog::class)
+}
+
+fun userInputToFrogAndThenDo() = agent("uitf", description = "Evil frogly wizard") {
+
+    fun toSpiPerson(userInput: UserInput) = SpiPerson(userInput.content)
+
+    flow {
+        ::toSpiPerson andThenDo { Frog(it.input.name) }
+    }
+
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = Frog::class)
+}
+
+fun userInputToFrogAndThen() = agent("uitf", description = "Evil frogly wizard") {
+
+    fun toSpiPerson(userInput: UserInput) = SpiPerson(userInput.content)
+
+    flow {
+        ::toSpiPerson andThen { Frog(it.name) }
+    }
+
+    goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = Frog::class)
+}
+
+fun userInputToFrogAndThenAgain() = agent("uitf", description = "Evil frogly wizard") {
+
+    fun toSpiPerson(userInput: UserInput) = SpiPerson(userInput.content)
+
+    flow {
+        ::toSpiPerson andThen { Frog(it.name) } andThen { Wumpus(it.name) }
+    }
+
+    goal(
+        name = "namingDone", description = "We are satisfied with generated names",
+        satisfiedBy = Wumpus::class
+    )
 }
 
 fun simpleNamer(transformListener: () -> Unit = {}) =
