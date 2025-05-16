@@ -16,7 +16,6 @@
 package com.embabel.agent.toolgroups.file
 
 import com.embabel.agent.toolgroups.DirectoryBased
-import com.embabel.agent.toolgroups.code.SymbolSearch
 import com.embabel.common.util.loggerFor
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
@@ -52,7 +51,7 @@ interface PatternSearch : DirectoryBased {
             .filter { it.isFile && matchesGlob(it.path, globPattern) }
             .toList()
 
-        loggerFor<SymbolSearch>().info(
+        loggerFor<PatternSearch>().info(
             "Scanning {} files for regex pattern '{}'...",
             allFiles.size,
             pattern.pattern
@@ -134,7 +133,7 @@ interface PatternSearch : DirectoryBased {
 
             return null
         } catch (e: Exception) {
-            loggerFor<SymbolSearch>().warn("Error scanning file ${file.path}: ${e.message}")
+            loggerFor<PatternSearch>().warn("Error scanning file ${file.path}: ${e.message}")
             return null
         }
     }

@@ -18,7 +18,6 @@ package com.embabel.agent.config
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
-import com.embabel.agent.toolgroups.code.CiTools
 import com.embabel.agent.toolgroups.mcp.McpToolGroup
 import io.modelcontextprotocol.client.McpSyncClient
 import org.slf4j.LoggerFactory
@@ -40,10 +39,6 @@ internal class ToolGroupsConfiguration(
             mcpSyncClients.map { it.serverInfo }.joinToString("\n"),
         )
     }
-
-    @Bean
-    fun ciToolsGroup(): ToolGroup =
-        CiTools.toolGroup(root = System.getProperty("user.dir") + "/embabel-agent-api")
 
     @Bean
     fun mcpWebToolsGroup(): ToolGroup {
