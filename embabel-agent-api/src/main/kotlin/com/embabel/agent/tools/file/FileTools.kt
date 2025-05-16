@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.file
+package com.embabel.agent.tools.file
 
 import com.embabel.agent.api.common.SelfToolCallbackPublisher
-import com.embabel.agent.toolgroups.DirectoryBased
+import com.embabel.agent.tools.DirectoryBased
 import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool

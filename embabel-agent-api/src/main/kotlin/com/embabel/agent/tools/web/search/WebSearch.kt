@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.web.search
+package com.embabel.agent.tools.web.search
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import java.time.Instant

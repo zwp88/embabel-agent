@@ -24,7 +24,7 @@ import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 
 /**
- * Expose RagService as tools
+ * Expose a RagService as tools
  */
 interface RagServiceTools : SelfToolCallbackPublisher {
 
@@ -32,10 +32,10 @@ interface RagServiceTools : SelfToolCallbackPublisher {
 
     val toolFormatter: RagResponseFormatter get() = SimpleRagRagResponseFormatter
 
-    @Tool
+    @Tool(description = "Query the RAG service")
     fun search(
         @ToolParam(
-            description = "Query to search",
+            description = "Query to search for",
         )
         query: String,
     ): String {

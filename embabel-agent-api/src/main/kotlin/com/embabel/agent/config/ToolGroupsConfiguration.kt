@@ -18,7 +18,7 @@ package com.embabel.agent.config
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupPermission
-import com.embabel.agent.toolgroups.mcp.McpToolGroup
+import com.embabel.agent.tools.mcp.McpToolGroup
 import io.modelcontextprotocol.client.McpSyncClient
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean

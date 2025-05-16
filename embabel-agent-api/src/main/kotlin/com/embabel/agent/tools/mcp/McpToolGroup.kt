@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.mcp
+package com.embabel.agent.tools.mcp
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription

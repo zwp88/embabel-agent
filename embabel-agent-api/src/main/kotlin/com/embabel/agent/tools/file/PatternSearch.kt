@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.file
+package com.embabel.agent.tools.file
 
-import com.embabel.agent.toolgroups.DirectoryBased
+import com.embabel.agent.tools.DirectoryBased
 import com.embabel.common.util.loggerFor
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 
 /**
- * Adds low level pattern search methods to the [com.embabel.agent.toolgroups.DirectoryBased] interface
+ * Adds low level pattern search methods to the [com.embabel.agent.tools.DirectoryBased] interface
  */
 interface PatternSearch : DirectoryBased {
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.file
+package com.embabel.agent.tools.file
 
 import com.embabel.common.util.loggerFor
 

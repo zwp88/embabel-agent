@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.web.search.brave
+package com.embabel.agent.tools.web.search.brave
 
-import com.embabel.agent.toolgroups.web.search.WebSearchRequest
-import com.embabel.agent.toolgroups.web.search.WebSearchResult
-import com.embabel.agent.toolgroups.web.search.WebSearchResults
-import com.embabel.agent.toolgroups.web.search.WebSearchService
+import com.embabel.agent.tools.web.search.WebSearchRequest
+import com.embabel.agent.tools.web.search.WebSearchResult
+import com.embabel.agent.tools.web.search.WebSearchResults
+import com.embabel.agent.tools.web.search.WebSearchService
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.springframework.beans.factory.annotation.Value

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.osx
+package com.embabel.agent.tools.osx
 
 import com.embabel.agent.api.common.SelfToolGroup
 import com.embabel.agent.common.Constants
@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 /**
- * Simple AppleScript integration for automating on OS/X
+ * Simple AppleScript integration for automation on OS/X
  */
 @Service
 @Profile("!test")

@@ -25,7 +25,7 @@ import com.embabel.agent.rag.WritableRagService
 import com.embabel.agent.rag.support.ConsensusRagService
 import com.embabel.agent.rag.support.MultiIngester
 import com.embabel.agent.rag.support.SpringVectorStoreRagService
-import com.embabel.agent.toolgroups.rag.RagTools
+import com.embabel.agent.rag.tools.RagServiceTools
 import com.embabel.common.core.types.Semver
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -50,6 +50,9 @@ class RagServiceConfiguration {
         return ConsensusRagService(ragServices)
     }
 
+    /**
+     * Default RAG tool group
+     */
     @Bean
     fun ragToolGroup(ragService: RagService): ToolGroup {
         return ToolGroup(
@@ -63,7 +66,7 @@ class RagServiceConfiguration {
                 version = Semver("1.0.0"),
                 permissions = setOf(),
             ),
-            toolCallbacks = RagTools(
+            toolCallbacks = RagServiceTools(
                 ragService = ragService,
             ).toolCallbacks,
         )

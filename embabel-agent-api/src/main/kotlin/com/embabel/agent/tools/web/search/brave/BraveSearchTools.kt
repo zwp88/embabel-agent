@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.toolgroups.web.search.brave
+package com.embabel.agent.tools.web.search.brave
 
-import com.embabel.agent.toolgroups.web.search.WebSearchRequest
+import com.embabel.agent.tools.web.search.WebSearchRequest
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 import org.springframework.ai.tool.annotation.Tool
