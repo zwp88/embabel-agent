@@ -94,7 +94,6 @@ class DockerLocalModels(
 
     @PostConstruct
     fun registerModels() {
-        val activeProfiles = environment.activeProfiles
         if (!environment.activeProfiles.contains(DOCKER_PROFILE)) {
             logger.info("Docker local models will not be queried as the '{}' profile is not active", DOCKER_PROFILE)
             return

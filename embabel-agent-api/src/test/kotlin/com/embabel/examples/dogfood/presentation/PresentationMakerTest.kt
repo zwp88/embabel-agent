@@ -21,19 +21,25 @@ import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.springframework.core.env.Environment
 import kotlin.test.assertEquals
 
 class PresentationMakerTest {
 
     @Test
     fun `agent runs`() {
+        val mockEnvironment = mockk<Environment>()
+        every { mockEnvironment.activeProfiles } returns arrayOf("test")
         val agent: Agent = AgentMetadataReader().createAgentMetadata(
             PresentationMaker(
                 properties = PresentationMakerProperties(
                     slideCount = 10,
-                )
+                ),
+                environment = mockEnvironment,
             ),
         ) as Agent
         val ap = dummyAgentPlatform()

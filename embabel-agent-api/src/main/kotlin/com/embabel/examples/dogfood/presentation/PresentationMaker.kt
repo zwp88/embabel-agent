@@ -25,7 +25,9 @@ import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
+import com.embabel.agent.tools.file.FileTools
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.core.env.Environment
 
 // TODO make common
 data class ResearchTopic(
@@ -53,6 +55,23 @@ data class Deck(
 @ConfigurationProperties("embabel.presentation-maker")
 data class PresentationMakerProperties(
     val slideCount: Int = 30,
+    // TODO change this
+    val outputDirectory: String = "/Users/rjohnson/Documents",
+    val header: String = """
+        ---
+        marp: true
+        theme: default
+        class: invert
+        size: 16:9
+        style: |
+          img {background-color: transparent!important;}
+          a:hover, a:active, a:focus {text-decoration: none;}
+          header a {color: #ffffff !important; font-size: 30px;}
+          footer {color: #148ec8;}
+        header: '[&#9671;](#1 " ")'
+        footer: "(c) Rod Johnson 2025"
+        ---
+    """.trimIndent()
 )
 
 
@@ -62,6 +81,7 @@ data class PresentationMakerProperties(
 @Agent(description = "Presentation maker. Build a presentation on a topic")
 class PresentationMaker(
     private val properties: PresentationMakerProperties,
+    private val environment: Environment,
 ) {
 
     @Action
@@ -77,7 +97,7 @@ class PresentationMaker(
     @Action
     fun researchTopics(
         researchTopics: ResearchTopics,
-        context: OperationContext
+        context: OperationContext,
     ): ResearchComplete {
         val researchReports = researchTopics.topics.parallelMap(context) {
             context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB)).create<ResearchReport>(
@@ -100,9 +120,6 @@ class PresentationMaker(
         )
     }
 
-    @AchievesGoal(
-        description = "Create a presentation based on research reports",
-    )
     @Action
     fun createDeck(
         userInput: UserInput,
@@ -122,9 +139,28 @@ class PresentationMaker(
 
                 The presentation should be ${properties.slideCount} slides long.
 
-                Use Marp format.
+                Use Marp format. If you need to look it up, see
+                https://github.com/marp-team/marp/blob/main/website/docs/guide/directives.md
             """.trimIndent()
         )
     }
+
+    @AchievesGoal(
+        description = "Create a presentation based on research reports",
+    )
+    @Action
+    fun saveDeck(deck: Deck): Deck {
+        if (environment.activeProfiles.contains("test")) {
+            return deck
+        }
+        FileTools.readWrite(properties.outputDirectory).createFile(
+            "presentation.md",
+            properties.header +
+                    deck.deck,
+        )
+        return deck
+    }
+
+    // TODO run marp
 
 }
