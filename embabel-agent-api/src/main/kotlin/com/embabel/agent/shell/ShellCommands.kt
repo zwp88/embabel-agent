@@ -20,6 +20,7 @@ import com.embabel.agent.core.*
 import com.embabel.agent.event.logging.LoggingPersonality
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.rag.Ingester
+import com.embabel.agent.spi.ToolStatsSource
 import com.embabel.chat.agent.LastMessageIntentAgentPlatformChatSession
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.util.bold
@@ -42,6 +43,7 @@ class ShellCommands(
     private val colorPalette: ColorPalette,
     private val loggingPersonality: LoggingPersonality,
     private val ingester: Ingester,
+    private val toolStatsSource: ToolStatsSource,
 ) {
 
     private val logger: Logger = loggingPersonality.logger
@@ -214,6 +216,11 @@ class ShellCommands(
                 .sortedBy { it.metadata.role }
                 .joinToString("\n\t") { it.infoString(verbose = true) },
         )
+    }
+
+    @ShellMethod("Show tool stats")
+    fun toolStats(): String {
+        return toolStatsSource.toolsStats.toString()
     }
 
     @ShellMethod("List available models")

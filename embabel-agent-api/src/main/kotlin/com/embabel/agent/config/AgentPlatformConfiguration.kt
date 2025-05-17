@@ -94,6 +94,9 @@ internal class AgentPlatformConfiguration(
     )
 
     @Bean
+    fun toolStatsSource(): AgenticEventListenerToolStatsSource = AgenticEventListenerToolStatsSource()
+
+    @Bean
     fun actionScheduler(): OperationScheduler =
         ProcessOptionsOperationScheduler()
 
