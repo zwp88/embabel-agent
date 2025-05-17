@@ -19,10 +19,14 @@ import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.using
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
+import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.CoreToolGroups
+import com.embabel.agent.domain.library.InternetResource
+import com.embabel.agent.domain.library.InternetResources
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.agent.shell.markdownToConsole
 import com.embabel.common.ai.model.LlmOptions
@@ -44,6 +48,16 @@ data class PointOfInterest(
 
 data class ItineraryIdeas(
     val pointsOfInterest: List<PointOfInterest>,
+)
+
+data class ResearchedPointOfInterest(
+    val pointOfInterest: PointOfInterest,
+    val research: String,
+    override val links: List<InternetResource>,
+) : InternetResources
+
+data class PointOfInterestFindings(
+    val pointsOfInterest: List<ResearchedPointOfInterest>,
 )
 
 val TravelPlannerPersona = Persona(
@@ -80,13 +94,36 @@ class TravelPlanner(
             )
     }
 
+    @Action
+    fun researchPointsOfInterest(
+        travelBrief: TravelBrief,
+        itineraryIdeas: ItineraryIdeas, context: OperationContext
+    ): PointOfInterestFindings {
+        val pr = context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB))
+        val poiFindings = itineraryIdeas.pointsOfInterest.parallelMap(context) { poi ->
+            pr.create<ResearchedPointOfInterest>(
+                prompt = """
+                Research the following point of interest.
+                Consider in particular interesting stories about art and culture and famous people.
+                Your audience: the people described in ${travelBrief.brief}
+                ${poi.name}
+                ${poi.description}
+                ${poi.location}
+            """.trimIndent(),
+            )
+        }
+        return PointOfInterestFindings(
+            pointsOfInterest = poiFindings,
+        )
+    }
+
     @AchievesGoal(
         description = "Create a detailed travel plan based on the travel brief and itinerary ideas",
     )
     @Action
     fun createTravelPlan(
         travelBrief: TravelBrief,
-        itineraryIdeas: ItineraryIdeas,
+        poiFindings: PointOfInterestFindings,
     ): TravelPlan {
         return using(
             LlmOptions(AnthropicModels.CLAUDE_37_SONNET),
@@ -102,9 +139,20 @@ class TravelPlanner(
                 Consider the weather in your recommendations. Use mapping tools to consider distance of driving or walking.
                 Write up in $wordCount words or less.
                 Include links.
+                
+                Recount at least one interesting story about a famous person
+                associated with an area.
 
-                Consider the following itinerary ideas:
-                ${itineraryIdeas.pointsOfInterest.joinToString("\n") { it.description }}
+                Consider the following points of interest:
+                ${
+                    poiFindings.pointsOfInterest.joinToString("\n") {
+                        """
+                    ${it.pointOfInterest.name}
+                    ${it.research}
+                    ${it.links.joinToString { link -> "${link.url}: ${link.summary}" }}
+                """.trimIndent()
+                    }
+                }
 
                 Create a markup plan.
             """.trimIndent(),
