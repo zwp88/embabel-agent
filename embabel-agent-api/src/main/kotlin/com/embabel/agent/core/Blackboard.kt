@@ -218,6 +218,10 @@ fun <T> Blackboard.lastOrNull(clazz: Class<T>, predicate: (t: T) -> Boolean): T?
     return objects.filterIsInstance<T>(clazz).lastOrNull { predicate(it) }
 }
 
+infix fun Blackboard.addAll(objects: List<Any>) {
+    objects.forEach { this += it }
+}
+
 /**
  * Try to instantiate an Aggregation subclass from the blackboard
  */

@@ -15,18 +15,17 @@
  */
 package com.embabel.examples.dogfood.presentation
 
-import com.embabel.agent.api.dsl.agent
-import com.embabel.agent.api.dsl.doSplit
+import com.embabel.agent.api.annotation.AchievesGoal
+import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.using
+import com.embabel.agent.api.common.OperationContext
+import com.embabel.agent.api.common.create
 import com.embabel.agent.api.dsl.parallelMap
-import com.embabel.agent.core.Agent
+import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
-import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelSelectionCriteria
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 
 // TODO make common
 data class ResearchTopic(
@@ -34,9 +33,17 @@ data class ResearchTopic(
     val questions: List<String>,
 )
 
+data class ResearchTopics(
+    val topics: List<ResearchTopic>,
+)
+
 data class TopicResearch(
     val topic: ResearchTopic,
     val researchReport: ResearchReport,
+)
+
+data class ResearchComplete(
+    val topicResearches: List<TopicResearch>,
 )
 
 data class Deck(
@@ -48,62 +55,76 @@ data class PresentationMakerProperties(
     val slideCount: Int = 30,
 )
 
-@Configuration
-@Profile("!test")
-class PresentationMakerConfiguration {
-    @Bean
-    fun presentationMaker(props: PresentationMakerProperties): Agent {
-        return presentationMakerAgent(
-            llm = LlmOptions(ModelSelectionCriteria.Auto),
-            properties = props,
-        )
-    }
-}
-
 
 /**
  * Naming agent that generates names for a company or project.
  */
-fun presentationMakerAgent(
-    llm: LlmOptions,
-    properties: PresentationMakerProperties,
-) = agent(
-    name = "PresentationMaker",
-    description = "Build a presentation",
+@Agent(description = "Presentation maker. Build a presentation on a topic")
+class PresentationMaker(
+    private val properties: PresentationMakerProperties,
 ) {
 
-    flow {
+    @Action
+    fun identifyResearchTopics(userInput: UserInput): ResearchTopics =
+        using().create(
+            """
+                Create a list of research topics for a presentation,
+                based on the given input:
+                ${userInput.content}
+                """.trimIndent()
+        )
 
-        doSplit<UserInput, ResearchTopic> {
-            listOf(
-                ResearchTopic(
-                    topic = "AI in healthcare",
-                    questions = listOf(
-                        "What are the current applications of AI in healthcare?",
-                        "How is AI improving patient outcomes?",
-                        "What are the ethical considerations of using AI in healthcare?",
-                    ),
-                )
+    @Action
+    fun researchTopics(
+        researchTopics: ResearchTopics,
+        context: OperationContext
+    ): ResearchComplete {
+        val researchReports = researchTopics.topics.parallelMap(context) {
+            context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB)).create<ResearchReport>(
+                """
+            Given the following topic, create a research report.
+            Use web tools to research.
+            Topic: ${it.topic}
+            Questions:
+            ${it.questions.joinToString("\n")}
+                """.trimIndent()
             )
-        } andThenDo {
-            val topics = it.objects.filterIsInstance<ResearchTopic>()
-            topics.parallelMap(it) {
+        }
+        return ResearchComplete(
+            topicResearches = researchTopics.topics.mapIndexed { index, topic ->
                 TopicResearch(
-                    topic = it, researchReport = ResearchReport(
-                        text = "foo",
-                        links = emptyList(),
-                    )
+                    topic = topic,
+                    researchReport = researchReports[index],
                 )
             }
-        } andThenDo {
-            Deck("content")
-        }
+        )
     }
 
-    goal(
-        name = "deckProduced",
-        description = "Slide deck was produced",
-        satisfiedBy = Deck::class,
+    @AchievesGoal(
+        description = "Create a presentation based on research reports",
     )
+    @Action
+    fun createDeck(
+        userInput: UserInput,
+        researchComplete: ResearchComplete,
+        context: OperationContext,
+    ): Deck {
+        val reports = researchComplete.topicResearches.map { it.researchReport }
+        return context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB)).create<Deck>(
+            """
+                Create content for a deck based on a research report.
+                Use the following input to guide the presentation:
+                ${userInput.content}
+
+                Support your points using the following reports:
+                Reports:
+                $reports
+
+                The presentation should be ${properties.slideCount} slides long.
+
+                Use Marp format.
+            """.trimIndent()
+        )
+    }
 
 }

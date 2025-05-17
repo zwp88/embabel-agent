@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
     <name>Embabel Agent API</name>
     <description>Fluent DSL and Kotlin DSL for Agentic Flows</description>
-    
+
     <properties>
         <embabel-common.version>1.0.0-SNAPSHOT</embabel-common.version>
     </properties>
@@ -203,7 +203,6 @@
                 <configuration>
                     <excludes>
                         <exclude>com/embabel/examples/**</exclude>
-                        <exclude>com/embabel/agent/toolgroups/**</exclude>
                         <exclude>com/embabel/agent/shell/**</exclude>
                         <exclude>com/embabel/agent/testing/**</exclude>
                         <exclude>com/embabel/agent/experimental/**</exclude>

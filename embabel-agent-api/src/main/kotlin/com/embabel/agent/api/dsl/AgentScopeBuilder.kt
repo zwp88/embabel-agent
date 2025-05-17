@@ -26,7 +26,7 @@ import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 import java.util.function.Function as JavaFunction
 
-inline fun <reified A, reified B> doSplit(
+inline fun <reified A, reified B : Any> doSplit(
     noinline splitter: (InputActionContext<A>) -> List<B>,
 ): AgentScopeBuilder<Unit> = doSplit(
     splitter = splitter,
@@ -34,7 +34,7 @@ inline fun <reified A, reified B> doSplit(
     bClass = B::class.java,
 )
 
-fun <A, B> doSplit(
+fun <A, B : Any> doSplit(
     splitter: (InputActionContext<A>) -> List<B>,
     aClass: Class<A>,
     bClass: Class<B>,
@@ -52,10 +52,7 @@ fun <A, B> doSplit(
         toolCallbacks = emptyList(),
     ) {
         val list = splitter(it)
-        list.filterNotNull()
-            .forEach { item ->
-                it += item
-            }
+        it addAll list
     }
     return AgentScopeBuilder(
         name = a.name,
@@ -63,7 +60,7 @@ fun <A, B> doSplit(
     )
 }
 
-inline fun <reified A, reified B> split(
+inline fun <reified A, reified B : Any> split(
     noinline splitter: (a: A) -> List<B>,
 
     ): AgentScopeBuilder<Unit> = doSplit({ splitter(it.input) }, A::class.java, B::class.java)
