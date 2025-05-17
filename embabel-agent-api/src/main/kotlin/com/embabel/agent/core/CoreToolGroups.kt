@@ -41,6 +41,13 @@ object CoreToolGroups {
         role = MATH,
     )
 
+    const val MAPS = "maps"
+
+    val MAPS_DESCRIPTION = ToolGroupDescription(
+        description = "Mapping tools",
+        role = MAPS,
+    )
+
     const val GITHUB = "github"
 
     val GITHUB_DESCRIPTION = ToolGroupDescription(

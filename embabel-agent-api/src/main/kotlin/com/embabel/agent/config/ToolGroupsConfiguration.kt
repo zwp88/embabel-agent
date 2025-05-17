@@ -69,6 +69,22 @@ internal class ToolGroupsConfiguration(
     }
 
     @Bean
+    fun mapsToolsGroup(): ToolGroup {
+        return McpToolGroup(
+            description = CoreToolGroups.MAPS_DESCRIPTION,
+            name = "docker-google-maps",
+            provider = "Docker",
+            permissions = setOf(
+                ToolGroupPermission.INTERNET_ACCESS
+            ),
+            clients = mcpSyncClients,
+            filter = {
+                it.toolDefinition.name().contains("maps_")
+            }
+        )
+    }
+
+    @Bean
     fun browserAutomationWebToolsGroup(): ToolGroup {
         return McpToolGroup(
             description = CoreToolGroups.BROWSER_AUTOMATION_DESCRIPTION,
