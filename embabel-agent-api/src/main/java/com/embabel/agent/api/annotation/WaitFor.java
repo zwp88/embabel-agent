@@ -16,6 +16,7 @@
 package com.embabel.agent.api.annotation;
 
 import com.embabel.agent.core.hitl.Awaitable;
+import org.springframework.lang.NonNull;
 
 /**
  * Java syntax sugar for HITL
@@ -31,17 +32,19 @@ public class WaitFor {
     /**
      * @see com.embabel.agent.api.annotation.WaitKt#fromForm(String, Class)
      */
-    public static <T> T formSubmission(String title, Class<T> clazz) {
+    @NonNull
+    public static <T> T formSubmission(@NonNull String title, @NonNull Class<T> clazz) {
         return com.embabel.agent.api.annotation.WaitKt.fromForm(title, clazz);
     }
 
-    public static <P> P confirmation(P what, String description) {
+    @NonNull
+    public static <P> P confirmation(@NonNull P what, @NonNull String description) {
         return com.embabel.agent.api.annotation.WaitKt.confirm(what, description);
     }
 
-    public static <P> P awaitable(Awaitable<P, ?> awaitable) {
+    @NonNull
+    public static <P> P awaitable(@NonNull Awaitable<P, ?> awaitable) {
         return com.embabel.agent.api.annotation.WaitKt.waitFor(awaitable);
     }
-
 
 }

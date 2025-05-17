@@ -29,7 +29,7 @@ import org.springframework.ai.tool.ToolCallback
  * Uses the platform's LlmOperations to execute the prompt.
  * Prompt running ends up through here.
  */
-internal class OperationContextPromptRunner(
+internal data class OperationContextPromptRunner(
     private val context: OperationContext,
     override val llm: LlmOptions,
     override val toolGroups: Set<String>,
@@ -123,4 +123,14 @@ internal class OperationContextPromptRunner(
         )
         return determination.result && determination.confidence >= confidenceThreshold
     }
+
+    override fun withToolGroup(toolGroup: String): PromptRunner =
+        copy(toolGroups = this.toolGroups + toolGroup)
+
+    override fun withToolObject(toolObject: Any): PromptRunner =
+        copy(toolObjects = this.toolObjects + toolObject)
+
+    override fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
+        copy(promptContributors = this.promptContributors + promptContributor)
+
 }

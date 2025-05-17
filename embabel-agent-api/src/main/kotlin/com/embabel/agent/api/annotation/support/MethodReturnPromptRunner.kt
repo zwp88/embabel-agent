@@ -27,7 +27,7 @@ import org.springframework.ai.tool.ToolCallback
  * PromptRunner implementation that can be used to return a value
  * from an @Action or @Condition method.
  */
-internal class MethodReturnPromptRunner(
+internal data class MethodReturnPromptRunner(
     override val llm: LlmOptions?,
     override val toolGroups: Set<String>,
     override val toolCallbacks: List<ToolCallback>,
@@ -87,4 +87,13 @@ internal class MethodReturnPromptRunner(
             promptContributors = promptContributors,
         )
     }
+
+    override fun withToolGroup(toolGroup: String): PromptRunner =
+        copy(toolGroups = this.toolGroups + toolGroup)
+
+    override fun withToolObject(toolObject: Any): PromptRunner =
+        copy(toolObjects = this.toolObjects + toolObject)
+
+    override fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
+        copy(promptContributors = this.promptContributors + promptContributor)
 }

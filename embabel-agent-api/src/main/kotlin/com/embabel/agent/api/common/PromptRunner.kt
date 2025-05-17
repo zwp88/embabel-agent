@@ -77,6 +77,12 @@ interface PromptRunner : LlmCall {
         confidenceThreshold: ZeroToOne = 0.8,
     ): Boolean
 
+    fun withToolGroup(toolGroup: String): PromptRunner
+
+    fun withToolObject(toolObject: Any): PromptRunner
+
+    fun withPromptContributor(promptContributor: PromptContributor): PromptRunner
+
 }
 
 inline infix fun <reified T> PromptRunner.createObject(prompt: String): T =

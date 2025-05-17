@@ -25,7 +25,9 @@ import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
+import com.embabel.agent.experimental.prompt.CoStar
 import com.embabel.agent.tools.file.FileTools
+import com.embabel.common.ai.prompt.PromptContributor
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 
@@ -61,6 +63,8 @@ data class PresentationMakerProperties(
     val slideCount: Int = 30,
     // TODO change this
     val outputDirectory: String = "/Users/rjohnson/Documents",
+    val outputFile: String = "presentation.md",
+    val copyright: String = "Embabel 2025",
     val header: String = """
         ---
         marp: true
@@ -73,10 +77,17 @@ data class PresentationMakerProperties(
           header a {color: #ffffff !important; font-size: 30px;}
           footer {color: #148ec8;}
         header: '[&#9671;](#1 " ")'
-        footer: "(c) Rod Johnson 2025"
+        footer: "(c) $copyright"
         ---
-    """.trimIndent()
-)
+    """.trimIndent(),
+    val coStar: CoStar = CoStar(
+        context = "grade 4",
+        objective = "teach kids in an engaging way",
+        style = "funny and accessible",
+        tone = "funny and accessible",
+        audience = "grade 4 school kids",
+    )
+) : PromptContributor by coStar
 
 
 /**
@@ -105,15 +116,18 @@ class PresentationMaker(
         context: OperationContext,
     ): ResearchComplete {
         val researchReports = researchTopics.topics.parallelMap(context) {
-            context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB)).create<ResearchReport>(
-                """
-            Given the following topic, create a research report.
+            context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB))
+                .withPromptContributor(properties)
+                .create<ResearchReport>(
+                    """
+            Given the following topic and the goal to create a presentation
+            for this audience, create a research report.
             Use web tools to research.
             Topic: ${it.topic}
             Questions:
             ${it.questions.joinToString("\n")}
                 """.trimIndent()
-            )
+                )
         }
         return ResearchComplete(
             topicResearches = researchTopics.topics.mapIndexed { index, topic ->
@@ -132,35 +146,46 @@ class PresentationMaker(
         context: OperationContext,
     ): Deck {
         val reports = researchComplete.topicResearches.map { it.researchReport }
-        return context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB)).create<Deck>(
-            """
-                Create content for a deck based on a research report.
+        return context.promptRunner()
+            .withPromptContributor(properties)
+            .withToolGroup(CoreToolGroups.WEB)
+            .create<Deck>(
+                """
+                Create content for a slide deck based on a research report.
                 Use the following input to guide the presentation:
                 ${userInput.content}
 
-                Support your points using the following reports:
+                Support your points using the following research:
                 Reports:
                 $reports
 
                 The presentation should be ${properties.slideCount} slides long.
+                It should have a compelling narrative and call to action.
+                It should end with a list of reference links.
+                Do
 
-                Use Marp format. If you need to look it up, see
-                https://github.com/marp-team/marp/blob/main/website/docs/guide/directives.md
+                Use Marp format, creating Markdown that can be rendered as slides.
+                If you need to look it up, see https://github.com/marp-team/marp/blob/main/website/docs/guide/directives.md
+
+                Use the following header elements to start the deck.
+                Add further header elements if you wish.
+
+                ```
+                ${properties.header}
+                ```
             """.trimIndent()
-        )
+            )
     }
 
     @Action
     fun saveDeck(deck: Deck): MarkdownFile {
-        val fileName = "presentation.md"
         filePersister.saveFile(
             directory = properties.outputDirectory,
-            fileName = fileName,
-            content = properties.header +
-                    deck.deck,
+            fileName = properties.outputFile,
+            content = deck.deck,
         )
         return MarkdownFile(
-            fileName
+            properties.outputFile
         )
     }
 
@@ -168,7 +193,7 @@ class PresentationMaker(
         description = "Create a presentation based on research reports",
     )
     @Action
-    fun createSlides(
+    fun convertToSlides(
         deck: Deck,
         markdownFile: MarkdownFile
     ): Deck {

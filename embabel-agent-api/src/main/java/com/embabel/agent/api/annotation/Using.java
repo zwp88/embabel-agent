@@ -21,23 +21,21 @@ import com.embabel.agent.spi.ToolGroupResolver;
 import com.embabel.common.ai.model.BuildableLlmOptions;
 import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.common.ai.prompt.PromptContributor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.*;
 
 /**
- * Java syntax sugar for running prompts.
- * We use lower case to create a DSL style.
+ * Java syntax sugar for create a PromptRunner.
  */
 public record Using(
-        LlmOptions llmOptions,
-        Set<String> toolGroups,
-        List<ToolCallback> toolCallbacks,
-        List<Object> toolObjects,
-        List<PromptContributor> promptContributors,
+        @NonNull LlmOptions llmOptions,
+        @NonNull Set<String> toolGroups,
+        @NonNull List<ToolCallback> toolCallbacks,
+        @NonNull List<Object> toolObjects,
+        @NonNull List<PromptContributor> promptContributors,
         Boolean generateExamples
 ) implements PromptRunner {
 
@@ -50,6 +48,7 @@ public record Using(
             null
     );
 
+    @NonNull
     public static Using llm(@NonNull LlmOptions llmOptions) {
         return new Using(
                 llmOptions,
@@ -61,65 +60,75 @@ public record Using(
         );
     }
 
-    public Using() {
-        this(
-                new BuildableLlmOptions(),
-                Collections.emptySet(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                null
-        );
-    }
-
+    @NonNull
     public Using withToolGroups(@NonNull List<String> newToolGroups) {
-        Set<String> merged = new HashSet<>(toolGroups == null ? Collections.emptySet() : toolGroups);
+        Set<String> merged = new HashSet<>(toolGroups);
         merged.addAll(newToolGroups);
         return new Using(llmOptions, Collections.unmodifiableSet(merged), toolCallbacks, toolObjects, promptContributors, generateExamples);
     }
 
+    @NonNull
+    public Using withToolGroup(@NonNull String newToolGroup) {
+        return withToolGroups(List.of(newToolGroup));
+    }
+
+    @NonNull
     public Using withToolCallbacks(@NonNull List<ToolCallback> newToolCallbacks) {
-        List<ToolCallback> merged = new ArrayList<>(toolCallbacks == null ? Collections.emptyList() : toolCallbacks);
+        List<ToolCallback> merged = new ArrayList<>(toolCallbacks);
         merged.addAll(newToolCallbacks);
         return new Using(llmOptions, toolGroups, Collections.unmodifiableList(merged), toolObjects, promptContributors, generateExamples);
     }
 
+    @NonNull
     public Using withToolObjects(@NonNull List<Object> newToolObjects) {
-        List<Object> merged = new ArrayList<>(toolObjects == null ? Collections.emptyList() : toolObjects);
+        List<Object> merged = new ArrayList<>(toolObjects);
         merged.addAll(newToolObjects);
         return new Using(llmOptions, toolGroups, toolCallbacks, Collections.unmodifiableList(merged), promptContributors, generateExamples);
     }
 
+    @Override
+    @NonNull
+    public PromptRunner withToolObject(@NonNull Object toolObject) {
+        return withToolObjects(List.of(toolObject));
+    }
+
+    @NonNull
     public Using withPromptContributors(@NonNull List<PromptContributor> newPromptContributors) {
-        List<PromptContributor> merged = new ArrayList<>(promptContributors == null ? Collections.emptyList() : promptContributors);
+        List<PromptContributor> merged = new ArrayList<>(promptContributors);
         merged.addAll(newPromptContributors);
         return new Using(llmOptions, toolGroups, toolCallbacks, toolObjects, Collections.unmodifiableList(merged), generateExamples);
     }
 
+    @NonNull
+    public Using withPromptContributor(@NonNull PromptContributor newPromptContributor) {
+        return withPromptContributors(List.of(newPromptContributor));
+    }
+
+    @NonNull
     public Using withGenerateExamples(boolean generateExamples) {
         return new Using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples);
     }
 
     @Override
-    public <T> T createObject(@NotNull String prompt, @NotNull Class<T> outputClass) {
+    public <T> T createObject(@NonNull String prompt, @NonNull Class<T> outputClass) {
         return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples)
                 .createObject(prompt, outputClass);
     }
 
     @Override
-    public <T> @Nullable T createObjectIfPossible(@NotNull String prompt, @NotNull Class<T> outputClass) {
+    public <T> @Nullable T createObjectIfPossible(@NonNull String prompt, @NonNull Class<T> outputClass) {
         return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples)
                 .createObjectIfPossible(prompt, outputClass);
     }
 
     @Override
-    @NotNull
-    public String generateText(@NotNull String prompt) {
+    @NonNull
+    public String generateText(@NonNull String prompt) {
         return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples).generateText(prompt);
     }
 
     @Override
-    public boolean evaluateCondition(@NotNull String condition, @NotNull String context, double confidenceThreshold) {
+    public boolean evaluateCondition(@NonNull String condition, @NonNull String context, double confidenceThreshold) {
         return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples).evaluateCondition(condition, context, confidenceThreshold);
     }
 
@@ -130,35 +139,35 @@ public record Using(
     }
 
     @Override
-    public @NotNull Set<String> getToolGroups() {
+    public @NonNull Set<String> getToolGroups() {
         return toolGroups;
     }
 
     @Override
-    @NotNull
+    @NonNull
     public List<ToolCallback> getToolCallbacks() {
         return toolCallbacks;
     }
 
     @Override
-    @NotNull
+    @NonNull
     public List<PromptContributor> getPromptContributors() {
         return promptContributors;
     }
 
     @Override
-    @NotNull
+    @NonNull
     public String getName() {
         return getClass().getSimpleName();
     }
 
     @Override
-    public @NotNull List<ToolCallback> resolveToolCallbacks(@NotNull ToolGroupResolver toolGroupResolver) {
+    public @NonNull List<ToolCallback> resolveToolCallbacks(@NonNull ToolGroupResolver toolGroupResolver) {
         return ToolConsumer.Companion.resolveToolCallbacks(this, toolGroupResolver);
     }
 
     @Override
-    @NotNull
+    @NonNull
     public List<Object> getToolObjects() {
         return toolObjects;
     }
