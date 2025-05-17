@@ -182,20 +182,23 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
 
 interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
 
+
     @Tool(description = "Create a file with the given content")
     fun createFile(path: String, content: String): String {
+        createFile(path, content, overwrite = false)
+        return "file created"
+    }
+
+    fun createFile(path: String, content: String, overwrite: Boolean) {
         val resolvedPath = resolvePath(root, path)
-        if (Files.exists(resolvedPath)) {
+        if (Files.exists(resolvedPath) && !overwrite) {
             logger.warn("File already exists at {}", path)
             throw IllegalArgumentException("File already exists: $path")
         }
 
         // Ensure parent directories exist
         Files.createDirectories(resolvedPath.parent)
-
-        // Write content to file
         Files.writeString(resolvedPath, content)
-        return "file created"
     }
 
     @Tool(description = "Edit the file at the given location. Replace oldContent with newContent. oldContent is typically just a part of the file. e.g. use it to replace a particular method to add another method")

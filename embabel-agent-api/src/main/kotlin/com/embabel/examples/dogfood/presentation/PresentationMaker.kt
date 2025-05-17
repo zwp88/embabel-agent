@@ -27,7 +27,7 @@ import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.tools.file.FileTools
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.core.env.Environment
+import org.springframework.stereotype.Service
 
 // TODO make common
 data class ResearchTopic(
@@ -50,6 +50,10 @@ data class ResearchComplete(
 
 data class Deck(
     val deck: String,
+)
+
+data class MarkdownFile(
+    val fileName: String,
 )
 
 @ConfigurationProperties("embabel.presentation-maker")
@@ -81,7 +85,8 @@ data class PresentationMakerProperties(
 @Agent(description = "Presentation maker. Build a presentation on a topic")
 class PresentationMaker(
     private val properties: PresentationMakerProperties,
-    private val environment: Environment,
+    private val slideMaker: SlideMaker,
+    private val filePersister: FilePersister,
 ) {
 
     @Action
@@ -145,22 +150,55 @@ class PresentationMaker(
         )
     }
 
+    @Action
+    fun saveDeck(deck: Deck): MarkdownFile {
+        val fileName = "presentation.md"
+        filePersister.saveFile(
+            directory = properties.outputDirectory,
+            fileName = fileName,
+            content = properties.header +
+                    deck.deck,
+        )
+        return MarkdownFile(
+            fileName
+        )
+    }
+
     @AchievesGoal(
         description = "Create a presentation based on research reports",
     )
     @Action
-    fun saveDeck(deck: Deck): Deck {
-        if (environment.activeProfiles.contains("test")) {
-            return deck
-        }
-        FileTools.readWrite(properties.outputDirectory).createFile(
-            "presentation.md",
-            properties.header +
-                    deck.deck,
+    fun createSlides(
+        deck: Deck,
+        markdownFile: MarkdownFile
+    ): Deck {
+        slideMaker.createHtmlSlides(
+            directory = properties.outputDirectory,
+            markdownFilename = markdownFile.fileName,
         )
         return deck
     }
 
-    // TODO run marp
+}
 
+
+fun interface FilePersister {
+
+    fun saveFile(
+        directory: String,
+        fileName: String,
+        content: String,
+    )
+}
+
+@Service
+class FileToolsFilePersister : FilePersister {
+
+    override fun saveFile(
+        directory: String,
+        fileName: String,
+        content: String
+    ) {
+        FileTools.readWrite(directory).createFile(path = fileName, content = content, overwrite = true)
+    }
 }

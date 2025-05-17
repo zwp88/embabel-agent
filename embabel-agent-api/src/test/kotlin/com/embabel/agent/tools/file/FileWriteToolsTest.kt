@@ -71,6 +71,27 @@ class FileWriteToolsTest {
             assertEquals(content, Files.readString(file.toPath()))
         }
 
+        @Test
+        fun `should not overwrite file in subdirectory unless asked`() {
+            val path = "subdir/test.txt"
+            val content = "test content"
+
+            fileWriteTools.createFile(path, content)
+            assertThrows<Exception> { fileWriteTools.createFile(path, content) }
+        }
+
+        @Test
+        fun `should overwrite file in subdirectory if asked`() {
+            val path = "subdir/test.txt"
+            val content = "test content"
+
+            val result1 = fileWriteTools.createFile(path, content)
+            val result2 = fileWriteTools.createFile(path, content, overwrite = true)
+            val file = File(tempDir, path)
+            assertTrue(file.exists())
+            assertEquals(content, Files.readString(file.toPath()))
+        }
+
 //        @Test
 //        fun `should throw exception when file already exists`() {
 //            val path = "existing.txt"
