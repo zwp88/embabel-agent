@@ -36,12 +36,3 @@ interface Person {
 data class PersonImpl(override val name: String) : Person
 
 
-data class RelevantNewsStories(
-    val items: List<NewsStory>
-)
-
-data class NewsStory(
-    val url: String,
-    val title: String,
-    val summary: String,
-)

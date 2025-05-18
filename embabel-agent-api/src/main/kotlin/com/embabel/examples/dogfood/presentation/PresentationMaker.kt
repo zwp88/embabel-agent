@@ -25,21 +25,14 @@ import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
+import com.embabel.agent.domain.library.ResearchTopic
+import com.embabel.agent.domain.library.ResearchTopics
 import com.embabel.agent.experimental.prompt.CoStar
 import com.embabel.agent.tools.file.FileTools
 import com.embabel.common.ai.prompt.PromptContributor
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 
-// TODO make common
-data class ResearchTopic(
-    val topic: String,
-    val questions: List<String>,
-)
-
-data class ResearchTopics(
-    val topics: List<ResearchTopic>,
-)
 
 data class TopicResearch(
     val topic: ResearchTopic,
@@ -96,7 +89,7 @@ data class PresentationMakerProperties(
 @Agent(description = "Presentation maker. Build a presentation on a topic")
 class PresentationMaker(
     private val properties: PresentationMakerProperties,
-    private val slideMaker: SlideMaker,
+    private val slideFormatter: SlideFormatter,
     private val filePersister: FilePersister,
 ) {
 
@@ -197,7 +190,7 @@ class PresentationMaker(
         deck: Deck,
         markdownFile: MarkdownFile
     ): Deck {
-        slideMaker.createHtmlSlides(
+        slideFormatter.createHtmlSlides(
             directory = properties.outputDirectory,
             markdownFilename = markdownFile.fileName,
         )

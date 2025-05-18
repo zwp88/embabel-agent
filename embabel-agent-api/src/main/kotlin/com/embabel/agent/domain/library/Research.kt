@@ -19,6 +19,15 @@ import com.embabel.common.core.types.HasInfoString
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 
+data class ResearchTopic(
+    val topic: String,
+    val questions: List<String>,
+)
+
+data class ResearchTopics(
+    val topics: List<ResearchTopic>,
+)
+
 /**
  * Reusable domain object for a research report
  */

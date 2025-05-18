@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-fun interface SlideMaker {
+fun interface SlideFormatter {
 
     fun createHtmlSlides(
         directory: String,
@@ -28,7 +28,7 @@ fun interface SlideMaker {
 }
 
 @Service
-class MarpCliSlideMaker : SlideMaker {
+class MarpCliSlideFormatter : SlideFormatter {
 
     override fun createHtmlSlides(directory: String, markdownFileName: String): String {
         runMarpCli(directory, markdownFileName)

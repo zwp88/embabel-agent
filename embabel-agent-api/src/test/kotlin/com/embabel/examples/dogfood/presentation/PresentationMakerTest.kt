@@ -35,8 +35,8 @@ class PresentationMakerTest {
         val mockEnvironment = mockk<Environment>()
         val mockFilePersister = mockk<FilePersister>()
         every { mockFilePersister.saveFile(any(), any(), any()) } returns Unit
-        val mockSlideMaker = mockk<SlideMaker>()
-        every { mockSlideMaker.createHtmlSlides(any(), any()) } returns "presentation.html"
+        val mockSlideFormatter = mockk<SlideFormatter>()
+        every { mockSlideFormatter.createHtmlSlides(any(), any()) } returns "presentation.html"
         every { mockEnvironment.activeProfiles } returns arrayOf("test")
         val agent: Agent = AgentMetadataReader().createAgentMetadata(
             PresentationMaker(
@@ -44,7 +44,7 @@ class PresentationMakerTest {
                     slideCount = 10,
                 ),
                 filePersister = mockFilePersister,
-                slideMaker = mockSlideMaker,
+                slideFormatter = mockSlideFormatter,
             ),
         ) as Agent
         val ap = dummyAgentPlatform()
