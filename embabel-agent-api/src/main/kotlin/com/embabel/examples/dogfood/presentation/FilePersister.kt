@@ -13,14 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.library
+package com.embabel.examples.dogfood.presentation
 
-data class RelevantNewsStories(
-    val items: List<NewsStory>
-)
+import com.embabel.agent.tools.file.FileTools
+import org.springframework.stereotype.Service
 
-data class NewsStory(
-    val url: String,
-    val title: String,
-    val summary: String,
-)
+// TODO becomes common
+fun interface FilePersister {
+
+    fun saveFile(
+        directory: String,
+        fileName: String,
+        content: String,
+    )
+}
+
+@Service
+class FileToolsFilePersister : FilePersister {
+
+    override fun saveFile(
+        directory: String,
+        fileName: String,
+        content: String
+    ) {
+        FileTools.Companion.readWrite(directory).createFile(path = fileName, content = content, overwrite = true)
+    }
+}

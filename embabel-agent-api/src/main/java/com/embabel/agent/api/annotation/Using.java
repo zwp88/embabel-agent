@@ -88,7 +88,10 @@ public record Using(
 
     @Override
     @NonNull
-    public PromptRunner withToolObject(@NonNull Object toolObject) {
+    public PromptRunner withToolObject(Object toolObject) {
+        if (toolObject == null) {
+            return this;
+        }
         return withToolObjects(List.of(toolObject));
     }
 

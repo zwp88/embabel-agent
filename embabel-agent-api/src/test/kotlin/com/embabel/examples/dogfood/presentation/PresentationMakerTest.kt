@@ -19,7 +19,7 @@ import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.experimental.prompt.CoStar
 import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import io.mockk.every
 import io.mockk.mockk
@@ -40,9 +40,7 @@ class PresentationMakerTest {
         every { mockEnvironment.activeProfiles } returns arrayOf("test")
         val agent: Agent = AgentMetadataReader().createAgentMetadata(
             PresentationMaker(
-                properties = PresentationMakerProperties(
-                    slideCount = 10,
-                ),
+                properties = PresentationMakerProperties(),
                 filePersister = mockFilePersister,
                 slideFormatter = mockSlideFormatter,
             ),
@@ -52,7 +50,17 @@ class PresentationMakerTest {
         val result = ap.runAgentWithInput(
             agent = agent,
             processOptions = processOptions,
-            input = UserInput("do something"),
+            input = PresentationRequest(
+                slideCount = 10,
+                brief = "Create a presentation about AI",
+                coStar = CoStar(
+                    context = "context",
+                    objective = "objective",
+                    style = "style",
+                    tone = "tone",
+                    audience = "audience",
+                )
+            ),
         )
         assertEquals(AgentProcessStatusCode.COMPLETED, result.status)
 //        assertEquals(
@@ -62,7 +70,7 @@ class PresentationMakerTest {
 //        )
         assertTrue(result.lastResult() is Deck)
         assertTrue(
-            result.objects.filterIsInstance<ResearchTopics>().isNotEmpty(),
+            result.objects.filterIsInstance<Deck>().isNotEmpty(),
             "Should have ResearchTopics"
         )
     }

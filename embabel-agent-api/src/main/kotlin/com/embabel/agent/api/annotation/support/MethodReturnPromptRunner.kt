@@ -91,8 +91,8 @@ internal data class MethodReturnPromptRunner(
     override fun withToolGroup(toolGroup: String): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
-    override fun withToolObject(toolObject: Any): PromptRunner =
-        copy(toolObjects = this.toolObjects + toolObject)
+    override fun withToolObject(toolObject: Any?): PromptRunner =
+        copy(toolObjects = (this.toolObjects + toolObject).filterNotNull())
 
     override fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
         copy(promptContributors = this.promptContributors + promptContributor)

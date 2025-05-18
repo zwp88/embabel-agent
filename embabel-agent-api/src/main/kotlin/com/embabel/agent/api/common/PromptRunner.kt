@@ -79,7 +79,12 @@ interface PromptRunner : LlmCall {
 
     fun withToolGroup(toolGroup: String): PromptRunner
 
-    fun withToolObject(toolObject: Any): PromptRunner
+    /**
+     * Add a tool object to the prompt runner.
+     * @param toolObject the object to add. If it is null, nothing is done.
+     * This is not an error
+     */
+    fun withToolObject(toolObject: Any?): PromptRunner
 
     fun withPromptContributor(promptContributor: PromptContributor): PromptRunner
 

@@ -34,5 +34,3 @@ interface Person {
 }
 
 data class PersonImpl(override val name: String) : Person
-
-

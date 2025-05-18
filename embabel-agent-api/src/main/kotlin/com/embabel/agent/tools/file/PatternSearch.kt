@@ -17,6 +17,8 @@ package com.embabel.agent.tools.file
 
 import com.embabel.agent.tools.DirectoryBased
 import com.embabel.common.util.loggerFor
+import org.springframework.ai.tool.annotation.Tool
+import org.springframework.ai.tool.annotation.ToolParam
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -25,6 +27,17 @@ import kotlin.concurrent.thread
  * Adds low level pattern search methods to the [com.embabel.agent.tools.DirectoryBased] interface
  */
 interface PatternSearch : DirectoryBased {
+
+    @Tool(description = "search for a regex in the project")
+    fun findPatternInProject(
+        @ToolParam(description = "regex pattern") pattern: String,
+        @ToolParam(description = "glob pattern for files to search in") globPattern: String,
+    ): String {
+        return findPatternInProject(
+            pattern = Regex(pattern),
+            globPattern = globPattern,
+        ).joinToString("\n") { "${it.file.path}:${it.matchedLine} ${it.contextLines.joinToString(" ")}" }
+    }
 
     /**
      * Finds files containing the specified pattern using glob patterns

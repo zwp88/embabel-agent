@@ -139,7 +139,7 @@ class TravelPlanner(
                 Consider the weather in your recommendations. Use mapping tools to consider distance of driving or walking.
                 Write up in $wordCount words or less.
                 Include links.
-                
+
                 Recount at least one interesting story about a famous person
                 associated with an area.
 

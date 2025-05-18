@@ -18,20 +18,32 @@ package com.embabel.examples.dogfood.presentation
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.using
+import com.embabel.agent.api.annotation.usingModel
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
 import com.embabel.agent.api.dsl.parallelMap
+import com.embabel.agent.config.models.AnthropicModels
+import com.embabel.agent.config.models.OpenAiModels
+import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.CoreToolGroups
-import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.domain.library.ResearchTopic
 import com.embabel.agent.domain.library.ResearchTopics
 import com.embabel.agent.experimental.prompt.CoStar
-import com.embabel.agent.tools.file.FileTools
+import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.common.ai.prompt.PromptContributor
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.stereotype.Service
+import org.springframework.core.io.ResourceLoader
+import org.springframework.shell.standard.ShellComponent
+import org.springframework.shell.standard.ShellMethod
+import org.springframework.shell.standard.ShellOption
+import java.nio.charset.Charset
 
 
 data class TopicResearch(
@@ -51,10 +63,15 @@ data class MarkdownFile(
     val fileName: String,
 )
 
-@ConfigurationProperties("embabel.presentation-maker")
-data class PresentationMakerProperties(
-    val slideCount: Int = 30,
-    // TODO change this
+/**
+ * @param brief the content of the presentation. Can be short
+ * or detailed
+ *
+ */
+data class PresentationRequest(
+    val slideCount: Int,
+    val brief: String,
+    val softwareProject: String? = "/Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api",
     val outputDirectory: String = "/Users/rjohnson/Documents",
     val outputFile: String = "presentation.md",
     val copyright: String = "Embabel 2025",
@@ -62,6 +79,7 @@ data class PresentationMakerProperties(
         ---
         marp: true
         theme: default
+        paginate: false
         class: invert
         size: 16:9
         style: |
@@ -69,18 +87,24 @@ data class PresentationMakerProperties(
           a:hover, a:active, a:focus {text-decoration: none;}
           header a {color: #ffffff !important; font-size: 30px;}
           footer {color: #148ec8;}
-        header: '[&#9671;](#1 " ")'
         footer: "(c) $copyright"
         ---
     """.trimIndent(),
-    val coStar: CoStar = CoStar(
-        context = "grade 4",
-        objective = "teach kids in an engaging way",
-        style = "funny and accessible",
-        tone = "funny and accessible",
-        audience = "grade 4 school kids",
-    )
-) : PromptContributor by coStar
+    //val slidesToInclude: String,
+    val coStar: CoStar,
+) : PromptContributor by coStar {
+
+    val project: Project? =
+        softwareProject?.let {
+            Project(it)
+        }
+}
+
+@ConfigurationProperties(prefix = "embabel.presentation-maker")
+data class PresentationMakerProperties(
+    val researchLlm: String = OpenAiModels.GPT_41_MINI,
+    val creationLlm: String = AnthropicModels.CLAUDE_37_SONNET,
+)
 
 
 /**
@@ -88,34 +112,40 @@ data class PresentationMakerProperties(
  */
 @Agent(description = "Presentation maker. Build a presentation on a topic")
 class PresentationMaker(
-    private val properties: PresentationMakerProperties,
     private val slideFormatter: SlideFormatter,
     private val filePersister: FilePersister,
+    private val properties: PresentationMakerProperties,
 ) {
 
     @Action
-    fun identifyResearchTopics(userInput: UserInput): ResearchTopics =
-        using().create(
+    fun identifyResearchTopics(presentationRequest: PresentationRequest): ResearchTopics =
+        usingModel(properties.researchLlm).create(
             """
                 Create a list of research topics for a presentation,
                 based on the given input:
-                ${userInput.content}
+                ${presentationRequest.brief}
                 """.trimIndent()
         )
 
     @Action
     fun researchTopics(
         researchTopics: ResearchTopics,
+        presentationRequest: PresentationRequest,
         context: OperationContext,
     ): ResearchComplete {
         val researchReports = researchTopics.topics.parallelMap(context) {
-            context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB))
-                .withPromptContributor(properties)
+            context.promptRunner(
+                llm = LlmOptions.fromModel(properties.researchLlm),
+                toolGroups = setOf(CoreToolGroups.WEB),
+            )
+                .withToolObject(presentationRequest.project)
+                .withPromptContributor(presentationRequest)
                 .create<ResearchReport>(
                     """
             Given the following topic and the goal to create a presentation
             for this audience, create a research report.
-            Use web tools to research.
+            Use web tools to research and the findPatternInProject tool to look
+            within the given software project.
             Topic: ${it.topic}
             Questions:
             ${it.questions.joinToString("\n")}
@@ -134,28 +164,30 @@ class PresentationMaker(
 
     @Action
     fun createDeck(
-        userInput: UserInput,
+        presentationRequest: PresentationRequest,
         researchComplete: ResearchComplete,
         context: OperationContext,
     ): Deck {
         val reports = researchComplete.topicResearches.map { it.researchReport }
-        return context.promptRunner()
-            .withPromptContributor(properties)
+        return context.promptRunner(llm = LlmOptions(byName(properties.creationLlm)))
+            .withPromptContributor(presentationRequest)
             .withToolGroup(CoreToolGroups.WEB)
+            .withToolObject(presentationRequest.project)
             .create<Deck>(
                 """
-                Create content for a slide deck based on a research report.
+                Create content for a slide deck based on the given research.
                 Use the following input to guide the presentation:
-                ${userInput.content}
+                ${presentationRequest.brief}
 
                 Support your points using the following research:
                 Reports:
                 $reports
 
-                The presentation should be ${properties.slideCount} slides long.
+                The presentation should be ${presentationRequest.slideCount} slides long.
                 It should have a compelling narrative and call to action.
                 It should end with a list of reference links.
-                Do
+                Use the findPatternInProject tool to find relevant content within the given software project
+                if required and format code on slides.
 
                 Use Marp format, creating Markdown that can be rendered as slides.
                 If you need to look it up, see https://github.com/marp-team/marp/blob/main/website/docs/guide/directives.md
@@ -164,21 +196,21 @@ class PresentationMaker(
                 Add further header elements if you wish.
 
                 ```
-                ${properties.header}
+                ${presentationRequest.header}
                 ```
             """.trimIndent()
             )
     }
 
     @Action
-    fun saveDeck(deck: Deck): MarkdownFile {
+    fun saveDeck(deck: Deck, presentationRequest: PresentationRequest): MarkdownFile {
         filePersister.saveFile(
-            directory = properties.outputDirectory,
-            fileName = properties.outputFile,
+            directory = presentationRequest.outputDirectory,
+            fileName = presentationRequest.outputFile,
             content = deck.deck,
         )
         return MarkdownFile(
-            properties.outputFile
+            presentationRequest.outputFile
         )
     }
 
@@ -187,11 +219,12 @@ class PresentationMaker(
     )
     @Action
     fun convertToSlides(
+        presentationRequest: PresentationRequest,
         deck: Deck,
         markdownFile: MarkdownFile
     ): Deck {
         slideFormatter.createHtmlSlides(
-            directory = properties.outputDirectory,
+            directory = presentationRequest.outputDirectory,
             markdownFilename = markdownFile.fileName,
         )
         return deck
@@ -199,24 +232,34 @@ class PresentationMaker(
 
 }
 
+class Project(override val root: String) : SymbolSearch
 
-fun interface FilePersister {
+@ShellComponent("Presentation maker commands")
+class PresentationMakerShell(
+    private val agentPlatform: AgentPlatform,
+    private val resourceLoader: ResourceLoader,
+) {
+    @ShellMethod
+    fun makePresentation(
+        @ShellOption(
+            defaultValue = "file:/Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api/src/main/kotlin/com/embabel/examples/dogfood/presentation/kotlinconf.yml",
+        )
+        file: String,
+    ): String {
+        val yamlReader = ObjectMapper(YAMLFactory()).registerKotlinModule()
 
-    fun saveFile(
-        directory: String,
-        fileName: String,
-        content: String,
-    )
-}
 
-@Service
-class FileToolsFilePersister : FilePersister {
+        val presentationRequest = yamlReader.readValue(
+            resourceLoader.getResource(file).getContentAsString(Charset.defaultCharset()),
+            PresentationRequest::class.java,
+        )
 
-    override fun saveFile(
-        directory: String,
-        fileName: String,
-        content: String
-    ) {
-        FileTools.readWrite(directory).createFile(path = fileName, content = content, overwrite = true)
+        val ap = agentPlatform.runAgentWithInput(
+            agent = agentPlatform.agents().single { it.name == "PresentationMaker" },
+            input = presentationRequest,
+            processOptions = ProcessOptions(verbosity = Verbosity(showPrompts = true)),
+        )
+
+        return "deck is at ${presentationRequest.outputDirectory}/${presentationRequest.outputFile}"
     }
 }
