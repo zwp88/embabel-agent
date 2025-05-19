@@ -19,6 +19,7 @@ import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.annotation.usingModel
+import com.embabel.agent.api.common.DynamicExecutionResult
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
 import com.embabel.agent.api.dsl.parallelMap
@@ -28,10 +29,10 @@ import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
-import com.embabel.agent.domain.library.ResearchReport
-import com.embabel.agent.domain.library.ResearchTopic
-import com.embabel.agent.domain.library.ResearchTopics
+import com.embabel.agent.domain.library.*
+import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
 import com.embabel.agent.experimental.prompt.CoStar
+import com.embabel.agent.shell.formatProcessOutput
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.common.ai.prompt.PromptContributor
@@ -44,20 +45,19 @@ import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
 import java.nio.charset.Charset
+import java.time.Instant
 
 
-data class TopicResearch(
-    val topic: ResearchTopic,
-    val researchReport: ResearchReport,
-)
-
-data class ResearchComplete(
-    val topicResearches: List<TopicResearch>,
-)
-
-data class Deck(
+data class SlideDeck(
     val deck: String,
-)
+) : ContentAsset {
+
+    override val content: String
+        get() = deck
+
+    override val timestamp: Instant = Instant.now()
+
+}
 
 data class MarkdownFile(
     val fileName: String,
@@ -119,7 +119,10 @@ class PresentationMaker(
 
     @Action
     fun identifyResearchTopics(presentationRequest: PresentationRequest): ResearchTopics =
-        usingModel(properties.researchLlm).create(
+        usingModel(
+            properties.researchLlm,
+            toolGroups = setOf(CoreToolGroups.WEB),
+        ).create(
             """
                 Create a list of research topics for a presentation,
                 based on the given input:
@@ -132,7 +135,7 @@ class PresentationMaker(
         researchTopics: ResearchTopics,
         presentationRequest: PresentationRequest,
         context: OperationContext,
-    ): ResearchComplete {
+    ): ResearchResult {
         val researchReports = researchTopics.topics.parallelMap(context) {
             context.promptRunner(
                 llm = LlmOptions.fromModel(properties.researchLlm),
@@ -146,15 +149,16 @@ class PresentationMaker(
             for this audience, create a research report.
             Use web tools to research and the findPatternInProject tool to look
             within the given software project.
+            Always look for code examples in the project before using the web.
             Topic: ${it.topic}
             Questions:
             ${it.questions.joinToString("\n")}
                 """.trimIndent()
                 )
         }
-        return ResearchComplete(
+        return ResearchResult(
             topicResearches = researchTopics.topics.mapIndexed { index, topic ->
-                TopicResearch(
+                CompletedResearch(
                     topic = topic,
                     researchReport = researchReports[index],
                 )
@@ -165,15 +169,15 @@ class PresentationMaker(
     @Action
     fun createDeck(
         presentationRequest: PresentationRequest,
-        researchComplete: ResearchComplete,
+        researchComplete: ResearchResult,
         context: OperationContext,
-    ): Deck {
+    ): SlideDeck {
         val reports = researchComplete.topicResearches.map { it.researchReport }
         return context.promptRunner(llm = LlmOptions(byName(properties.creationLlm)))
             .withPromptContributor(presentationRequest)
             .withToolGroup(CoreToolGroups.WEB)
             .withToolObject(presentationRequest.project)
-            .create<Deck>(
+            .create<SlideDeck>(
                 """
                 Create content for a slide deck based on the given research.
                 Use the following input to guide the presentation:
@@ -203,11 +207,11 @@ class PresentationMaker(
     }
 
     @Action
-    fun saveDeck(deck: Deck, presentationRequest: PresentationRequest): MarkdownFile {
+    fun saveDeck(slideDeck: SlideDeck, presentationRequest: PresentationRequest): MarkdownFile {
         filePersister.saveFile(
             directory = presentationRequest.outputDirectory,
             fileName = presentationRequest.outputFile,
-            content = deck.deck,
+            content = slideDeck.deck,
         )
         return MarkdownFile(
             presentationRequest.outputFile
@@ -220,14 +224,14 @@ class PresentationMaker(
     @Action
     fun convertToSlides(
         presentationRequest: PresentationRequest,
-        deck: Deck,
+        slideDeck: SlideDeck,
         markdownFile: MarkdownFile
-    ): Deck {
+    ): SlideDeck {
         slideFormatter.createHtmlSlides(
             directory = presentationRequest.outputDirectory,
             markdownFilename = markdownFile.fileName,
         )
-        return deck
+        return slideDeck
     }
 
 }
@@ -238,6 +242,7 @@ class Project(override val root: String) : SymbolSearch
 class PresentationMakerShell(
     private val agentPlatform: AgentPlatform,
     private val resourceLoader: ResourceLoader,
+    private val objectMapper: ObjectMapper,
 ) {
     @ShellMethod
     fun makePresentation(
@@ -254,12 +259,16 @@ class PresentationMakerShell(
             PresentationRequest::class.java,
         )
 
-        val ap = agentPlatform.runAgentWithInput(
+        val agentProcess = agentPlatform.runAgentWithInput(
             agent = agentPlatform.agents().single { it.name == "PresentationMaker" },
             input = presentationRequest,
             processOptions = ProcessOptions(verbosity = Verbosity(showPrompts = true)),
         )
 
-        return "deck is at ${presentationRequest.outputDirectory}/${presentationRequest.outputFile}"
+        return formatProcessOutput(
+            result = DynamicExecutionResult.fromProcessStatus(basis = presentationRequest, agentProcess = agentProcess),
+            colorPalette = LumonColorPalette,
+            objectMapper = objectMapper,
+        ) + "\ndeck is at ${presentationRequest.outputDirectory}/${presentationRequest.outputFile}"
     }
 }

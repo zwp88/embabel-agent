@@ -143,7 +143,7 @@ class AgentPlatformIntegrationTest(
                 ProcessOptions(test = true),
             )
             assertNotNull(writeup)
-            assertNotNull(writeup.text)
+            assertNotNull(writeup.content)
         }
 
         @Test
@@ -156,7 +156,7 @@ class AgentPlatformIntegrationTest(
                 ProcessOptions(test = true),
             )
             assertNotNull(writeup)
-            assertNotNull(writeup.text)
+            assertNotNull(writeup.content)
         }
 
         @Test

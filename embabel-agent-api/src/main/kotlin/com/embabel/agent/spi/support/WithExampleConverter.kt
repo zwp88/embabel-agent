@@ -17,6 +17,7 @@ package com.embabel.agent.spi.support
 
 import com.embabel.common.util.DummyInstanceCreator
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.ai.converter.StructuredOutputConverter
 
@@ -41,6 +42,8 @@ class WithExampleConverter<T>(
     private val ifPossible: Boolean,
     private val generateExamples: Boolean,
 ) : StructuredOutputConverter<T> {
+
+    private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     /**
      * Delegates conversion to the underlying [delegate].
@@ -93,10 +96,10 @@ class WithExampleConverter<T>(
             """|
         |Examples:
         |   success:
-        |   ${jacksonObjectMapper().writeValueAsString(MaybeReturn(success = example))}
+        |   ${objectMapper.writeValueAsString(MaybeReturn(success = example))}
         |
         |   failure:
-        |   ${jacksonObjectMapper().writeValueAsString(MaybeReturn<T>(failure = "Insufficient context to create this structure"))}
+        |   ${objectMapper.writeValueAsString(MaybeReturn<T>(failure = "Insufficient context to create this structure"))}
         |
         |${delegate.format}
         """.trimMargin()
@@ -104,7 +107,7 @@ class WithExampleConverter<T>(
             // Otherwise, just show a single example output (not wrapped in MaybeReturn)
             """|
         |Example:
-        |${jacksonObjectMapper().writeValueAsString(example)}
+        |${objectMapper.writeValueAsString(example)}
         |
         |${delegate.format}
         """.trimMargin()

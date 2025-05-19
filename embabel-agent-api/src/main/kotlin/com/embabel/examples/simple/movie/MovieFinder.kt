@@ -93,7 +93,7 @@ data class StreamableMovie(
 )
 
 data class SuggestionWriteup(
-    override val text: String,
+    override val content: String,
 ) : HasContent
 
 interface MovieBuffRepository : CrudRepository<MovieBuff, String>
@@ -536,7 +536,7 @@ class MovieFinder(
                 Format in Markdown and include links to the movies on IMDB and the streaming service link for each.
                 """.trimIndent()
         return SuggestionWriteup(
-            text = text,
+            content = text,
         )
     }
 

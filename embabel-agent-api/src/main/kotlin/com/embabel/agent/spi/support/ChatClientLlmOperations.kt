@@ -26,6 +26,8 @@ import com.embabel.agent.spi.ToolDecorator
 import com.embabel.common.ai.model.*
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.DatabindException
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.client.ResponseEntity
@@ -106,6 +108,7 @@ internal class ChatClientLlmOperations(
     private val autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
     private val dataBindingProperties: LlmDataBindingProperties = LlmDataBindingProperties(),
     private val llmOperationsPromptsProperties: LlmOperationsPromptsProperties = LlmOperationsPromptsProperties(),
+    private val objectMapper: ObjectMapper = jacksonObjectMapper(),
 ) : AbstractLlmOperations(toolDecorator) {
 
     @Suppress("UNCHECKED_CAST")
@@ -147,7 +150,7 @@ internal class ChatClientLlmOperations(
             } else {
                 val re = callResponse.responseEntity<O>(
                     WithExampleConverter(
-                        delegate = SuppressThinkingConverter(BeanOutputConverter(outputClass)),
+                        delegate = SuppressThinkingConverter(BeanOutputConverter(outputClass, objectMapper)),
                         outputClass = outputClass,
                         ifPossible = false,
                         generateExamples = shouldGenerateExamples(interaction),
@@ -215,7 +218,8 @@ internal class ChatClientLlmOperations(
                 .call()
                 .responseEntity<MaybeReturn<*>>(
                     WithExampleConverter(
-                        delegate = SuppressThinkingConverter(BeanOutputConverter(typeReference)),
+                        // TODO why does passing ObjectMapper break unit test?
+                        delegate = SuppressThinkingConverter(BeanOutputConverter(typeReference /*objectMapper*/)),
                         outputClass = outputClass as Class<MaybeReturn<*>>,
                         ifPossible = true,
                         generateExamples = shouldGenerateExamples(interaction),

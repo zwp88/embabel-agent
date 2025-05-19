@@ -19,9 +19,10 @@ import com.embabel.common.core.types.HasInfoString
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 
+@JsonClassDescription("topic to research")
 data class ResearchTopic(
-    val topic: String,
-    val questions: List<String>,
+    @get:JsonPropertyDescription("topic to research") val topic: String,
+    @get:JsonPropertyDescription("specific questions") val questions: List<String>,
 )
 
 data class ResearchTopics(
@@ -36,15 +37,24 @@ data class ResearchReport(
     @get:JsonPropertyDescription(
         "The text of the research report",
     )
-    override val text: String,
+    override val content: String,
     override val links: List<InternetResource>,
 ) : HasContent, InternetResources, HasInfoString {
 
     override fun infoString(verbose: Boolean?): String {
         return """
             Report:
-            $text
+            $content
             Links: ${links.joinToString("\n") { it.url }}
         """.trimIndent()
     }
 }
+
+data class CompletedResearch(
+    val topic: ResearchTopic,
+    val researchReport: ResearchReport,
+)
+
+data class ResearchResult(
+    val topicResearches: List<CompletedResearch>,
+)

@@ -112,7 +112,7 @@ class AutonomyAgentSelectionTest {
         // Mock process with expected return value
         val testProcess = mockk<AgentProcess>()
         val testOutput = object : HasContent {
-            override val text = "Test output content"
+            override val content = "Test output content"
         }
 
         // Configure process to return COMPLETED status
