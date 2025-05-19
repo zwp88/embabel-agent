@@ -29,7 +29,10 @@ import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
-import com.embabel.agent.domain.library.*
+import com.embabel.agent.domain.library.CompletedResearch
+import com.embabel.agent.domain.library.ResearchReport
+import com.embabel.agent.domain.library.ResearchResult
+import com.embabel.agent.domain.library.ResearchTopics
 import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
 import com.embabel.agent.experimental.prompt.CoStar
 import com.embabel.agent.shell.formatProcessOutput
@@ -45,19 +48,6 @@ import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
 import java.nio.charset.Charset
-import java.time.Instant
-
-
-data class SlideDeck(
-    val deck: String,
-) : ContentAsset {
-
-    override val content: String
-        get() = deck
-
-    override val timestamp: Instant = Instant.now()
-
-}
 
 data class MarkdownFile(
     val fileName: String,
