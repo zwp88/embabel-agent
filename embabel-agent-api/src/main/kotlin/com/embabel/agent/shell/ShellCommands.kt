@@ -36,7 +36,9 @@ import org.springframework.shell.standard.ShellOption
 import java.util.concurrent.CompletableFuture
 import kotlin.system.exitProcess
 
-
+/**
+ * Main shell entry point
+ */
 @ShellComponent
 class ShellCommands(
     private val autonomy: Autonomy,
@@ -357,7 +359,7 @@ class ShellCommands(
 
     @ShellMethod(value = "Exit the application", key = ["exit", "quit", "bye"])
     fun exit(): String {
-        println ("Exiting...".color(colorPalette.color2))
+        println("Exiting...".color(colorPalette.color2))
         logger.info("Shutting down application...")
 
         // Perform any cleanup if needed
@@ -486,6 +488,5 @@ class ShellCommands(
             }
         }
     }
-
 
 }

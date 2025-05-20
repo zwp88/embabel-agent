@@ -25,7 +25,6 @@ import com.embabel.agent.core.Agent
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
-import com.embabel.agent.tools.web.domain.DomainChecker
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.examples.dogfood.research.Researcher
 import com.fasterxml.jackson.annotation.JsonPropertyDescription

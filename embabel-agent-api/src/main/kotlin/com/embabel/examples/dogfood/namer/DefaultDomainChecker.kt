@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.tools.web.domain
+package com.embabel.examples.dogfood.namer
 
 
 import com.embabel.common.util.loggerFor
