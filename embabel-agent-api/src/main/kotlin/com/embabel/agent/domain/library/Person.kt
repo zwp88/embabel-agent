@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.examples.simple.horoscope.java;
+package com.embabel.agent.domain.library
 
-import com.embabel.agent.domain.library.HasContent;
-import com.fasterxml.jackson.annotation.JsonClassDescription;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
-@JsonClassDescription("Writeup relating to a person's horoscope and relevant news")
-public record Writeup(String text) implements HasContent {
+@JsonDeserialize(`as` = PersonImpl::class)
+interface Person {
 
-    @JsonCreator
-    public Writeup(@JsonProperty("text") String text) {
-        this.text = text;
-    }
+    val name: String
 
-    @Override
-    public String getContent() {
-        return text;
-    }
 }
+
+data class PersonImpl(override val name: String) : Person

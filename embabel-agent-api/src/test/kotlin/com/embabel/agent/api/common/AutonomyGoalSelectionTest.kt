@@ -117,7 +117,7 @@ class AutonomyGoalSelectionTest {
         // Mock process with expected return value
         val testProcess = mockk<AgentProcess>()
         val testOutput = object : HasContent {
-            override val text = "Test output content"
+            override val content = "Test output content"
         }
 
         // Configure process to return COMPLETED status
@@ -308,7 +308,7 @@ class AutonomyGoalSelectionTest {
 
         // Create a test output to return from lastResult
         val testOutput = object : HasContent {
-            override val text = "Test output"
+            override val content = "Test output"
         }
         every { mockProcess.lastResult() } returns testOutput
 

@@ -96,7 +96,7 @@ fun simpleNamingAgent(
             Each name return must include a primary domain name, which would be essential
             to the company.
             Consider the following research report:
-            ${context.input2.text}
+            ${context.input2.content}
 
             # Input
             ${context.input1.content}

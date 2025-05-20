@@ -69,7 +69,7 @@ data class Horoscope(
  * Implements HasContent interface to provide standardized access to the text content.
  */
 data class Writeup(
-    override val text: String,
+    override val content: String,
 ) : HasContent
 
 /**

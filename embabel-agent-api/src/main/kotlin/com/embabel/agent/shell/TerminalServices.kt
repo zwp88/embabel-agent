@@ -73,7 +73,6 @@ class TerminalServices(
                     is AgenticResultAssistantMessage -> {
                         val formatted = formatProcessOutput(
                             result = it.dynamicExecutionResult,
-                            basis = userInput,
                             colorPalette = colorPalette,
                             objectMapper = objectMapper,
                         )

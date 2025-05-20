@@ -134,6 +134,27 @@ Possible future modes:
 Embabel agent systems will also support federation, both with other Embabel systems (allowing planning to incorporate
 remote actions and goals) and third party agent frameworks.
 
+## Why Is Embabel Needed?
+
+TL;DR Because the evolution is agent frameworks is early and there's a lot of room for improvement; because an agent
+framework on the JVM will deliver great business value.
+
+- _Why do we need an agent framework for the JVM when solutions exist in Python?_: While this space is presently
+  better developed in Python (or even TypeScript), it's early and there's plenty of room for novel and potentially
+  superior
+  approaches. The key adjacency is often not the LLM--which is a simple HTTP call away--but existing code and
+  infrastructure
+  assets that are more likely on the JVM than in Python.
+- _Why not use just Spring AI?_ Spring AI is great. We build on it, and embrace the Spring component model. However, we
+  believe that most applications should work with higher
+  level APIs. An analogy: Spring AI exists at the level of the Servlet API, while Embabel is more like Spring MVC.
+  Complex requirements are much easier to express and test in Embabel than with direct use of Spring AI.
+- Why not attempt to contribute this project to Spring?_ This project requires different governance
+  from Spring, where most projects exist in stable environments and dependability and stability outweighs rapid
+  innovation. Second, the
+  concepts are not JVM-specific. We hope that Embabel will become the leading agent framework across platforms. While
+  the Spring brand is valuable in Java, it is not in TypeScript or Python.
+
 ## Show Me The Code
 
 ```kotlin

@@ -19,8 +19,8 @@ import com.embabel.agent.api.common.Autonomy
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
-import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -100,7 +100,7 @@ class PerGoalToolCallbackProvider(
                 return when (val output = dynamicExecutionResult.output) {
                     is String -> output
                     is HasInfoString -> dynamicExecutionResult.output.infoString(verbose = true)
-                    is HasContent -> output.text
+                    is HasContent -> output.content
                     else -> output.toString()
                 }
             }

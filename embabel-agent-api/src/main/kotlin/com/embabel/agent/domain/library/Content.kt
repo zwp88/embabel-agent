@@ -15,22 +15,19 @@
  */
 package com.embabel.agent.domain.library
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.embabel.common.core.types.Timestamped
 
 /**
  * Interface when an object has a single important text component.
  */
 interface HasContent {
 
-    val text: String
+    val content: String
 }
 
 
-@JsonDeserialize(`as` = PersonImpl::class)
-interface Person {
-
-    val name: String
-
-}
-
-data class PersonImpl(override val name: String) : Person
+/**
+ * Content asset that can be used in different ways: for example
+ * in producing different marketing materials.
+ */
+interface ContentAsset : HasContent, Timestamped

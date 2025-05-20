@@ -68,9 +68,9 @@ class PresentationMakerTest {
 //            result.processContext.agentProcess.history.size,
 //            "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
 //        )
-        assertTrue(result.lastResult() is Deck)
+        assertTrue(result.lastResult() is SlideDeck)
         assertTrue(
-            result.objects.filterIsInstance<Deck>().isNotEmpty(),
+            result.objects.filterIsInstance<SlideDeck>().isNotEmpty(),
             "Should have ResearchTopics"
         )
     }

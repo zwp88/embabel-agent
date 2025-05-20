@@ -423,7 +423,7 @@ class ShellCommands(
             val result = run()
             logger.debug("Result: {}\n", result)
             recordAgentProcess(result.agentProcess)
-            return formatProcessOutput(result, basis, colorPalette, objectMapper)
+            return formatProcessOutput(result, colorPalette, objectMapper)
         } catch (ngf: NoGoalFound) {
             if (verbosity.debug) {
                 logger.info(

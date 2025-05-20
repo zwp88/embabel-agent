@@ -23,20 +23,22 @@ import com.embabel.common.util.color
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.text.WordUtils
 
-internal fun formatProcessOutput(
+/**
+ * Format the output of a process for display to the console
+ */
+fun formatProcessOutput(
     result: DynamicExecutionResult,
-    basis: Any,
     colorPalette: ColorPalette,
     objectMapper: ObjectMapper,
 ): String {
     var output = ""
     if (result.output is HasContent) {
         // TODO naive Markdown test
-        output += if (result.output.text.contains("#")) {
-            "\n" + markdownToConsole(result.output.text)
+        output += if (result.output.content.contains("#")) {
+            "\n" + markdownToConsole(result.output.content)
                 .color(colorPalette.color2)
         } else {
-            WordUtils.wrap(result.output.text, 140).color(
+            WordUtils.wrap(result.output.content, 140).color(
                 colorPalette.color2,
             )
         }
@@ -57,7 +59,7 @@ internal fun formatProcessOutput(
     }
     return """|
             |
-            |You asked: ${basis.toString().color(colorPalette.highlight)}
+            |You asked: ${result.basis.toString().color(colorPalette.highlight)}
             |
             |${output.color(colorPalette.color2)}
             |
