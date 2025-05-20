@@ -16,6 +16,7 @@
 package com.embabel.examples.dogfood.presentation
 
 import com.embabel.agent.domain.library.ContentAsset
+import com.embabel.common.util.loggerFor
 import java.time.Instant
 
 /**
@@ -112,4 +113,48 @@ $slideContents
 """.trimEnd()
         )
     }
+
+    /**
+     * Expand diagrams and change text to reference them.
+     * Diagrams will be in the same directory as the file
+     */
+    fun expandDotDiagrams(diagramExpander: DiagramExpander): SlideDeck {
+        var result = content
+        // Regex to match DOT graph blocks between ```dot and ``` markers
+        val dotBlockRegex =
+            Regex("""```dot\s+digraph\s+(\w+)\s+(\{[\s\S]*?\})\s+```""", RegexOption.DOT_MATCHES_ALL)
+
+        // Find all matches in the input
+        val matches = dotBlockRegex.findAll(content)
+        loggerFor<SlideDeck>().info("Found {} regex matches", matches.count())
+
+        // Process each match
+        var replacedDiagrams = 0
+        matches.forEach { matchResult ->
+            // Extract the dot string content (group 1) and the diagram name (group 2)
+            val dotString = matchResult.groupValues[2]
+            val diagramName = matchResult.groupValues[1]
+
+            // Call the expandDotGraph function with the extracted values
+            val diagramFile = diagramExpander.expandDiagram(
+                dot = "digraph $dotString",
+                fileBase = diagramName,
+            )
+
+            val imageReference = "![Diagram](./${diagramFile})"
+
+            // Replace the matched block with the image reference
+            result = result.replaceRange(
+                matchResult.range.first,
+                matchResult.range.last + 1,
+                imageReference
+            )
+            ++replacedDiagrams
+            loggerFor<SlideDeck>().info("Replaced dot diagram {}", diagramFile)
+        }
+        loggerFor<SlideDeck>().info("Replaced {} dot diagrams", replacedDiagrams)
+        return SlideDeck(result)
+    }
+
+
 }

@@ -163,7 +163,7 @@ class PresentationMaker(
         context: OperationContext,
     ): SlideDeck {
         val reports = researchComplete.topicResearches.map { it.researchReport }
-        return context.promptRunner(llm = LlmOptions(byName(properties.creationLlm)))
+        val slideDeck = context.promptRunner(llm = LlmOptions(byName(properties.creationLlm)))
             .withPromptContributor(presentationRequest)
             .withToolGroup(CoreToolGroups.WEB)
             .withToolObject(presentationRequest.project)
@@ -194,14 +194,28 @@ class PresentationMaker(
                 ```
             """.trimIndent()
             )
+        filePersister.saveFile(
+            directory = presentationRequest.outputDirectory,
+            fileName = "01_" + presentationRequest.outputFile,
+            content = slideDeck.deck,
+        )
+        return slideDeck
     }
 
     @Action
-    fun saveDeck(slideDeck: SlideDeck, presentationRequest: PresentationRequest): MarkdownFile {
+    fun postprocessDeck(
+        slideDeck: SlideDeck,
+        presentationRequest: PresentationRequest,
+        context: OperationContext,
+    ): MarkdownFile {
+        val diagramExpander = DotCliDiagramExpander(
+            directory = presentationRequest.outputDirectory,
+        )
+        val withDotDiagrams = slideDeck.expandDotDiagrams(diagramExpander)
         filePersister.saveFile(
             directory = presentationRequest.outputDirectory,
-            fileName = presentationRequest.outputFile,
-            content = slideDeck.deck,
+            fileName = "02_" + presentationRequest.outputFile,
+            content = withDotDiagrams.deck,
         )
         return MarkdownFile(
             presentationRequest.outputFile

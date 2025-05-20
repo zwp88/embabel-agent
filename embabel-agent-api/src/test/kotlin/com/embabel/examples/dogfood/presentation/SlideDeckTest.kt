@@ -15,8 +15,14 @@
  */
 package com.embabel.examples.dogfood.presentation
 
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 val PARIS = """
             ---
@@ -52,6 +58,24 @@ val PARIS = """
             - Historic landmarks
             - Authentic Parisian experiences
         """.trimIndent()
+
+val PARIS_WITH_DIAGRAM = PARIS + """
+    ---
+    ```dot
+    digraph PresentationMaker {
+      PresentationRequest -> identifyResearchTopics -> researchTopics -> createDeck -> saveDeck -> convertToSlides
+      identifyResearchTopics -> ResearchTopics
+      researchTopics -> ResearchComplete
+      createDeck -> Deck
+      saveDeck -> FileSystem
+      convertToSlides -> HTMLSlides
+      PresentationMakerProperties -> PresentationMaker
+      SlideFormatter -> convertToSlides
+      FilePersister -> saveDeck
+    }
+    ```
+
+""".trimIndent()
 
 class SlideDeckTest {
 
@@ -291,6 +315,31 @@ class SlideDeckTest {
         )
         assertEquals("header only", deck.header())
         assertEquals(0, deck.slideCount())
+    }
+
+    @Nested
+    inner class ExpandDiagrams {
+
+        @Test
+        fun `no diagrams to expand`() {
+            val paris = SlideDeck(PARIS)
+            val mockDiagramExpander = mockk<DiagramExpander>()
+            val paris2 = paris.expandDotDiagrams(mockDiagramExpander)
+            assertEquals(PARIS, paris2.content, "Expanding no diagrams should have made no change")
+        }
+
+        @Test
+        fun `expand diagram`() {
+            val paris = SlideDeck(PARIS_WITH_DIAGRAM)
+            val mockDiagramExpander = mockk<DiagramExpander>()
+            every { mockDiagramExpander.expandDiagram("PresentationMaker", any()) } returns "PresentationMaker.svg"
+            val paris2 = paris.expandDotDiagrams(mockDiagramExpander)
+            assertFalse(paris2.content.contains("dot"), "Digraph should have been removed")
+
+            assertNotEquals(PARIS_WITH_DIAGRAM, paris2.content, "Diagram should have been expanded")
+            assertTrue(paris2.content.contains("![Diagram](./PresentationMaker.svg)"))
+            assertEquals(paris.slideCount(), paris2.slideCount(), "Should have the same slide count")
+        }
     }
 }
 
