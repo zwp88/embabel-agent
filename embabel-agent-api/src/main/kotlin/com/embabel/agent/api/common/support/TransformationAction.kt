@@ -26,35 +26,6 @@ import java.lang.reflect.Modifier
 
 
 /**
- * Create input binding(s) for the given variable name and type.
- * Allow for megazords (Aggregations) and decompose them into their individual fields.
- */
-fun expandInputBindings(
-    inputVarName: String,
-    inputClass: Class<*>
-): Set<IoBinding> {
-    if (inputClass == Unit::class.java) {
-        // Unit is a special case, we don't want to bind any inputs
-        return emptySet()
-    }
-    if (Aggregation::class.java.isAssignableFrom(inputClass)) {
-        return inputClass.declaredFields
-            .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
-            .map { field ->
-                // Make field accessible if it's private
-                field.isAccessible = true
-                IoBinding(
-                    type = field.type
-                )
-            }
-            .toSet()
-    }
-
-    // Default case: just return the input itself
-    return setOf(IoBinding(inputVarName, inputClass.name))
-}
-
-/**
  * Transformer agent that runs custom code.
  */
 open class TransformationAction<I, O>(
@@ -122,4 +93,33 @@ open class TransformationAction<I, O>(
             fields
         }
     }
+}
+
+/**
+ * Create input binding(s) for the given variable name and type.
+ * Allow for megazords (Aggregations) and decompose them into their individual fields.
+ */
+fun expandInputBindings(
+    inputVarName: String,
+    inputClass: Class<*>
+): Set<IoBinding> {
+    if (inputClass == Unit::class.java) {
+        // Unit is a special case, we don't want to bind any inputs
+        return emptySet()
+    }
+    if (Aggregation::class.java.isAssignableFrom(inputClass)) {
+        return inputClass.declaredFields
+            .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
+            .map { field ->
+                // Make field accessible if it's private
+                field.isAccessible = true
+                IoBinding(
+                    type = field.type
+                )
+            }
+            .toSet()
+    }
+
+    // Default case: just return the input itself
+    return setOf(IoBinding(inputVarName, inputClass.name))
 }

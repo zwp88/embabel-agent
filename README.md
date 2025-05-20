@@ -47,7 +47,7 @@ Models agentic flows in terms of:
 > as most conditions result from data flow defined in code, allowing the system to infer
 > pre and post conditions.
 
-These concepts underpin the following differentiators versus other agentic systems:
+These concepts underpin the following differentiators versus other agent frameworks:
 
 - **Sophisticated planning.** Goes beyond a finite state machine or sequential execution
   with nesting by introducing a true planning step, using a
@@ -139,6 +139,17 @@ remote actions and goals) and third party agent frameworks.
 TL;DR Because the evolution is agent frameworks is early and there's a lot of room for improvement; because an agent
 framework on the JVM will deliver great business value.
 
+- _Why do we need an agent framework at all_? We can write code without higher level abstractions, directly invoking
+  LLMs and controlling flow directly in code. However, a higher level agent framework offers compelling benefits. For
+  example:
+    - Breaking up LLM interactions, making them simpler and more focused. This maximizes reuse and minimizes cost and
+      errors. It often allows us to use cheaper models for point interactions.
+    - Facilitating both unit and integration testing, which remain as important with agentic systems as with any other
+      software systems.
+    - Increasing composability where subflows and individual actions can be reused
+    - Making applications more manageable and robust, enabling a workflow manager to control their execution and retry
+      operations while maintaining previous state
+    - Enhancing safety through the ability to apply guardrails in many places
 - _Why do we need an agent framework for the JVM when solutions exist in Python?_: While this space is presently
   better developed in Python (or even TypeScript), it's early and there's plenty of room for novel and potentially
   superior
@@ -598,7 +609,7 @@ If none of these profiles is chosen, vanilla logging will occur. This makes me s
 We welcome contributions to the Embabel Agent Framework.
 
 Look at the [coding style guide](embabel-agent-api/.embabel/coding-style.md) for style guidelines.
-This file also informs agentic coding behavior.
+This file also informs coding agent behavior.
 
 ## Miscellaneous
 

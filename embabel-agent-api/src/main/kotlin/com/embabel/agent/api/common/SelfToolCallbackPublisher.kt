@@ -23,7 +23,8 @@ import org.springframework.ai.tool.ToolCallbacks
 
 /**
  * Convenient interface a class can implement to publish @Tool
- * functions automatically. Application domain objects can extend this
+ * functions automatically. Application domain objects can extend this.
+ * Intended for extension by both platform and application code.
  */
 interface SelfToolCallbackPublisher : ToolCallbackPublisher {
 

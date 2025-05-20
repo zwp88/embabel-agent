@@ -17,6 +17,8 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.deployment.AgentDeployer
+import com.embabel.agent.core.deployment.AgentScanningProperties
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

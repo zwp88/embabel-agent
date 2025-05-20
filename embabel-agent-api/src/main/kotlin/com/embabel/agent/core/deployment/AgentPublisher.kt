@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common
+package com.embabel.agent.core.deployment
 
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
@@ -49,6 +49,5 @@ class AgentDeployer(
             }
         }
     }
-
 
 }

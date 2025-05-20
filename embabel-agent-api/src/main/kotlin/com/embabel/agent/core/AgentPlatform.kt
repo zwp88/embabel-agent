@@ -72,6 +72,13 @@ interface AgentPlatform : AgentScope {
         bindings: Map<String, Any>,
     ): AgentProcess
 
+    /**
+     * Run the given agent with the given input, which will be added
+     * to the blackboard with the default binding.
+     * @param agent the agent to run. Does not need to be deployed to the platform
+     * @param processOptions the options for the process
+     * @param input the input to bind to the blackboard
+     */
     fun runAgentWithInput(
         agent: Agent,
         processOptions: ProcessOptions = ProcessOptions(),

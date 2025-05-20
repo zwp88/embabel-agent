@@ -17,8 +17,8 @@ package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.annotation.support.AgenticInfo
-import com.embabel.agent.api.common.AgentScanningProperties
 import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.deployment.AgentScanningProperties
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.context.annotation.Profile

@@ -22,6 +22,10 @@ import com.embabel.agent.core.support.AbstractAction
 import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
+/**
+ * Return type to indicate that the action can return one of two types.
+ * Facilitates branching
+ */
 data class Branch<B, C>(
     val left: B? = null,
     val right: C? = null,

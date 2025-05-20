@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.event.AgenticEventListener
