@@ -149,7 +149,7 @@ framework on the JVM will deliver great business value.
   believe that most applications should work with higher
   level APIs. An analogy: Spring AI exists at the level of the Servlet API, while Embabel is more like Spring MVC.
   Complex requirements are much easier to express and test in Embabel than with direct use of Spring AI.
-- Why not attempt to contribute this project to Spring?_ This project requires different governance
+- _Why not attempt to contribute this project to Spring?_ This project requires different governance
   from Spring, where most projects exist in stable environments and dependability and stability outweighs rapid
   innovation. Second, the
   concepts are not JVM-specific. We hope that Embabel will become the leading agent framework across platforms. While
@@ -293,7 +293,6 @@ Developers must carefully read all code they commit and improve generated code i
 
 - Get the bits
 - Set up your environment
-- Set up Maven Settings with GitHub Token
 - Run the application
 
 ### Getting the bits
