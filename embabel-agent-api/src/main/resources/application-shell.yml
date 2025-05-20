@@ -2,6 +2,11 @@ spring:
   main:
     web-application-type: none
   shell:
+    command:
+      exit:
+        enabled: false
+      quit:
+        enabled: false
     history:
       enabled: true
     interactive:

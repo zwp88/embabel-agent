@@ -27,10 +27,14 @@ import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
+import org.springframework.boot.SpringApplication
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
+import java.util.concurrent.CompletableFuture
+import kotlin.system.exitProcess
 
 
 @ShellComponent
@@ -44,6 +48,7 @@ class ShellCommands(
     private val loggingPersonality: LoggingPersonality,
     private val ingester: Ingester,
     private val toolStatsSource: ToolStatsSource,
+    private val context: ConfigurableApplicationContext,
 ) {
 
     private val logger: Logger = loggingPersonality.logger
@@ -348,6 +353,27 @@ class ShellCommands(
             intent = intent,
             processOptions = defaultProcessOptions,
         )
+    }
+
+    @ShellMethod(value = "Exit the application", key = ["exit", "quit", "bye"])
+    fun exit(): String {
+        println ("Exiting...".color(colorPalette.color2))
+        logger.info("Shutting down application...")
+
+        // Perform any cleanup if needed
+        try {
+            // Clear any active processes
+            agentProcesses.clear()
+            // Graceful shutdown
+            CompletableFuture.runAsync {
+                Thread.sleep(100) // Small delay to let response print
+                exitProcess(SpringApplication.exit(context, { 0 }))
+            }
+            return "Goodbye!".color(colorPalette.color2)
+        } catch (e: Exception) {
+            logger.warn("Error during shutdown: ${e.message}")
+            return "Goodbye! (with errors)".color(colorPalette.color2)
+        }
     }
 
     private fun executeIntent(
