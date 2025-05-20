@@ -1,7 +1,12 @@
 slideCount: 50
+presenterBio: >
+  Rod Johnson, Embabel. Creator of Spring
+
 brief: >
   Demonstrate how Kotlin and Spring are the ideal modern server side stack.
   Provide all examples from the given codebase if possible, not via web search.
+  
+  While modern Java has improved a lot, Kotlin remains better.
   
   Provide examples from the codebase of the use of Kotlin reification and extension functions.
   Show how Spring @Service works naturally with with Kotlin classes, without the need for
@@ -19,8 +24,11 @@ brief: >
   
   Explain the implementation of the PresentationMaker Kotlin class. 
   Draw a GraphViz diagram of how the class works.
+  
+  Conclude with a call to action: experience the future of agentic systems
+  by trying Embabel; it's an example of Spring + Kotlin in action.
 
-header: >
+header: |
   ---
   marp: true
   theme: default

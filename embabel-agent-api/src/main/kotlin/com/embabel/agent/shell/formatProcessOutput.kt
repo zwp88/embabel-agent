@@ -24,7 +24,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.text.WordUtils
 
 /**
- * Format the output of a process for display to the console
+ * Format the output of a process for display to the console.
+ * Displays well-known types appropriately; otherwise pretty prints JSON.
+ * Displays usage and cost information.
  */
 fun formatProcessOutput(
     result: DynamicExecutionResult,

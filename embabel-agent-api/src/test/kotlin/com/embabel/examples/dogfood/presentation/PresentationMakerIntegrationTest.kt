@@ -70,6 +70,7 @@ class PresentationMakerIntegrationTest {
         ---
                 """.trimIndent(),
                 softwareProject = "/Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api",
+                presenterBio = "John Smith",
                 coStar = CoStar(
                     context = "context",
                     objective = "objective",

@@ -21,6 +21,7 @@ import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
 import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
+import com.embabel.common.core.util.trim
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -205,14 +206,23 @@ open class LoggingAgenticEventListener(
 
             is AgentProcessToolCallResponseEvent -> {
                 when (event.result.isSuccess) {
-                    true -> logger.info(
-                        functionCallSuccessResponseEventMessage,
-                        event.processId,
-                        event.function,
-                        event.result.getOrThrow(),
-                        event.runningTime.toMillis(),
-                        event.toolInput,
-                    )
+                    true -> {
+                        val raw = event.result.getOrThrow()
+                        val resultToShow =
+                            if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
+                                raw
+                            } else {
+                                trim(s = raw, max = 80, keepRight = 5)
+                            }
+                        logger.info(
+                            functionCallSuccessResponseEventMessage,
+                            event.processId,
+                            event.function,
+                            resultToShow,
+                            event.runningTime.toMillis(),
+                            event.toolInput,
+                        )
+                    }
 
                     false -> {
                         val throwable = event.result.exceptionOrNull()

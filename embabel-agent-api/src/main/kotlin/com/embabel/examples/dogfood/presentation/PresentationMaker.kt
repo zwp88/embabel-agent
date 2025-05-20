@@ -34,9 +34,13 @@ import com.embabel.agent.domain.library.ResearchTopics
 import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
 import com.embabel.agent.experimental.prompt.CoStar
 import com.embabel.agent.shell.formatProcessOutput
+import com.embabel.agent.tools.file.FileContentTransformer
+import com.embabel.agent.tools.file.FileReadTools
+import com.embabel.agent.tools.file.WellKnownFileContentTransformers.removeApacheLicenseHeader
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.common.ai.prompt.PromptContributor
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -56,6 +60,7 @@ import java.nio.charset.Charset
  */
 data class PresentationRequest(
     val slideCount: Int,
+    val presenterBio: String,
     val brief: String,
     val softwareProject: String?,
     val outputDirectory: String = "/Users/rjohnson/Documents",
@@ -65,6 +70,7 @@ data class PresentationRequest(
     val coStar: CoStar,
 ) : PromptContributor by coStar {
 
+    @JsonIgnore
     val project: Project? =
         softwareProject?.let {
             Project(it)
@@ -73,7 +79,7 @@ data class PresentationRequest(
 
 @ConfigurationProperties(prefix = "embabel.presentation-maker")
 data class PresentationMakerProperties(
-    val researchLlm: String = OpenAiModels.GPT_41_MINI,
+    val researchLlm: String = OpenAiModels.GPT_41_NANO,
     val creationLlm: String = AnthropicModels.CLAUDE_37_SONNET,
 )
 
@@ -93,13 +99,14 @@ class PresentationMaker(
     @Action
     fun identifyResearchTopics(presentationRequest: PresentationRequest): ResearchTopics =
         usingModel(
-            properties.researchLlm,
-            toolGroups = setOf(CoreToolGroups.WEB),
+            properties.creationLlm,
+//            toolGroups = setOf(CoreToolGroups.WEB),
         ).create(
             """
                 Create a list of research topics for a presentation,
                 based on the given input:
                 ${presentationRequest.brief}
+                About the presenter: ${presentationRequest.presenterBio}
                 """.trimIndent()
         )
 
@@ -148,12 +155,17 @@ class PresentationMaker(
         val reports = researchComplete.topicResearches.map { it.researchReport }
         val slideDeck = context.promptRunner(llm = LlmOptions(byName(properties.creationLlm)))
             .withPromptContributor(presentationRequest)
-            .withToolGroup(CoreToolGroups.WEB)
+//            .withToolGroup(CoreToolGroups.WEB)
             .withToolObject(presentationRequest.project)
             .create<SlideDeck>(
                 """
                 Create content for a slide deck based on the given research.
                 Use the following input to guide the presentation:
+
+                # About the presenter
+                ${presentationRequest.presenterBio}
+
+                # Presentation narrative
                 ${presentationRequest.brief}
 
                 Support your points using the following research:
@@ -220,6 +232,7 @@ class PresentationMaker(
                 Choose 5-10 slides where an important point is made
                 and edit the given slide to include an appropriate image from the web.
                 Make no other changes.
+                Do not perform any web research besides seeking images.
 
                 ${withDigraphs.content}
             """.trimIndent()
@@ -254,7 +267,10 @@ class PresentationMaker(
 
 }
 
-class Project(override val root: String) : SymbolSearch
+class Project(override val root: String) : FileReadTools, SymbolSearch {
+
+    override val fileContentTransformers: List<FileContentTransformer> = listOf(removeApacheLicenseHeader)
+}
 
 @ShellComponent("Presentation maker commands")
 class PresentationMakerShell(
