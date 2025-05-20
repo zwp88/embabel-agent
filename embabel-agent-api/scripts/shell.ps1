@@ -1,17 +1,28 @@
-# Check if OPENAI_API_KEY is set
-if (-not $env:OPENAI_API_KEY) {
-    Write-Host "Error: OPENAI_API_KEY environment variable is not set" -ForegroundColor Red
-    Write-Host "OpenAI will not be available"
-    Write-Host "Please set it with: `$env:OPENAI_API_KEY = 'your_api_key'"
-    exit 1
-} else {
-    Write-Host "OPENAI_API_KEY set: OpenAI models are available" -ForegroundColor Green
+# Save current location and environment
+Push-Location
+$originalProfiles = $env:SPRING_PROFILES_ACTIVE
+
+try {
+    # Run environment check
+    Write-Host "Running environment check..." -ForegroundColor Cyan
+    & .\support\check_env.ps1
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Environment check failed. Exiting..." -ForegroundColor Red
+        exit 1
+    }
+    
+    # Change to parent directory
+    Set-Location ..
+    
+    # Set Spring profiles
+    $env:SPRING_PROFILES_ACTIVE = "shell,starwars,docker-desktop"
+    
+    # Run Maven in subprocess
+    cmd /c "mvn spring-boot:run"
 }
-
-
-# Navigate up one directory
-Set-Location ..
-
-# Set Spring profile and run Maven
-$env:SPRING_PROFILES_ACTIVE = "shell,severance"
-mvn spring-boot:run
+finally {
+    # Restore original environment and location
+    $env:SPRING_PROFILES_ACTIVE = $originalProfiles
+    Pop-Location
+}
