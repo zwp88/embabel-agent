@@ -329,16 +329,26 @@ class SlideDeckTest {
         }
 
         @Test
-        fun `expand diagram`() {
+        fun `expand diagram with backticks`() {
             val paris = SlideDeck(PARIS_WITH_DIAGRAM)
+            expandWithDiagram(paris)
+        }
+
+        @Test
+        fun `expand diagram without backticks`() {
+            val paris = SlideDeck(PARIS_WITH_DIAGRAM.replace("```", ""))
+            expandWithDiagram(paris)
+        }
+
+        private fun expandWithDiagram(deck: SlideDeck) {
             val mockDigraphExpander = mockk<DigraphExpander>()
             every { mockDigraphExpander.expandDiagram("PresentationMaker", any()) } returns "PresentationMaker.svg"
-            val paris2 = paris.expandDotDiagrams(mockDigraphExpander)
-            assertFalse(paris2.content.contains("dot"), "Digraph should have been removed")
+            val expanded = deck.expandDotDiagrams(mockDigraphExpander)
+            assertFalse(expanded.content.contains("dot"), "Digraph should have been removed")
 
-            assertNotEquals(PARIS_WITH_DIAGRAM, paris2.content, "Diagram should have been expanded")
-            assertTrue(paris2.content.contains("![Diagram](./PresentationMaker.svg)"))
-            assertEquals(paris.slideCount(), paris2.slideCount(), "Should have the same slide count")
+            assertNotEquals(deck.content, expanded.content, "Diagram should have been expanded")
+            assertTrue(expanded.content.contains("![Diagram](./PresentationMaker.svg)"))
+            assertEquals(deck.slideCount(), expanded.slideCount(), "Should have the same slide count")
         }
     }
 }
