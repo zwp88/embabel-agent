@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-interface DiagramExpander {
+interface DigraphExpander {
 
     /**
      * Expands a DOT diagram into a more detailed representation.
@@ -36,9 +36,9 @@ interface DiagramExpander {
 
 }
 
-class DotCliDiagramExpander(
+class DotCliDigraphExpander(
     private val directory: String,
-) : DiagramExpander {
+) : DigraphExpander {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -63,7 +63,7 @@ class DotCliDiagramExpander(
             listOf("sh", "-c", command)
         }
 
-        loggerFor<DotCliDiagramExpander>().info("Running command {}", finalCommand)
+        loggerFor<DotCliDigraphExpander>().info("Running command {}", finalCommand)
         processBuilder.command(finalCommand)
 
         // Redirect error stream to output stream

@@ -118,7 +118,7 @@ $slideContents
      * Expand diagrams and change text to reference them.
      * Diagrams will be in the same directory as the file
      */
-    fun expandDotDiagrams(diagramExpander: DiagramExpander): SlideDeck {
+    fun expandDotDiagrams(digraphExpander: DigraphExpander): SlideDeck {
         var result = content
         // Regex to match DOT graph blocks between ```dot and ``` markers
         val dotBlockRegex =
@@ -136,7 +136,7 @@ $slideContents
             val diagramName = matchResult.groupValues[1]
 
             // Call the expandDotGraph function with the extracted values
-            val diagramFile = diagramExpander.expandDiagram(
+            val diagramFile = digraphExpander.expandDiagram(
                 dot = "digraph $dotString",
                 fileBase = diagramName,
             )

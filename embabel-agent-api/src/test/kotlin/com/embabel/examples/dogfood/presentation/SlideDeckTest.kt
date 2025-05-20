@@ -323,17 +323,17 @@ class SlideDeckTest {
         @Test
         fun `no diagrams to expand`() {
             val paris = SlideDeck(PARIS)
-            val mockDiagramExpander = mockk<DiagramExpander>()
-            val paris2 = paris.expandDotDiagrams(mockDiagramExpander)
+            val mockDigraphExpander = mockk<DigraphExpander>()
+            val paris2 = paris.expandDotDiagrams(mockDigraphExpander)
             assertEquals(PARIS, paris2.content, "Expanding no diagrams should have made no change")
         }
 
         @Test
         fun `expand diagram`() {
             val paris = SlideDeck(PARIS_WITH_DIAGRAM)
-            val mockDiagramExpander = mockk<DiagramExpander>()
-            every { mockDiagramExpander.expandDiagram("PresentationMaker", any()) } returns "PresentationMaker.svg"
-            val paris2 = paris.expandDotDiagrams(mockDiagramExpander)
+            val mockDigraphExpander = mockk<DigraphExpander>()
+            every { mockDigraphExpander.expandDiagram("PresentationMaker", any()) } returns "PresentationMaker.svg"
+            val paris2 = paris.expandDotDiagrams(mockDigraphExpander)
             assertFalse(paris2.content.contains("dot"), "Digraph should have been removed")
 
             assertNotEquals(PARIS_WITH_DIAGRAM, paris2.content, "Diagram should have been expanded")

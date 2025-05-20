@@ -203,12 +203,12 @@ class PresentationMaker(
     }
 
     @Action
-    fun postprocessDeck(
+    fun expandDigraphs(
         slideDeck: SlideDeck,
         presentationRequest: PresentationRequest,
         context: OperationContext,
     ): MarkdownFile {
-        val diagramExpander = DotCliDiagramExpander(
+        val diagramExpander = DotCliDigraphExpander(
             directory = presentationRequest.outputDirectory,
         )
         val withDotDiagrams = slideDeck.expandDotDiagrams(diagramExpander)
