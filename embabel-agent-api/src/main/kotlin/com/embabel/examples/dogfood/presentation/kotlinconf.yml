@@ -15,15 +15,29 @@ brief: >
   Explain how this presentation has been created by Embabel, written in Kotlin and based on Spring.
   Explain the core concepts of Embabel (consider README.md).
   
-  Explain the implementation of the PresentationMaker Kotlin class, considering
-  the README. Draw a GraphViz diagram of how the class works.
+  Show the kotlinconf.yml file laying out the narrative for the presentation.
+  
+  Explain the implementation of the PresentationMaker Kotlin class. 
+  Draw a GraphViz diagram of how the class works.
 
-#resources:
-#  - SoftwareProject
-
-copyright: Embabel 2025
+header: >
+  ---
+  marp: true
+  theme: default
+  paginate: false
+  class: invert
+  size: 16:9
+  style: |
+    img {background-color: transparent!important;}
+    a:hover, a:active, a:focus {text-decoration: none;}
+    header a {color: #ffffff !important; font-size: 30px;}
+    footer {color: #148ec8;}
+  footer: "(c) Embabel"
+  ---
 
 outputFile: kotlinconf.md
+
+softwareProject: /Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api
 
 coStar:
   context: talk at KotlinConf 2025
@@ -31,5 +45,5 @@ coStar:
     convey the importance of Kotlin in the Spring ecosystem and how they
     complement each other
   style: Rod Johnson on programming
-  tone: knowledgeable
+  tone: informative and entertaining
   audience: Kotlin developers interested in Spring

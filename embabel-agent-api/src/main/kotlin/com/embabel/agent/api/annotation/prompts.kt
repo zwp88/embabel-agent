@@ -44,7 +44,7 @@ fun using(
     )
 
 /**
- * Convenience method to return an ambient prompt runner for use to return in an @Action method
+ * Convenience method to return a prompt runner for use to return in an @Action method
  * that uses the given model with default hyperparameters
  */
 @JvmOverloads
@@ -65,6 +65,10 @@ fun usingModel(
         generateExamples = generateExamples,
     )
 
+/**
+ * Return a PromptRunner instance for use in @Action methods
+ * that uses default LLM and hyperparameters.
+ */
 val usingDefaultLlm: PromptRunner =
     MethodReturnPromptRunner(
         llm = null,

@@ -15,10 +15,7 @@
  */
 package com.embabel.examples.dogfood.presentation
 
-import com.embabel.agent.api.annotation.AchievesGoal
-import com.embabel.agent.api.annotation.Action
-import com.embabel.agent.api.annotation.Agent
-import com.embabel.agent.api.annotation.usingModel
+import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.DynamicExecutionResult
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
@@ -29,6 +26,7 @@ import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
+import com.embabel.agent.domain.io.FileArtifact
 import com.embabel.agent.domain.library.CompletedResearch
 import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.domain.library.ResearchResult
@@ -42,6 +40,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.io.ResourceLoader
 import org.springframework.shell.standard.ShellComponent
@@ -49,9 +48,6 @@ import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
 import java.nio.charset.Charset
 
-data class MarkdownFile(
-    val fileName: String,
-)
 
 /**
  * @param brief the content of the presentation. Can be short
@@ -61,25 +57,10 @@ data class MarkdownFile(
 data class PresentationRequest(
     val slideCount: Int,
     val brief: String,
-    val softwareProject: String? = "/Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api",
+    val softwareProject: String?,
     val outputDirectory: String = "/Users/rjohnson/Documents",
     val outputFile: String = "presentation.md",
-    val copyright: String = "Embabel 2025",
-    val header: String = """
-        ---
-        marp: true
-        theme: default
-        paginate: false
-        class: invert
-        size: 16:9
-        style: |
-          img {background-color: transparent!important;}
-          a:hover, a:active, a:focus {text-decoration: none;}
-          header a {color: #ffffff !important; font-size: 30px;}
-          footer {color: #148ec8;}
-        footer: "(c) $copyright"
-        ---
-    """.trimIndent(),
+    val header: String,
     //val slidesToInclude: String,
     val coStar: CoStar,
 ) : PromptContributor by coStar {
@@ -106,6 +87,8 @@ class PresentationMaker(
     private val filePersister: FilePersister,
     private val properties: PresentationMakerProperties,
 ) {
+
+    private val logger = LoggerFactory.getLogger(PresentationMaker::class.java)
 
     @Action
     fun identifyResearchTopics(presentationRequest: PresentationRequest): ResearchTopics =
@@ -202,24 +185,53 @@ class PresentationMaker(
         return slideDeck
     }
 
-    @Action
+    @Action(outputBinding = "withDigraphs")
     fun expandDigraphs(
         slideDeck: SlideDeck,
         presentationRequest: PresentationRequest,
-        context: OperationContext,
-    ): MarkdownFile {
+    ): SlideDeck {
         val diagramExpander = DotCliDigraphExpander(
             directory = presentationRequest.outputDirectory,
         )
         val withDotDiagrams = slideDeck.expandDotDiagrams(diagramExpander)
         filePersister.saveFile(
             directory = presentationRequest.outputDirectory,
-            fileName = "02_" + presentationRequest.outputFile,
+            fileName = "digraph_" + presentationRequest.outputFile,
             content = withDotDiagrams.deck,
         )
-        return MarkdownFile(
-            presentationRequest.outputFile
+        return slideDeck
+    }
+
+    @Action(outputBinding = "withIllustrations")
+    fun addIllustrations(
+        @RequireNameMatch withDigraphs: SlideDeck,
+        presentationRequest: PresentationRequest,
+        context: OperationContext,
+    ): SlideDeck {
+        logger.info("Asking LLM to add illustrations to this resource")
+
+        val deckWithIllustrations =
+            context.promptRunner(
+                llm = LlmOptions(byName(properties.creationLlm)).withTemperature(.7),
+                toolGroups = setOf(CoreToolGroups.WEB)
+            ).create<SlideDeck>(
+                """
+                Take the following slide deck.
+                Choose 5-10 slides where an important point is made
+                and edit the given slide to include an appropriate image from the web.
+                Make no other changes.
+
+                ${withDigraphs.content}
+            """.trimIndent()
+            )
+
+        logger.info("Saving slide deck to {}/{}", presentationRequest.outputDirectory, presentationRequest.outputFile)
+        filePersister.saveFile(
+            directory = presentationRequest.outputDirectory,
+            fileName = presentationRequest.outputFile,
+            content = deckWithIllustrations.deck,
         )
+        return withDigraphs
     }
 
     @AchievesGoal(
@@ -228,14 +240,16 @@ class PresentationMaker(
     @Action
     fun convertToSlides(
         presentationRequest: PresentationRequest,
-        slideDeck: SlideDeck,
-        markdownFile: MarkdownFile
-    ): SlideDeck {
-        slideFormatter.createHtmlSlides(
+        @RequireNameMatch withIllustrations: SlideDeck,
+    ): FileArtifact {
+        val htmlFile = slideFormatter.createHtmlSlides(
             directory = presentationRequest.outputDirectory,
-            markdownFilename = markdownFile.fileName,
+            markdownFilename = presentationRequest.outputFile,
         )
-        return slideDeck
+        return FileArtifact(
+            directory = presentationRequest.outputDirectory,
+            outputFile = htmlFile,
+        )
     }
 
 }

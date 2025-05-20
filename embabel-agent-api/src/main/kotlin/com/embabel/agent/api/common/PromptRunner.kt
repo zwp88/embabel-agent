@@ -25,9 +25,10 @@ import org.springframework.ai.tool.ToolCallback
 
 /**
  * Convenience interface for executing prompts.
- * User code should use this interface to execute prompts.
- * A PromptRunner interface allows control over prompt execution
- * and reuse between different execution.
+ * User code should always use this interface to execute prompts.
+ * A PromptRunner is immutable once constructed, and has determined
+ * LLM and hyperparameters.
+ * Thus, a PromptRunner can be reused within an action implementation.
  * A contextual facade to LlmOperations.
  * @see com.embabel.agent.spi.LlmOperations
  */

@@ -140,6 +140,9 @@ annotation class AchievesGoal(
  * Annotation that can added to parameters of an @Action method
  * to indicate that the parameter name must match the input binding.
  * Otherwise, it can match the latest ("it") value.
+ * Must be combined with the outputBinding method on Action for the action
+ * producing the input
+ * @see Action
  * @see IoBinding
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)

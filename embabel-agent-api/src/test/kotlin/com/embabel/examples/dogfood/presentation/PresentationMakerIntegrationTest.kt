@@ -19,6 +19,7 @@ import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.domain.io.FileArtifact
 import com.embabel.agent.experimental.prompt.CoStar
 import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import io.mockk.every
@@ -53,6 +54,22 @@ class PresentationMakerIntegrationTest {
             input = PresentationRequest(
                 slideCount = 10,
                 brief = "Create a presentation about AI",
+                header = """
+                    ---
+        marp: true
+        theme: default
+        paginate: false
+        class: invert
+        size: 16:9
+        style: |
+          img {background-color: transparent!important;}
+          a:hover, a:active, a:focus {text-decoration: none;}
+          header a {color: #ffffff !important; font-size: 30px;}
+          footer {color: #148ec8;}
+        footer: "(c) Embabel"
+        ---
+                """.trimIndent(),
+                softwareProject = "/Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api",
                 coStar = CoStar(
                     context = "context",
                     objective = "objective",
@@ -68,7 +85,7 @@ class PresentationMakerIntegrationTest {
 //            result.processContext.agentProcess.history.size,
 //            "Expected history:\nActual:\n${result.processContext.agentProcess.history.joinToString("\n")}"
 //        )
-        assertTrue(result.lastResult() is SlideDeck)
+        assertTrue(result.lastResult() is FileArtifact)
         assertTrue(
             result.objects.filterIsInstance<SlideDeck>().isNotEmpty(),
             "Should have ResearchTopics"

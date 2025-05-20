@@ -17,9 +17,11 @@ package com.embabel.examples.dogfood.presentation
 
 import com.embabel.agent.domain.library.ContentAsset
 import com.embabel.common.util.loggerFor
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import java.time.Instant
 
 /**
+ * Projection of an individual slide within a SlideDeck
  * @param number the number of the slide, from 1
  */
 data class Slide(
@@ -31,6 +33,7 @@ data class Slide(
  * Domain object for a Markdown slide deck.
  */
 data class SlideDeck(
+    @get:JsonPropertyDescription("Raw content of the deck, in Markdown MARP format")
     val deck: String,
 ) : ContentAsset {
 
@@ -155,6 +158,5 @@ $slideContents
         loggerFor<SlideDeck>().info("Replaced {} dot diagrams", replacedDiagrams)
         return SlideDeck(result)
     }
-
 
 }

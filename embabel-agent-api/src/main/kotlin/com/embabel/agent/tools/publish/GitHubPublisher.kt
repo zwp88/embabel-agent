@@ -21,9 +21,9 @@ import org.kohsuke.github.GitHubBuilder
 import java.util.*
 
 class GitHubPublisher(
-    private val githubToken: String,
-    private val owner: String,
-    private val repo: String,
+    githubToken: String,
+    private val owner: String = "embabel",
+    private val repo: String = "publications",
     private val commitMessage: String = "Published by Embabel Agent",
 ) : Publisher {
 

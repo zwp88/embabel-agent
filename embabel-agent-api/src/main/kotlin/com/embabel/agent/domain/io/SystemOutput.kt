@@ -16,5 +16,15 @@
 package com.embabel.agent.domain.io
 
 import com.embabel.common.core.types.Timestamped
+import java.io.File
+import java.time.Instant
 
 interface SystemOutput : Timestamped
+
+data class FileArtifact(
+    val file: File,
+    override val timestamp: Instant = Instant.now(),
+) : SystemOutput {
+
+    constructor(directory: String, outputFile: String) : this(File(directory, outputFile))
+}
