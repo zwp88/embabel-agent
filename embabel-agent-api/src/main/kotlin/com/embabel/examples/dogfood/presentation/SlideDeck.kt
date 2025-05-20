@@ -26,8 +26,6 @@ data class Slide(
     val content: String,
 )
 
-const val SEP = "---"
-
 /**
  * Domain object for a Markdown slide deck.
  */
@@ -72,16 +70,20 @@ data class SlideDeck(
 
         if (slides.isEmpty()) {
             // Only header, no slides
-            return SlideDeck("""---
+            return SlideDeck(
+                """---
 $trimmedHeader
-""".trimEnd()) // no trailing separator
+""".trimEnd()
+            ) // no trailing separator
         } else {
             val slideContents = slides.joinToString("\n---\n") { it.content }
-            return SlideDeck("""---
+            return SlideDeck(
+                """---
 $trimmedHeader
 ---
 $slideContents
-""".trimEnd())
+""".trimEnd()
+            )
         }
     }
 
@@ -102,10 +104,12 @@ $slideContents
         val currentHeader = header()
         val slideContents = updatedSlides.joinToString("\n---\n") { it.content }
 
-        return SlideDeck("""---
+        return SlideDeck(
+            """---
 $currentHeader
 ---
 $slideContents
-""".trimEnd())
+""".trimEnd()
+        )
     }
 }
