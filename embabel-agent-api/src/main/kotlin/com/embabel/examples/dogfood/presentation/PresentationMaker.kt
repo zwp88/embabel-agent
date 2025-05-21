@@ -172,7 +172,7 @@ class PresentationMaker(
             .withToolObject(presentationRequest.project)
             .create<SlideDeck>(
                 """
-                Create content for a slide deck based on the given research.
+                Create content for an impactful slide deck based on the given research.
                 Use the following input to guide the presentation:
 
                 # About the presenter
@@ -182,7 +182,6 @@ class PresentationMaker(
                 ${presentationRequest.brief}
 
                 Support your points using the following research:
-                Reports:
                 $reports
 
                 The presentation should be ${presentationRequest.slideCount} slides long.
@@ -197,9 +196,9 @@ class PresentationMaker(
                 If you include GraphViz dot diagrams, do NOT enclose them in ```
                 DO start with dot e.g. "dot digraph..."
 
-                Include these images where appropriate on slide.
-                Don't make the images too big.
-                Put the image on the right and appropriately set up layout.
+                Include these images where appropriate.
+                Put the image on its own slide, without a title.
+                Do not count these in slide count.
                 ${presentationRequest.images.map { "${it.key}: ${it.value}" }.joinToString("\n")}
 
                 Use the following header elements to start the deck.
@@ -253,9 +252,9 @@ class PresentationMaker(
         presentationRequest: PresentationRequest,
         context: OperationContext,
     ): SlideDeck {
-        val deckWithIllustrations = if (presentationRequest.autoIllustrate) {
+        val deckWithIllustrations = if (!presentationRequest.autoIllustrate) {
             logger.info("Not auto illustrating")
-            return withDiagrams
+            withDiagrams
         } else {
             logger.info("Asking LLM to add illustrations to this resource")
 
@@ -296,7 +295,11 @@ class PresentationMaker(
             dwi
         }
 
-        logger.info("Saving slide deck to {}/{}", presentationRequest.outputDirectory, presentationRequest.outputFile)
+        logger.info(
+            "Saving final MARP markdown to {}/{}",
+            presentationRequest.outputDirectory,
+            presentationRequest.outputFile,
+        )
         filePersister.saveFile(
             directory = presentationRequest.outputDirectory,
             fileName = presentationRequest.outputFile,
