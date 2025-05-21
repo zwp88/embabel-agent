@@ -10,7 +10,7 @@ if errorlevel 1 (
 
 cd ..
 
-set SPRING_PROFILES_ACTIVE=shell,severance
+set SPRING_PROFILES_ACTIVE=shell,starwars,docker-desktop
 
 cmd /c mvn spring-boot:run
 
