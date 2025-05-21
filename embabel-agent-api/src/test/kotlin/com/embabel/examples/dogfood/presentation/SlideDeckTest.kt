@@ -18,7 +18,6 @@ package com.embabel.examples.dogfood.presentation
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
@@ -76,6 +75,14 @@ val PARIS_WITH_DIAGRAM = PARIS + """
     }
     ```
 
+""".trimIndent()
+
+val PARIS_WITH_DIAGRAM_2 = PARIS + """
+    
+    ---
+    dot digraph PresentationMaker {
+      identifyResearchTopics -> researchTopics -> createDeck -> expandDigraphs -> loadWithDigraphs -> addIllustrations -> convertToSlides;
+    }
 """.trimIndent()
 
 class SlideDeckTest {
@@ -330,29 +337,35 @@ class SlideDeckTest {
         }
 
         @Test
-        @Disabled("not yet working: no time to debug right now")
         fun `expand diagram with backticks`() {
             val paris = SlideDeck(PARIS_WITH_DIAGRAM)
-            expandWithDiagram(paris)
-            assertFalse(paris.content.contains("`"), "Should have no backticks:\n${paris.content}")
+            val p2 = expandWithDiagram(paris)
+            assertFalse(p2.content.contains("`"), "Should have no backticks:\n${paris.content}")
         }
 
         @Test
         fun `expand diagram without backticks`() {
             val paris = SlideDeck(PARIS_WITH_DIAGRAM.replace("```", ""))
-            expandWithDiagram(paris)
-            assertFalse(paris.content.contains("`"), "Should have no backticks")
+            val p2 = expandWithDiagram(paris)
+            assertFalse(p2.content.contains("`"), "Should have no backticks")
+
         }
 
-        private fun expandWithDiagram(deck: SlideDeck) {
+        @Test
+        fun `expand minimal diagram`() {
+            val paris = SlideDeck(PARIS_WITH_DIAGRAM_2)
+            expandWithDiagram(paris)
+        }
+
+        private fun expandWithDiagram(deck: SlideDeck): SlideDeck {
             val mockDigraphExpander = mockk<DigraphExpander>()
             every { mockDigraphExpander.expandDiagram("PresentationMaker", any()) } returns "PresentationMaker.svg"
             val expanded = deck.expandDigraphs(mockDigraphExpander)
-            assertFalse(expanded.content.contains("dot"), "Digraph should have been removed")
-
+            assertFalse(expanded.content.contains("dot"), "Digraph should have been removed\n${expanded.content}")
             assertNotEquals(deck.content, expanded.content, "Diagram should have been expanded")
             assertTrue(expanded.content.contains("![Diagram](./PresentationMaker.svg)"))
             assertEquals(deck.slideCount(), expanded.slideCount(), "Should have the same slide count")
+            return expanded
         }
     }
 }
