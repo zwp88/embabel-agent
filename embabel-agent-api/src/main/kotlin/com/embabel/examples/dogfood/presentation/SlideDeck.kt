@@ -121,11 +121,11 @@ $slideContents
      * Expand diagrams and change text to reference them.
      * Diagrams will be in the same directory as the file
      */
-    fun expandDotDiagrams(digraphExpander: DigraphExpander): SlideDeck {
+    fun expandDigraphs(digraphExpander: DigraphExpander): SlideDeck {
         var result = content
-        // Regex to match DOT graph blocks between ```dot and ``` markers
+        // Regex to ma\tch DOT graph blocks between ```dot and ``` markers
         val dotBlockRegex =
-            Regex("""[```]?dot\s+digraph\s+(\w+)\s+(\{[\s\S]*?\})\s+[```]?""", RegexOption.DOT_MATCHES_ALL)
+            Regex("""(```)?dot\s+digraph\s+(\w+)\s+(\{[\s\S]*?\})\s+(```)?""", RegexOption.DOT_MATCHES_ALL)
 
         // Find all matches in the input
         val matches = dotBlockRegex.findAll(content)
@@ -135,8 +135,8 @@ $slideContents
         var replacedDiagrams = 0
         matches.forEach { matchResult ->
             // Extract the dot string content (group 1) and the diagram name (group 2)
-            val dotString = matchResult.groupValues[2]
-            val diagramName = matchResult.groupValues[1]
+            val dotString = matchResult.groupValues[3]
+            val diagramName = matchResult.groupValues[2]
 
             // Call the expandDotGraph function with the extracted values
             val diagramFile = digraphExpander.expandDiagram(
@@ -146,14 +146,14 @@ $slideContents
 
             val imageReference = "![Diagram](./${diagramFile})"
 
-            // Replace the matched block with the image reference
-            result = result.replaceRange(
-                matchResult.range.first,
-                matchResult.range.last + 1,
-                imageReference
-            )
+            result = result.replace(matchResult.value, imageReference)
+
             ++replacedDiagrams
-            loggerFor<SlideDeck>().info("Replaced dot diagram {}", diagramFile)
+            loggerFor<SlideDeck>().info(
+                "Replaced dot diagram {} with\n{}",
+                diagramFile,
+                matchResult.value,
+            )
         }
         loggerFor<SlideDeck>().info("Replaced {} dot diagrams", replacedDiagrams)
         return SlideDeck(result)

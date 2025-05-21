@@ -36,6 +36,7 @@ class PresentationMakerIntegrationTest {
         val mockEnvironment = mockk<Environment>()
         val mockFilePersister = mockk<FilePersister>()
         every { mockFilePersister.saveFile(any(), any(), any()) } returns Unit
+        every { mockFilePersister.loadFile(any(), any()) } returns null
         val mockSlideFormatter = mockk<SlideFormatter>()
         every { mockSlideFormatter.createHtmlSlides(any(), any()) } returns "presentation.html"
         every { mockEnvironment.activeProfiles } returns arrayOf("test")

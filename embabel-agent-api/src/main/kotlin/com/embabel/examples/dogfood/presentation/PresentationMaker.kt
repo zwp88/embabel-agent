@@ -66,6 +66,7 @@ data class PresentationRequest(
     val outputDirectory: String = "/Users/rjohnson/Documents",
     val outputFile: String = "presentation.md",
     val header: String,
+    val images: Map<String, String> = emptyMap(),
     //val slidesToInclude: String,
     val coStar: CoStar,
 ) : PromptContributor by coStar {
@@ -75,11 +76,22 @@ data class PresentationRequest(
         softwareProject?.let {
             Project(it)
         }
+
+    /**
+     * File name for interim artifact with raw deck
+     */
+    fun rawOutputFile(): String {
+        return outputFile.replace(".md", ".raw.md")
+    }
+
+    fun withDiagramsOutputFile(): String {
+        return outputFile.replace(".md", ".withDiagrams.md")
+    }
 }
 
 @ConfigurationProperties(prefix = "embabel.presentation-maker")
 data class PresentationMakerProperties(
-    val researchLlm: String = OpenAiModels.GPT_41_NANO,
+    val researchLlm: String = OpenAiModels.GPT_41_MINI,
     val creationLlm: String = AnthropicModels.CLAUDE_37_SONNET,
 )
 
@@ -155,7 +167,7 @@ class PresentationMaker(
         val reports = researchComplete.topicResearches.map { it.researchReport }
         val slideDeck = context.promptRunner(llm = LlmOptions(byName(properties.creationLlm)))
             .withPromptContributor(presentationRequest)
-//            .withToolGroup(CoreToolGroups.WEB)
+            .withToolGroup(CoreToolGroups.WEB)
             .withToolObject(presentationRequest.project)
             .create<SlideDeck>(
                 """
@@ -175,11 +187,19 @@ class PresentationMaker(
                 The presentation should be ${presentationRequest.slideCount} slides long.
                 It should have a compelling narrative and call to action.
                 It should end with a list of reference links.
-                Use the findPatternInProject tool to find relevant content within the given software project
+                Use the findPatternInProject tool and other file tools to find relevant content within the given software project
                 if required and format code on slides.
 
                 Use Marp format, creating Markdown that can be rendered as slides.
                 If you need to look it up, see https://github.com/marp-team/marp/blob/main/website/docs/guide/directives.md
+
+                If you include GraphViz dot diagrams, do NOT enclose them in ```
+                DO start with dot e.g. "dot digraph..."
+
+                Include these images where appropriate on slide.
+                Don't make the images too big.
+                Put the image on the right.
+                ${presentationRequest.images.map { "${it.key}: ${it.value}" }.joinToString("\n")}
 
                 Use the following header elements to start the deck.
                 Add further header elements if you wish.
@@ -191,13 +211,13 @@ class PresentationMaker(
             )
         filePersister.saveFile(
             directory = presentationRequest.outputDirectory,
-            fileName = "01_" + presentationRequest.outputFile,
+            fileName = presentationRequest.rawOutputFile(),
             content = slideDeck.deck,
         )
         return slideDeck
     }
 
-    @Action(outputBinding = "withDigraphs")
+    @Action(outputBinding = "withDiagrams", cost = 1.0)
     fun expandDigraphs(
         slideDeck: SlideDeck,
         presentationRequest: PresentationRequest,
@@ -205,38 +225,71 @@ class PresentationMaker(
         val diagramExpander = DotCliDigraphExpander(
             directory = presentationRequest.outputDirectory,
         )
-        val withDotDiagrams = slideDeck.expandDotDiagrams(diagramExpander)
+        val withDigraphs = slideDeck.expandDigraphs(diagramExpander)
         filePersister.saveFile(
             directory = presentationRequest.outputDirectory,
-            fileName = "digraph_" + presentationRequest.outputFile,
-            content = withDotDiagrams.deck,
+            fileName = presentationRequest.withDiagramsOutputFile(),
+            content = withDigraphs.deck,
         )
         return slideDeck
     }
 
+    @Action(outputBinding = "withDiagrams")
+    fun loadWithDigraphs(
+        presentationRequest: PresentationRequest,
+    ): SlideDeck? {
+        return filePersister.loadFile(
+            directory = presentationRequest.outputDirectory,
+            fileName = presentationRequest.withDiagramsOutputFile(),
+        )?.let {
+            SlideDeck(it)
+        }
+    }
+
     @Action(outputBinding = "withIllustrations")
     fun addIllustrations(
-        @RequireNameMatch withDigraphs: SlideDeck,
+        @RequireNameMatch withDiagrams: SlideDeck,
         presentationRequest: PresentationRequest,
         context: OperationContext,
     ): SlideDeck {
         logger.info("Asking LLM to add illustrations to this resource")
+        if (true) {
+            return withDiagrams
+        }
 
-        val deckWithIllustrations =
-            context.promptRunner(
-                llm = LlmOptions(byName(properties.creationLlm)).withTemperature(.7),
-                toolGroups = setOf(CoreToolGroups.WEB)
-            ).create<SlideDeck>(
+        val illustrator = context.promptRunner(
+            llm = LlmOptions(byName(properties.researchLlm)).withTemperature(.3)
+        ).withToolGroup(CoreToolGroups.WEB)
+        val newSlides = withDiagrams.slides().map { slide ->
+            val newContent = illustrator.generateText(
                 """
-                Take the following slide deck.
-                Choose 5-10 slides where an important point is made
-                and edit the given slide to include an appropriate image from the web.
+                Take the following slide in MARP format.
+                Overall objective: ${presentationRequest.brief}
+
+                If the slide contains an important point, try to add an image to it
+                Check that the image is available.
+                Don't make the image too big.
                 Make no other changes.
                 Do not perform any web research besides seeking images.
+                Return nothing but the amended slide content (the content between <slide></slide>).
+                Do not ask any questions.
+                If you don't think an image is needed, return the slide unchanged.
 
-                ${withDigraphs.content}
+                <slide>
+                ${slide.content}
+                </slide>
             """.trimIndent()
+
             )
+            Slide(
+                number = slide.number,
+                content = newContent,
+            )
+        }
+        var deckWithIllustrations = withDiagrams
+        for (slide in newSlides) {
+            deckWithIllustrations = deckWithIllustrations.replaceSlide(slide, slide.content)
+        }
 
         logger.info("Saving slide deck to {}/{}", presentationRequest.outputDirectory, presentationRequest.outputFile)
         filePersister.saveFile(
@@ -244,7 +297,7 @@ class PresentationMaker(
             fileName = presentationRequest.outputFile,
             content = deckWithIllustrations.deck,
         )
-        return withDigraphs
+        return withDiagrams
     }
 
     @AchievesGoal(
@@ -281,7 +334,7 @@ class PresentationMakerShell(
     @ShellMethod
     fun makePresentation(
         @ShellOption(
-            defaultValue = "file:/Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api/src/main/kotlin/com/embabel/examples/dogfood/presentation/kotlinconf.yml",
+            defaultValue = "file:/Users/rjohnson/dev/embabel.com/embabel-agent/embabel-agent-api/src/main/kotlin/com/embabel/examples/dogfood/presentation/kotlinconf_presentation.yml",
         )
         file: String,
     ): String {

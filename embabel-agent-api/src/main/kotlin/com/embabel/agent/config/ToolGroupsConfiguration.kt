@@ -62,8 +62,11 @@ internal class ToolGroupsConfiguration(
             ),
             clients = mcpSyncClients,
             filter = {
-                it.toolDefinition.name().contains("brave") || it.toolDefinition.name().contains("fetch") ||
-                        wikipediaTools.any { wt -> it.toolDefinition.name().contains(wt) }
+                // Brave local search is aggressively rate limited, so
+                // don't use it for now
+                (it.toolDefinition.name().contains("brave") || it.toolDefinition.name().contains("fetch") ||
+                        wikipediaTools.any { wt -> it.toolDefinition.name().contains(wt) }) &&
+                        !it.toolDefinition.name().contains("brave_local_search")
             },
         )
     }

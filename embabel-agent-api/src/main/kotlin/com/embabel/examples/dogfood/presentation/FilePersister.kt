@@ -18,24 +18,42 @@ package com.embabel.examples.dogfood.presentation
 import com.embabel.agent.tools.file.FileTools
 import org.springframework.stereotype.Service
 
-// TODO becomes common
-fun interface FilePersister {
+// TODO becomes common--with FileTools?
+interface FilePersister {
 
     fun saveFile(
         directory: String,
         fileName: String,
         content: String,
     )
+
+    /**
+     * Return file content
+     */
+    fun loadFile(
+        directory: String,
+        fileName: String,
+    ): String?
 }
 
 @Service
 class FileToolsFilePersister : FilePersister {
+
 
     override fun saveFile(
         directory: String,
         fileName: String,
         content: String
     ) {
-        FileTools.Companion.readWrite(directory).createFile(path = fileName, content = content, overwrite = true)
+        FileTools.readWrite(directory).createFile(path = fileName, content = content, overwrite = true)
+    }
+
+    override fun loadFile(directory: String, fileName: String): String? {
+        return try {
+            FileTools.readOnly(directory).readFile(path = fileName)
+        } catch (e: IllegalArgumentException) {
+            // File does not exist
+            null
+        }
     }
 }
