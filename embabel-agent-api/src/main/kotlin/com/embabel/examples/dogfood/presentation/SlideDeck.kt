@@ -144,7 +144,7 @@ $slideContents
                 fileBase = diagramName,
             )
 
-            val imageReference = "![Diagram](./${diagramFile})"
+            val imageReference = "\n![Diagram](./${diagramFile})\n"
 
             result = result.replace(matchResult.value, imageReference)
 

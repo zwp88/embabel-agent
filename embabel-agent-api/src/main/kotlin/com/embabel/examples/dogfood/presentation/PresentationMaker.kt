@@ -56,7 +56,7 @@ import java.nio.charset.Charset
 /**
  * @param brief the content of the presentation. Can be short
  * or detailed
- *
+ * @param autoIllustrate ask the LLM to provide illustrations. Not yet dependable
  */
 data class PresentationRequest(
     val slideCount: Int,
@@ -67,6 +67,7 @@ data class PresentationRequest(
     val outputFile: String = "presentation.md",
     val header: String,
     val images: Map<String, String> = emptyMap(),
+    val autoIllustrate: Boolean = false,
     //val slidesToInclude: String,
     val coStar: CoStar,
 ) : PromptContributor by coStar {
@@ -198,7 +199,7 @@ class PresentationMaker(
 
                 Include these images where appropriate on slide.
                 Don't make the images too big.
-                Put the image on the right.
+                Put the image on the right and appropriately set up layout.
                 ${presentationRequest.images.map { "${it.key}: ${it.value}" }.joinToString("\n")}
 
                 Use the following header elements to start the deck.
@@ -252,23 +253,25 @@ class PresentationMaker(
         presentationRequest: PresentationRequest,
         context: OperationContext,
     ): SlideDeck {
-        logger.info("Asking LLM to add illustrations to this resource")
-        if (true) {
+        val deckWithIllustrations = if (presentationRequest.autoIllustrate) {
+            logger.info("Not auto illustrating")
             return withDiagrams
-        }
+        } else {
+            logger.info("Asking LLM to add illustrations to this resource")
 
-        val illustrator = context.promptRunner(
-            llm = LlmOptions(byName(properties.researchLlm)).withTemperature(.3)
-        ).withToolGroup(CoreToolGroups.WEB)
-        val newSlides = withDiagrams.slides().map { slide ->
-            val newContent = illustrator.generateText(
-                """
+            val illustrator = context.promptRunner(
+                llm = LlmOptions(byName(properties.researchLlm)).withTemperature(.3)
+            ).withToolGroup(CoreToolGroups.WEB)
+            val newSlides = withDiagrams.slides().map { slide ->
+                val newContent = illustrator.generateText(
+                    """
                 Take the following slide in MARP format.
                 Overall objective: ${presentationRequest.brief}
 
                 If the slide contains an important point, try to add an image to it
                 Check that the image is available.
                 Don't make the image too big.
+                Put the image on the right.
                 Make no other changes.
                 Do not perform any web research besides seeking images.
                 Return nothing but the amended slide content (the content between <slide></slide>).
@@ -280,15 +283,17 @@ class PresentationMaker(
                 </slide>
             """.trimIndent()
 
-            )
-            Slide(
-                number = slide.number,
-                content = newContent,
-            )
-        }
-        var deckWithIllustrations = withDiagrams
-        for (slide in newSlides) {
-            deckWithIllustrations = deckWithIllustrations.replaceSlide(slide, slide.content)
+                )
+                Slide(
+                    number = slide.number,
+                    content = newContent,
+                )
+            }
+            var dwi = withDiagrams
+            for (slide in newSlides) {
+                dwi = dwi.replaceSlide(slide, slide.content)
+            }
+            dwi
         }
 
         logger.info("Saving slide deck to {}/{}", presentationRequest.outputDirectory, presentationRequest.outputFile)
@@ -339,7 +344,6 @@ class PresentationMakerShell(
         file: String,
     ): String {
         val yamlReader = ObjectMapper(YAMLFactory()).registerKotlinModule()
-
 
         val presentationRequest = yamlReader.readValue(
             resourceLoader.getResource(file).getContentAsString(Charset.defaultCharset()),
