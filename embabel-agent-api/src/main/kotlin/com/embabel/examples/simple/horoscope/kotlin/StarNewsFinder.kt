@@ -92,7 +92,6 @@ data class Writeup(
     beanName = "KotlinStarNewsFinder",
 )
 class StarNewsFinder(
-    // Services such as Horoscope are injected using Spring
     private val horoscopeService: HoroscopeService,
     @Value("\${star-news-finder.model:gpt-4.1-nano}")
 //    @Value("\${star-news-finder.model:ai/llama3.2}")
