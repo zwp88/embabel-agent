@@ -505,7 +505,6 @@ data class AgentScopeBuilder<O>(
         val singleAction = agent.asAction<Any, O>()
         singleAction.execute(
             processContext = context.processContext,
-            outputTypes = emptyMap(),
             action = context.action,
         )
         return context.last<O>() ?: throw IllegalStateException(
@@ -562,7 +561,6 @@ inline fun <reified I, reified O : Any> runAgent(
     val singleAction = agent.asAction<Any, O>()
     singleAction.execute(
         processContext = context.processContext,
-        outputTypes = emptyMap(),
         action = context.action,
     )
     return context.last<O>() ?: throw IllegalStateException(

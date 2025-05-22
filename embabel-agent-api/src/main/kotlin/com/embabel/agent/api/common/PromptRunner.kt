@@ -24,7 +24,6 @@ import org.springframework.ai.tool.ToolCallback
 
 
 /**
- * Convenience interface for executing prompts.
  * User code should always use this interface to execute prompts.
  * A PromptRunner is immutable once constructed, and has determined
  * LLM and hyperparameters.
@@ -51,7 +50,7 @@ interface PromptRunner : LlmCall {
     /**
      * Create an object of the given type using the given prompt and LLM options from context
      * (process context or implementing class).
-     * Prompt is typically created within the scope of an
+     * Prompts are typically created within the scope of an
      * @Action method that provides access to
      * domain object instances, offering type safety.
      */
@@ -78,23 +77,40 @@ interface PromptRunner : LlmCall {
         confidenceThreshold: ZeroToOne = 0.8,
     ): Boolean
 
+    /**
+     * Add a tool group to the PromptRunner
+     * @param name of the toolGroup we're requesting
+     * @return PromptRunner instance with the added tool group
+     */
     fun withToolGroup(toolGroup: String): PromptRunner
 
     /**
      * Add a tool object to the prompt runner.
      * @param toolObject the object to add. If it is null, nothing is done.
      * This is not an error
+     * @return PromptRunner instance with the added tool object
      */
     fun withToolObject(toolObject: Any?): PromptRunner
 
+    /**
+     * Add a prompt contributor
+     * @param promptContributor
+     * @return PromptRunner instance with the added PromptContributor
+     */
     fun withPromptContributor(promptContributor: PromptContributor): PromptRunner
 
 }
 
+/**
+ * Create an object of the given type
+ */
 inline infix fun <reified T> PromptRunner.createObject(prompt: String): T =
     createObject(prompt, T::class.java)
 
-/** Method overloading is evil */
+/**
+ * Create an object of the given type.
+ * Method overloading is evil
+ **/
 inline infix fun <reified T> PromptRunner.create(prompt: String): T =
     createObject(prompt, T::class.java)
 

@@ -52,6 +52,7 @@ import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
 import java.nio.charset.Charset
 
+data class ImageInfo(val url: String, val useWhen: String)
 
 /**
  * @param brief the content of the presentation. Can be short
@@ -66,7 +67,7 @@ data class PresentationRequest(
     val outputDirectory: String = "/Users/rjohnson/Documents",
     val outputFile: String = "presentation.md",
     val header: String,
-    val images: Map<String, String> = emptyMap(),
+    val images: Map<String, ImageInfo> = emptyMap(),
     val autoIllustrate: Boolean = false,
     //val slidesToInclude: String,
     val coStar: CoStar,
@@ -196,10 +197,11 @@ class PresentationMaker(
                 If you include GraphViz dot diagrams, do NOT enclose them in ```
                 DO start with dot e.g. "dot digraph..."
 
-                Include these images where appropriate.
-                Put the image on its own slide, without a title.
-                Do not count these in slide count.
-                ${presentationRequest.images.map { "${it.key}: ${it.value}" }.joinToString("\n")}
+                Use the following images as suggested:
+                ${
+                    presentationRequest.images.map { "${it.key}: ${it.value.url} - use when: ${it.value.useWhen}" }
+                        .joinToString("\n")
+                }
 
                 Use the following header elements to start the deck.
                 Add further header elements if you wish.

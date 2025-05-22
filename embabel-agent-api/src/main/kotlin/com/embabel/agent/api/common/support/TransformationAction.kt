@@ -65,7 +65,6 @@ open class TransformationAction<I, O>(
     @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, SchemaType>,
         action: Action,
     ): ActionStatus = ActionRunner.execute(processContext) {
         val input = processContext.getValue(inputVarName, inputClass.name) as I

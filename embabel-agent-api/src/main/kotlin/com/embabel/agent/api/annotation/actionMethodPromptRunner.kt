@@ -24,6 +24,14 @@ import org.springframework.ai.tool.ToolCallback
 /**
  * Return a prompt runner for use to return in an @Action method, specifying
  * LLM options.
+ * @param llm specification of LLM to use
+ * @param toolGroups tool groups to request
+ * @param toolCallbacks individual tools to expose
+ * @param toolObjects objects with @Tool annotations to expose to the LLM.
+ * Note that domain objects passed into the @Action method will automatically
+ * expose any @Tool methods.
+ * @promptContributors promptContributors to expose
+ * @generateExamples whether to override default example generation
  */
 @JvmOverloads
 fun using(
@@ -46,6 +54,14 @@ fun using(
 /**
  * Convenience method to return a prompt runner for use to return in an @Action method
  * that uses the given model with default hyperparameters
+ * @param model name of LLM to use
+ * @param toolGroups tool groups to request
+ * @param toolCallbacks individual tools to expose
+ * @param toolObjects objects with @Tool annotations to expose to the LLM.
+ * Note that domain objects passed into the @Action method will automatically
+ * expose any @Tool methods.
+ * @promptContributors promptContributors to expose
+ * @generateExamples whether to override default example generation
  */
 @JvmOverloads
 fun usingModel(

@@ -114,25 +114,25 @@ public record Using(
 
     @Override
     public <T> T createObject(@NonNull String prompt, @NonNull Class<T> outputClass) {
-        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples)
+        return ActionMethodPromptRunnerKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples)
                 .createObject(prompt, outputClass);
     }
 
     @Override
     public <T> @Nullable T createObjectIfPossible(@NonNull String prompt, @NonNull Class<T> outputClass) {
-        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples)
+        return ActionMethodPromptRunnerKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples)
                 .createObjectIfPossible(prompt, outputClass);
     }
 
     @Override
     @NonNull
     public String generateText(@NonNull String prompt) {
-        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples).generateText(prompt);
+        return ActionMethodPromptRunnerKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples).generateText(prompt);
     }
 
     @Override
     public boolean evaluateCondition(@NonNull String condition, @NonNull String context, double confidenceThreshold) {
-        return PromptsKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples).evaluateCondition(condition, context, confidenceThreshold);
+        return ActionMethodPromptRunnerKt.using(llmOptions, toolGroups, toolCallbacks, toolObjects, promptContributors, generateExamples).evaluateCondition(condition, context, confidenceThreshold);
     }
 
     @Override

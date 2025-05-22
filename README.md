@@ -35,7 +35,7 @@ From the creator of Spring.
 Models agentic flows in terms of:
 
 - **Actions**: Steps an agent takes
-- **Goals**: What the agent is trying to achieve
+- **Goals**: What an agent is trying to achieve
 - **Conditions**: Conditions to assess before executing an action or determining that a goal has been achieved.
   Conditions are reassessed after each action is executed.
 - **Domain model**: Objects underpinning the flow and informing Actions, Goals and Conditions.
@@ -49,7 +49,7 @@ Models agentic flows in terms of:
 > as most conditions result from data flow defined in code, allowing the system to infer
 > pre and post conditions.
 
-These concepts underpin the following differentiators versus other agent frameworks:
+These concepts underpin these differentiators versus other agent frameworks:
 
 - **Sophisticated planning.** Goes beyond a finite state machine or sequential execution
   with nesting by introducing a true planning step, using a
@@ -66,13 +66,14 @@ These concepts underpin the following differentiators versus other agent framewo
 
 Other benefits:
 
-- **Platform abstraction**: Clean separation between programming model and platform concept allow running locally while
-  potentially offering higher QoS changing application code.
+- **Platform abstraction**: Clean separation between programming model and platform internals allows running locally
+  while
+  potentially offering higher QoS in production without changing application code.
 - **Designed for LLM mixing**: It is easy to build applications that mix LLMs, ensuring the most cost-effective yet
   capable solution.
   This enables the system to leverage the strengths of different models for different tasks. In particular, it
   facilitates
-  the use of local models for point tasks.
+  the use of local models for point tasks. This can be important for cost and privacy.
 - **Built on Spring and the JVM,** making it easy to access existing enterprise functionality and capabilities.
   For example:
     - Spring can inject and manage agents, including using Spring AOP to decorate functions.
@@ -84,16 +85,16 @@ Flows can be authored in one of two ways:
 - An annotation-based model similar to Spring MVC, with types annotated with the Spring stereotype `@Agent`, using
   `@Goal`, `@Condition` and
   `@Action` methods.
-- Kotlin DSL.
+- Idiomatic Kotlin DSL with `agent {` and `action {` blocks.
 
-Either way, flows are backed by a true domain model of objects that can have rich behavior.
+Either way, flows are backed by a domain model of objects that can have rich behavior.
 
 > We are working toward allowing natural language actions and goals to be deployed.
 
 The planning step is pluggable.
 
 The default planning approach is
-GOAP: [Goal Oriented Action Planning](https://medium.com/@vedantchaudhari/goal-oriented-action-planning-34035ed40d0b).
+[Goal Oriented Action Planning](https://medium.com/@vedantchaudhari/goal-oriented-action-planning-34035ed40d0b).
 GOAP is a popular AI planning algorithm used in gaming. It allows for dynamic decision-making and action selection based
 on the current state of the world and the goals of the agent.
 
@@ -138,7 +139,7 @@ remote actions and goals) and third party agent frameworks.
 
 ## Why Is Embabel Needed?
 
-TL;DR Because the evolution is agent frameworks is early and there's a lot of room for improvement; because an agent
+TL;DR Because the evolution of agent frameworks is early and there's a lot of room for improvement; because an agent
 framework on the JVM will deliver great business value.
 
 - _Why do we need an agent framework at all_? We can write code without higher level abstractions, directly invoking
@@ -169,6 +170,8 @@ framework on the JVM will deliver great business value.
   the Spring brand is valuable in Java, it is not in TypeScript or Python.
 
 ## Show Me The Code
+
+In Kotlin or Java, agent implementation code is intuitive and easy to test.
 
 ```kotlin
 @Agent(description = "Find news based on a person's star sign")
@@ -211,7 +214,7 @@ class StarNewsFinder(
         )
 
     // The @AchievesGoal annotation indicates that completing this action
-    // achieves the given goal, so the agent can be complete
+    // achieves the given goal, so the agent run will be complete
     @AchievesGoal(
         description = "Write an amusing writeup for the target person based on their horoscope and current news stories",
     )
@@ -272,7 +275,7 @@ data class FunnyWriteup(
 
 ## Dog Food Policy
 
-We believe that all aspects of software development can
+We believe that all aspects of software development can and should
 be greatly accelerated through the use of AI agents. The ultimate decision
 makers remain human, but they can and should be greatly augmented.
 
@@ -328,9 +331,12 @@ Optional:
 
 - `ANTHROPIC_API_KEY`: For the Anthropic API. Necessary for the coding agent.
 
-> We strongly recommend providing both an OpenAI and Anthropic key, as some demos require both.
+> We strongly recommend providing both an OpenAI and Anthropic key, as some examples require both. And it's important to
+> try to find the best LLM for a given task, rather than automatically choose a familiar provider.
 
-You will also need Docker Desktop with the Docker MCP extension installed for
+### Services
+
+You will need Docker Desktop with the Docker MCP extension installed for
 Docker MCP tools such as web search tools. Be sure to activate
 the following tools from the catalog:
 
@@ -338,6 +344,12 @@ the following tools from the catalog:
 - Fetch
 - Puppeteer
 - Wikipedia
+
+> You can also set up your own MCP tools using Spring AI conventions. See the `application-docker-desktop.yml` file for
+> an example.
+
+If you're running Ollama locally, set the `ollama` profile and Embabel will automatically connect to your Ollama
+endpoint and make all models available.
 
 ### Running
 
@@ -369,7 +381,7 @@ An example:
 execute "Lynda is a Scorpio, find news for her" -p -r
 ```
 
-This will look for a goal, find the star finder goal and
+This will look for an agent, choose the star finder agent and
 run the flow. `-p` will log prompts `-r` will log LLM responses.
 Omit these for less verbose logging.
 
@@ -453,8 +465,8 @@ There is a lot to do, and you are awesome. We look forward to your contribution!
 
 ### Domain objects
 
-Applications center around domain objects. These can be created by LLMs or user
-code and manipulated by user code.
+Applications center around domain objects. These can be instantiated by LLMs or user
+code, and manipulated by user code.
 
 Use Jackson annotations to help LLMs with descriptions as well as mark fields to ignore.
 For example:
@@ -471,13 +483,22 @@ data class StarPerson(
 See [Java Json Schema Generation - Module Jackson](https://github.com/victools/jsonschema-generator/tree/main/jsonschema-module-jackson)
 for documentation of the library used.
 
-## Using as an MCP server
+Domain objects can have behaviors that are automatically exposed to LLMs when they are in scope. Simply annotate methods
+with the Spring AI `@Tool` annotation.
+
+> When exposing `@Tool` methods on domain objects, be sure that the tool is safe to invoke. Even the best LLMs can get
+> trigger-happy. For example, be careful about methods that can mutate or delete data. This is likely better modeled via
+> an explicit call to a non-tool method on the same domain class, in a code action.
+
+## Using Embabel as an MCP server
 
 You can use the Embabel agent platform as an MCP server from a
 UI like Claude Desktop.
 
 Because Claude only presently works over stdio, and we rightly ignore stdio in favor of SSE, you will need
 to use a [layer in between](https://makhlevich.substack.com/p/converting-an-mcp-server-from-sse).
+
+*Note:* This feature is presently immature.
 
 ## Consuming MCP Servers
 

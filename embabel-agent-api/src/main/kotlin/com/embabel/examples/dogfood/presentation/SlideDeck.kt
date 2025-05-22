@@ -125,7 +125,7 @@ $slideContents
         var result = content
         // Regex to ma\tch DOT graph blocks between ```dot and ``` markers
         val dotBlockRegex =
-            Regex("""(```)?dot\s+digraph\s+(\w+)\s+(\{[\s\S]*?\})\s+(```)?""", RegexOption.DOT_MATCHES_ALL)
+            Regex("""(```)?dot\s*digraph\s+(\w+)\s+(\{[\s\S;]*?\})\s*(```)?""", RegexOption.DOT_MATCHES_ALL)
 
         // Find all matches in the input
         val matches = dotBlockRegex.findAll(content)

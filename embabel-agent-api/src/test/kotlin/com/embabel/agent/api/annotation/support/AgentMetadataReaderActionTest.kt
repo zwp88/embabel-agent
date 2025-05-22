@@ -212,7 +212,7 @@ class AgentMetadataReaderActionTest {
             platformServices = mockPlatformServices,
             agentProcess = mockAgentProcess,
         )
-        val result = action.execute(pc, mockk(), action)
+        val result = action.execute(pc, action)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -262,7 +262,7 @@ class AgentMetadataReaderActionTest {
             platformServices = mockPlatformServices,
             agentProcess = mockAgentProcess,
         )
-        val result = action.execute(pc, mockk(), action)
+        val result = action.execute(pc, action)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -312,7 +312,7 @@ class AgentMetadataReaderActionTest {
             platformServices = mockPlatformServices,
             agentProcess = mockAgentProcess,
         )
-        val result = action.execute(pc, mockk(), action)
+        val result = action.execute(pc, action)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -354,7 +354,7 @@ class AgentMetadataReaderActionTest {
             platformServices = mockPlatformServices,
             agentProcess = mockAgentProcess,
         )
-        val result = action.execute(pc, mockk(), action)
+        val result = action.execute(pc, action)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -471,7 +471,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, mockk(), action)
+            val result = action.execute(pc, action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
             assertEquals(DefaultModelSelectionCriteria, llmo.captured.llm.criteria)
@@ -523,7 +523,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, mockk(), action)
+            val result = action.execute(pc, action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
 //                assertEquals(1, llmi.captured.toolCallbacks.size)
@@ -595,7 +595,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, mockk(), action)
+            val result = action.execute(pc, action)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertTrue(pc.blackboard.lastResult() is UserInput)
             assertEquals("John Doe", (pc.blackboard.lastResult() as UserInput).content)
@@ -652,7 +652,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, mockk(), action)
+            val result = action.execute(pc, action)
             assertEquals(ActionStatusCode.WAITING, result.status)
             val fr = pc.blackboard.lastResult()
             assertTrue(

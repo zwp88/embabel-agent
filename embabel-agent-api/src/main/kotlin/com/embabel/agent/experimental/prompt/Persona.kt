@@ -18,9 +18,8 @@ package com.embabel.agent.experimental.prompt
 import com.embabel.common.ai.prompt.PromptContributor
 
 /**
- * Inspired by crew.ai. Not that we think this is necessarily
- * the best way to structure team members, but it's helpful to
- * show
+ * A way to structure LLM responses, by grounding them
+ * in a personality.
  */
 interface Persona : PromptContributor {
 
