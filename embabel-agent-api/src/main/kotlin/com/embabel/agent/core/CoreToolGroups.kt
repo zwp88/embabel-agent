@@ -17,6 +17,7 @@ package com.embabel.agent.core
 
 /**
  * Core tool groups exposed by the platform
+ * These should be supported in any AgentPlatform instance.
  */
 object CoreToolGroups {
 
