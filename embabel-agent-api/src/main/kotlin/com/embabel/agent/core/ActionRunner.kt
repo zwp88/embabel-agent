@@ -38,7 +38,6 @@ interface ActionRunner {
      */
     fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, SchemaType>,
         action: Action,
     ): ActionStatus
 

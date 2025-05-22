@@ -78,7 +78,7 @@ val PARIS_WITH_DIAGRAM = PARIS + """
 """.trimIndent()
 
 val PARIS_WITH_DIAGRAM_2 = PARIS + """
-    
+
     ---
     dot digraph PresentationMaker {
       identifyResearchTopics -> researchTopics -> createDeck -> expandDigraphs -> loadWithDigraphs -> addIllustrations -> convertToSlides;

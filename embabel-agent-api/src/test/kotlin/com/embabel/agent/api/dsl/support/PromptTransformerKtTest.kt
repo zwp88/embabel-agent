@@ -74,7 +74,7 @@ class PromptTransformerKtTest {
                     transformer
                 )
             } returns frog
-            transformer.execute(processContext, outputTypes = emptyMap(), action = transformer)
+            transformer.execute(processContext, action = transformer)
         }
 
         @Test
@@ -111,7 +111,7 @@ class PromptTransformerKtTest {
                 )
             } returns summary
 
-            transformer.execute(processContext = processContext, outputTypes = emptyMap(), action = transformer)
+            transformer.execute(processContext = processContext, action = transformer)
 
             verify { processContext.getValue("person", PromptPerson::class.java.name) }
         }
@@ -174,7 +174,7 @@ class PromptTransformerKtTest {
                 )
             } returns Frog(name = "Alice")
 
-            transformer.execute(processContext = processContext, outputTypes = emptyMap(), action = transformer)
+            transformer.execute(processContext = processContext, action = transformer)
         }
 
         @Test
@@ -218,7 +218,7 @@ class PromptTransformerKtTest {
                 )
             } returns Frog(name = "Bob")
 
-            transformer.execute(processContext = processContext, outputTypes = emptyMap(), action = transformer)
+            transformer.execute(processContext = processContext, action = transformer)
         }
 
         @Test

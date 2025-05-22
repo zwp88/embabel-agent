@@ -87,7 +87,6 @@ open class BranchingAction<I, O1, O2>(
     @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
-        outputTypes: Map<String, SchemaType>,
         action: Action,
     ): ActionStatus = ActionRunner.Companion.execute(processContext) {
         val input = processContext.getValue(inputVarName, inputClass.name) as I

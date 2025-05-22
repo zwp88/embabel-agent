@@ -279,7 +279,6 @@ abstract class AbstractAgentProcess(
         val actionStatus = action.qos.retryTemplate().execute<ActionStatus, Exception> {
             action.execute(
                 processContext = processContext,
-                outputTypes = outputTypes,
                 action = action,
             )
         }
