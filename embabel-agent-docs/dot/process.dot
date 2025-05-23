@@ -1,0 +1,27 @@
+digraph PlanningProcess {
+    // Graph attributes
+    rankdir=TB;
+    node [shape=box, style=rounded, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9];
+
+    // Define nodes
+    start [label="Start", shape=ellipse, style=filled, fillcolor=lightgreen];
+    choose_goal [label="Choose goal", style=filled, fillcolor=lightblue];
+    determine_state [label="Determine world state", style=filled, fillcolor=lightcyan];
+    formulate_plan [label="Plan from world state to goal", style=filled, fillcolor=lightyellow];
+    execute_action [label="Execute first action in plan", style=filled, fillcolor=lightpink];
+    check_preconditions [label="Goal preconditions satisfied?", shape=diamond, style=filled, fillcolor=orange];
+    success [label="Goal Achieved", shape=ellipse, style=filled, fillcolor=lightgreen];
+
+    // Define edges
+    start -> choose_goal;
+    choose_goal -> determine_state;
+    determine_state -> formulate_plan;
+    formulate_plan -> execute_action;
+    execute_action -> check_preconditions;
+    check_preconditions -> success [label="Yes", color=green, fontcolor=green];
+    check_preconditions -> determine_state [label="No\n(Replan)", color=red, fontcolor=red];
+
+    // Add feedback loop styling
+    edge [constraint=false, style=dashed, color=blue];
+}
