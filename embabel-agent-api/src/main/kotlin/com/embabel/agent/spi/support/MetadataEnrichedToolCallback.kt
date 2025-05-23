@@ -16,6 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 
@@ -29,5 +30,12 @@ class MetadataEnrichedToolCallback(
 
     override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
 
-    override fun call(toolInput: String): String = delegate.call(toolInput)
+    override fun call(toolInput: String): String {
+        try {
+            return delegate.call(toolInput)
+        } catch (t: Throwable) {
+            loggerFor<MetadataEnrichedToolCallback>().error("Tool call failure on ${delegate.toolDefinition.name()}", t)
+            throw t
+        }
+    }
 }

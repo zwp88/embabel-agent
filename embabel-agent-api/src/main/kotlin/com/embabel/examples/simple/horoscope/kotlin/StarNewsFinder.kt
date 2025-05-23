@@ -93,7 +93,7 @@ data class Writeup(
 )
 class StarNewsFinder(
     private val horoscopeService: HoroscopeService,
-    @Value("\${star-news-finder.model:gpt-4.1-nano}")
+    @Value("\${star-news-finder.model:gpt-4.1-mini}")
 //    @Value("\${star-news-finder.model:ai/llama3.2}")
 
     private val model: String = OpenAiModels.GPT_41_NANO,

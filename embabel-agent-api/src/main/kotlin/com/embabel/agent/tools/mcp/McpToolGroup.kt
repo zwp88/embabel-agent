@@ -25,6 +25,9 @@ import io.modelcontextprotocol.client.McpSyncClient
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider
 import org.springframework.ai.tool.ToolCallback
 
+/**
+ * ToolGroup backed by MCP
+ */
 class McpToolGroup(
     description: ToolGroupDescription,
     provider: String,
@@ -62,4 +65,7 @@ class McpToolGroup(
             emptyList()
         }
     }
+
+    override fun toString(): String =
+        "McpToolGroup(metadata=$metadata, tools=${toolCallbacks.map { it.toolDefinition.name() }})"
 }

@@ -48,13 +48,13 @@ class RegistryToolGroupResolver(
 
     override fun resolveToolGroup(role: String): ToolGroupResolution {
         val group = toolGroups.find { it.metadata.role == role }
-        if (group == null) {
-            return ToolGroupResolution(
+        return if (group == null) {
+            ToolGroupResolution(
                 resolvedToolGroup = null,
                 failureMessage = "No tool group matching role '$role'",
             )
         } else {
-            return ToolGroupResolution(
+            ToolGroupResolution(
                 resolvedToolGroup = group,
             )
         }
