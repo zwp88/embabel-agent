@@ -146,11 +146,7 @@ class AutonomyActionLeakageTest {
                 condition1.name to ConditionDetermination.TRUE
             )
 
-            override fun execute(
-                processContext: ProcessContext,
-                outputTypes: Map<String, SchemaType>,
-                action: Action,
-            ): ActionStatus {
+            override fun execute(processContext: ProcessContext, action: Action): ActionStatus {
                 return ActionStatus(runningTime = java.time.Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
 
@@ -188,11 +184,7 @@ class AutonomyActionLeakageTest {
                 condition2.name to ConditionDetermination.TRUE
             )
 
-            override fun execute(
-                processContext: ProcessContext,
-                outputTypes: Map<String, SchemaType>,
-                action: Action
-            ): ActionStatus {
+            override fun execute(processContext: ProcessContext, action: Action): ActionStatus {
                 return ActionStatus(runningTime = java.time.Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
 
@@ -422,11 +414,7 @@ class AutonomyActionLeakageTest {
             override val effects = effects
             override val schemaTypes = emptyList<SchemaType>()
 
-            override fun execute(
-                processContext: ProcessContext,
-                outputTypes: Map<String, SchemaType>,
-                action: Action
-            ): ActionStatus {
+            override fun execute(processContext: ProcessContext, action: Action): ActionStatus {
                 return ActionStatus(runningTime = java.time.Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
 
