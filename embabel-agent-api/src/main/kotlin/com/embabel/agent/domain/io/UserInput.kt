@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.domain.io
 
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.common.core.types.Timestamped
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import java.time.Instant
@@ -27,6 +28,6 @@ interface SystemInput : Timestamped
  */
 data class UserInput(
     @get:JsonPropertyDescription("user input")
-    val content: String,
+    override val content: String,
     override val timestamp: Instant = Instant.now(),
-) : SystemInput
+) : SystemInput, HasContent

@@ -16,12 +16,16 @@
 package com.embabel.agent.domain.library
 
 import com.embabel.common.core.types.Timestamped
+import java.time.Instant
 
 /**
  * Interface when an object has a single important text component.
  */
 interface HasContent {
 
+    /**
+     * Content associated with this object.
+     */
     val content: String
 }
 
@@ -31,3 +35,16 @@ interface HasContent {
  * in producing different marketing materials.
  */
 interface ContentAsset : HasContent, Timestamped
+
+/**
+ * Blog content, specifying its format in a way that will
+ * be intelligible to an LLM as well as application code.
+ */
+data class Blog(
+    val title: String,
+    val author: String,
+    override val content: String,
+    override val timestamp: Instant = Instant.now(),
+    val keywords: Set<String> = emptySet(),
+    val format: String = "markdown",
+) : ContentAsset
