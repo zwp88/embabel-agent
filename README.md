@@ -632,6 +632,7 @@ If none of these profiles is chosen, vanilla logging will occur. This makes me s
 Add Embabel Agent BOM to your `pom.xml`:
 
 ```xml
+
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -639,14 +640,16 @@ Add Embabel Agent BOM to your `pom.xml`:
             <artifactId>embabel-agent-dependencies</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <type>pom</type>
-                <scope>import</scope>
+            <scope>import</scope>
         </dependency>
     </dependencies>
-</dependencyManagement>	
+</dependencyManagement>    
 ```
+
 Add module(s) of interest such as embabel-agennt-api compile dependency to your `pom.xml`
 
 ```xml
+
 <dependencies>
     <dependency>
         <groupId>com.embabel.agent</groupId>
@@ -657,10 +660,11 @@ Add module(s) of interest such as embabel-agennt-api compile dependency to your 
 
 ## Repository
 
-Binary Packages are located in Embabel Maven Repository. 
+Binary Packages are located in Embabel Maven Repository.
 You would need to add Embabel Snapshot Repository under to your pom.xml or configure in settings.xml
 
 ```xml
+
 <repositories>
     <repository>
         <id>embabel-snapshots</id>
@@ -669,7 +673,7 @@ You would need to add Embabel Snapshot Repository under to your pom.xml or confi
             <enabled>true</enabled>
         </snapshots>
     </repository>
-<repositories>
+    <repositories>
 ```
 
 ## Contributing
@@ -682,8 +686,11 @@ This file also informs coding agent behavior.
 ## Miscellaneous
 
 - _Why the name Embabel?_
-  The "babel" part is inspired by the story of the Tower of Babel. Embabel is intended to bring many languages to
-  applications.
+  The "babel" part is ultimately inspired by the story of the Tower of Babel, perhaps via Douglas
+  Adams' [babelfish](https://www.youtube.com/watch?v=iuumnjJWFO4&ab_channel=BBCStudios).
+  Per @lasuac:
+  _While Adams' fish in the ear enabled universal translation between species, Embabel aims at translating human intent
+  to JVM code, AI models, and enterprise systems._
   "embabel" also sounds like "enable."
 - Milestone names are Australian animals. Mythical animals such as "bunyip" and "yowie" are used for futures that may or
   not be implemented.
