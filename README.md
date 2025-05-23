@@ -627,6 +627,51 @@ Available logging experiences:
 
 If none of these profiles is chosen, vanilla logging will occur. This makes me sad.
 
+## Using Embabel Agent Framework in Your Project
+
+Add Embabel Agent BOM to your `pom.xml`:
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.embabel.agent</groupId>
+            <artifactId>embabel-agent-dependencies</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>pom</type>
+                <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>	
+```
+Add module(s) of interest such as embabel-agennt-api compile dependency to your `pom.xml`
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.embabel.agent</groupId>
+        <artifactId>embabel-agent-api</artifactId>
+    </dependency>
+</dependencies>
+```
+
+## Repository
+
+Binary Packages are located in Embabel Maven Repository. 
+You would need to add Embabel Snapshot Repository under to your pom.xml or configure in settings.xml
+
+```xml
+<repositories>
+    <repository>
+        <id>embabel-snapshots</id>
+        <url>https://repo.embabel.com/artifactory/libs-snapshot</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+<repositories>
+```
+
 ## Contributing
 
 We welcome contributions to the Embabel Agent Framework.
