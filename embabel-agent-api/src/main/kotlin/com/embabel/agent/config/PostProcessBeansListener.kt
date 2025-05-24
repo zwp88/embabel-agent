@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.config
 
-import com.embabel.agent.spi.support.AgentScanningBeanPostProcessor
+import com.embabel.agent.spi.support.AgentScanningPostProcessorDelegate
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
@@ -27,8 +27,8 @@ import org.springframework.context.annotation.Profile
 
 /**
  *  After all beans got initialized we deploy Agent Platform
- *  Refer to [AgentScanningBeanPostProcessor]
- *  Note, Profile "!test" gets aligned with [AgentScanningBeanPostProcessor]
+ *  Refer to [AgentScanningPostProcessorDelegate]
+ *  Note, Profile "!test" gets aligned with [AgentScanningPostProcessorDelegate]
  */
 @Profile("!test & !dev & !prod & !shell  & !neo & !default")
 @Component
@@ -42,7 +42,7 @@ class PostProcessBeansListener(@Autowired val context: ApplicationContext) :
         logger.info("🚀 Application context has been refreshed and all beans are initialized.")
 
         // get AgentScanningBeanPostProcessor
-        val agentScanningBeanPostProcessor = context.getBean(AgentScanningBeanPostProcessor::class.java)
+        val agentScanningBeanPostProcessor = context.getBean(AgentScanningPostProcessorDelegate::class.java)
 
         // Get all beans from the application context
         val allBeans = context.getBeansOfType(Any::class.java)  // Fetch all beans, or filter by your criteria
