@@ -167,9 +167,9 @@ class TravelPlannerShell(
     @ShellMethod
     fun planTravel() {
         val travelBrief = TravelBrief(
-            areaToExplore = "Paris",
-            stayingAt = "La Fantasie Hotel in Montmartre",
-            dates = "May 18 2025",
+            areaToExplore = "Barcelona",
+            stayingAt = "near placa d'Espanya",
+            dates = "May 25 2025",
             brief = """
                 The travelers are interested in history, art, food
                 and classical music.
