@@ -632,7 +632,6 @@ If none of these profiles is chosen, vanilla logging will occur. This makes me s
 Add Embabel Agent BOM to your `pom.xml`:
 
 ```xml
-
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -646,10 +645,9 @@ Add Embabel Agent BOM to your `pom.xml`:
 </dependencyManagement>    
 ```
 
-Add module(s) of interest such as embabel-agennt-api compile dependency to your `pom.xml`
+Add module(s) of interest such as embabel-agent-api compile dependency to your `pom.xml`
 
 ```xml
-
 <dependencies>
     <dependency>
         <groupId>com.embabel.agent</groupId>
@@ -661,10 +659,9 @@ Add module(s) of interest such as embabel-agennt-api compile dependency to your 
 ## Repository
 
 Binary Packages are located in Embabel Maven Repository.
-You would need to add Embabel Snapshot Repository under to your pom.xml or configure in settings.xml
+You would need to add Embabel Snapshot Repository to your pom.xml or configure in settings.xml
 
 ```xml
-
 <repositories>
     <repository>
         <id>embabel-snapshots</id>
@@ -673,7 +670,7 @@ You would need to add Embabel Snapshot Repository under to your pom.xml or confi
             <enabled>true</enabled>
         </snapshots>
     </repository>
-    <repositories>
+<repositories>
 ```
 
 ## Contributing
