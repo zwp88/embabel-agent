@@ -1,0 +1,31 @@
+spring:
+  ai:
+    chat:
+      observations:
+        enabled: true
+        include-completion: true
+        include-prompt: true
+        include-error-logging: true
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    env:
+      show-values: always
+      show-details: always
+    health:
+      show-details: always
+  observations:
+    enabled: true
+    web:
+      response:
+        enabled: true
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans

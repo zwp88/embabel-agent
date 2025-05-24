@@ -146,6 +146,23 @@
             <artifactId>moby-names-generator</artifactId>
         </dependency>
 
+        <!-- ================ Observability ================ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+        </dependency>
+        <!-- ================ Observability ================ -->
+
         <!-- Unit and Integration Testing -->
         <!-- Most common testing dependencies are in the embabel-agent-parent -->
         <!-- If something is missing, add it here -->
