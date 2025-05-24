@@ -16,7 +16,7 @@ try {
     Set-Location ..
     
     # Set Spring profiles
-    $env:SPRING_PROFILES_ACTIVE = "shell,severance"
+    $env:SPRING_PROFILES_ACTIVE = "shell,severance,observability"
     
     # Run Maven in subprocess
     cmd /c "mvn spring-boot:run"
