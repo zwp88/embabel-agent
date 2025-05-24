@@ -65,7 +65,7 @@ logging:
   level:
 
     # Temporary hack until we resolve BeanPostProcessor warnings
-    org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
+    # org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
 
     # We deliberately suppress verbose error messages from the Spring AI converter
     # that can be distracting in the console
