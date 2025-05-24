@@ -39,16 +39,15 @@ import org.springframework.context.event.ContextRefreshedEvent as ContextRefresh
  */
 @Service
 @Profile("!test")
-@Order(Ordered.LOWEST_PRECEDENCE)
-internal class AgentScanningBeanPostProcessor(
+internal class AgentScanningPostProcessorDelegate(
     private val agentMetadataReader: AgentMetadataReader,
     private val agentPlatform: AgentPlatform,
     private val properties: AgentScanningProperties,
-) /*: BeanPostProcessor */ {
+)  {
 
-    private val logger = LoggerFactory.getLogger(AgentScanningBeanPostProcessor::class.java)
+    private val logger = LoggerFactory.getLogger(AgentScanningPostProcessorDelegate::class.java)
 
-    /*override */fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
+    fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
         if (properties.annotation) {
             val agentMetadata = agentMetadataReader.createAgentMetadata(bean)
             if (agentMetadata != null) {
@@ -70,18 +69,21 @@ internal class AgentScanningBeanPostProcessor(
 /**
  * Lazy implementation of AgentScanningBeanPostProcessor.
  * Accumulates "other" beans till AgentScanningBeanPostProcessor got fully initialized.
+ * <strong>Note:</strong> this is also needed to not short-circuit other PostProcessors
+ * for transitive dependencies in the bean graph. (such as ones responsible for Observability, etc.)
  */
 @Service
 @Profile("!test")
 @Order(Ordered.LOWEST_PRECEDENCE)
-internal class LazyAgentScanningBeanPostProcessor(
+internal class DelegatingAgentScanningBeanPostProcessor(
     @Autowired
     val applicationContext: ApplicationContext,
 ) : BeanPostProcessor,
     ApplicationListener<ContextRefreshedEvent?> {
-    private lateinit var agentScanningBeanPostProcessor: AgentScanningBeanPostProcessor
 
-    private val logger = LoggerFactory.getLogger(LazyAgentScanningBeanPostProcessor::class.java)
+    private val logger = LoggerFactory.getLogger(DelegatingAgentScanningBeanPostProcessor::class.java)
+
+    private lateinit var agentScanningBeanPostProcessor: AgentScanningPostProcessorDelegate
 
     // Queue to hold beans that need processing once dependencies are ready
     private val pendingBeans: Queue<BeanProcessingInfo> = ConcurrentLinkedQueue()
@@ -90,7 +92,7 @@ internal class LazyAgentScanningBeanPostProcessor(
         logger.info("Application context has been refreshed and all beans are initialized.")
 
         // Now all dependencies are fully initialized -  get AgentScanningBeanPostProcessor
-        agentScanningBeanPostProcessor = applicationContext.getBean(AgentScanningBeanPostProcessor::class.java)
+        agentScanningBeanPostProcessor = applicationContext.getBean(AgentScanningPostProcessorDelegate::class.java)
 
         // Process all accumulated beans
         processPendingBeans()
