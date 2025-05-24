@@ -28,9 +28,9 @@ import org.springframework.context.annotation.Profile
 /**
  *  After all beans got initialized we deploy Agent Platform
  *  Refer to [AgentScanningBeanPostProcessor]
- *  Note, Profile gets aligned with [AgentScanningBeanPostProcessor]
+ *  Note, Profile "!test" gets aligned with [AgentScanningBeanPostProcessor]
  */
-@Profile("!test")
+@Profile("!test & !dev & !prod & !shell  & !neo & !default")
 @Component
 class PostProcessBeansListener(@Autowired val context: ApplicationContext) :
     ApplicationListener<ContextRefreshedEvent> {

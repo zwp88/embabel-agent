@@ -20,11 +20,19 @@ import com.embabel.agent.api.annotation.support.AgenticInfo
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.deployment.AgentScanningProperties
 import org.slf4j.LoggerFactory
+import org.springframework.beans.BeansException
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanPostProcessor
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Profile
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
+import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import org.springframework.context.event.ContextRefreshedEvent as ContextRefreshedEvent
+
 
 /**
  * Autoregister beans with @Agent or @Agentic annotations
@@ -36,7 +44,7 @@ internal class AgentScanningBeanPostProcessor(
     private val agentMetadataReader: AgentMetadataReader,
     private val agentPlatform: AgentPlatform,
     private val properties: AgentScanningProperties,
-) /*: BeanPostProcessor */{
+) /*: BeanPostProcessor */ {
 
     private val logger = LoggerFactory.getLogger(AgentScanningBeanPostProcessor::class.java)
 
@@ -57,4 +65,66 @@ internal class AgentScanningBeanPostProcessor(
         }
         return bean
     }
+}
+
+/**
+ * Lazy implementation of AgentScanningBeanPostProcessor.
+ * Accumulates "other" beans till AgentScanningBeanPostProcessor got fully initialized.
+ */
+@Service
+@Profile("!test")
+@Order(Ordered.LOWEST_PRECEDENCE)
+internal class LazyAgentScanningBeanPostProcessor(
+    @Autowired
+    val applicationContext: ApplicationContext,
+) : BeanPostProcessor,
+    ApplicationListener<ContextRefreshedEvent?> {
+    private lateinit var agentScanningBeanPostProcessor: AgentScanningBeanPostProcessor
+
+    private val logger = LoggerFactory.getLogger(LazyAgentScanningBeanPostProcessor::class.java)
+
+    // Queue to hold beans that need processing once dependencies are ready
+    private val pendingBeans: Queue<BeanProcessingInfo> = ConcurrentLinkedQueue()
+
+    override fun onApplicationEvent(event: ContextRefreshedEvent) {
+        logger.info("Application context has been refreshed and all beans are initialized.")
+
+        // Now all dependencies are fully initialized -  get AgentScanningBeanPostProcessor
+        agentScanningBeanPostProcessor = applicationContext.getBean(AgentScanningBeanPostProcessor::class.java)
+
+        // Process all accumulated beans
+        processPendingBeans()
+
+        logger.info("All deferred beans got post-processed.")
+
+    }
+
+    @Throws(BeansException::class)
+    override fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
+        if (this::agentScanningBeanPostProcessor.isInitialized) {
+            // Dependencies are ready, process immediately
+            return processBean(bean, beanName)
+        } else {
+            // Dependencies not ready yet, queue for later processing
+            pendingBeans.offer(BeanProcessingInfo(bean, beanName))
+            return bean // Return original bean
+        }
+    }
+
+    private fun processPendingBeans() {
+        var beanInfo: BeanProcessingInfo
+        while ((pendingBeans.poll().also { beanInfo = it }) != null) {
+            // Apply the processing that was deferred
+            val processedBean = processBean(beanInfo.bean, beanInfo.beanName)
+        }
+    }
+
+    private fun processBean(bean: Any, beanName: String): Any? {
+        // actual processing logic using the dependency by delegation to agentScanningBeanPostProcessor
+        return agentScanningBeanPostProcessor.postProcessAfterInitialization(bean = bean, beanName = beanName)
+    }
+
+    // Helper class to store bean info
+    private data class BeanProcessingInfo(val bean: Any, val beanName: String)
+
 }
