@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.config.models
 
+import com.embabel.common.ai.model.AiModel
+import com.embabel.common.ai.model.EmbeddingService
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.PricingModel
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
@@ -22,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.ai.ollama.OllamaChatModel
+import org.springframework.ai.ollama.OllamaEmbeddingModel
 import org.springframework.ai.ollama.api.OllamaApi
 import org.springframework.ai.ollama.api.OllamaOptions
 import org.springframework.beans.factory.annotation.Value
@@ -33,7 +36,7 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 
 /**
- * Ollama local models.
+ * Load Ollama local models, both LLMs and embedding models.
  * This class will always be loaded, but models won't be loaded
  * from Ollama unless the "ollama" profile is set.
  */
@@ -90,7 +93,6 @@ class OllamaModels(
 
     @PostConstruct
     fun registerModels() {
-        val activeProfiles = environment.activeProfiles
         if (!environment.activeProfiles.contains(OLLAMA_PROFILE)) {
             logger.info("Ollama models will not be queried as the '{}' profile is not active", OLLAMA_PROFILE)
             return
@@ -106,10 +108,10 @@ class OllamaModels(
         models.forEach { model ->
             try {
                 val beanName = "ollamaModel-${model.name}"
-                val llmModel = ollamaModelOf(model.model)
+                val aiModel = ollamaModelOf(model.model)
 
                 // Use registerSingleton with a more descriptive bean name
-                configurableBeanFactory.registerSingleton(beanName, llmModel)
+                configurableBeanFactory.registerSingleton(beanName, aiModel)
                 logger.debug("Successfully registered Ollama model {} as bean {}", model.name, beanName)
             } catch (e: Exception) {
                 logger.error("Failed to register Ollama model {}: {}", model.name, e.message)
@@ -117,8 +119,17 @@ class OllamaModels(
         }
     }
 
-    private fun ollamaModelOf(name: String): Llm {
-        val chatModel = OllamaChatModel.builder()
+    private fun ollamaModelOf(name: String): AiModel<*> {
+        return when {
+            name.contains("embed") ->
+                ollamaEmbeddingServiceOf(name)
+
+            else -> ollamaLlmOf(name)
+        }
+    }
+
+    private fun ollamaLlmOf(name: String): Llm {
+        val springChatModel = OllamaChatModel.builder()
             .ollamaApi(
                 OllamaApi.builder()
                     .baseUrl(baseUrl)
@@ -133,9 +144,25 @@ class OllamaModels(
 
         return Llm(
             name = name,
-            model = chatModel,
+            model = springChatModel,
             provider = PROVIDER,
             pricingModel = PricingModel.ALL_YOU_CAN_EAT
+        )
+    }
+
+    private fun ollamaEmbeddingServiceOf(name: String): EmbeddingService {
+        val springEmbeddingModel = OllamaEmbeddingModel.builder()
+            .ollamaApi(
+                OllamaApi.builder()
+                    .baseUrl(baseUrl)
+                    .build()
+            )
+            .build()
+
+        return EmbeddingService(
+            name = name,
+            model = springEmbeddingModel,
+            provider = PROVIDER,
         )
     }
 
