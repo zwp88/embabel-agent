@@ -38,4 +38,8 @@ class MetadataEnrichedToolCallback(
             throw t
         }
     }
+
+    override fun toString(): String {
+        return "MetadataEnrichedToolCallback(toolGroupMetadata=$toolGroupMetadata, delegate=${delegate.toolDefinition.name()})"
+    }
 }

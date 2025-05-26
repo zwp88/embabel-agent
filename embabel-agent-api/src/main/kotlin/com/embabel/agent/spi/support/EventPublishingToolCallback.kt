@@ -21,6 +21,7 @@ import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.time
+import io.micrometer.observation.ObservationRegistry
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
@@ -30,6 +31,7 @@ import java.time.Duration
  */
 class DefaultToolDecorator(
     private val toolGroupResolver: ToolGroupResolver? = null,
+    private val observationRegistry: ObservationRegistry? = null,
 ) : ToolDecorator {
 
     override fun decorate(
@@ -38,11 +40,14 @@ class DefaultToolDecorator(
         llmOptions: LlmOptions,
     ): ToolCallback {
         val toolGroup = toolGroupResolver?.findToolGroupForTool(toolName = tool.toolDefinition.name())
-        return MetadataEnrichedToolCallback(
-            toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
-            delegate = tool,
+        return ObservabilityToolCallback(
+            delegate = MetadataEnrichedToolCallback(
+                toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
+                delegate = tool,
+            )
+                .withEventPublication(agentProcess, llmOptions),
+            observationRegistry = observationRegistry,
         )
-            .withEventPublication(agentProcess, llmOptions)
     }
 }
 
