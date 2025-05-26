@@ -112,29 +112,28 @@ class OllamaModels(
             try {
                 val beanName = "ollamaModel-${model.name}"
                 if (configuredEmbeddingModelNames.contains(model.model)) {
-                    val embeddingModel = ollamaEmbeddingModelOf(model.model)
+                    val embeddingService = ollamaEmbeddingServiceOf(model.model)
                     val embeddingBeanName = "ollamaEmbeddingModel-${model.name}"
-                    configurableBeanFactory.registerSingleton(embeddingBeanName, embeddingModel)
-                    logger.debug("Successfully registered Ollama embedding model {} as bean {}", model.name, embeddingBeanName)
+                    configurableBeanFactory.registerSingleton(embeddingBeanName, embeddingService)
+                    logger.debug(
+                        "Successfully registered Ollama embedding service {} as bean {}",
+                        model.name,
+                        embeddingBeanName,
+                    )
                 } else {
-                    val llmModel = ollamaModelOf(model.model)
+                    val llm = ollamaLlmOf(model.model)
 
                     // Use registerSingleton with a more descriptive bean name
-                    configurableBeanFactory.registerSingleton(beanName, llmModel)
-                    logger.debug("Successfully registered Ollama model {} as bean {}", model.name, beanName)
+                    configurableBeanFactory.registerSingleton(beanName, llm)
+                    logger.debug(
+                        "Successfully registered Ollama LLM {} as bean {}",
+                        model.name,
+                        beanName,
+                    )
                 }
             } catch (e: Exception) {
                 logger.error("Failed to register Ollama model {}: {}", model.name, e.message)
             }
-        }
-    }
-
-    private fun ollamaModelOf(name: String): AiModel<*> {
-        return when {
-            name.contains("embed") ->
-                ollamaEmbeddingServiceOf(name)
-
-            else -> ollamaLlmOf(name)
         }
     }
 
