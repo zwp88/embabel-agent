@@ -629,6 +629,8 @@ If none of these profiles is chosen, vanilla logging will occur. This makes me s
 
 ## Using Embabel Agent Framework in Your Project
 
+### Maven
+
 Add Embabel Agent BOM to your `pom.xml`:
 
 ```xml
@@ -656,6 +658,68 @@ Add module(s) of interest such as embabel-agent-api compile dependency to your `
 </dependencies>
 ```
 
+### Gradle (Kotlin DSL)
+
+Add the required repositories to your `build.gradle.kts`:
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        name = "embabel-snapshots"
+        url = uri("https://repo.embabel.com/artifactory/libs-snapshot")
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
+    maven {
+        name = "Spring Milestones"
+        url = uri("https://repo.spring.io/milestone")
+    }
+}
+```
+
+Add the Embabel Agent BOM (`embabel-agent-dependencies`) and module(s) of interest such as `embabel-agent-api`:
+
+```kotlin
+dependencies {
+    implementation(platform("com.embabel.agent:embabel-agent-dependencies:1.0.0-SNAPSHOT"))
+    implementation("com.embabel.agent:embabel-agent-api:1.0.0-SNAPSHOT")
+}
+```
+
+### Gradle (Groovy DSL)
+
+Add the required repositories to your `build.gradle`:
+
+```groovy
+repositories {
+    mavenCentral()
+    maven {
+        name = 'embabel-snapshots'
+        url = 'https://repo.embabel.com/artifactory/libs-snapshot'
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
+    maven {
+        name = 'Spring Milestones'
+        url = 'https://repo.spring.io/milestone'
+    }
+}
+```
+
+Add the Embabel Agent BOM (`embabel-agent-dependencies`) and module(s) of interest such as `embabel-agent-api`:
+
+```groovy
+dependencies {
+    implementation platform('com.embabel.agent:embabel-agent-dependencies:1.0.0-SNAPSHOT')
+    implementation 'com.embabel.agent:embabel-agent-api:1.0.0-SNAPSHOT'
+}
+```
+
+> **Note:** The Spring Milestones repository is required because the Embabel BOM (`embabel-agent-dependencies`) has transitive dependencies on experimental Spring components, specifically the `mcp-bom`. This BOM is not available on Maven Central and is only published to the Spring milestone repository. Unlike Maven, Gradle does not inherit repository configurations declared in parent POMs or BOMs. Therefore, it is necessary to explicitly declare the Spring milestone repository in your repositories block to ensure proper resolution of all transitive dependencies.
+
 ## Repository
 
 Binary Packages are located in Embabel Maven Repository.
@@ -670,7 +734,7 @@ You would need to add Embabel Snapshot Repository to your pom.xml or configure i
             <enabled>true</enabled>
         </snapshots>
     </repository>
-<repositories>
+</repositories>
 ```
 
 ## Contributing
