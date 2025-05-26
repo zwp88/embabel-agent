@@ -36,7 +36,6 @@ import com.embabel.plan.goap.WorldStateDeterminer
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 import java.time.Instant
-import kotlin.Throws
 
 /**
  * Successful result of directly trying to execute a goal
@@ -428,7 +427,7 @@ class Autonomy(
             ranker
         }
 
-        val goalChoiceEvent = RankingChoiceRequestEvent<Goal>(
+        val goalChoiceEvent = RankingChoiceRequestEvent(
             agentPlatform = agentPlatform,
             type = Goal::class.java,
             basis = userInput,
