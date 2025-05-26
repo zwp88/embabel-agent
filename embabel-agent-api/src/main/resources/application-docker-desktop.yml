@@ -11,6 +11,7 @@ spring:
 
         stdio:
           connections:
+            # MCP server exposed by Docker Desktop MCP Toolkit extension
             docker-mcp:
               command: docker
               args:
