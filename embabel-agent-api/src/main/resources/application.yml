@@ -22,18 +22,6 @@ spring:
     openai:
       api-key: ${OPENAI_API_KEY}
 
-management:
-  tracing:
-    sampling:
-      probability: 1.0
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
-
 embabel:
   agent-platform:
     scanning:
