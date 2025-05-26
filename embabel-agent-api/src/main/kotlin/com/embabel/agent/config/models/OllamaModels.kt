@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.AiModel
+import com.embabel.common.ai.model.ConfigurableModelProviderProperties
 import com.embabel.common.ai.model.EmbeddingService
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.PricingModel
@@ -47,6 +47,7 @@ class OllamaModels(
     private val baseUrl: String,
     private val configurableBeanFactory: ConfigurableBeanFactory,
     private val environment: Environment,
+    private val properties: ConfigurableModelProviderProperties,
 ) {
     private val logger = LoggerFactory.getLogger(OllamaModels::class.java)
 
@@ -105,14 +106,23 @@ class OllamaModels(
             return
         }
 
+        val configuredEmbeddingModelNames = properties.embeddingServices.values.toSet()
+
         models.forEach { model ->
             try {
                 val beanName = "ollamaModel-${model.name}"
-                val aiModel = ollamaModelOf(model.model)
+                if (configuredEmbeddingModelNames.contains(model.model)) {
+                    val embeddingModel = ollamaEmbeddingModelOf(model.model)
+                    val embeddingBeanName = "ollamaEmbeddingModel-${model.name}"
+                    configurableBeanFactory.registerSingleton(embeddingBeanName, embeddingModel)
+                    logger.debug("Successfully registered Ollama embedding model {} as bean {}", model.name, embeddingBeanName)
+                } else {
+                    val llmModel = ollamaModelOf(model.model)
 
-                // Use registerSingleton with a more descriptive bean name
-                configurableBeanFactory.registerSingleton(beanName, aiModel)
-                logger.debug("Successfully registered Ollama model {} as bean {}", model.name, beanName)
+                    // Use registerSingleton with a more descriptive bean name
+                    configurableBeanFactory.registerSingleton(beanName, llmModel)
+                    logger.debug("Successfully registered Ollama model {} as bean {}", model.name, beanName)
+                }
             } catch (e: Exception) {
                 logger.error("Failed to register Ollama model {}: {}", model.name, e.message)
             }
@@ -149,6 +159,7 @@ class OllamaModels(
             pricingModel = PricingModel.ALL_YOU_CAN_EAT
         )
     }
+
 
     private fun ollamaEmbeddingServiceOf(name: String): EmbeddingService {
         val springEmbeddingModel = OllamaEmbeddingModel.builder()
