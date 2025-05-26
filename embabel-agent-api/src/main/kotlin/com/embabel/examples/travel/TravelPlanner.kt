@@ -168,7 +168,7 @@ class TravelPlannerShell(
     fun planTravel() {
         val travelBrief = TravelBrief(
             areaToExplore = "Barcelona",
-            stayingAt = "near placa d'Espanya",
+            stayingAt = "Leaving placa d'Espanya at 11:45 with Sagrada Familia boooking at 15:45, weather is sunny max 24C",
             dates = "May 25 2025",
             brief = """
                 The travelers are interested in history, art, food
