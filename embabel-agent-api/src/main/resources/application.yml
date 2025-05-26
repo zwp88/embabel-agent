@@ -8,10 +8,6 @@ spring:
     ansi:
       enabled: ALWAYS
   ai:
-    chat:
-      observations:
-        include-prompt: true
-        include-completion: true
     ollama:
       base-url: http://localhost:11434
     openai:
@@ -19,15 +15,7 @@ spring:
 
 management:
   tracing:
-    sampling:
-      probability: 1.0
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
+    enabled: false
 
 embabel:
   agent-platform:
@@ -54,6 +42,9 @@ embabel:
   models:
     default-llm: gpt-4.1-mini
     default-embedding-model: text-embedding-3-small
+    embedding-services:
+      best: text-embedding-3-small
+      cheapest: text-embedding-3-small
     llms:
       best: gpt-4.1
       cheapest: gpt-4.1-nano

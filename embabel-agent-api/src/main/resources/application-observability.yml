@@ -3,14 +3,20 @@ spring:
     chat:
       observations:
         enabled: true
+        log-prompt: true
+        log-completion: true
         include-completion: true
         include-prompt: true
         include-error-logging: true
+    client:
+      observations:
+        log-prompt: true
+        log-completion: true
 management:
   tracing:
+    enabled: true
     sampling:
       probability: 1.0
-    enabled: true
   endpoints:
     web:
       exposure:

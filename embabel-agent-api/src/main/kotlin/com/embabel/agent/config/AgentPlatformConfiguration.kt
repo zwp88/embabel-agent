@@ -27,6 +27,7 @@ import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
+import io.micrometer.observation.ObservationRegistry
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -50,8 +51,12 @@ internal class AgentPlatformConfiguration(
     fun nameGenerator(): NameGenerator = MobyNameGenerator
 
     @Bean
-    fun toolDecorator(toolGroupResolver: ToolGroupResolver): ToolDecorator = DefaultToolDecorator(
+    fun toolDecorator(
+        toolGroupResolver: ToolGroupResolver,
+        observationRegistry: ObservationRegistry
+    ): ToolDecorator = DefaultToolDecorator(
         toolGroupResolver,
+        observationRegistry,
     )
 
     @Bean

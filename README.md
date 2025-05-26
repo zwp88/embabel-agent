@@ -723,10 +723,9 @@ dependencies {
 ## Repository
 
 Binary Packages are located in Embabel Maven Repository.
-You would need to add Embabel Snapshot Repository under to your pom.xml or configure in settings.xml
+You would need to add Embabel Snapshot Repository to your pom.xml or configure in settings.xml
 
 ```xml
-
 <repositories>
     <repository>
         <id>embabel-snapshots</id>

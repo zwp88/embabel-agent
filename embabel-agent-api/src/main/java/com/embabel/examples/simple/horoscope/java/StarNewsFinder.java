@@ -15,7 +15,11 @@
  */
 package com.embabel.examples.simple.horoscope.java;
 
-import com.embabel.agent.api.annotation.*;
+import com.embabel.agent.api.annotation.AchievesGoal;
+import com.embabel.agent.api.annotation.Action;
+import com.embabel.agent.api.annotation.Agent;
+import com.embabel.agent.api.annotation.WaitFor;
+import com.embabel.agent.api.common.PromptRunner;
 import com.embabel.agent.config.models.OpenAiModels;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.domain.io.UserInput;
@@ -51,7 +55,7 @@ public class StarNewsFinder {
 
     @Action
     public PersonImpl extractPerson(UserInput userInput) {
-        return Using.llm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
+        return PromptRunner.withLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name:
                         %s""".formatted(userInput.getContent()),
@@ -76,7 +80,7 @@ public class StarNewsFinder {
 
     @Action
     public StarPerson extractStarPerson(UserInput userInput) {
-        return Using.llm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
+        return PromptRunner.withLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name and star sign:
                         %s""".formatted(userInput.getContent()),
@@ -110,7 +114,7 @@ public class StarNewsFinder {
                 find news stories about training courses.""".formatted(
                 person.name(), person.sign(), horoscope.summary(), storyCount);
 
-        return Using.DEFAULT_LLM.createObject(prompt, RelevantNewsStories.class);
+        return PromptRunner.withLlm().createObject(prompt, RelevantNewsStories.class);
     }
 
     // The @AchievesGoal annotation indicates that completing this action
@@ -147,6 +151,6 @@ public class StarNewsFinder {
                 
                 Format it as Markdown with links.""".formatted(
                 person.name(), person.sign(), horoscope.summary(), newsItems);
-        return Using.llm(llm).createObject(prompt, Writeup.class);
+        return PromptRunner.withLlm(llm).createObject(prompt, Writeup.class);
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.api.annotation.using
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.spi.LlmCall
 import com.embabel.common.ai.model.LlmOptions
@@ -98,6 +99,18 @@ interface PromptRunner : LlmCall {
      * @return PromptRunner instance with the added PromptContributor
      */
     fun withPromptContributor(promptContributor: PromptContributor): PromptRunner
+
+    companion object {
+
+        /**
+         * Create a PromptRunner instance for use in @Action methods
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun withLlm(llm: LlmOptions = LlmOptions()): PromptRunner {
+            return using(llm)
+        }
+    }
 
 }
 
