@@ -10,8 +10,13 @@ spring:
   ai:
     chat:
       observations:
-        include-prompt: true
-        include-completion: true
+        log-prompt: true
+        log-completion: true
+      client:
+        observations:
+          log-prompt: true
+          log-completion: true
+
     ollama:
       base-url: http://localhost:11434
     openai:
