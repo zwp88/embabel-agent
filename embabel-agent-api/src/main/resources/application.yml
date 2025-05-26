@@ -8,15 +8,6 @@ spring:
     ansi:
       enabled: ALWAYS
   ai:
-    chat:
-      observations:
-        log-prompt: true
-        log-completion: true
-      client:
-        observations:
-          log-prompt: true
-          log-completion: true
-
     ollama:
       base-url: http://localhost:11434
     openai:
@@ -24,15 +15,7 @@ spring:
 
 management:
   tracing:
-    sampling:
-      probability: 1.0
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
+    enabled: false
 
 embabel:
   agent-platform:
