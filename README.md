@@ -5,7 +5,7 @@
 [//]: # ([![Quality Gate Status]&#40;https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=alert_status&token=d275d89d09961c114b8317a4796f84faf509691c&#41;]&#40;https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent&#41;)
 
 [//]: # ([![Bugs]&#40;https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=bugs&#41;]&#40;https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent&#41;)
-
+[![Discord](https://img.shields.io/discord/Embabel?logo=discord)](https://discord.gg/eGPV8V7W)
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
@@ -634,6 +634,7 @@ If none of these profiles is chosen, vanilla logging will occur. This makes me s
 Add Embabel Agent BOM to your `pom.xml`:
 
 ```xml
+
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -650,6 +651,7 @@ Add Embabel Agent BOM to your `pom.xml`:
 Add module(s) of interest such as embabel-agent-api compile dependency to your `pom.xml`
 
 ```xml
+
 <dependencies>
     <dependency>
         <groupId>com.embabel.agent</groupId>
@@ -718,7 +720,12 @@ dependencies {
 }
 ```
 
-> **Note:** The Spring Milestones repository is required because the Embabel BOM (`embabel-agent-dependencies`) has transitive dependencies on experimental Spring components, specifically the `mcp-bom`. This BOM is not available on Maven Central and is only published to the Spring milestone repository. Unlike Maven, Gradle does not inherit repository configurations declared in parent POMs or BOMs. Therefore, it is necessary to explicitly declare the Spring milestone repository in your repositories block to ensure proper resolution of all transitive dependencies.
+> **Note:** The Spring Milestones repository is required because the Embabel BOM (`embabel-agent-dependencies`) has
+> transitive dependencies on experimental Spring components, specifically the `mcp-bom`. This BOM is not available on
+> Maven Central and is only published to the Spring milestone repository. Unlike Maven, Gradle does not inherit
+> repository
+> configurations declared in parent POMs or BOMs. Therefore, it is necessary to explicitly declare the Spring milestone
+> repository in your repositories block to ensure proper resolution of all transitive dependencies.
 
 ## Repository
 
@@ -726,6 +733,7 @@ Binary Packages are located in Embabel Maven Repository.
 You would need to add Embabel Snapshot Repository to your pom.xml or configure in settings.xml
 
 ```xml
+
 <repositories>
     <repository>
         <id>embabel-snapshots</id>
