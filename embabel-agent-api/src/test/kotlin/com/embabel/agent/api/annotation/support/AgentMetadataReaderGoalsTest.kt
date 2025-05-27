@@ -29,7 +29,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `no conditions`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(NoConditions())
         assertNotNull(metadata)
         assertEquals(0, metadata!!.conditions.size)
@@ -37,7 +37,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `one condition taking ProcessContext`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(OneProcessContextConditionOnly())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
@@ -49,7 +49,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `processContext condition invocation`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(OneProcessContextConditionOnly())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
@@ -61,7 +61,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `blackboard condition invocation not found`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(ConditionFromBlackboard())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
@@ -76,7 +76,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `blackboard condition invocation found and true`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(ConditionFromBlackboard())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
@@ -93,7 +93,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `custom named blackboard condition invocation found and true`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(CustomNameConditionFromBlackboard())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
@@ -111,7 +111,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `blackboard condition invocation found and false`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(ConditionFromBlackboard())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
@@ -128,7 +128,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `blackboard conditions invocation not all found and false`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(ConditionsFromBlackboard())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
@@ -145,7 +145,7 @@ class AgentMetadataReaderGoalsTest {
 
     @Test
     fun `blackboard conditions invocation all found and true`() {
-        val reader = AgentMetadataReader()
+        val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(ConditionsFromBlackboard())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
