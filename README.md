@@ -316,7 +316,8 @@ Developers must carefully read all code they commit and improve generated code i
 Choose one of the following:
 
 - Clone the repository via `git clone https://github.com/embabel/embabel-agent`
-- Create a new Spring Boot project and add the necessary dependencies (TODO)
+- Create a new Spring Boot project and add the necessary dependencies (see "Using Embabel Agent Framework in Your
+  Project" below)
 
 ### Environment variables
 
@@ -353,7 +354,7 @@ endpoint and make all models available.
 
 ### Running
 
-The easiest way to run the application using using one of the scripts in the
+The easiest way to run the application using one of the scripts in the
 `scripts` directory. You can start the shell in interactive mode with:
 
 ```bash
@@ -386,7 +387,7 @@ run the flow. `-p` will log prompts `-r` will log LLM responses.
 Omit these for less verbose logging.
 
 Use the `chat` command to enter an interactive chat with the agent.
-It will retain conversation history and attempt to run the most appropriate
+It will retain conversation history, and attempt to run the most appropriate
 agent for each command.
 
 > Spring Shell supports history. Type `!!` to repeat the last command.
@@ -406,7 +407,7 @@ x "fact check the following: holden cars are still made in australia; the koel i
 
 ```
 
-Try the [coding agent](https://www.github.com/embabel/embabel-coding-agent) with commands such as:
+Try the [coding agent](https://www.github.com/embabel/embabel-coding-agent) (separate repo) with commands such as:
 
 ```
 
