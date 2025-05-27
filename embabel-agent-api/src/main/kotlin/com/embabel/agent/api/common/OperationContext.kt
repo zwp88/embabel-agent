@@ -17,12 +17,10 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.core.*
-import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.CurrentDate
 import com.embabel.common.ai.prompt.PromptContributor
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Context for any operation. Exposes blackboard and process context.
@@ -43,14 +41,12 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
      * @param llm the LLM options to use
      * @param toolGroups extra local tool groups to use, in addition to those declared on the action if
      * we're in an action
-     * @param toolCallbacks extra tool callbacks to use
      * @param promptContributors extra prompt contributors to use, in addition to those declared on the action if
      * we're in an action, or at agent level
      */
     fun promptRunner(
         llm: LlmOptions = LlmOptions(),
         toolGroups: Set<String> = emptySet(),
-        toolCallbacks: List<ToolCallback> = emptyList(),
         toolObjects: List<Any> = emptyList(),
         promptContributors: List<PromptContributor> = emptyList(),
         generateExamples: Boolean = false,
@@ -60,7 +56,6 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
             this,
             llm = llm,
             toolGroups = toolGroups,
-            toolCallbacks = toolCallbacks,
             toolObjects = toolObjects,
             promptContributors = promptContributorsToUse,
             generateExamples = generateExamples,
@@ -105,21 +100,17 @@ interface ActionContext : OperationContext {
     override fun promptRunner(
         llm: LlmOptions,
         toolGroups: Set<String>,
-        toolCallbacks: List<ToolCallback>,
         toolObjects: List<Any>,
         promptContributors: List<PromptContributor>,
         generateExamples: Boolean,
     ): PromptRunner {
-        val toolCallbacksToUse =
-            (toolCallbacks + toolCallbacksOnDomainObjects()).distinctBy { it.toolDefinition.name() }
         val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
 
         return OperationContextPromptRunner(
             this,
             llm = llm,
             toolGroups = this.toolGroups + toolGroups,
-            toolCallbacks = toolCallbacksToUse,
-            toolObjects = toolObjects,
+            toolObjects = (toolObjects + domainObjectInstances()).distinct(),
             promptContributors = promptContributorsToUse,
             generateExamples = generateExamples,
         )
@@ -127,7 +118,11 @@ interface ActionContext : OperationContext {
 
     fun agentPlatform() = processContext.platformServices.agentPlatform
 
-    fun toolCallbacksOnDomainObjects(): List<ToolCallback>
+    /**
+     * Return the domain object instances that are relevant for this action context.
+     * They may expose tools.
+     */
+    fun domainObjectInstances(): List<Any>
 
 }
 
@@ -137,18 +132,7 @@ interface ActionContext : OperationContext {
 interface InputsActionContext : ActionContext {
     val inputs: List<Any>
 
-    @Suppress("UNCHECKED_CAST")
-    override fun toolCallbacksOnDomainObjects(): List<ToolCallback> {
-        val instances = mutableListOf<Any>()
-        inputs.forEach { input ->
-            instances += when (input) {
-                is Array<*> -> input.toList()
-                is Collection<*> -> input
-                else -> input
-            }
-        }
-        return safelyGetToolCallbacks(instances)
-    }
+    override fun domainObjectInstances(): List<Any> = inputs
 
 }
 
