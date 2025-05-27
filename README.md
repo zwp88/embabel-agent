@@ -1,11 +1,11 @@
 # Embabel Agent Framework
 
 ![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
+[![Discord](https://img.shields.io/discord/1277751399261798401?logo=discord)](https://discord.gg/eGPV8V7W)
 
 [//]: # ([![Quality Gate Status]&#40;https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=alert_status&token=d275d89d09961c114b8317a4796f84faf509691c&#41;]&#40;https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent&#41;)
 
 [//]: # ([![Bugs]&#40;https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=bugs&#41;]&#40;https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent&#41;)
-[![Discord](https://img.shields.io/discord/Embabel?logo=discord)](https://discord.gg/eGPV8V7W)
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
