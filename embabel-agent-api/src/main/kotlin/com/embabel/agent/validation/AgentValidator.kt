@@ -17,7 +17,7 @@ package com.embabel.agent.validation
 
 import com.embabel.agent.core.*
 
-interface AgentValidator {
+fun interface AgentValidator {
     fun validate(agentScope: AgentScope): ValidationResult
 }
 
