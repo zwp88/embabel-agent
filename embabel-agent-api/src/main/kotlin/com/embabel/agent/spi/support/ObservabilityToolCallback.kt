@@ -21,6 +21,9 @@ import io.micrometer.observation.ObservationRegistry
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 
+/**
+ * Decorator that adds Observability to a [ToolCallback].
+ */
 class ObservabilityToolCallback(
     private val delegate: ToolCallback,
     private val observationRegistry: ObservationRegistry? = null,
@@ -33,12 +36,14 @@ class ObservabilityToolCallback(
             return delegate.call(toolInput)
         }
         val currentObservation = observationRegistry.currentObservation
-        loggerFor<ObservabilityToolCallback>().info(
-            "Observability decorator for tool call {} with input: {}, current observation: {}",
-            delegate.toolDefinition.name(),
-            toolInput,
-            currentObservation?.context?.name ?: "None"
-        )
+        if (currentObservation == null) {
+            loggerFor<ObservabilityToolCallback>().warn(
+                "No parent observation for tool call {} with input: {}, observation registry: {}",
+                delegate.toolDefinition.name(),
+                toolInput,
+                observationRegistry,
+            )
+        }
         val observation = Observation.createNotStarted("tool call", observationRegistry)
             .lowCardinalityKeyValue("toolName", delegate.toolDefinition.name())
             .highCardinalityKeyValue("payload", toolInput)
@@ -53,7 +58,7 @@ class ObservabilityToolCallback(
             observation.lowCardinalityKeyValue("status", "error")
             observation.highCardinalityKeyValue("error_type", ex::class.simpleName ?: "Unknown")
             observation.highCardinalityKeyValue("error_message", ex.message ?: "No message")
-            observation.error(ex) // This also records the exception
+            observation.error(ex)
             throw ex
         } finally {
             observation.stop()

@@ -27,6 +27,7 @@ import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
+import com.embabel.common.util.loggerFor
 import io.micrometer.observation.ObservationRegistry
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -54,10 +55,17 @@ internal class AgentPlatformConfiguration(
     fun toolDecorator(
         toolGroupResolver: ToolGroupResolver,
         observationRegistry: ObservationRegistry
-    ): ToolDecorator = DefaultToolDecorator(
-        toolGroupResolver,
-        observationRegistry,
-    )
+    ): ToolDecorator {
+        loggerFor<AgentPlatformConfiguration>().info(
+            "Creating default ToolDecorator with toolGroupResolver: {}, observationRegistry: {}",
+            toolGroupResolver.infoString(verbose = false),
+            observationRegistry,
+        )
+        return DefaultToolDecorator(
+            toolGroupResolver,
+            observationRegistry,
+        )
+    }
 
     @Bean
     fun templateRenderer(): TemplateRenderer = JinjavaTemplateRenderer()
@@ -94,7 +102,7 @@ internal class AgentPlatformConfiguration(
 
     @Bean
     fun toolGroupResolver(toolGroups: List<ToolGroup>): ToolGroupResolver = RegistryToolGroupResolver(
-        name = "RegistryToolGroupResolver",
+        name = "SpringBeansToolGroupResolver",
         toolGroups
     )
 
@@ -108,7 +116,7 @@ internal class AgentPlatformConfiguration(
     /**
      * Ollama and Docker models won't be loaded unless the profile is set.
      * However, we need to depend on them to make sure any LLMs they
-     * might created get injected here
+     * might create get injected here
      */
     @Bean
     @DependsOn("ollamaModels", "dockerLocalModels")
