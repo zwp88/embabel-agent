@@ -23,6 +23,7 @@ import com.embabel.agent.api.common.PromptRunner;
 import com.embabel.agent.config.models.OpenAiModels;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.domain.io.UserInput;
+import com.embabel.agent.domain.library.Person;
 import com.embabel.agent.domain.library.PersonImpl;
 import com.embabel.agent.domain.library.RelevantNewsStories;
 import com.embabel.common.ai.model.LlmOptions;
@@ -64,14 +65,13 @@ public class StarNewsFinder {
     }
 
     @Action(cost = 100.0) // Make it costly so it won't be used in a plan unless there's no other path
-    public Starry makeStarry(PersonImpl person) {
+    public Starry makeStarry(Person person) {
         return WaitFor.formSubmission("Let's get some astrological details for " + person.getName(),
                 Starry.class);
     }
 
-    // TODO should work with the Person interface rather than PersonImpl
     @Action
-    public StarPerson assembleStarPerson(PersonImpl person, Starry starry) {
+    public StarPerson assembleStarPerson(Person person, Starry starry) {
         return new StarPerson(
                 person.getName(),
                 starry.sign()
@@ -127,7 +127,6 @@ public class StarNewsFinder {
             StarPerson person,
             RelevantNewsStories relevantNewsStories,
             Horoscope horoscope) {
-        // Customize LLM call
         var llm = LlmOptions.fromCriteria(
                 ModelSelectionCriteria.firstOf(OpenAiModels.GPT_41_MINI)
         ).withTemperature(0.9);
