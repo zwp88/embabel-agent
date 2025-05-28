@@ -25,11 +25,14 @@ import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.CoreToolGroups
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.library.InternetResource
 import com.embabel.agent.domain.library.InternetResources
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.agent.shell.markdownToConsole
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
 
@@ -81,7 +84,10 @@ class TravelPlanner(
     fun findPointsOfInterest(
         travelBrief: TravelBrief,
     ): ItineraryIdeas {
-        return using(toolGroups = setOf(CoreToolGroups.WEB, CoreToolGroups.MAPS))
+        return using(
+            llm = LlmOptions(model = AnthropicModels.CLAUDE_35_HAIKU),
+            toolGroups = setOf(CoreToolGroups.WEB, CoreToolGroups.MAPS),
+        )
             .withPromptContributor(persona)
             .create(
                 prompt = """
@@ -89,7 +95,6 @@ class TravelPlanner(
                 ${travelBrief.brief}
                 The travelers want to explore ${travelBrief.areaToExplore} and are staying at ${travelBrief.stayingAt}.
                 Find points of interest in ${travelBrief.areaToExplore} that are relevant to the travel brief.
-
             """.trimIndent(),
             )
     }
@@ -99,16 +104,26 @@ class TravelPlanner(
         travelBrief: TravelBrief,
         itineraryIdeas: ItineraryIdeas, context: OperationContext
     ): PointOfInterestFindings {
-        val pr = context.promptRunner(toolGroups = setOf(CoreToolGroups.WEB))
+        val pr = context.promptRunner(
+            llm = LlmOptions(
+                byName("ai/llama3.2"),
+//                byName(OpenAiModels.GPT_41_MINI)
+            ),
+            toolGroups = setOf(CoreToolGroups.WEB),
+        )
         val poiFindings = itineraryIdeas.pointsOfInterest.parallelMap(context) { poi ->
             pr.create<ResearchedPointOfInterest>(
                 prompt = """
                 Research the following point of interest.
+                Use the embabel_docker_mcp_brave_web_search and embabel_docker_mcp_search_wikipedia tools
+                to find relevant information.
                 Consider in particular interesting stories about art and culture and famous people.
-                Your audience: the people described in ${travelBrief.brief}
+                Your audience: ${travelBrief.brief}
+                <point-of-interest-to-research>
                 ${poi.name}
                 ${poi.description}
                 ${poi.location}
+                </point-of-interest-to-research>
             """.trimIndent(),
             )
         }
@@ -167,19 +182,27 @@ class TravelPlannerShell(
     @ShellMethod
     fun planTravel() {
         val travelBrief = TravelBrief(
-            areaToExplore = "Barcelona",
-            stayingAt = "Leaving placa d'Espanya at 11:45 with Sagrada Familia boooking at 15:45, weather is sunny max 24C",
-            dates = "May 25 2025",
+            areaToExplore = "Provence, France",
+            stayingAt = "Sourgues",
+            dates = "May 29-30 2025",
             brief = """
-                The travelers are interested in history, art, food
+                The travelers are interested in history, art, food, wine
                 and classical music.
-                They love walking
+                They love walking and cycling.
+                They are checking out in Sourgues morning of May 29 and need to
+                be in Nice by the evening of May 30.
             """.trimIndent(),
         )
 
         val ap = agentPlatform.runAgentWithInput(
             agent = agentPlatform.agents().single({ it.name == "TravelPlanner" }),
             input = travelBrief,
+            processOptions = ProcessOptions(
+                verbosity = Verbosity(
+                    showPrompts = true,
+                    showLlmResponses = true,
+                ),
+            )
         )
         val travelPlan = ap.lastResult() as TravelPlan
 
