@@ -73,7 +73,6 @@ class AnthropicModels(
         })
         .build()
 
-
     val gpt41 = llms.find { it.name == OpenAiModels.GPT_41 }
     val gpt41mini = llms.find { it.name == OpenAiModels.GPT_41_MINI }
 
@@ -110,6 +109,24 @@ class AnthropicModels(
 
             else -> true
         }
+    }
+
+    @Bean
+    fun claudeOpus4(
+        @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
+    ): Llm {
+        return anthropicModelOf(
+            CLAUDE_40_OPUS, apiKey,
+            knowledgeCutoffDate = LocalDate.of(2025, 3, 31),
+            maxTokens = 200000,
+        )
+            .withFallback(llm = gpt41, whenError = flipTrigger)
+            .copy(
+                pricingModel = PerTokenPricingModel(
+                    usdPer1mInputTokens = 15.0,
+                    usdPer1mOutputTokens = 75.0,
+                )
+            )
     }
 
     @Bean
@@ -185,6 +202,8 @@ class AnthropicModels(
         const val CLAUDE_37_SONNET = "claude-3-7-sonnet-latest"
 
         const val CLAUDE_35_HAIKU = "claude-3-5-haiku-latest"
+
+        const val CLAUDE_40_OPUS = "claude-opus-4-20250514"
 
         const val PROVIDER = "Anthropic"
     }
