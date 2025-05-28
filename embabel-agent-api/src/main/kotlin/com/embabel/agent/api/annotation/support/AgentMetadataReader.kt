@@ -328,7 +328,6 @@ class AgentMetadataReader(
             // It is not a failure
             val promptRunner = operationContext.promptRunner(
                 llm = e.llm ?: LlmOptions(),
-                toolCallbacks = emptyList(),
                 promptContributors = emptyList(),
             )
 

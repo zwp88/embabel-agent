@@ -26,7 +26,6 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Uses the platform's LlmOperations to execute the prompt.
@@ -36,13 +35,10 @@ internal data class OperationContextPromptRunner(
     private val context: OperationContext,
     override val llm: LlmOptions,
     override val toolGroups: Set<String>,
-    override val toolCallbacks: List<ToolCallback>,
     override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
     override val generateExamples: Boolean?,
 ) : PromptRunner {
-
-    override val name = "OperationContextPromptRunner"
 
     val action = (context as? ActionContext)?.action
 
@@ -59,7 +55,7 @@ internal data class OperationContextPromptRunner(
             interaction = LlmInteraction(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
-                toolCallbacks = toolCallbacks + safelyGetToolCallbacks(toolObjects),
+                toolCallbacks = safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
             ),
@@ -78,7 +74,7 @@ internal data class OperationContextPromptRunner(
             interaction = LlmInteraction(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
-                toolCallbacks = toolCallbacks + safelyGetToolCallbacks(toolObjects),
+                toolCallbacks = safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
             ),

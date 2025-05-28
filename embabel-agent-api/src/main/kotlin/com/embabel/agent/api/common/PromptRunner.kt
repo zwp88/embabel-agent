@@ -18,6 +18,7 @@ package com.embabel.agent.api.common
 import com.embabel.agent.api.annotation.using
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.spi.LlmCall
+import com.embabel.agent.spi.LlmUse
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
@@ -32,7 +33,7 @@ import org.springframework.ai.tool.ToolCallback
  * A contextual facade to LlmOperations.
  * @see com.embabel.agent.spi.LlmOperations
  */
-interface PromptRunner : LlmCall {
+interface PromptRunner : LlmUse {
 
     /**
      * Additional objects with @Tool annotation for use in this PromptRunner

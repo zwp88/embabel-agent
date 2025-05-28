@@ -19,14 +19,12 @@ import com.embabel.agent.api.annotation.support.MethodReturnPromptRunner
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Return a prompt runner for use to return in an @Action method, specifying
  * LLM options.
  * @param llm specification of LLM to use
  * @param toolGroups tool groups to request
- * @param toolCallbacks individual tools to expose
  * @param toolObjects objects with @Tool annotations to expose to the LLM.
  * Note that domain objects passed into the @Action method will automatically
  * expose any @Tool methods.
@@ -37,7 +35,6 @@ import org.springframework.ai.tool.ToolCallback
 fun using(
     llm: LlmOptions? = null,
     toolGroups: Set<String> = emptySet(),
-    toolCallbacks: List<ToolCallback> = emptyList(),
     toolObjects: List<Any> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
     generateExamples: Boolean? = null,
@@ -45,7 +42,6 @@ fun using(
     MethodReturnPromptRunner(
         llm = llm,
         toolGroups = toolGroups,
-        toolCallbacks = toolCallbacks,
         toolObjects = toolObjects,
         promptContributors = promptContributors,
         generateExamples = generateExamples,
@@ -56,7 +52,6 @@ fun using(
  * that uses the given model with default hyperparameters
  * @param model name of LLM to use
  * @param toolGroups tool groups to request
- * @param toolCallbacks individual tools to expose
  * @param toolObjects objects with @Tool annotations to expose to the LLM.
  * Note that domain objects passed into the @Action method will automatically
  * expose any @Tool methods.
@@ -67,7 +62,6 @@ fun using(
 fun usingModel(
     model: String,
     toolGroups: Set<String> = emptySet(),
-    toolCallbacks: List<ToolCallback> = emptyList(),
     toolObjects: List<Any> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
     generateExamples: Boolean? = null,
@@ -75,7 +69,6 @@ fun usingModel(
     MethodReturnPromptRunner(
         llm = LlmOptions(model = model),
         toolGroups = toolGroups,
-        toolCallbacks = toolCallbacks,
         toolObjects = toolObjects,
         promptContributors = promptContributors,
         generateExamples = generateExamples,
@@ -89,7 +82,6 @@ val usingDefaultLlm: PromptRunner =
     MethodReturnPromptRunner(
         llm = null,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
         toolObjects = emptyList(),
         promptContributors = emptyList(),
         generateExamples = null,
