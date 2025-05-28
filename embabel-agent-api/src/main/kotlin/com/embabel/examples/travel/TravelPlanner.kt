@@ -23,6 +23,7 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
 import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.config.models.AnthropicModels
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ProcessOptions
@@ -106,8 +107,8 @@ class TravelPlanner(
     ): PointOfInterestFindings {
         val pr = context.promptRunner(
             llm = LlmOptions(
-                byName("ai/llama3.2"),
-//                byName(OpenAiModels.GPT_41_MINI)
+//                byName("ai/llama3.2"),
+                byName(OpenAiModels.GPT_41_MINI)
             ),
             toolGroups = setOf(CoreToolGroups.WEB),
         )
