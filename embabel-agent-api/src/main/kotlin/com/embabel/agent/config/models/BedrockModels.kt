@@ -50,7 +50,7 @@ import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient
 import java.time.LocalDate
 import kotlin.text.isNotBlank
 
-@ConfigurationProperties(prefix = "spring.ai.bedrock.aws")
+@ConfigurationProperties(prefix = "embabel.models.bedrock")
 data class BedrockProperties(
     val models: List<BedrockModelProperties> = emptyList()
 )
