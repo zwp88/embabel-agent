@@ -15,8 +15,10 @@
  */
 package com.embabel.agent.validation
 
+import com.embabel.agent.core.Action
 import org.springframework.stereotype.Component
 import com.embabel.agent.core.AgentScope
+import com.embabel.agent.core.support.Rerun
 import org.slf4j.LoggerFactory
 
 /**
@@ -31,6 +33,7 @@ import org.slf4j.LoggerFactory
  *
  * Reports specific errors when no such path exists.
  */
+
 @Component
 class NoPathToCompletionValidator : AgentValidator {
     private val logger = LoggerFactory.getLogger(NoPathToCompletionValidator::class.java)
@@ -48,30 +51,34 @@ class NoPathToCompletionValidator : AgentValidator {
             )
         }
 
-        val actionsLeadingToGoals = findActionsLeadingToGoals(agentScope)
-        if (actionsLeadingToGoals.isEmpty()) {
-            return errorResult(
-                code = "NO_PATH_TO_GOALS",
-                message = "Agent '${agentScope.name}' has no actions that can lead to its goals",
-                agentScope = agentScope
-            )
-        }
-
-        // Precondition validation
+        // Precondition validation (checks for missing preconditions in action definitions)
         val preconditionErrors = findMissingPreconditionErrors(agentScope)
         if (preconditionErrors.isNotEmpty()) {
             return ValidationResult(false, preconditionErrors)
         }
 
-        // Find triggerable actions
+        // --- Pathfinding to reach goals ---
+        // Find all triggerable actions and reachable end conditions
         val triggerableActions = findTriggerableActions(agentScope)
-        logger.info("Final triggerableActions: $triggerableActions")
 
-        // At least one goal-reaching action must be triggerable
-        if (!actionsLeadingToGoals.any { it.name in triggerableActions }) {
+        // All end conditions: initial + effects of triggerable actions + hasRun of executed actions
+        val currentConditions = agentScope.conditions.map { it.name }.toMutableSet()
+        for (action in agentScope.actions) {
+            if (action.name in triggerableActions) {
+                currentConditions.addAll(action.effects.map { it.key })
+                currentConditions.add(Rerun.hasRunCondition(action))
+            }
+        }
+
+        // Extract preconditions of the goals (mostly hasRun_* and other goal conditions)
+        val goalPreconditions = agentScope.goals.flatMap { it.pre }.toSet()
+
+        // Is at least one goal achievable?
+        val canAchieveAnyGoal = goalPreconditions.any { it in currentConditions }
+        if (!canAchieveAnyGoal) {
             return errorResult(
                 code = "NO_PATH_FROM_INITIAL_CONDITIONS",
-                message = "Agent '${agentScope.name}' has no actions that can be triggered from initial conditions",
+                message = "Agent '${agentScope.name}' has no path from initial conditions to any goal (goals unreachable)",
                 agentScope = agentScope
             )
         }
@@ -98,20 +105,11 @@ class NoPathToCompletionValidator : AgentValidator {
         )
     }
 
-    private fun findActionsLeadingToGoals(agentScope: AgentScope) =
-        agentScope.actions.filter { action ->
-            action.effects.any { (effectName, _) ->
-                agentScope.goals.any { goal ->
-                    goal.name == effectName || goal.preconditions.containsKey(effectName)
-                }
-            }
-        }
-
     private fun findMissingPreconditionErrors(agentScope: AgentScope): List<ValidationError> {
         val errors = mutableListOf<ValidationError>()
         for (action in agentScope.actions) {
-            val missing = getConditionPreconditions(action.preconditions)
-                .filterNot { hasCondition(agentScope, it) }
+            val missing = getActionPreconditions(action.preconditions)
+                .filterNot { hasInitialCondition(agentScope, it) }
             if (missing.isNotEmpty()) {
                 errors.add(
                     ValidationError(
@@ -134,52 +132,81 @@ class NoPathToCompletionValidator : AgentValidator {
     private fun findTriggerableActions(agentScope: AgentScope): Set<String> {
         val triggerable = mutableSetOf<String>()
         val actions = agentScope.actions
-        val preconditionsFor = actions.associateBy({ it.name }) { getConditionPreconditions(it.preconditions) }
+        val preconditionsFor = actions.associateBy({ it.name }) { getActionPreconditions(it.preconditions) }
 
-        // First pass: directly triggerable from initial conditions
+        addDirectlyTriggerableActions(preconditionsFor, agentScope, triggerable)
+        propagateTriggerableActions(actions, preconditionsFor, agentScope, triggerable)
+
+        return triggerable
+    }
+
+    private fun addDirectlyTriggerableActions(
+        preconditionsFor: Map<String, List<String>>,
+        agentScope: AgentScope,
+        triggerable: MutableSet<String>
+    ) {
         for ((actionName, preconditions) in preconditionsFor) {
-            if (preconditions.isEmpty() || preconditions.all { hasCondition(agentScope, it) }) {
+            if (arePreconditionsMetWithInitial(agentScope, preconditions)) {
                 triggerable.add(actionName)
             }
         }
+    }
 
-        /**
-         * Propagate triggerability through action chaining:
-         * For each action, if all its preconditions are satisfied either by agent conditions
-         * or by the effects of actions already marked as triggerable, then mark it as triggerable.
-         * Repeat until no new actions can be marked triggerable in a pass.
-         */
+    private fun arePreconditionsMetWithInitial(agentScope: AgentScope, preconditions: List<String>): Boolean {
+        return preconditions.isEmpty() || preconditions.all { hasInitialCondition(agentScope, it) }
+    }
+
+    private fun propagateTriggerableActions(
+        actions: List<Action>,
+        preconditionsFor: Map<String, List<String>>,
+        agentScope: AgentScope,
+        triggerable: MutableSet<String>
+    ) {
         var foundNew: Boolean
         do {
             foundNew = false
+            val currentConditions = getCurrentConditions(agentScope, actions, triggerable)
             for ((actionName, preconditions) in preconditionsFor) {
-                if (actionName !in triggerable && (preconditions.isEmpty() || preconditions.all {
-                        hasCondition(agentScope, it) ||
-                                actions.any { other ->
-                                    other.name in triggerable &&
-                                            other.effects.any { (effectName, _) -> effectName.endsWith(it) }
-                                }
-                    })
-                ) {
+                if (shouldAddAsTriggerable(actionName, preconditions, currentConditions, triggerable)) {
                     triggerable.add(actionName)
                     foundNew = true
                 }
             }
         } while (foundNew)
-
-        return triggerable
     }
 
-    private fun hasCondition(agentScope: AgentScope, preconditionName: String) =
-        agentScope.conditions.any { it.name.endsWith(preconditionName) }
+    private fun getCurrentConditions(
+        agentScope: AgentScope,
+        actions: List<Action>,
+        triggerable: Set<String>
+    ): MutableSet<String> {
+        val currentConditions = agentScope.conditions.map { it.name }.toMutableSet()
+        for (action in actions) {
+            if (action.name in triggerable) {
+                currentConditions.addAll(action.effects.map { it.key })
+                currentConditions.add(Rerun.hasRunCondition(action))
+            }
+        }
+        return currentConditions
+    }
 
-    /**
-     * Returns only the meaningful, user-defined precondition names,
-     * filtering out framework-specific/internal keys such as those starting with
-     * "it:" (internal variables/placeholders) or "hasRun_" (execution markers).
-     * This ensures validation checks only real, agent-defined conditions.
-     */
-    private fun getConditionPreconditions(preconditions: Map<String, Any>) =
+    private fun shouldAddAsTriggerable(
+        actionName: String,
+        preconditions: List<String>,
+        currentConditions: Set<String>,
+        triggerable: Set<String>
+    ): Boolean {
+        return actionName !in triggerable &&
+                (preconditions.isEmpty() || preconditions.all { hasConditionInSet(currentConditions, it) })
+    }
+
+
+    private fun hasInitialCondition(agentScope: AgentScope, preconditionName: String): Boolean =
+        agentScope.conditions.any { it.name == preconditionName }
+
+    private fun hasConditionInSet(conditions: Set<String>, preconditionName: String): Boolean =
+        conditions.contains(preconditionName)
+
+    private fun getActionPreconditions(preconditions: Map<String, Any>) =
         preconditions.keys.filterNot { it.startsWith("it:") || it.startsWith("hasRun_") }
 }
-
