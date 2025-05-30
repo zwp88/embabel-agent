@@ -43,8 +43,7 @@ class AgentMetadataReaderActionTest {
     fun `no actions`() {
         val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(OneGoalOnly())
-        assertNotNull(metadata)
-        assertEquals(0, metadata!!.actions.size)
+        assertNull(metadata) // The metadata should be null! Due to the NoPathToCompletionValidator
     }
 
     @Test

@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNull
 import com.embabel.agent.core.Agent as CoreAgent
 
 
@@ -70,8 +71,7 @@ class AgentMetadataReaderTest {
         fun `one goal only`() {
             val reader = TestAgentMetadataReader.create()
             val metadata = reader.createAgentMetadata(OneGoalOnly())
-            assertNotNull(metadata)
-            assertEquals(1, metadata!!.goals.size)
+            assertNull(metadata) // Agent is invalid (goal, no actions), the metadata must be null! Due to the NoPathToCompletionValidator
         }
 
         @Test

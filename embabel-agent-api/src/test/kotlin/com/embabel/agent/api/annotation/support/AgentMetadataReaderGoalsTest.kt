@@ -24,6 +24,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNull
 
 class AgentMetadataReaderGoalsTest {
 
@@ -31,8 +32,7 @@ class AgentMetadataReaderGoalsTest {
     fun `no conditions`() {
         val reader = TestAgentMetadataReader.create()
         val metadata = reader.createAgentMetadata(NoConditions())
-        assertNotNull(metadata)
-        assertEquals(0, metadata!!.conditions.size)
+        assertNull(metadata) // The metadata should be null! Due to the NoPathToCompletionValidator
     }
 
     @Test
