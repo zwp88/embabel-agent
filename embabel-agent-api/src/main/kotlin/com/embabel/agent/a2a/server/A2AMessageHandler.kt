@@ -6,7 +6,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.util.*
 
+/**
+ * Handle A2A messages according to the A2A protocol.
+ * Doesn't dictate mapping to URLs: a router or controller
+ * in front of this class must handle that.
+ */
 @Service
 @Profile("a2a")
 class A2AMessageHandler(
@@ -17,52 +23,100 @@ class A2AMessageHandler(
 
     fun handleJsonRpc(
         request: JSONRPCRequest
-    ): ResponseEntity<JSONRPCResponse> {
-        logger.info("Received message: {}", request)
+    ): ResponseEntity<ResponseWrapper> {
+        logger.info("Received JSONRPC message {}: {}", request.method, request)
         return when (request.method) {
             "message/send" -> {
                 val messageSendParams = objectMapper.convertValue(request.params, MessageSendParams::class.java)
-                handleMessageSend(
-                    MessageSendRequest(
-                        id = request.id,
-                        params = messageSendParams,
-                    )
-                )
+                handleMessageSend(request, messageSendParams)
             }
 
             "message/stream" -> {
                 TODO("Streaming is not supported")
             }
 
+            "message/list" -> {
+                TODO("Listing messages is not supported")
+            }
+
+            "message/pending" -> {
+                TODO("pending messages is not supported")
+            }
+
+            "conversation/list" -> {
+                TODO("Listing conversations is not supported")
+            }
+
+            "task/list" -> {
+                val tqp = objectMapper.convertValue(request.params, TaskQueryParams::class.java)
+                handleTasksGet(
+                    request, tqp,
+                )
+            }
+
+            "tasks/cancel" -> {
+                val tip = objectMapper.convertValue(request.params, TaskIdParams::class.java)
+                handleCancelTask(
+                    request, tip,
+                )
+            }
+
             else -> {
                 logger.warn("Unsupported method: {}", request.method)
                 return ResponseEntity.badRequest().body(
-                    JSONRPCErrorResponse(
-                        id = request.id,
-                        error = JSONRPCError(code = -32601, message = "Method not found")
+                    ResponseWrapper(
+                        JSONRPCErrorResponse(
+                            id = request.id,
+                            error = JSONRPCError(code = -32601, message = "Method not found")
+                        )
                     )
                 )
             }
         }
     }
 
-    private fun handleMessageSend(request: MessageSendRequest): ResponseEntity<JSONRPCResponse> {
-        val message = request.params.message
+    private fun handleMessageSend(request: JSONRPCRequest, params: MessageSendParams): ResponseEntity<ResponseWrapper> {
+        val message = params.message
+        val text = "Echo: ${message.kind}"
+        val resultMessage = Message(
+            role = "agent",
+            messageId = UUID.randomUUID().toString(),
+            parts = listOf(
+                TextPart(text = text),
+            ),
+        )
         val task = Task(
-            id = message.taskId ?: "task-1",
-            contextId = message.contextId ?: "ctx-1",
-            status = TaskStatus(TaskState.COMPLETED),
+            id = message.taskId ?: UUID.randomUUID().toString(),
+            contextId = message.contextId ?: ("ctx_" + UUID.randomUUID().toString()),
+            status = TaskStatus(
+                state = TaskState.COMPLETED,
+                message = resultMessage,
+            ),
             history = listOf(message),
             artifacts = listOf(
                 Artifact(
-                    parts = listOf(TextPart(text = "Echo: ${message.kind}")),
+                    parts = listOf(TextPart(text = text)),
                 )
             ),
             metadata = null,
         )
-        val result = JSONRPCSuccessResponse(id = message.messageId, result = task)
+        val result = request.successResponseWith(result = task)
+
+//        JSONRPCSuccessResponse(id = message.messageId, result = task)
         logger.info("Handled message send request: {}", result)
-        return ResponseEntity.ok(result)
+        return ResponseEntity.ok(ResponseWrapper(result))
     }
+
+    private fun handleTasksGet(request: JSONRPCRequest, params: TaskQueryParams): ResponseEntity<ResponseWrapper> {
+        TODO()
+    }
+
+    private fun handleCancelTask(
+        request: JSONRPCRequest,
+        tip: TaskIdParams,
+    ): ResponseEntity<ResponseWrapper> {
+        TODO()
+    }
+
 
 }

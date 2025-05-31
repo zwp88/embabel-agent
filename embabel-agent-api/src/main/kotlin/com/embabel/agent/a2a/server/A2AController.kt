@@ -87,7 +87,7 @@ class A2AController(
     fun handleJsonRpc(
         @RequestBody @Schema(description = "A2A message send params")
         request: JSONRPCRequest,
-    ): ResponseEntity<JSONRPCResponse> {
+    ): ResponseEntity<ResponseWrapper> {
         return a2AMessageHandler.handleJsonRpc(request)
     }
 }

@@ -600,21 +600,19 @@ data class JSONRPCRequest(
     val method: String,
 
     /** A Structured value that holds the parameter values to be used during invocation. */
-    val params: Map<String, Any>? = null,
+    val params: Any? = null,
 
     /** An identifier established by the Client. */
     val id: Any? = null,
-)
+) {
 
-data class MessageSendRequest(
-    val params: MessageSendParams,
-    val id: Any? = null
-)
+    fun successResponseWith(result: Any): JSONRPCResponse =
+        JSONRPCSuccessResponse(jsonrpc = jsonrpc, id = id, result = result)
 
-data class TaskQueryRequest(
-    val params: TaskQueryParams,
-    val id: Any? = null
-)
+    fun errorResponseWith(error: JSONRPCError): JSONRPCErrorResponse =
+        JSONRPCErrorResponse(jsonrpc = jsonrpc, id = id, error = error)
+}
+
 
 /**
  * Responses from the A2A Server are encapsulated in a JSON-RPC Response object.
@@ -624,17 +622,23 @@ sealed class JSONRPCResponse {
     abstract val id: Any?
 }
 
-data class JSONRPCSuccessResponse(
+class JSONRPCSuccessResponse internal constructor(
     override val jsonrpc: String = "2.0",
     override val id: Any?,
     val result: Any
-) : JSONRPCResponse()
+) : JSONRPCResponse() {
 
-data class JSONRPCErrorResponse(
+    override fun toString(): String = "JSONRPCSuccessResponse(jsonrpc=$jsonrpc, id=$id, result=$result)"
+}
+
+class JSONRPCErrorResponse internal constructor(
     override val jsonrpc: String = "2.0",
     override val id: Any?,
     val error: JSONRPCError
-) : JSONRPCResponse()
+) : JSONRPCResponse() {
+
+    override fun toString(): String = "JSONRPCErrorResponse(jsonrpc=$jsonrpc, id=$id, error=$error)"
+}
 
 /**
  * Represents a JSON-RPC 2.0 Error object.
@@ -671,3 +675,10 @@ object A2AErrorCodes {
     const val CONTENT_TYPE_NOT_SUPPORTED = -32005
     const val INVALID_AGENT_RESPONSE = -32006
 }
+
+/**
+ * Not really documented in the spec, but used in the A2A Server
+ */
+data class ResponseWrapper(
+    val root: JSONRPCResponse
+)
