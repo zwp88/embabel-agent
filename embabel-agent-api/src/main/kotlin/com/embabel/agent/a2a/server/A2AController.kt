@@ -53,8 +53,8 @@ class A2AController(
         val hostingUrl = "$scheme://$serverName:$serverPort/a2a"
 
         val agentCard = AgentCard(
-            name = "Demo Agent",
-            description = "A demo agent for the Embabel platform.",
+            name = agentPlatform.name,
+            description = agentPlatform.description,
             url = hostingUrl,
             provider = AgentProvider("Embabel", "https://embabel.com"),
             version = DEFAULT_VERSION,

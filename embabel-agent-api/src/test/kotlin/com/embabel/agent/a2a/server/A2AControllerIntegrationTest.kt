@@ -60,8 +60,8 @@ class A2AControllerIntegrationTest(
             val agentCard = objectMapper.readValue(content, AgentCard::class.java)
 
             assertNotNull(agentCard)
-            assertEquals("Demo Agent", agentCard.name)
-            assertEquals("A demo agent for the Embabel platform.", agentCard.description)
+            assertNotNull(agentCard.name)
+            assertNotNull(agentCard.description)
             assertTrue(agentCard.url.contains("localhost"), "Agent card url should expose port: '${agentCard.url}'")
             assertTrue(agentCard.url.contains(":"), "Agent card url should expose port: '${agentCard.url}'")
             assertEquals("Embabel", agentCard.provider?.organization)
