@@ -15,7 +15,9 @@
  */
 package com.embabel.agent.a2a.server
 
+import com.embabel.agent.a2a.server.support.FromGoalsAgentSkillFactory
 import com.embabel.agent.a2a.spec.*
+import com.embabel.agent.core.AgentPlatform
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.servlet.http.HttpServletRequest
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.*
 @Profile("a2a")
 @RequestMapping("/a2a")
 class A2AController(
+    private val agentPlatform: AgentPlatform,
     private val a2AMessageHandler: A2AMessageHandler,
 ) {
 
@@ -65,21 +68,16 @@ class A2AController(
             security = null,
             defaultInputModes = listOf("application/json", "text/plain"),
             defaultOutputModes = listOf("application/json", "text/plain"),
-            skills = listOf(
-                AgentSkill(
-                    id = "echo",
-                    name = "Echo",
-                    description = "Echoes messages.",
-                    tags = listOf("test"),
-                    examples = listOf("Say hello!"),
-                ),
-            ),
+            skills = FromGoalsAgentSkillFactory(agentPlatform.goals).skills(),
             supportsAuthenticatedExtendedCard = false,
         )
         logger.info("Returning agent card: {}", agentCard)
         return agentCard
     }
 
+    /**
+     * Handle JSON-RPC requests for A2A messages.
+     */
     @PostMapping(
         consumes = [MediaType.APPLICATION_JSON_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
@@ -91,4 +89,3 @@ class A2AController(
         return ResponseEntity.ok(a2AMessageHandler.handleJsonRpc(request))
     }
 }
-

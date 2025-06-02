@@ -15,15 +15,11 @@
  */
 package com.embabel.agent.a2a.server
 
-import com.embabel.agent.a2a.spec.JSONRPCRequest
-import com.embabel.agent.a2a.spec.JSONRPCResponse
+import com.embabel.agent.a2a.spec.AgentSkill
 
-interface A2AMessageHandler {
-
+interface AgentSkillFactory {
     /**
-     * Handle a JSON-RPC request according to the A2A protocol.
-     * @param request the JSON-RPC request
-     * @return the JSON-RPC response
+     * Create a skill instance by its ID.
      */
-    fun handleJsonRpc(request: JSONRPCRequest): JSONRPCResponse
+    fun skills(): List<AgentSkill>
 }
