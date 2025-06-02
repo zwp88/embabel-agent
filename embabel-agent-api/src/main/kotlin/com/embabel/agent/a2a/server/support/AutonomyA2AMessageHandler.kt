@@ -16,10 +16,13 @@
 package com.embabel.agent.a2a.server.support
 
 import com.embabel.agent.a2a.server.A2AMessageHandler
+import com.embabel.agent.a2a.server.A2ARequestEvent
+import com.embabel.agent.a2a.server.A2AResponseEvent
 import com.embabel.agent.a2a.spec.*
 import com.embabel.agent.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.event.AgenticEventListener
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -35,6 +38,7 @@ import java.util.*
 @Profile("a2a")
 class AutonomyA2AMessageHandler(
     private val autonomy: Autonomy,
+    private val agenticEventListener: AgenticEventListener,
     private val objectMapper: ObjectMapper,
 ) : A2AMessageHandler {
 
@@ -44,7 +48,13 @@ class AutonomyA2AMessageHandler(
         request: JSONRPCRequest
     ): JSONRPCResponse {
         logger.info("Received JSONRPC message {}: {}", request.method, request)
-        return when (request.method) {
+        agenticEventListener.onPlatformEvent(
+            A2ARequestEvent(
+                agentPlatform = autonomy.agentPlatform,
+                request = request,
+            )
+        )
+        val result = when (request.method) {
             "message/send" -> {
                 val messageSendParams = objectMapper.convertValue(request.params, MessageSendParams::class.java)
                 handleMessageSend(request, messageSendParams)
@@ -85,6 +95,13 @@ class AutonomyA2AMessageHandler(
                 throw UnsupportedOperationException("Method ${request.method} is not supported")
             }
         }
+        agenticEventListener.onPlatformEvent(
+            A2AResponseEvent(
+                agentPlatform = autonomy.agentPlatform,
+                response = result,
+            )
+        )
+        return result
     }
 
     private fun handleMessageSend(
