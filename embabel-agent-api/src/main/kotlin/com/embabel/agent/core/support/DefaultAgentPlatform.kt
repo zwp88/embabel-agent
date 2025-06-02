@@ -34,11 +34,12 @@ import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
-
 @Service
 internal class DefaultAgentPlatform(
-    @Value("\${embabel.agent-platform.name}")
+    @Value("\${embabel.agent-platform.name:default-agent-platform}")
     override val name: String,
+    @Value("\${embabel.agent-platform.description:Default Agent Platform}")
+    override val description: String,
     private val llmOperations: LlmOperations,
     override val toolGroupResolver: ToolGroupResolver,
     private val eventListener: AgenticEventListener,

@@ -44,6 +44,7 @@ object IntegrationTestUtils {
             toolGroupResolver = toolGroupResolver ?: RegistryToolGroupResolver("empty", emptyList()),
             ragService = ragService ?: RagService.empty(),
             name = "dummy-agent-platform",
+            description = "Dummy Agent Platform for Integration Testing",
         )
     }
 
