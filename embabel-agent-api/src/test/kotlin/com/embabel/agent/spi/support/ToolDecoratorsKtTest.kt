@@ -16,8 +16,8 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.event.AgentProcessToolCallRequestEvent
-import com.embabel.agent.event.AgentProcessToolCallResponseEvent
+import com.embabel.agent.event.ToolCallRequestEvent
+import com.embabel.agent.event.ToolCallResponseEvent
 import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.testing.EventSavingAgenticEventListener
@@ -86,8 +86,8 @@ class ToolDecoratorsKtTest {
         decorated.call("{}")
         assertEquals(2, ese.processEvents.size)
         assertEquals(0, ese.platformEvents.size)
-        val fce = ese.processEvents.filterIsInstance<AgentProcessToolCallRequestEvent>().single()
-        val fre = ese.processEvents.filterIsInstance<AgentProcessToolCallResponseEvent>().single()
+        val fce = ese.processEvents.filterIsInstance<ToolCallRequestEvent>().single()
+        val fre = ese.processEvents.filterIsInstance<ToolCallResponseEvent>().single()
         assertEquals(decorated.toolDefinition.name(), fce.function)
         assertEquals(decorated.toolDefinition.name(), fre.function, decorated.toolDefinition.name())
         assertEquals(llm, fce.llmOptions)
