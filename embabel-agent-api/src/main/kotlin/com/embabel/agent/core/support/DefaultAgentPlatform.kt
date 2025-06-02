@@ -41,7 +41,7 @@ internal class DefaultAgentPlatform(
     override val name: String,
     private val llmOperations: LlmOperations,
     override val toolGroupResolver: ToolGroupResolver,
-    eventListeners: List<AgenticEventListener>,
+    private val eventListener: AgenticEventListener,
     private val agentProcessIdGenerator: AgentProcessIdGenerator = AgentProcessIdGenerator.RANDOM,
     private val agentProcessRepository: AgentProcessRepository = InMemoryAgentProcessRepository(),
     private val operationScheduler: OperationScheduler = OperationScheduler.PRONTO,
@@ -53,10 +53,6 @@ internal class DefaultAgentPlatform(
     private val yamlObjectMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
 
     private val agents: MutableMap<String, Agent> = ConcurrentHashMap()
-
-    private val eventListener: AgenticEventListener = AgenticEventListener.from(
-        eventListeners,
-    )
 
     override val platformServices = PlatformServices(
         llmOperations = llmOperations,
