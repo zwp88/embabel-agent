@@ -19,6 +19,7 @@ management:
 
 embabel:
   agent-platform:
+    name: embabel-default
     scanning:
       annotation: true
       bean: true

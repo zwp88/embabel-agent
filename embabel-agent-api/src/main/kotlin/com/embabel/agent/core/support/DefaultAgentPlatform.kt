@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
@@ -36,6 +37,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service
 internal class DefaultAgentPlatform(
+    @Value("\${embabel.agent-platform.name}")
+    override val name: String,
     private val llmOperations: LlmOperations,
     override val toolGroupResolver: ToolGroupResolver,
     eventListeners: List<AgenticEventListener>,
@@ -50,8 +53,6 @@ internal class DefaultAgentPlatform(
     private val yamlObjectMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
 
     private val agents: MutableMap<String, Agent> = ConcurrentHashMap()
-
-    override val name: String = javaClass.name
 
     private val eventListener: AgenticEventListener = AgenticEventListener.from(
         eventListeners,
