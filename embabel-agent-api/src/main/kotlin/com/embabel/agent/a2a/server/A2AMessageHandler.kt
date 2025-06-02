@@ -4,7 +4,6 @@ import com.embabel.agent.a2a.spec.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -23,7 +22,7 @@ class A2AMessageHandler(
 
     fun handleJsonRpc(
         request: JSONRPCRequest
-    ): ResponseEntity<ResponseWrapper> {
+    ): JSONRPCResponse {
         logger.info("Received JSONRPC message {}: {}", request.method, request)
         return when (request.method) {
             "message/send" -> {
@@ -63,19 +62,15 @@ class A2AMessageHandler(
 
             else -> {
                 logger.warn("Unsupported method: {}", request.method)
-                return ResponseEntity.badRequest().body(
-                    ResponseWrapper(
-                        JSONRPCErrorResponse(
-                            id = request.id,
-                            error = JSONRPCError(code = -32601, message = "Method not found")
-                        )
-                    )
-                )
+                throw UnsupportedOperationException("Method ${request.method} is not supported")
             }
         }
     }
 
-    private fun handleMessageSend(request: JSONRPCRequest, params: MessageSendParams): ResponseEntity<ResponseWrapper> {
+    private fun handleMessageSend(
+        request: JSONRPCRequest,
+        params: MessageSendParams,
+    ): JSONRPCResponse {
         val message = params.message
         val text = "Echo: ${message.kind}"
         val resultMessage = Message(
@@ -89,7 +84,7 @@ class A2AMessageHandler(
             id = message.taskId ?: UUID.randomUUID().toString(),
             contextId = message.contextId ?: ("ctx_" + UUID.randomUUID().toString()),
             status = TaskStatus(
-                state = TaskState.COMPLETED,
+                state = TaskState.completed,
                 message = resultMessage,
             ),
             history = listOf(message),
@@ -100,21 +95,25 @@ class A2AMessageHandler(
             ),
             metadata = null,
         )
+
         val result = request.successResponseWith(result = task)
 
 //        JSONRPCSuccessResponse(id = message.messageId, result = task)
         logger.info("Handled message send request: {}", result)
-        return ResponseEntity.ok(ResponseWrapper(result))
+        return result
     }
 
-    private fun handleTasksGet(request: JSONRPCRequest, params: TaskQueryParams): ResponseEntity<ResponseWrapper> {
+    private fun handleTasksGet(
+        request: JSONRPCRequest,
+        params: TaskQueryParams,
+    ): JSONRPCResponse {
         TODO()
     }
 
     private fun handleCancelTask(
         request: JSONRPCRequest,
         tip: TaskIdParams,
-    ): ResponseEntity<ResponseWrapper> {
+    ): JSONRPCResponse {
         TODO()
     }
 

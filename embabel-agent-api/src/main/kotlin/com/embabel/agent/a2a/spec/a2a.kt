@@ -224,26 +224,26 @@ data class TaskStatus(
  * Represents the possible states of a Task.
  */
 enum class TaskState {
-    SUBMITTED,
-    WORKING,
-    INPUT_REQUIRED,
-    COMPLETED,
-    CANCELED,
-    FAILED,
-    REJECTED,
-    AUTH_REQUIRED,
-    UNKNOWN;
+    submitted,
+    working,
+    input_required,
+    completed,
+    canceled,
+    failed,
+    rejected,
+    auth_required,
+    unknown;
 
     override fun toString(): String = when (this) {
-        SUBMITTED -> "submitted"
-        WORKING -> "working"
-        INPUT_REQUIRED -> "input-required"
-        COMPLETED -> "completed"
-        CANCELED -> "canceled"
-        FAILED -> "failed"
-        REJECTED -> "rejected"
-        AUTH_REQUIRED -> "auth-required"
-        UNKNOWN -> "unknown"
+        submitted -> "submitted"
+        working -> "working"
+        input_required -> "input-required"
+        completed -> "completed"
+        canceled -> "canceled"
+        failed -> "failed"
+        rejected -> "rejected"
+        auth_required -> "auth-required"
+        unknown -> "unknown"
     }
 }
 
@@ -511,6 +511,14 @@ data class TaskIdParams(
 // ============================================================================
 // 7.2. Streaming Response Objects
 // ============================================================================
+
+
+data class SendMessageSuccessResponse(
+    override val jsonrpc: String = "2.0",
+    override val id: String,
+    /** Message or Task */
+    val result: Any,
+) : JSONRPCResponse()
 
 /**
  * JSON-RPC response model for the 'message/stream' method.
