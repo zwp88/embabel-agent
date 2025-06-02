@@ -18,7 +18,7 @@ package com.embabel.agent.a2a.server.support
 import com.embabel.agent.a2a.server.A2AMessageHandler
 import com.embabel.agent.a2a.spec.*
 import com.embabel.agent.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND
-import com.embabel.agent.api.common.Autonomy
+import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.ProcessOptions
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory

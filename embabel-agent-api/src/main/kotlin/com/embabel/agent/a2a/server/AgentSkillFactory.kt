@@ -21,5 +21,5 @@ interface AgentSkillFactory {
     /**
      * Create a skill instance by its ID.
      */
-    fun skills(): List<AgentSkill>
+    fun skills(namespace: String): List<AgentSkill>
 }

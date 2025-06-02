@@ -26,11 +26,11 @@ class FromGoalsAgentSkillFactory(
     private val goals: Set<Goal>,
 ) : AgentSkillFactory {
 
-    override fun skills(): List<AgentSkill> {
+    override fun skills(namespace: String): List<AgentSkill> {
         return goals
             .map { goal ->
                 AgentSkill(
-                    id = "goal_${goal.name}",
+                    id = "${namespace}_goal_${goal.name}",
                     name = goal.name,
                     description = goal.description,
                     inputModes = listOf("application/json"),

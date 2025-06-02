@@ -68,7 +68,7 @@ class A2AController(
             security = null,
             defaultInputModes = listOf("application/json", "text/plain"),
             defaultOutputModes = listOf("application/json", "text/plain"),
-            skills = FromGoalsAgentSkillFactory(agentPlatform.goals).skills(),
+            skills = FromGoalsAgentSkillFactory(agentPlatform.goals).skills(agentPlatform.name),
             supportsAuthenticatedExtendedCard = false,
         )
         logger.info("Returning agent card: {}", agentCard)
