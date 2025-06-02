@@ -84,9 +84,9 @@ open class LoggingAgenticEventListener(
     private val earlyTerminationMessage: String = "[{}] early termination by {} for {}",
     private val objectAddedMessage: String = "[{}] object added: {}",
     private val objectBoundMessage: String = "[{}] object bound {}:{}",
-    private val toolCallRequestEventMessage: String = "[{}] tool {}({})",
-    private val toolCallSuccessResponseEventMessage: String = "[{}] tool {} -> {} in {}ms with payload {}",
-    private val toolCallFailureResponseEventMessage: String = "[{}] failed tool {} -> {} in {}ms with payload {}",
+    private val toolCallRequestEventMessage: String = "[{}] ({}) calling tool {}({})",
+    private val toolCallSuccessResponseEventMessage: String = "[{}] ({}) tool {} returned {} in {}ms with payload {}",
+    private val toolCallFailureResponseEventMessage: String = "[{}] ({}) failed tool {} -> {} in {}ms with payload {}",
     private val llmRequestEventMessage: String = "[{}] requesting LLM {} to transform {} from {} -> {} using {}",
     private val llmResponseEventMessage: () -> String = { "[{}] received LLM response {} of type {} from {} in {} seconds" },
     private val actionExecutionStartMessage: String = "[{}] executing action {}",
@@ -199,6 +199,7 @@ open class LoggingAgenticEventListener(
                 logger.info(
                     toolCallRequestEventMessage,
                     event.processId,
+                    event.action?.shortName(),
                     event.function,
                     event.toolInput,
                 )
@@ -217,6 +218,7 @@ open class LoggingAgenticEventListener(
                         logger.info(
                             toolCallSuccessResponseEventMessage,
                             event.processId,
+                            event.action?.shortName(),
                             event.function,
                             resultToShow,
                             event.runningTime.toMillis(),
@@ -229,6 +231,7 @@ open class LoggingAgenticEventListener(
                         logger.info(
                             toolCallFailureResponseEventMessage,
                             event.processId,
+                            event.action?.shortName(),
                             event.function,
                             throwable,
                             event.runningTime.toMillis(),

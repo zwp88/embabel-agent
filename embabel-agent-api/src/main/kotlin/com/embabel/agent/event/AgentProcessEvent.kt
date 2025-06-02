@@ -104,6 +104,7 @@ class ActionExecutionResultEvent internal constructor(
  */
 class ToolCallRequestEvent(
     agentProcess: AgentProcess,
+    val action: Action?,
     val function: String,
     val toolGroupMetadata: ToolGroupMetadata?,
     val toolInput: String,
@@ -113,6 +114,7 @@ class ToolCallRequestEvent(
     fun responseEvent(result: Result<String>, runningTime: Duration): ToolCallResponseEvent {
         return ToolCallResponseEvent(
             agentProcess = agentProcess,
+            action = action,
             function = function,
             toolInput = toolInput,
             llmOptions = llmOptions,
@@ -127,6 +129,7 @@ class ToolCallRequestEvent(
  */
 class ToolCallResponseEvent internal constructor(
     agentProcess: AgentProcess,
+    val action: Action?,
     val function: String,
     val toolInput: String,
     val llmOptions: LlmOptions,
