@@ -766,5 +766,9 @@ This file also informs coding agent behavior.
   not be implemented.
 - README badges come from [here](https://github.com/Ileriayo/markdown-badges).
 
+## Star history
+[![Star History Chart](https://api.star-history.com/svg?repos=embabel/embabel-agent&type=Date)](https://star-history.com/#embabel/embabel-agent&Date)
+
+
 --------------------
 (c) Embabel Software Inc 2024-2025.
