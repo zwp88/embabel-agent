@@ -15,9 +15,14 @@
  */
 package com.embabel.example.movie
 
+import com.embabel.agent.api.common.OperationContext
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MovieFinderTest {
 
@@ -26,9 +31,26 @@ class MovieFinderTest {
 
         @Test
         fun `test analyze taste profile`() {
+            val repository = InMemoryMovieBuffRepository()
+            val mockOperationContext = mockk<OperationContext>()
+            val prompt = slot<String>()
+            every { mockOperationContext.promptRunner(any()).generateText(capture(prompt)) } returns "test"
             val movieFinder =
-                MovieFinder(mockk(), mockk(), InMemoryMovieBuffRepository(), mockk())
+                MovieFinder(mockk(), mockk(), repository, MovieFinderConfig())
+            val movieBuff = repository.findAll().first()
 
+            val dmb = movieFinder.analyzeTasteProfile(movieBuff, mockOperationContext)
+            assertEquals(movieBuff, dmb.movieBuff)
+            assertTrue(
+                prompt.captured.contains(movieBuff.name),
+                "Prompt should contain movie buff name '${movieBuff.name}': ${prompt.captured}"
+            )
+            movieBuff.hobbies.forEach { hobby ->
+                assertTrue(
+                    prompt.captured.contains(hobby),
+                    "Prompt should contain movie buff about '${movieBuff.about}': ${prompt.captured}"
+                )
+            }
         }
 
     }
