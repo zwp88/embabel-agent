@@ -34,6 +34,7 @@ import com.embabel.agent.testing.FakeRanker
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.examples.simple.horoscope.HoroscopeService
+import com.embabel.examples.simple.horoscope.java.TestStarNewsFinder
 import com.embabel.examples.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -122,7 +123,7 @@ class AgentPlatformIntegrationTest(
                 wordCount = 100,
                 storyCount = 5,
             ),
-            com.embabel.examples.simple.horoscope.java.StarNewsFinder(horoscopeService, 5),
+            TestStarNewsFinder(horoscopeService, 5),
         ).forEach { agentPlatform.deploy(it) }
     }
 

@@ -42,12 +42,12 @@ import java.util.stream.Collectors;
         description = "Find news based on a person's star sign",
         beanName = "javaStarNewsFinder",
         scan = false)
-public class StarNewsFinder {
+public class TestStarNewsFinder {
 
     private final HoroscopeService horoscopeService;
     private final int storyCount;
 
-    public StarNewsFinder(
+    public TestStarNewsFinder(
             HoroscopeService horoscopeService,
             @Value("${star-news-finder.story.count:5}") int storyCount) {
         this.horoscopeService = horoscopeService;
