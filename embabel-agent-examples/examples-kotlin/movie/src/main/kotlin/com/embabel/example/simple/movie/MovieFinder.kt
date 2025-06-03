@@ -177,7 +177,8 @@ class MovieFinder(
     fun findMovieBuff(userInput: UserInput, context: ActionContext): MovieBuff? {
         return movieBuffRepository.findAll().firstOrNull()
 
-        val fer = movieBuffRepository.naturalLanguageRepository(
+        /*
+	val fer = movieBuffRepository.naturalLanguageRepository(
             context,
             config.llm,
         ).find(
@@ -199,6 +200,7 @@ class MovieFinder(
                 null
             }
         }
+	*/
     }
 
     /**
