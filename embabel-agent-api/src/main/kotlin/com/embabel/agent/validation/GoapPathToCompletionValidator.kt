@@ -59,7 +59,7 @@ class GoapPathToCompletionValidator : AgentValidator {
         agentScope.actions.forEach { action ->
             val nonHasRunPreconditions = action.preconditions.filterKeys { !it.startsWith("hasRun_") }.keys
             val nonHasRunEffects = action.effects.filterKeys { !it.startsWith("hasRun_") }.keys
-            
+
             actionDependencies[action.name] = nonHasRunPreconditions
             actionOutputs[action.name] = nonHasRunEffects
         }

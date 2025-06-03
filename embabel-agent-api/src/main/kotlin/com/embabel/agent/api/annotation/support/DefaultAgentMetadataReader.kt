@@ -19,15 +19,17 @@ import com.embabel.agent.validation.DefaultAgentValidationManager
 import com.embabel.agent.validation.GoapPathToCompletionValidator
 
 /**
- * Test helper for creating AgentMetadataReader instances for testing.
+ * Factory for creating standard AgentMetadataReader instances.
  *
- * This factory provides a controlled test setup with known dependencies
- * (including specific validators) to ensure consistent, isolated test environments.
+ * This factory provides a default implementation of AgentMetadataReader with common dependencies:
+ * - DefaultActionMethodManager for action method handling
+ * - MethodDefinedOperationNameGenerator for operation naming
+ * - DefaultAgentValidationManager with GoapPathToCompletionValidator for validation
  *
- * Usage in tests ensures that changes to dependency wiring can be made in one place,
- * improving maintainability and clarity.
+ * This implementation is suitable for most use cases and provides a consistent way to create
+ * AgentMetadataReader instances across the application.
  */
-object TestAgentMetadataReader {
+object DefaultAgentMetadataReader {
     fun create(): AgentMetadataReader {
         return AgentMetadataReader(
             actionMethodManager = DefaultActionMethodManager(),

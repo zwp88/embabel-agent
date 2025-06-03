@@ -15,7 +15,7 @@
  */
 package com.embabel.examples.dogfood.presentation
 
-import com.embabel.agent.api.annotation.support.TestAgentMetadataReader
+import com.embabel.agent.api.annotation.support.DefaultAgentMetadataReader
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
@@ -40,7 +40,7 @@ class PresentationMakerIntegrationTest {
         val mockSlideFormatter = mockk<SlideFormatter>()
         every { mockSlideFormatter.createHtmlSlides(any(), any()) } returns "presentation.html"
         every { mockEnvironment.activeProfiles } returns arrayOf("test")
-        val agent: Agent = TestAgentMetadataReader.create().createAgentMetadata(
+        val agent: Agent = DefaultAgentMetadataReader.create().createAgentMetadata(
             PresentationMaker(
                 properties = PresentationMakerProperties(),
                 filePersister = mockFilePersister,

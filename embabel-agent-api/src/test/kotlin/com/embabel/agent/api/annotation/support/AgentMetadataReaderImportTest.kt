@@ -29,7 +29,7 @@ class AgentMetadataReaderImportTest {
 
     @Test
     fun `define flow`() {
-        val reader = TestAgentMetadataReader.create()
+        val reader = DefaultAgentMetadataReader.create()
         val agent = reader.createAgentMetadata(DefineFlowTest()) as Agent
         val ap = IntegrationTestUtils.dummyAgentPlatform()
         val result = ap.runAgentFrom(
@@ -44,7 +44,7 @@ class AgentMetadataReaderImportTest {
 
     @Test
     fun `local agent`() {
-        val reader = TestAgentMetadataReader.create()
+        val reader = DefaultAgentMetadataReader.create()
         val agent = reader.createAgentMetadata(LocalAgentTest()) as Agent
         val ap = IntegrationTestUtils.dummyAgentPlatform()
         val result = ap.runAgentFrom(
