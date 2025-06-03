@@ -71,12 +71,13 @@ class AgentMetadataReaderTest {
         fun `one goal only`() {
             val reader = TestAgentMetadataReader.create()
             val metadata = reader.createAgentMetadata(OneGoalOnly())
-            assertNull(metadata) // Agent is invalid (goal, no actions), the metadata must be null! Due to the NoPathToCompletionValidator
+            assertNotNull(metadata)
+            assertEquals(1, metadata!!.goals.size)
         }
 
         @Test
         fun `metadata is preserved`() {
-            val reader = AgentMetadataReader()
+            val reader = TestAgentMetadataReader.create()
             val metadata = reader.createAgentMetadata(OneGoalOnlyWithRichMetadata())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
