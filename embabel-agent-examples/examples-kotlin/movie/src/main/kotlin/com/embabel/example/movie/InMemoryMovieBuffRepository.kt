@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.examples.simple.movie
+package com.embabel.example.movie
 
 import com.embabel.common.util.RandomFromFileMessageGenerator
 import com.embabel.examples.common.InMemoryCrudRepository

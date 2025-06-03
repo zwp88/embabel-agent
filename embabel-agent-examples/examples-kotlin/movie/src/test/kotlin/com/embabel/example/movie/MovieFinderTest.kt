@@ -13,4 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.examples.simple.movie
+package com.embabel.example.movie
+
+import io.mockk.mockk
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+
+class MovieFinderTest {
+
+    @Nested
+    inner class AnalyzeTasteProfile {
+
+        @Test
+        fun `test analyze taste profile`() {
+            val movieFinder =
+                MovieFinder(mockk(), mockk(), InMemoryMovieBuffRepository(), mockk())
+
+        }
+
+    }
+}

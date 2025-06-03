@@ -18,7 +18,9 @@ package com.embabel.agent.testing
 import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.LlmCallRequest
 
-
+/**
+ * Utilities for unit testing agent methods that generate prompts.
+ */
 object UnitTestUtils {
 
     /**

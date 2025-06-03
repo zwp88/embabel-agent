@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.examples.simple.movie
+package com.embabel.example.movie
 
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.ActionContext
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.all
-import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
-import com.embabel.agent.domain.persistence.FindEntitiesRequest
-import com.embabel.agent.domain.support.naturalLanguageRepository
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.common.ai.model.LlmOptions
@@ -218,7 +216,7 @@ class MovieFinder(
     @Action
     fun analyzeTasteProfile(
         movieBuff: MovieBuff,
-        context: ActionContext,
+        context: OperationContext,
     ): DecoratedMovieBuff {
         val tasteProfile = context.promptRunner(config.llm) generateText
                 """

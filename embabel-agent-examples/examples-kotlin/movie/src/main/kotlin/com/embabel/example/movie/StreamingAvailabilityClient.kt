@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.examples.simple.movie
+package com.embabel.example.movie
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
@@ -51,7 +50,7 @@ class StreamingAvailabilityClient(
     }
 
     fun getCountries(): CountriesResponse {
-        val responseType = object : ParameterizedTypeReference<Map<String, Country>>() {}
+        val responseType = object : org.springframework.core.ParameterizedTypeReference<Map<String, Country>>() {}
 
         return restClient.get()
             .uri("countries")

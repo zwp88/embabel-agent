@@ -15,11 +15,13 @@
  */
 package com.embabel.examples.simple.horoscope
 
+import com.embabel.agent.domain.library.NewsStory
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.testing.UnitTestUtils
 import com.embabel.examples.simple.horoscope.kotlin.Horoscope
 import com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder
 import com.embabel.examples.simple.horoscope.kotlin.StarPerson
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -40,21 +42,44 @@ class StarNewsFinderTest {
     @Nested
     inner class Writeup {
 
-        val horoscopeService = FakeHoroscopeService()
-
         @Test
-        fun `writeup must contain person's name`() {
-            val starNewsFinder = StarNewsFinder(horoscopeService = horoscopeService, storyCount = 5, wordCount = 100)
-            val starPerson = StarPerson(name = "Rod", sign = "Cancer")
-            val relevantNewsStories = RelevantNewsStories(emptyList())
+        fun `writeup prompt must contain key data`() {
+            val wordCount = 100
+            val starNewsFinder = StarNewsFinder(
+                horoscopeService = mockk(),
+                storyCount = 5,
+                wordCount = wordCount,
+            )
+            val cockatoos =
+                NewsStory(
+                    url = "https://fake.com.au", title = "Cockatoo behavior",
+                    summary = "Cockatoos are eating cabbages"
+                )
+            val emus =
+                NewsStory(
+                    url = "https://morefake.com.au", title = "Emu movements",
+                    summary = "Emus are massing"
+                )
+            val starPerson = StarPerson(name = "Lynda", sign = "Scorpio")
+            val relevantNewsStories = RelevantNewsStories(listOf(cockatoos, emus))
+
+
             val llmCall = UnitTestUtils.captureLlmCall {
                 starNewsFinder.starNewsWriteup(
                     person = starPerson,
                     relevantNewsStories = relevantNewsStories,
-                    horoscope = Horoscope(horoscopeService.dailyHoroscope("Cancer")),
+                    horoscope = Horoscope("This is a good day for you"),
                 )
             }
             assertTrue(llmCall.prompt.contains(starPerson.name))
+            assertTrue(llmCall.prompt.contains("Scorpio"))
+            assertTrue(llmCall.prompt.contains(cockatoos.summary))
+            assertTrue(llmCall.prompt.contains(emus.summary))
+            assertTrue(llmCall.prompt.contains(wordCount.toString()))
+            assertTrue(
+                llmCall.toolGroups.isEmpty(),
+                "The LLM should not have been given any tool groups",
+            )
         }
     }
 
