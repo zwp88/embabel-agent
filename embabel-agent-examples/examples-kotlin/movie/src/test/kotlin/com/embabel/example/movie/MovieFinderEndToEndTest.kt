@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.e2e
+package com.embabel.example.movie
 
 import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.Agent
