@@ -18,13 +18,13 @@ package com.embabel.examples.simple.horoscope
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
-fun interface HoroscopeService {
+fun interface TestHoroscopeService {
 
     fun dailyHoroscope(sign: String): String
 }
 
 @Service
-class HoroscopeAppApiHoroscopeService : HoroscopeService {
+class HoroscopeAppApiHoroscopeService : TestHoroscopeService {
 
     private val restClient = RestClient.builder()
         .baseUrl("https://horoscope-app-api.vercel.app")

@@ -26,7 +26,7 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.Auto
-import com.embabel.examples.simple.horoscope.HoroscopeService
+import com.embabel.examples.simple.horoscope.TestHoroscopeService
 import com.embabel.ux.form.Text
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
@@ -91,8 +91,8 @@ data class Writeup(
     scan = true,
     beanName = "KotlinStarNewsFinder",
 )
-class StarNewsFinder(
-    private val horoscopeService: HoroscopeService,
+class TestStarNewsFinder(
+    private val horoscopeService: TestHoroscopeService,
     @Value("\${star-news-finder.model:gpt-4.1-mini}")
 //    @Value("\${star-news-finder.model:ai/llama3.2}")
 

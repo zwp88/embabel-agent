@@ -33,7 +33,7 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
-import com.embabel.examples.simple.horoscope.HoroscopeService
+import com.embabel.examples.simple.horoscope.TestHoroscopeService
 import com.embabel.examples.simple.horoscope.java.TestStarNewsFinder
 import com.embabel.examples.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -55,7 +55,7 @@ class FakeConfig {
 
     @Bean
     @Primary
-    fun fakeHoroscopeService() = HoroscopeService {
+    fun fakeHoroscopeService() = TestHoroscopeService {
         """"
             |On Monday, try to avoid being eaten by wolves            .
         """.trimMargin()
@@ -108,7 +108,7 @@ class AgentPlatformIntegrationTest(
     @Autowired
     private val agentMetadataReader: AgentMetadataReader,
     @Autowired
-    private val horoscopeService: HoroscopeService,
+    private val horoscopeService: TestHoroscopeService,
 ) {
 
     private val agentPlatform: AgentPlatform = autonomy.agentPlatform
@@ -118,7 +118,7 @@ class AgentPlatformIntegrationTest(
     @BeforeEach
     fun setup() {
         agentMetadataReader.createAgentScopes(
-            com.embabel.examples.simple.horoscope.kotlin.StarNewsFinder(
+            com.embabel.examples.simple.horoscope.kotlin.TestStarNewsFinder(
                 horoscopeService,
                 wordCount = 100,
                 storyCount = 5,
@@ -156,7 +156,7 @@ class AgentPlatformIntegrationTest(
         fun `run Kotlin star finder as transform by name`() {
             val writeup = typedOps.asFunction<UserInput, HasContent>(
                 outputClass = HasContent::class.java,
-                agentName = "StarNewsFinder",
+                agentName = "TestStarNewsFinder",
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
                 ProcessOptions(test = true),

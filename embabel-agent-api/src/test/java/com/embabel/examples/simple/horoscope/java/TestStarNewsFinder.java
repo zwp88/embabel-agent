@@ -28,7 +28,7 @@ import com.embabel.agent.domain.library.PersonImpl;
 import com.embabel.agent.domain.library.RelevantNewsStories;
 import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.common.ai.model.ModelSelectionCriteria;
-import com.embabel.examples.simple.horoscope.HoroscopeService;
+import com.embabel.examples.simple.horoscope.TestHoroscopeService;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.stream.Collectors;
@@ -44,11 +44,11 @@ import java.util.stream.Collectors;
         scan = false)
 public class TestStarNewsFinder {
 
-    private final HoroscopeService horoscopeService;
+    private final TestHoroscopeService horoscopeService;
     private final int storyCount;
 
     public TestStarNewsFinder(
-            HoroscopeService horoscopeService,
+            TestHoroscopeService horoscopeService,
             @Value("${star-news-finder.story.count:5}") int storyCount) {
         this.horoscopeService = horoscopeService;
         this.storyCount = storyCount;
