@@ -369,8 +369,15 @@ using Maven directly:
 
 ```bash
 export SPRING_PROFILES_ACTIVE=shell,starwars
-mvn spring-boot:run
+mvn -P agent-examples-kotlin -Dmaven.test.skip=true spring-boot:run
 ```
+
+Note the `agent-examples-kotlin` Maven profile set via `-P`. If this is not set,
+Embabel will not find the example agents, which are outside the main source tree.
+
+If running in an IDE, you'll need to set this profile also.
+In IntelliJ, activate it by checking the appropriate box
+that appears after going through the menu options _View -> Tool Windows - > Maven_.
 
 > The export is separate from the mvn command to avoid Spring Shell trying to process the profiles as a command.
 
@@ -767,6 +774,7 @@ This file also informs coding agent behavior.
 - README badges come from [here](https://github.com/Ileriayo/markdown-badges).
 
 ## Star history
+
 [![Star History Chart](https://api.star-history.com/svg?repos=embabel/embabel-agent&type=Date)](https://star-history.com/#embabel/embabel-agent&Date)
 
 
