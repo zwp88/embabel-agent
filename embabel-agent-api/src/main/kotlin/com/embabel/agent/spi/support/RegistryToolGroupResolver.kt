@@ -37,10 +37,7 @@ class RegistryToolGroupResolver(
 
     init {
         logger.info(
-            "{}: {} available tool groups: {}",
-            name,
-            toolGroups.size,
-            "\n\t" + toolGroups.sortedBy { it.metadata.role }.joinToString("\n\t") { it.infoString(verbose = true) },
+            infoString(verbose = true)
         )
     }
 
@@ -72,5 +69,18 @@ class RegistryToolGroupResolver(
                 resolvedToolGroup = group,
             )
         }
+    }
+
+    override fun toString(): String {
+        return "RegistryToolGroupResolver(name='$name', ${toolGroups.size} toolGroups: ${toolGroups.joinToString(", ") { it.metadata.role }})"
+    }
+
+    override fun infoString(verbose: Boolean?): String {
+        if (verbose == false) {
+            return "RegistryToolGroupResolver(name='$name', ${toolGroups.size} tool groups)"
+        }
+        return "RegistryToolGroupResolver: name='$name', ${toolGroups.size} available tool groups:\n\t${
+            toolGroups.sortedBy { it.metadata.role }.joinToString("\n\t") { it.infoString(verbose = true) }
+        }"
     }
 }

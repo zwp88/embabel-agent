@@ -137,6 +137,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-bedrock-converse</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-autoconfigure-model-bedrock-ai</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
         </dependency>
@@ -241,5 +251,55 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <!-- This is required for shell to discover Sample Agents -->
+        <profile>
+            <id>agent-examples-kotlin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                     <groupId>com.embabel.agent.example.kotlin</groupId>
+                     <artifactId>dogfood</artifactId>
+                     <version>${project.version}</version>
+                     <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                     <groupId>com.embabel.agent.example.kotlin</groupId>
+                     <artifactId>horoscope</artifactId>
+                     <version>${project.version}</version>
+                     <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                     <groupId>com.embabel.agent.example.kotlin</groupId>
+                     <artifactId>movie</artifactId>
+                     <version>${project.version}</version>
+                     <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                     <groupId>com.embabel.agent.example.kotlin</groupId>
+                     <artifactId>travel</artifactId>
+                     <version>${project.version}</version>
+                     <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>agent-examples-java</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                     <groupId>com.embabel.agent.example.java</groupId>
+                     <artifactId>horoscope</artifactId>
+                     <version>${project.version}</version>
+                     <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>

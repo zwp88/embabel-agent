@@ -1,11 +1,11 @@
 # Embabel Agent Framework
 
 ![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
+[![Discord](https://img.shields.io/discord/1277751399261798401?logo=discord)](https://discord.gg/Sy3XSc6f)
 
 [//]: # ([![Quality Gate Status]&#40;https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=alert_status&token=d275d89d09961c114b8317a4796f84faf509691c&#41;]&#40;https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent&#41;)
 
 [//]: # ([![Bugs]&#40;https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=bugs&#41;]&#40;https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent&#41;)
-
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
@@ -316,7 +316,8 @@ Developers must carefully read all code they commit and improve generated code i
 Choose one of the following:
 
 - Clone the repository via `git clone https://github.com/embabel/embabel-agent`
-- Create a new Spring Boot project and add the necessary dependencies (TODO)
+- Create a new Spring Boot project and add the necessary dependencies (see "Using Embabel Agent Framework in Your
+  Project" below)
 
 ### Environment variables
 
@@ -353,7 +354,7 @@ endpoint and make all models available.
 
 ### Running
 
-The easiest way to run the application using using one of the scripts in the
+The easiest way to run the application using one of the scripts in the
 `scripts` directory. You can start the shell in interactive mode with:
 
 ```bash
@@ -368,8 +369,15 @@ using Maven directly:
 
 ```bash
 export SPRING_PROFILES_ACTIVE=shell,starwars
-mvn spring-boot:run
+mvn -P agent-examples-kotlin -Dmaven.test.skip=true spring-boot:run
 ```
+
+Note the `agent-examples-kotlin` Maven profile set via `-P`. If this is not set,
+Embabel will not find the example agents, which are outside the main source tree.
+
+If running in an IDE, you'll need to set this profile also.
+In IntelliJ, activate it by checking the appropriate box
+that appears after going through the menu options _View -> Tool Windows - > Maven_.
 
 > The export is separate from the mvn command to avoid Spring Shell trying to process the profiles as a command.
 
@@ -386,7 +394,7 @@ run the flow. `-p` will log prompts `-r` will log LLM responses.
 Omit these for less verbose logging.
 
 Use the `chat` command to enter an interactive chat with the agent.
-It will retain conversation history and attempt to run the most appropriate
+It will retain conversation history, and attempt to run the most appropriate
 agent for each command.
 
 > Spring Shell supports history. Type `!!` to repeat the last command.
@@ -406,7 +414,7 @@ x "fact check the following: holden cars are still made in australia; the koel i
 
 ```
 
-Try the [coding agent](https://www.github.com/embabel/embabel-coding-agent) with commands such as:
+Try the [coding agent](https://www.github.com/embabel/embabel-coding-agent) (separate repo) with commands such as:
 
 ```
 
@@ -629,9 +637,12 @@ If none of these profiles is chosen, vanilla logging will occur. This makes me s
 
 ## Using Embabel Agent Framework in Your Project
 
+### Maven
+
 Add Embabel Agent BOM to your `pom.xml`:
 
 ```xml
+
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -648,6 +659,7 @@ Add Embabel Agent BOM to your `pom.xml`:
 Add module(s) of interest such as embabel-agent-api compile dependency to your `pom.xml`
 
 ```xml
+
 <dependencies>
     <dependency>
         <groupId>com.embabel.agent</groupId>
@@ -656,12 +668,80 @@ Add module(s) of interest such as embabel-agent-api compile dependency to your `
 </dependencies>
 ```
 
+### Gradle (Kotlin DSL)
+
+Add the required repositories to your `build.gradle.kts`:
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        name = "embabel-snapshots"
+        url = uri("https://repo.embabel.com/artifactory/libs-snapshot")
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
+    maven {
+        name = "Spring Milestones"
+        url = uri("https://repo.spring.io/milestone")
+    }
+}
+```
+
+Add the Embabel Agent BOM (`embabel-agent-dependencies`) and module(s) of interest such as `embabel-agent-api`:
+
+```kotlin
+dependencies {
+    implementation(platform("com.embabel.agent:embabel-agent-dependencies:1.0.0-SNAPSHOT"))
+    implementation("com.embabel.agent:embabel-agent-api:1.0.0-SNAPSHOT")
+}
+```
+
+### Gradle (Groovy DSL)
+
+Add the required repositories to your `build.gradle`:
+
+```groovy
+repositories {
+    mavenCentral()
+    maven {
+        name = 'embabel-snapshots'
+        url = 'https://repo.embabel.com/artifactory/libs-snapshot'
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
+    maven {
+        name = 'Spring Milestones'
+        url = 'https://repo.spring.io/milestone'
+    }
+}
+```
+
+Add the Embabel Agent BOM (`embabel-agent-dependencies`) and module(s) of interest such as `embabel-agent-api`:
+
+```groovy
+dependencies {
+    implementation platform('com.embabel.agent:embabel-agent-dependencies:1.0.0-SNAPSHOT')
+    implementation 'com.embabel.agent:embabel-agent-api:1.0.0-SNAPSHOT'
+}
+```
+
+> **Note:** The Spring Milestones repository is required because the Embabel BOM (`embabel-agent-dependencies`) has
+> transitive dependencies on experimental Spring components, specifically the `mcp-bom`. This BOM is not available on
+> Maven Central and is only published to the Spring milestone repository. Unlike Maven, Gradle does not inherit
+> repository
+> configurations declared in parent POMs or BOMs. Therefore, it is necessary to explicitly declare the Spring milestone
+> repository in your repositories block to ensure proper resolution of all transitive dependencies.
+
 ## Repository
 
 Binary Packages are located in Embabel Maven Repository.
 You would need to add Embabel Snapshot Repository to your pom.xml or configure in settings.xml
 
 ```xml
+
 <repositories>
     <repository>
         <id>embabel-snapshots</id>
@@ -670,7 +750,7 @@ You would need to add Embabel Snapshot Repository to your pom.xml or configure i
             <enabled>true</enabled>
         </snapshots>
     </repository>
-<repositories>
+</repositories>
 ```
 
 ## Contributing
@@ -692,6 +772,11 @@ This file also informs coding agent behavior.
 - Milestone names are Australian animals. Mythical animals such as "bunyip" and "yowie" are used for futures that may or
   not be implemented.
 - README badges come from [here](https://github.com/Ileriayo/markdown-badges).
+
+## Star history
+
+[![Star History Chart](https://api.star-history.com/svg?repos=embabel/embabel-agent&type=Date)](https://star-history.com/#embabel/embabel-agent&Date)
+
 
 --------------------
 (c) Embabel Software Inc 2024-2025.

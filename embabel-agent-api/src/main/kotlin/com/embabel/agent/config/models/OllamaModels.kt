@@ -36,7 +36,7 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 
 /**
- * Ollama local models.
+ * Load Ollama local models, both LLMs and embedding models.
  * This class will always be loaded, but models won't be loaded
  * from Ollama unless the "ollama" profile is set.
  */
@@ -94,7 +94,6 @@ class OllamaModels(
 
     @PostConstruct
     fun registerModels() {
-        val activeProfiles = environment.activeProfiles
         if (!environment.activeProfiles.contains(OLLAMA_PROFILE)) {
             logger.info("Ollama models will not be queried as the '{}' profile is not active", OLLAMA_PROFILE)
             return
@@ -112,18 +111,25 @@ class OllamaModels(
         models.forEach { model ->
             try {
                 val beanName = "ollamaModel-${model.name}"
-
                 if (configuredEmbeddingModelNames.contains(model.model)) {
-                    val embeddingModel = ollamaEmbeddingModelOf(model.model)
+                    val embeddingService = ollamaEmbeddingServiceOf(model.model)
                     val embeddingBeanName = "ollamaEmbeddingModel-${model.name}"
-                    configurableBeanFactory.registerSingleton(embeddingBeanName, embeddingModel)
-                    logger.debug("Successfully registered Ollama embedding model {} as bean {}", model.name, embeddingBeanName)
+                    configurableBeanFactory.registerSingleton(embeddingBeanName, embeddingService)
+                    logger.debug(
+                        "Successfully registered Ollama embedding service {} as bean {}",
+                        model.name,
+                        embeddingBeanName,
+                    )
                 } else {
-                    val llmModel = ollamaModelOf(model.model)
+                    val llm = ollamaLlmOf(model.model)
 
                     // Use registerSingleton with a more descriptive bean name
-                    configurableBeanFactory.registerSingleton(beanName, llmModel)
-                    logger.debug("Successfully registered Ollama model {} as bean {}", model.name, beanName)
+                    configurableBeanFactory.registerSingleton(beanName, llm)
+                    logger.debug(
+                        "Successfully registered Ollama LLM {} as bean {}",
+                        model.name,
+                        beanName,
+                    )
                 }
             } catch (e: Exception) {
                 logger.error("Failed to register Ollama model {}: {}", model.name, e.message)
@@ -131,8 +137,8 @@ class OllamaModels(
         }
     }
 
-    private fun ollamaModelOf(name: String): Llm {
-        val chatModel = OllamaChatModel.builder()
+    private fun ollamaLlmOf(name: String): Llm {
+        val springChatModel = OllamaChatModel.builder()
             .ollamaApi(
                 OllamaApi.builder()
                     .baseUrl(baseUrl)
@@ -147,21 +153,25 @@ class OllamaModels(
 
         return Llm(
             name = name,
-            model = chatModel,
+            model = springChatModel,
             provider = PROVIDER,
             pricingModel = PricingModel.ALL_YOU_CAN_EAT
         )
     }
 
-    private fun ollamaEmbeddingModelOf(name: String): EmbeddingService {
-        val embeddingModel = OllamaEmbeddingModel.builder()
-            .ollamaApi(OllamaApi.builder().baseUrl(baseUrl).build())
-            .defaultOptions(OllamaOptions.builder().model(name).build())
+
+    private fun ollamaEmbeddingServiceOf(name: String): EmbeddingService {
+        val springEmbeddingModel = OllamaEmbeddingModel.builder()
+            .ollamaApi(
+                OllamaApi.builder()
+                    .baseUrl(baseUrl)
+                    .build()
+            )
             .build()
 
         return EmbeddingService(
             name = name,
-            model = embeddingModel,
+            model = springEmbeddingModel,
             provider = PROVIDER,
         )
     }

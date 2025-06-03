@@ -20,10 +20,8 @@ import com.embabel.agent.api.common.*
 import com.embabel.agent.api.common.support.*
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.Rerun
-import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.util.loggerFor
-import org.springframework.ai.tool.ToolCallback
 import java.util.function.Function as JavaFunction
 
 inline fun <reified A, reified B : Any> doSplit(
@@ -352,8 +350,8 @@ data class BiInputActionContext<A1, A2>(
 
     override val inputs: List<Any> get() = listOfNotNull(input1, input2)
 
-    override fun toolCallbacksOnDomainObjects(): List<ToolCallback> =
-        safelyGetToolCallbacks(setOfNotNull(input1, input2))
+    override fun domainObjectInstances(): List<Any> =
+        listOfNotNull(input1, input2)
 }
 
 inline fun <reified A1, reified A2, reified B : Any, reified C> biAggregate(

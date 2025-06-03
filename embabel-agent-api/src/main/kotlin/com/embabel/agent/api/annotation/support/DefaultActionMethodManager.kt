@@ -96,9 +96,6 @@ internal class DefaultActionMethodManager(
     ): O {
         logger.debug("Invoking action method {} with payload {}", method.name, context.input)
 
-        val toolCallbacksToUse = context.toolCallbacksOnDomainObjects()
-        logger.debug("Tool callbacks on domain objects: {}", toolCallbacksToUse)
-
         var args = context.input.toTypedArray()
         if (method.parameters.any { OperationContext::class.java.isAssignableFrom(it.type) }) {
             // We need to add the payload as the last argument
@@ -115,8 +112,7 @@ internal class DefaultActionMethodManager(
                 llm = cope.llm ?: LlmOptions(),
                 // Remember to add tool groups from the context to those the exception specified at the call site
                 toolGroups = cope.toolGroups + context.toolGroups,
-                toolCallbacks = toolCallbacksToUse,
-                toolObjects = cope.toolObjects,
+                toolObjects = (cope.toolObjects + context.domainObjectInstances()).distinct(),
                 promptContributors = promptContributors,
                 generateExamples = cope.generateExamples == true,
             )

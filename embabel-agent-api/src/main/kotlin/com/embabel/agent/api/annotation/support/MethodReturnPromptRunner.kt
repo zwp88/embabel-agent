@@ -21,7 +21,6 @@ import com.embabel.agent.api.common.PromptRunner
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * PromptRunner implementation that can be used to return a value
@@ -30,13 +29,10 @@ import org.springframework.ai.tool.ToolCallback
 internal data class MethodReturnPromptRunner(
     override val llm: LlmOptions?,
     override val toolGroups: Set<String>,
-    override val toolCallbacks: List<ToolCallback>,
     override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
     override val generateExamples: Boolean?,
 ) : PromptRunner {
-
-    override val name = "MethodReturnPromptRunner"
 
     override fun <T> createObject(
         prompt: String,
@@ -48,7 +44,7 @@ internal data class MethodReturnPromptRunner(
             requireResult = true,
             outputClass = outputClass,
             toolGroups = toolGroups,
-            toolCallbacks = toolCallbacks,
+            toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
         )
@@ -64,7 +60,7 @@ internal data class MethodReturnPromptRunner(
             requireResult = false,
             outputClass = outputClass,
             toolGroups = toolGroups,
-            toolCallbacks = toolCallbacks,
+            toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
         )
@@ -82,7 +78,7 @@ internal data class MethodReturnPromptRunner(
             llm = llm,
             requireResult = false,
             toolGroups = toolGroups,
-            toolCallbacks = toolCallbacks,
+            toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
         )

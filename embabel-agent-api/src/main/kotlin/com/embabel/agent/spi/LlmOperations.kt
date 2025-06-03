@@ -18,6 +18,7 @@ package com.embabel.agent.spi
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ToolConsumer
+import com.embabel.agent.core.ToolGroupConsumer
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
@@ -37,17 +38,23 @@ value class InteractionId(val value: String) {
 
 /**
  * Spec for calling an LLM. Optional LlmOptions,
- * plus tool callbacks and prompt contributors.
+ * plus tool groups and prompt contributors.
  */
-interface LlmCall : PromptContributorConsumer, ToolConsumer {
+interface LlmUse : PromptContributorConsumer, ToolGroupConsumer {
     val llm: LlmOptions?
-    override val promptContributors: List<PromptContributor>
 
     /**
      * Whether to generate examples for the prompt.
      * Defaults to unknown: Set to false if generating your own examples.
      */
     val generateExamples: Boolean?
+}
+
+/**
+ * Spec for calling an LLM. Optional LlmOptions,
+ * plus tool callbacks and prompt contributors.
+ */
+interface LlmCall : LlmUse, ToolConsumer {
 
     companion object {
         operator fun invoke(): LlmCall = LlmCallImpl(name = MobyNameGenerator.generateName())

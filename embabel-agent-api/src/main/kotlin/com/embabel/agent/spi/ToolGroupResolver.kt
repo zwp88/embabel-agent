@@ -17,8 +17,9 @@ package com.embabel.agent.spi
 
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.core.ToolGroupResolution
+import com.embabel.common.core.types.HasInfoString
 
-interface ToolGroupResolver {
+interface ToolGroupResolver : HasInfoString {
 
     val name: String
 

@@ -15,12 +15,14 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.event.AgentProcessToolCallRequestEvent
+import com.embabel.agent.event.ToolCallRequestEvent
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.time
+import io.micrometer.observation.ObservationRegistry
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
@@ -30,39 +32,59 @@ import java.time.Duration
  */
 class DefaultToolDecorator(
     private val toolGroupResolver: ToolGroupResolver? = null,
+    private val observationRegistry: ObservationRegistry? = null,
 ) : ToolDecorator {
 
     override fun decorate(
         tool: ToolCallback,
         agentProcess: AgentProcess,
+        action: Action?,
         llmOptions: LlmOptions,
     ): ToolCallback {
         val toolGroup = toolGroupResolver?.findToolGroupForTool(toolName = tool.toolDefinition.name())
-        return MetadataEnrichedToolCallback(
-            toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
-            delegate = tool,
+        return ObservabilityToolCallback(
+            delegate = MetadataEnrichedToolCallback(
+                toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
+                delegate = tool,
+            )
+                .withEventPublication(
+                    agentProcess = agentProcess,
+                    action = action,
+                    llmOptions = llmOptions,
+                ),
+            observationRegistry = observationRegistry,
         )
-            .withEventPublication(agentProcess, llmOptions)
     }
 }
 
 /**
  * HOF to decorate a ToolCallback to time the call and emit events.
  */
-fun ToolCallback.withEventPublication(agentProcess: AgentProcess, llmOptions: LlmOptions): ToolCallback =
-    this as? EventPublishingToolCallback ?: EventPublishingToolCallback(this, agentProcess, llmOptions)
+fun ToolCallback.withEventPublication(
+    agentProcess: AgentProcess,
+    action: Action?,
+    llmOptions: LlmOptions
+): ToolCallback =
+    this as? EventPublishingToolCallback ?: EventPublishingToolCallback(
+        delegate = this,
+        agentProcess = agentProcess,
+        action = action,
+        llmOptions = llmOptions,
+    )
 
 class EventPublishingToolCallback(
     private val delegate: ToolCallback,
     private val agentProcess: AgentProcess,
+    private val action: Action?,
     private val llmOptions: LlmOptions,
 ) : ToolCallback {
 
     override fun getToolDefinition(): ToolDefinition = delegate.toolDefinition
 
     override fun call(toolInput: String): String {
-        val functionCallRequestEvent = AgentProcessToolCallRequestEvent(
+        val functionCallRequestEvent = ToolCallRequestEvent(
             agentProcess = agentProcess,
+            action = action,
             llmOptions = llmOptions,
             function = delegate.toolDefinition.name(),
             toolGroupMetadata = (delegate as? MetadataEnrichedToolCallback)?.toolGroupMetadata,

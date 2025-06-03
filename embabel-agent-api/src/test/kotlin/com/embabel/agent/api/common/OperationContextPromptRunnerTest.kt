@@ -54,7 +54,6 @@ class OperationContextPromptRunnerTest {
             context = mockOperationContext,
             llm = LlmOptions(),
             toolGroups = emptySet(),
-            toolCallbacks = emptyList(),
             toolObjects = emptyList(),
             promptContributors = emptyList(),
             generateExamples = false,

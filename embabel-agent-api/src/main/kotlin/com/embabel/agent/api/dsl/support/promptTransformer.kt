@@ -65,7 +65,6 @@ fun <I, O : Any> promptTransformer(
         it.promptRunner(
             llm = llm,
             toolGroups = toolGroups,
-            toolCallbacks = toolCallbacks.toList(),
             promptContributors = promptContributors,
         ).createObject(
             prompt = prompt(it),

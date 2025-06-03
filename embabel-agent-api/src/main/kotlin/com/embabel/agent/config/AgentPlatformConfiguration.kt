@@ -16,6 +16,7 @@
 package com.embabel.agent.config
 
 import com.embabel.agent.core.ToolGroup
+import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
@@ -27,11 +28,14 @@ import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
+import com.embabel.common.util.loggerFor
+import io.micrometer.observation.ObservationRegistry
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Primary
 import org.springframework.shell.jline.PromptProvider
 import org.springframework.web.client.RestTemplate
 
@@ -50,9 +54,20 @@ internal class AgentPlatformConfiguration(
     fun nameGenerator(): NameGenerator = MobyNameGenerator
 
     @Bean
-    fun toolDecorator(toolGroupResolver: ToolGroupResolver): ToolDecorator = DefaultToolDecorator(
-        toolGroupResolver,
-    )
+    fun toolDecorator(
+        toolGroupResolver: ToolGroupResolver,
+        observationRegistry: ObservationRegistry
+    ): ToolDecorator {
+        loggerFor<AgentPlatformConfiguration>().info(
+            "Creating default ToolDecorator with toolGroupResolver: {}, observationRegistry: {}",
+            toolGroupResolver.infoString(verbose = false),
+            observationRegistry,
+        )
+        return DefaultToolDecorator(
+            toolGroupResolver,
+            observationRegistry,
+        )
+    }
 
     @Bean
     fun templateRenderer(): TemplateRenderer = JinjavaTemplateRenderer()
@@ -63,6 +78,11 @@ internal class AgentPlatformConfiguration(
     @Bean
     @ConditionalOnMissingBean(LoggingAgenticEventListener::class)
     fun defaultLogger(): LoggingAgenticEventListener = LoggingAgenticEventListener()
+
+    @Bean
+    @Primary
+    fun eventListener(listeners: List<AgenticEventListener>): AgenticEventListener =
+        AgenticEventListener.from(listeners)
 
     /**
      * Fallback if we don't have a more interesting prompt provider
@@ -89,7 +109,7 @@ internal class AgentPlatformConfiguration(
 
     @Bean
     fun toolGroupResolver(toolGroups: List<ToolGroup>): ToolGroupResolver = RegistryToolGroupResolver(
-        name = "RegistryToolGroupResolver",
+        name = "SpringBeansToolGroupResolver",
         toolGroups
     )
 
@@ -101,12 +121,12 @@ internal class AgentPlatformConfiguration(
         ProcessOptionsOperationScheduler()
 
     /**
-     * Ollama and Docker models won't be loaded unless the profile is set.
+     * Ollama, Docker and Bedrock models won't be loaded unless the profile is set.
      * However, we need to depend on them to make sure any LLMs they
-     * might created get injected here
+     * might create get injected here
      */
     @Bean
-    @DependsOn("ollamaModels", "dockerLocalModels")
+    @DependsOn("ollamaModels", "dockerLocalModels", "bedrockModels")
     fun modelProvider(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,
