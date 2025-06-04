@@ -27,9 +27,9 @@ import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.Semver
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
-import com.embabel.examples.dogfood.factchecker.FactCheck
-import com.embabel.examples.dogfood.factchecker.FactCheckerProperties
-import com.embabel.examples.dogfood.factchecker.factCheckerAgent
+import com.embabel.example.dogfood.factchecker.FactCheck
+import com.embabel.example.dogfood.factchecker.FactCheckerProperties
+import com.embabel.example.dogfood.factchecker.factCheckerAgent
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested

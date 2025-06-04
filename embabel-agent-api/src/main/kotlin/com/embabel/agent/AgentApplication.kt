@@ -25,13 +25,13 @@ import org.springframework.context.annotation.ComponentScan
 @ConfigurationPropertiesScan(
     basePackages = [
         "com.embabel.agent",
-        "com.embabel.examples",
+        "com.embabel.example",
     ]
 )
 @ComponentScan(
     basePackages = [
         "com.embabel.agent",
-        "com.embabel.examples",
+        "com.embabel.example",
     ]
 )
 class AgentApplication {

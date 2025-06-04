@@ -33,9 +33,9 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.FakeRanker
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
-import com.embabel.examples.simple.horoscope.TestHoroscopeService
-import com.embabel.examples.simple.horoscope.java.TestStarNewsFinder
-import com.embabel.examples.simple.horoscope.kotlin.Writeup
+import com.embabel.example.simple.horoscope.TestHoroscopeService
+import com.embabel.example.simple.horoscope.java.TestStarNewsFinder
+import com.embabel.example.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -118,7 +118,7 @@ class AgentPlatformIntegrationTest(
     @BeforeEach
     fun setup() {
         agentMetadataReader.createAgentScopes(
-            com.embabel.examples.simple.horoscope.kotlin.TestStarNewsFinder(
+            com.embabel.example.simple.horoscope.kotlin.TestStarNewsFinder(
                 horoscopeService,
                 wordCount = 100,
                 storyCount = 5,
