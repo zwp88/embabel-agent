@@ -24,6 +24,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNull
 
 class AgentMetadataReaderGoalsTest {
 
