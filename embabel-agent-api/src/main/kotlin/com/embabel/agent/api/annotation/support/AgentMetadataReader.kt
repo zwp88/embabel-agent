@@ -25,6 +25,8 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.agent.validation.AgentValidationManager
+import com.embabel.agent.validation.DefaultAgentValidationManager
+import com.embabel.agent.validation.GoapPathToCompletionValidator
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Semver
 import com.embabel.common.util.NameUtils
@@ -77,9 +79,13 @@ data class AgenticInfo(
  */
 @Service
 class AgentMetadataReader(
-    private val actionMethodManager: ActionMethodManager,
-    private val nameGenerator: MethodDefinedOperationNameGenerator,
-    private val agentValidationManager: AgentValidationManager
+    private val actionMethodManager: ActionMethodManager = DefaultActionMethodManager(),
+    private val nameGenerator: MethodDefinedOperationNameGenerator = MethodDefinedOperationNameGenerator(),
+    private val agentValidationManager: AgentValidationManager = DefaultAgentValidationManager(
+        listOf(
+            GoapPathToCompletionValidator()
+        )
+    )
 ) {
     private val logger = LoggerFactory.getLogger(AgentMetadataReader::class.java)
 

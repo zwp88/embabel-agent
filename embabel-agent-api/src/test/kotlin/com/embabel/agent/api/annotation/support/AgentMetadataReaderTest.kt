@@ -34,14 +34,14 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `no annotation`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(PersonWithReverseTool("John Doe"))
             assertNull(metadata)
         }
 
         @Test
         fun `no methods`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             assertNull(reader.createAgentMetadata(NoMethods()))
         }
 
@@ -52,13 +52,13 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `invalid action signature returning interface without serialization annotation`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             assertNull(reader.createAgentMetadata(InvalidActionNoDeserializationInInterfaceGoal()))
         }
 
         @Test
         fun `valid action signature returning interface with serialization annotation`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             assertNotNull(reader.createAgentMetadata(ValidActionWithDeserializationInInterfaceGoal()))
         }
 
@@ -69,7 +69,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `one goal only`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(OneGoalOnly())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
@@ -77,7 +77,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `metadata is preserved`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(OneGoalOnlyWithRichMetadata())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
@@ -89,7 +89,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `two goals only`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(TwoGoalsOnly())
             assertNotNull(metadata)
             assertEquals(2, metadata!!.goals.size)
@@ -106,7 +106,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `action goal requires output of action method`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(ActionGoal())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
@@ -120,7 +120,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `action goal requires action method to have run`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(ActionGoal())
             assertNotNull(metadata)
             assertEquals(1, metadata!!.goals.size)
@@ -141,7 +141,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `two distinct action goals`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(TwoActionGoals())
             assertNotNull(metadata)
             assertEquals(2, metadata!!.goals.size)
@@ -171,7 +171,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `two actually non conflicting action goals with different inputs but same output`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(TwoActuallyNonConflictingActionGoalsWithSameOutput())
             assertNotNull(metadata)
             assertEquals(2, metadata!!.goals.size)
@@ -207,7 +207,7 @@ class AgentMetadataReaderTest {
         @Test
         @Disabled("must decide what behavior should be")
         fun `two conflicting action goals`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(TwoConflictingActionGoals())
             TODO("decide what to do here: this invalid")
         }
@@ -219,7 +219,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `not an agent`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(OneTransformerActionOnly())
             assertNotNull(metadata)
             assertFalse(metadata!! is CoreAgent)
@@ -227,7 +227,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `recognize an agent`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnly())
             assertNotNull(metadata)
             assertTrue(metadata is CoreAgent, "@Agent should create an agent")
@@ -241,7 +241,7 @@ class AgentMetadataReaderTest {
 
         @Test
         fun `support agent with custom name, provider and version`() {
-            val reader = DefaultAgentMetadataReader.create()
+            val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(AgentWithCustomName())
             assertNotNull(metadata)
             assertTrue(metadata is CoreAgent, "@Agent should create an agent")

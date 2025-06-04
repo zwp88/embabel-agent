@@ -15,7 +15,7 @@
  */
 package com.embabel.example.movie
 
-import com.embabel.agent.api.annotation.support.DefaultAgentMetadataReader
+import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.domain.io.UserInput
@@ -56,7 +56,7 @@ class MovieFinderEndToEndTest {
             mockOmdbClient, mockStreamingAvailabilityClient, movieBuffRepository,
             MovieFinderConfig()
         )
-        val movieAgent = DefaultAgentMetadataReader.create().createAgentMetadata(mf) as Agent
+        val movieAgent = AgentMetadataReader().createAgentMetadata(mf) as Agent
         val result = ap.runAgentWithInput(
             agent = movieAgent,
             input = UserInput("Rod wants to watch a movie with his friends"),
@@ -78,7 +78,7 @@ class MovieFinderEndToEndTest {
             mockOmdbClient, mockStreamingAvailabilityClient, movieBuffRepository,
             MovieFinderConfig()
         )
-        val movieAgent = DefaultAgentMetadataReader.create().createAgentMetadata(mf) as Agent
+        val movieAgent = AgentMetadataReader().createAgentMetadata(mf) as Agent
         val result = ap.runAgentWithInput(
             agent = movieAgent,
             input = UserInput("Rod wants to watch a movie with his friends"),
