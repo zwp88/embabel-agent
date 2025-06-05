@@ -13,6 +13,19 @@
     <description>Embabel Agent Rag</description>
 
     <dependencies>
+        <!-- Main Dependencies -->
+        <dependency>
+            <groupId>com.embabel.common</groupId>
+            <artifactId>embabel-common-ai</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-vector-store</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-neo4j-store</artifactId>
+        </dependency>
         <!-- Test Dependencies -->
         <dependency>
             <groupId>com.embabel.agent</groupId>
