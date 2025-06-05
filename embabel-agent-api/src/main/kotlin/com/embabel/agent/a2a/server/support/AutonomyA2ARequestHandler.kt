@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.a2a.server.support
 
-import com.embabel.agent.a2a.server.A2AMessageHandler
 import com.embabel.agent.a2a.server.A2ARequestEvent
+import com.embabel.agent.a2a.server.A2ARequestHandler
 import com.embabel.agent.a2a.server.A2AResponseEvent
 import com.embabel.agent.a2a.spec.*
 import com.embabel.agent.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND
@@ -36,13 +36,13 @@ import java.util.*
  */
 @Service
 @Profile("a2a")
-class AutonomyA2AMessageHandler(
+class AutonomyA2ARequestHandler(
     private val autonomy: Autonomy,
     private val agenticEventListener: AgenticEventListener,
     private val objectMapper: ObjectMapper,
-) : A2AMessageHandler {
+) : A2ARequestHandler {
 
-    private val logger = LoggerFactory.getLogger(A2AMessageHandler::class.java)
+    private val logger = LoggerFactory.getLogger(A2ARequestHandler::class.java)
 
     override fun handleJsonRpc(
         request: JSONRPCRequest

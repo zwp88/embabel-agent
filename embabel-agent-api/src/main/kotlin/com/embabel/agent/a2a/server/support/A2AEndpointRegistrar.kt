@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.a2a.server
+package com.embabel.agent.a2a.server.support
 
+import com.embabel.agent.a2a.server.AgentCardHandler
 import com.embabel.agent.a2a.spec.AgentCard
 import com.embabel.agent.a2a.spec.JSONRPCRequest
 import jakarta.servlet.ServletRequest
@@ -31,10 +32,10 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
-
 /**
  * Registers A2A endpoints for the agent-to-agent communication protocol.
- * Endpoints correspond to AgentCardHandler beans.
+ * Each AgentCardHandler passed in results in the creation of
+ * a distinct endpoint with its own agent card.
  */
 @Component
 @Profile("a2a")

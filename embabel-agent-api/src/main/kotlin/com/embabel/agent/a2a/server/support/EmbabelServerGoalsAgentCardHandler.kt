@@ -13,41 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.a2a.server
+package com.embabel.agent.a2a.server.support
 
-import com.embabel.agent.a2a.server.support.FromGoalsAgentSkillFactory
-import com.embabel.agent.a2a.spec.*
+import com.embabel.agent.a2a.server.A2ARequestHandler
+import com.embabel.agent.a2a.server.AgentCardHandler
+import com.embabel.agent.a2a.spec.AgentCapabilities
+import com.embabel.agent.a2a.spec.AgentCard
+import com.embabel.agent.a2a.spec.AgentProvider
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
-import io.swagger.v3.oas.annotations.media.Schema
+import com.embabel.agent.core.Goal
+import com.embabel.common.core.types.Semver
 import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.RequestBody
+
+typealias GoalFilter = (Goal) -> Boolean
+
+const val DEFAULT_A2A_PATH = "a2a"
 
 /**
- * Expose A2A endpoints for the agent-to-agent communication protocol.
+ * Expose one agent card for the whole server.
+ * @param path Relative path of the endpoint (under the root)
  */
-class DefaultAgentCardHandler(
-    override val path: String,
+class EmbabelServerGoalsAgentCardHandler(
+    override val path: String = DEFAULT_A2A_PATH,
     private val agentPlatform: AgentPlatform,
-    private val a2aMessageHandler: A2AMessageHandler,
-) : AgentCardHandler {
+    private val a2ARequestHandler: A2ARequestHandler,
+    private val goalFilter: GoalFilter,
+) : AgentCardHandler, A2ARequestHandler by a2ARequestHandler {
 
-    private val logger = LoggerFactory.getLogger(DefaultAgentCardHandler::class.java)
+    private val logger = LoggerFactory.getLogger(EmbabelServerGoalsAgentCardHandler::class.java)
 
     override fun agentCard(
         scheme: String,
         host: String,
         port: Int,
     ): AgentCard {
-
         val hostingUrl = "$scheme://$host:$port/$path"
-
         val agentCard = AgentCard(
             name = agentPlatform.name,
             description = agentPlatform.description,
             url = hostingUrl,
             provider = AgentProvider("Embabel", "https://embabel.com"),
-            version = DEFAULT_VERSION,
+            version = Semver.Companion.DEFAULT_VERSION,
             documentationUrl = "https://embabel.com/docs",
             capabilities = AgentCapabilities(
                 streaming = false,
@@ -58,24 +64,16 @@ class DefaultAgentCardHandler(
             security = null,
             defaultInputModes = listOf("application/json", "text/plain"),
             defaultOutputModes = listOf("application/json", "text/plain"),
-            skills = FromGoalsAgentSkillFactory(agentPlatform.goals).skills(agentPlatform.name),
+            skills = FromGoalsAgentSkillFactory(
+                goals = agentPlatform.goals.filter { goalFilter.invoke(it) }.toSet(),
+            ).skills(agentPlatform.name),
             supportsAuthenticatedExtendedCard = false,
         )
         logger.info("Returning agent card: {}", agentCard)
         return agentCard
     }
 
-    /**
-     * Handle JSON-RPC requests for A2A messages.
-     */
-    override fun handleJsonRpc(
-        @RequestBody @Schema(description = "A2A message send params")
-        request: JSONRPCRequest,
-    ): JSONRPCResponse {
-        return a2aMessageHandler.handleJsonRpc(request)
-    }
-
     override fun infoString(verbose: Boolean?): String {
-        return "DefaultAgentCardHandler(path='$path', agentPlatform=${agentPlatform.name})"
+        return "${javaClass.simpleName}(path='$path', agentPlatform=${agentPlatform.name})"
     }
 }

@@ -18,7 +18,10 @@ package com.embabel.agent.a2a.server
 import com.embabel.agent.a2a.spec.JSONRPCRequest
 import com.embabel.agent.a2a.spec.JSONRPCResponse
 
-interface A2AMessageHandler {
+/**
+ * Handles JSON-RPC requests according to the A2A protocol.
+ */
+interface A2ARequestHandler {
 
     /**
      * Handle a JSON-RPC request according to the A2A protocol.

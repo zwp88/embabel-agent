@@ -13,29 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.config.a2a
+package com.embabel.agent.a2a.server.config
 
 import com.embabel.agent.a2a.server.AgentCardHandler
-import com.embabel.agent.a2a.server.DefaultAgentCardHandler
-import com.embabel.agent.a2a.server.support.AutonomyA2AMessageHandler
+import com.embabel.agent.a2a.server.support.AutonomyA2ARequestHandler
+import com.embabel.agent.a2a.server.support.EmbabelServerGoalsAgentCardHandler
 import com.embabel.agent.core.AgentPlatform
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
+/**
+ * Expose AgentCardHandler objects.
+ * Each will be exposed as an A2A endpoint with the path "a2a".
+ */
 @Configuration
 @Profile("a2a")
 class A2AConfiguration {
 
     @Bean
-    fun a2AMessageHandler(
+    fun defaultAgentCardHandler(
         agentPlatform: AgentPlatform,
-        a2aMessageHandler: AutonomyA2AMessageHandler,
+        a2aMessageHandler: AutonomyA2ARequestHandler,
     ): AgentCardHandler {
-        return DefaultAgentCardHandler(
+        return EmbabelServerGoalsAgentCardHandler(
             path = "a2a",
             agentPlatform = agentPlatform,
-            a2aMessageHandler = a2aMessageHandler,
+            a2ARequestHandler = a2aMessageHandler,
+            goalFilter = { true },
         )
     }
 }
