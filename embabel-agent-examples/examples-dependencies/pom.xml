@@ -9,57 +9,50 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
-    <groupId>com.embabel.agent</groupId>
-    <artifactId>embabel-agent-dependencies</artifactId>
+    <groupId>com.embabel.agent.example</groupId>
+    <artifactId>embabel-agent-example-dependencies</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Embabel Agent BOM</name>
-    <description>Embabel Agent BOM</description>
+    <name>Embabel Agent Examples BOM</name>
+    <description>Embabel Agent Example BOM</description>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.embabel.agent</groupId>
-                <artifactId>embabel-agent-api</artifactId>
+                <groupId>com.embabel.agent.example</groupId>
+                <artifactId>examples-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.embabel.agent</groupId>
-                <artifactId>embabel-agent-shell</artifactId>
+                <groupId>com.embabel.agent.example.kotlin</groupId>
+                <artifactId>dogfood</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.embabel.agent</groupId>
-                <artifactId>embabel-agent-rag</artifactId>
+                <groupId>com.embabel.agent.example.kotlin</groupId>
+                <artifactId>horoscope</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.embabel.agent</groupId>
-                <artifactId>embabel-agent-eval</artifactId>
+                <groupId>com.embabel.agent.example.kotlin</groupId>
+                <artifactId>movie</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.embabel.agent</groupId>
-                <artifactId>embabel-agent-test</artifactId>
+                <groupId>com.embabel.agent.example.kotlin</groupId>
+                <artifactId>travel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.embabel.agent</groupId>
-                <artifactId>embabel-agent-starter</artifactId>
+                <groupId>com.embabel.agent.example.java</groupId>
+                <artifactId>horoscope</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>com.embabel.agent</groupId>
-                <artifactId>embabel-agent-autoconfigure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
