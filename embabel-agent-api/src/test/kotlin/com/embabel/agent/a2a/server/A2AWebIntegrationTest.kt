@@ -16,8 +16,13 @@
 package com.embabel.agent.a2a.server
 
 import com.embabel.agent.a2a.spec.*
+import com.embabel.agent.api.annotation.support.AgentMetadataReader
+import com.embabel.agent.core.AgentPlatform
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
+import com.embabel.example.simple.horoscope.TestHoroscopeService
+import com.embabel.example.simple.horoscope.java.TestStarNewsFinder
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -39,12 +44,28 @@ import kotlin.test.assertTrue
 @ActiveProfiles(value = ["test", "a2a"])
 @AutoConfigureMockMvc(addFilters = false)
 @EnableAutoConfiguration
-class A2AControllerIntegrationTest(
+class A2AWebIntegrationTest(
     @Autowired
     private val mockMvc: MockMvc,
     @Autowired
-    private val objectMapper: ObjectMapper
+    private val agentPlatform: AgentPlatform,
+    @Autowired
+    private val objectMapper: ObjectMapper,
+    @Autowired
+    private val horoscopeService: TestHoroscopeService,
 ) {
+
+    @BeforeEach
+    fun setup() {
+        AgentMetadataReader().createAgentScopes(
+            com.embabel.example.simple.horoscope.kotlin.TestStarNewsFinder(
+                horoscopeService = horoscopeService,
+                wordCount = 100,
+                storyCount = 5,
+            ),
+            TestStarNewsFinder(horoscopeService, 5),
+        ).forEach { agentPlatform.deploy(it) }
+    }
 
     @Nested
     inner class AgentCardTests {
@@ -62,7 +83,10 @@ class A2AControllerIntegrationTest(
             assertNotNull(agentCard)
             assertNotNull(agentCard.name)
             assertNotNull(agentCard.description)
-            assertTrue(agentCard.url.contains("localhost"), "Agent card url should expose port: '${agentCard.url}'")
+            assertTrue(
+                agentCard.url.contains("localhost"),
+                "Agent card url should expose localhost: '${agentCard.url}'"
+            )
             assertTrue(agentCard.url.contains(":"), "Agent card url should expose port: '${agentCard.url}'")
             assertEquals("Embabel", agentCard.provider?.organization)
             assertEquals("https://embabel.com", agentCard.provider?.url)
@@ -84,7 +108,6 @@ class A2AControllerIntegrationTest(
     }
 
     @Nested
-    @Disabled("need to inject the agent platform mock")
     inner class MessageTests {
         @Test
         fun `should handle message send`() {

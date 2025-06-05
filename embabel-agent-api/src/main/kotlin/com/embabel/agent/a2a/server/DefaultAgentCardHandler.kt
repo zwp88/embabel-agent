@@ -20,37 +20,27 @@ import com.embabel.agent.a2a.spec.*
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Profile
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.RequestBody
 
 /**
  * Expose A2A endpoints for the agent-to-agent communication protocol.
  */
-@RestController
-@Profile("a2a")
-@RequestMapping("/a2a")
-class A2AController(
+class DefaultAgentCardHandler(
+    override val path: String,
     private val agentPlatform: AgentPlatform,
-    private val a2AMessageHandler: A2AMessageHandler,
-) {
+    private val a2aMessageHandler: A2AMessageHandler,
+) : AgentCardHandler {
 
-    private val logger = LoggerFactory.getLogger(A2AController::class.java)
+    private val logger = LoggerFactory.getLogger(DefaultAgentCardHandler::class.java)
 
-    init {
-        logger.info("'a2a' Spring profile set: Exposing A2A server")
-    }
+    override fun agentCard(
+        scheme: String,
+        host: String,
+        port: Int,
+    ): AgentCard {
 
-    @GetMapping("/.well-known/agent.json", produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun agentCard(request: HttpServletRequest): AgentCard {
-        val scheme = request.scheme
-        val serverName = request.serverName
-        val serverPort = request.serverPort
-
-        val hostingUrl = "$scheme://$serverName:$serverPort/a2a"
+        val hostingUrl = "$scheme://$host:$port/$path"
 
         val agentCard = AgentCard(
             name = agentPlatform.name,
@@ -78,14 +68,14 @@ class A2AController(
     /**
      * Handle JSON-RPC requests for A2A messages.
      */
-    @PostMapping(
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    fun handleJsonRpc(
+    override fun handleJsonRpc(
         @RequestBody @Schema(description = "A2A message send params")
         request: JSONRPCRequest,
-    ): ResponseEntity<JSONRPCResponse> {
-        return ResponseEntity.ok(a2AMessageHandler.handleJsonRpc(request))
+    ): JSONRPCResponse {
+        return a2aMessageHandler.handleJsonRpc(request)
+    }
+
+    override fun infoString(verbose: Boolean?): String {
+        return "DefaultAgentCardHandler(path='$path', agentPlatform=${agentPlatform.name})"
     }
 }
