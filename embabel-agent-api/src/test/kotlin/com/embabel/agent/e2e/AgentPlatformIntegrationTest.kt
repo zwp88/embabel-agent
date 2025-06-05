@@ -141,7 +141,7 @@ class AgentPlatformIntegrationTest(
         fun `run Java star finder as transform by name`() {
             val writeup = typedOps.asFunction<UserInput, HasContent>(
                 outputClass = HasContent::class.java,
-                agentName = "JavaStarNewsFinder",
+                agentName = "JavaTestStarNewsFinder",
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
                 ProcessOptions(test = true),

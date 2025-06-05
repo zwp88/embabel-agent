@@ -36,7 +36,7 @@ class FallbackChatModelTest {
     private val fallbackResponse = mockk<ChatResponse>()
 
     @Nested
-    inner class `call method` {
+    inner class CallMethod {
 
         @Test
         fun `should use primary model when it succeeds`() {

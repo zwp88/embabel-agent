@@ -1,35 +1,46 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.embabel.agent.a2a.server
 
 import com.embabel.agent.a2a.spec.AgentCard
 import com.embabel.agent.a2a.spec.JSONRPCRequest
+import jakarta.servlet.ServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.context.event.EventListener
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
-@ConfigurationProperties(prefix = "embabel.a2a")
-data class A2aConfig(
-    val host: String = "host.docker.internal",
-    val port: Int = 8080,
-)
 
 /**
  * Registers A2A endpoints for the agent-to-agent communication protocol.
+ * Endpoints correspond to AgentCardHandler beans.
  */
 @Component
 @Profile("a2a")
 class A2AEndpointRegistrar(
     private val agentCardHandlers: List<AgentCardHandler>,
     private val requestMappingHandlerMapping: RequestMappingHandlerMapping,
-    private val a2aConfig: A2aConfig,
 ) {
 
     private val logger = LoggerFactory.getLogger(A2AEndpointRegistrar::class.java)
@@ -37,7 +48,6 @@ class A2AEndpointRegistrar(
     @EventListener
     fun onApplicationReady(event: ApplicationReadyEvent) {
         logger.info("Registering ${agentCardHandlers.size} A2A endpoints")
-
         agentCardHandlers.forEach { endpoint ->
             registerWebEndpoints(endpoint)
         }
@@ -54,21 +64,16 @@ class A2AEndpointRegistrar(
             .methods(RequestMethod.GET)
             .produces(MediaType.APPLICATION_JSON_VALUE)
             .build()
-        val ach = AgentCardHandlerHolder(
-            agentCardHandler.agentCard(
-                scheme = "http", // or "https" based on your configuration
-                host = a2aConfig.host,
-                port = a2aConfig.port,
-            )
+        val achwf = AgentCardHandlerWebFacade(
+            agentCardHandler
         )
         requestMappingHandlerMapping.registerMapping(
             agentCardGetMapping,
-            ach,
-            ach::class.java.getMethod("agentCard"),
+            achwf,
+            achwf::class.java.getMethod("agentCard", ServletRequest::class.java),
         )
 
-        // Register POST mapping for JSON-RPC
-        val jsonRpcPostMethod = agentCardHandler.javaClass.getMethod(
+        val jsonRpcPostMethod = achwf.javaClass.getMethod(
             "handleJsonRpc",
             JSONRPCRequest::class.java,
         )
@@ -77,18 +82,34 @@ class A2AEndpointRegistrar(
             .consumes(MediaType.APPLICATION_JSON_VALUE)
             .produces(MediaType.APPLICATION_JSON_VALUE)
             .build()
-        requestMappingHandlerMapping.registerMapping(jsonRpcPostMapping, agentCardHandler, jsonRpcPostMethod)
+        requestMappingHandlerMapping.registerMapping(
+            jsonRpcPostMapping,
+            achwf,
+            jsonRpcPostMethod,
+        )
     }
 }
 
-private class AgentCardHandlerHolder(
-    val agentCard: AgentCard,
+private class AgentCardHandlerWebFacade(
+    val agentCardHandler: AgentCardHandler,
 ) {
 
     @ResponseBody
-    fun agentCard(): ResponseEntity<AgentCard> {
+    fun agentCard(servletRequest: ServletRequest): ResponseEntity<AgentCard> {
+        val agentCard = agentCardHandler.agentCard(
+            scheme = servletRequest.scheme,
+            host = servletRequest.serverName,
+            port = servletRequest.serverPort,
+        )
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(agentCard)
+    }
+
+    fun handleJsonRpc(@RequestBody request: JSONRPCRequest): ResponseEntity<Any> {
+        val response = agentCardHandler.handleJsonRpc(request)
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(response)
     }
 }

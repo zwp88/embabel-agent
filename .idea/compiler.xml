@@ -24,6 +24,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="embabel-agent-example-dependencies" target="1.5" />
       <module name="embabel-horoscope-example" target="21" />
       <module name="embabel-movie-example" target="21" />
     </bytecodeTargetLevel>
