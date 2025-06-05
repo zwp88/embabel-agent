@@ -17,6 +17,7 @@
         <module>examples-kotlin</module>
         <module>examples-java</module>
         <module>examples-common</module>
+        <module>examples-dependencies</module>
     </modules>
 
 
