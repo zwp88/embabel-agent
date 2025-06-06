@@ -17,8 +17,8 @@ package com.embabel.agent.mcpserver
 
 import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.event.logging.LoggingPersonality.Companion.BANNER_WIDTH
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.loggerFor
-import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbackProvider
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Bean
@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Profile
  * Tag interface extending Spring AI ToolCallbackProvider
  * that identifies tool callbacks that our MCP server exposes.
  */
-interface McpToolExportCallbackPublisher : ToolCallbackPublisher
+interface McpToolExportCallbackPublisher : ToolCallbackPublisher, HasInfoString
 
 /**
  * Configures MCP server. Exposes a limited number of tools.
@@ -51,16 +51,12 @@ class McpServerConfiguration(
         loggerFor<McpServerConfiguration>().info(
             "\n${separator}\n{} MCP tool exporters: {}\nExposing a total of {} MCP server tools:\n\t{}\n${separator}",
             mcpToolExportCallbackPublishers.size,
-            mcpToolExportCallbackPublishers,
+            mcpToolExportCallbackPublishers.map { it.infoString(verbose = true) },
             allToolCallbacks.size,
             allToolCallbacks.joinToString(
                 "\n\t"
             ) { "${it.toolDefinition.name()}: ${it.toolDefinition.description()}" }
         )
-        return object : ToolCallbackProvider {
-            override fun getToolCallbacks(): Array<out ToolCallback?> {
-                return allToolCallbacks.toTypedArray()
-            }
-        }
+        return ToolCallbackProvider { allToolCallbacks.toTypedArray() }
     }
 }
