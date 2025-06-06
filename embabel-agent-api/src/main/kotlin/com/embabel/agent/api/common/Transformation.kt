@@ -42,7 +42,7 @@ inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformatio
 }
 
 fun <I, O : Any> asAction(agent: Agent, inputClass: Class<I>, outputClass: Class<O>): Action =
-    agentTransformer<I, O>(agent, inputClass, outputClass)
+    agentTransformer(agent, inputClass, outputClass)
 
 
 /**

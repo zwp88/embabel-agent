@@ -229,7 +229,6 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>com/embabel/examples/**</exclude>
                         <exclude>com/embabel/agent/shell/**</exclude>
                         <exclude>com/embabel/agent/testing/**</exclude>
                         <exclude>com/embabel/agent/experimental/**</exclude>
@@ -266,24 +265,24 @@
             </dependencyManagement>
             <dependencies>
                 <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>dogfood</artifactId>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.kotlin</groupId>
+                    <artifactId>dogfood</artifactId>
+                    <scope>runtime</scope>
                 </dependency>
                 <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>horoscope</artifactId>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.kotlin</groupId>
+                    <artifactId>horoscope</artifactId>
+                    <scope>runtime</scope>
                 </dependency>
                 <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>movie</artifactId>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.kotlin</groupId>
+                    <artifactId>movie</artifactId>
+                    <scope>runtime</scope>
                 </dependency>
                 <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>travel</artifactId>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.kotlin</groupId>
+                    <artifactId>travel</artifactId>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
         </profile>
@@ -294,10 +293,10 @@
             </activation>
             <dependencies>
                 <dependency>
-                     <groupId>com.embabel.agent.example.java</groupId>
-                     <artifactId>horoscope</artifactId>
-                     <version>${project.version}</version>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.java</groupId>
+                    <artifactId>horoscope</artifactId>
+                    <version>${project.version}</version>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
         </profile>

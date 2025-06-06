@@ -123,11 +123,7 @@ interface PatternSearch : DirectoryBased {
                 val line = lines[i]
 
                 // Check for class/interface/object declaration
-                if ((line.contains("class") ||
-                            line.contains("interface") ||
-                            line.contains("object") ||
-                            line.contains("enum")) &&
-                    pattern.containsMatchIn(line)
+                if (pattern.containsMatchIn(line)
                 ) {
 
                     // Gather context lines

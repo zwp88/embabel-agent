@@ -83,7 +83,7 @@ class AgentBuilder(
     /**
      * Require prompt contributors at agent level
      */
-    fun requirePromptContributors(vararg promptContributors: PromptContributor) {
+    fun registerPromptContributors(vararg promptContributors: PromptContributor) {
         _promptContributors += promptContributors
     }
 
@@ -290,6 +290,11 @@ class AgentBuilder(
         )
     }
 
+    /**
+     * Declare a condition determined with an LLM. Assign it a name to ensure
+     * type safe access
+     * val myCondition = condition("custom prompt")
+     */
     fun condition(
         name: String? = null,
         prompt: (processContext: ProcessContext) -> String,
