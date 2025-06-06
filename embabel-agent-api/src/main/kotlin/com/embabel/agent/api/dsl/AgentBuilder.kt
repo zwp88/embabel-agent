@@ -136,7 +136,6 @@ class AgentBuilder(
         inputVarName: String = IoBinding.DEFAULT_BINDING,
         outputVarName: String? = IoBinding.DEFAULT_BINDING,
         cost: ZeroToOne = 0.0,
-        toolCallbacks: List<ToolCallback> = emptyList(),
         toolGroups: Set<String> = emptySet(),
         qos: ActionQos = ActionQos(),
         referencedInputProperties: Set<String>? = null,
@@ -154,7 +153,6 @@ class AgentBuilder(
             inputClass = I::class.java,
             outputClass = O::class.java,
             referencedInputProperties = referencedInputProperties,
-            toolCallbacks = toolCallbacks,
             toolGroups = toolGroups,
             block = block,
         )

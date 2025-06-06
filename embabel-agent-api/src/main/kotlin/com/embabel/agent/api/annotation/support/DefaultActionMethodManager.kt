@@ -23,12 +23,14 @@ import com.embabel.agent.api.common.support.MultiTransformationAction
 import com.embabel.agent.api.common.support.expandInputBindings
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ProcessContext
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.stereotype.Component
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
+import kotlin.reflect.jvm.kotlinFunction
 
 /**
  * Implementation that creates dummy instances of domain objects to discover tools,
@@ -50,7 +52,12 @@ internal class DefaultActionMethodManager(
         val actionAnnotation = method.getAnnotation(com.embabel.agent.api.annotation.Action::class.java)
         val inputClasses = method.parameters
             .map { it.type }
+        val kFunction = method.kotlinFunction
         val inputs = method.parameters
+            .filterNot {
+                val kFunctionParameter = kFunction?.parameters?.firstOrNull { kfp -> kfp.name == it.name }
+                kFunctionParameter?.type?.isMarkedNullable ?: false
+            }
             .filterNot {
                 OperationContext::class.java.isAssignableFrom(it.type)
             }
@@ -83,7 +90,7 @@ internal class DefaultActionMethodManager(
             invokeActionMethod(
                 method = method,
                 instance = instance,
-                context = context,
+                actionContext = context,
             )
         }
     }
@@ -92,27 +99,61 @@ internal class DefaultActionMethodManager(
     override fun <O> invokeActionMethod(
         method: Method,
         instance: Any,
-        context: TransformationActionContext<List<Any>, O>,
+        actionContext: TransformationActionContext<List<Any>, O>,
     ): O {
-        logger.debug("Invoking action method {} with payload {}", method.name, context.input)
+        logger.debug("Invoking action method {} with payload {}", method.name, actionContext.input)
+        val kFunction = method.kotlinFunction
 
-        var args = context.input.toTypedArray()
-        if (method.parameters.any { OperationContext::class.java.isAssignableFrom(it.type) }) {
-            // We need to add the payload as the last argument
-            args += context
+        val args = mutableListOf<Any?>()
+        for (parameter in method.parameters) {
+            when {
+                ProcessContext::class.java.isAssignableFrom(parameter.type) -> {
+                    args += actionContext.processContext
+                }
+
+                OperationContext::class.java.isAssignableFrom(parameter.type) -> {
+                    args += actionContext
+                }
+
+                else -> {
+                    val requireNameMatch = parameter.getAnnotation(RequireNameMatch::class.java)
+                    val domainTypes = actionContext.processContext.agentProcess.agent.domainTypes
+                    val variable = if (requireNameMatch != null) {
+                        parameter.name
+                    } else {
+                        IoBinding.DEFAULT_BINDING
+                    }
+                    val lastArg = actionContext.getValue(
+                        variable = variable,
+                        type = parameter.type.name,
+                        domainTypes = domainTypes,
+                    )
+                    if (lastArg == null) {
+                        val kParam = kFunction?.parameters?.firstOrNull { kfp -> kfp.name == parameter.name }
+                        val isNullable =
+                            kParam?.isOptional ?: kParam?.type?.isMarkedNullable
+                            ?: false
+                        if (isNullable) {
+                            error("Action ${actionContext.action.name}: No value found in blackboard for parameter ${parameter.name}:${parameter.type.name}")
+                        }
+                    }
+                    args += lastArg
+                }
+            }
         }
+
         val result = try {
-            ReflectionUtils.invokeMethod(method, instance, *args)
+            ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray())
         } catch (cope: CreateObjectPromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
 
             val promptContributors = cope.promptContributors
-            val promptRunner = context.promptRunner(
+            val promptRunner = actionContext.promptRunner(
                 llm = cope.llm ?: LlmOptions(),
                 // Remember to add tool groups from the context to those the exception specified at the call site
-                toolGroups = cope.toolGroups + context.toolGroups,
-                toolObjects = (cope.toolObjects + context.domainObjectInstances()).distinct(),
+                toolGroups = cope.toolGroups + actionContext.toolGroups,
+                toolObjects = (cope.toolObjects + actionContext.domainObjectInstances()).distinct(),
                 promptContributors = promptContributors,
                 generateExamples = cope.generateExamples == true,
             )
@@ -125,7 +166,7 @@ internal class DefaultActionMethodManager(
             } else {
                 promptRunner.createObjectIfPossible(
                     prompt = cope.prompt,
-                    outputClass = context.outputClass as Class<Any>,
+                    outputClass = actionContext.outputClass as Class<Any>,
                 )
             }
         } catch (t: Throwable) {
@@ -141,7 +182,7 @@ internal class DefaultActionMethodManager(
             "Result of invoking action method {} was {}: payload {}",
             method.name,
             result,
-            context.input
+            actionContext.input
         )
         return result as O
     }

@@ -63,7 +63,6 @@ fun <I, O : Any> asAction(agentName: String, inputClass: Class<I>, outputClass: 
         inputClass = inputClass,
         outputClass = outputClass,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
     ) {
         val agent: Agent = it.processContext.platformServices.agentPlatform.agents().singleOrNull() {
             it.name == agentName
@@ -97,7 +96,6 @@ fun <I, O : Any> agentTransformer(
         inputClass = inputClass,
         outputClass = outputClass,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
     ) {
         val tf: Transformation<I, O> = asTransformation<I, O>(agent, outputClass)
         tf.transform(it)

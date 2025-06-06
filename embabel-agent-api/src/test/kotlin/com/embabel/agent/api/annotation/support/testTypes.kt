@@ -235,6 +235,20 @@ class OneTransformerActionOnly {
 }
 
 @AgentCapabilities
+class OneTransformerActionWithNullableParameter {
+
+    @Action(cost = 500.0)
+    fun toPerson(userInput: UserInput, person: SnakeMeal?): PersonWithReverseTool {
+        var content = userInput.content
+        if (person != null) {
+            content += " and tasty!"
+        }
+        return PersonWithReverseTool(content)
+    }
+
+}
+
+@AgentCapabilities
 class OneTransformerActionTakingPayloadOnly {
 
     @Action(cost = 500.0)

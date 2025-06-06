@@ -43,6 +43,6 @@ interface ActionMethodManager {
     fun <O> invokeActionMethod(
         method: Method,
         instance: Any,
-        context: TransformationActionContext<List<Any>, O>,
+        actionContext: TransformationActionContext<List<Any>, O>,
     ): O
 }
