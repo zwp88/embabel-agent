@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.config.neo
+package com.embabel.agent.rag.config.neo
 
 import com.embabel.common.ai.model.EmbeddingService
 import org.neo4j.driver.Driver
