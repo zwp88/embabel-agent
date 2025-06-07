@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.persistence
+package com.embabel.agent.experimental.domain.mixin
 
 /**
  * An entity that has its own id and state but supports mixins.

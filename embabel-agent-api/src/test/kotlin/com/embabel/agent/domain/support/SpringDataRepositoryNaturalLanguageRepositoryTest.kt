@@ -18,6 +18,9 @@ package com.embabel.agent.domain.support
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
+import com.embabel.agent.domain.persistence.support.FinderInvocation
+import com.embabel.agent.domain.persistence.support.FinderInvocations
+import com.embabel.agent.domain.persistence.support.naturalLanguageRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

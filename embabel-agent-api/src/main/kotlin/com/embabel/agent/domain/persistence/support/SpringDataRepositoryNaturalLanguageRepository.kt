@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.support
+package com.embabel.agent.domain.persistence.support
 
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.createObject
