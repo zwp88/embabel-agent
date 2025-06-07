@@ -24,12 +24,13 @@ import com.embabel.common.util.loggerFor
  * focus on essential code.
  */
 object WellKnownFileContentTransformers {
+
     private val logger = loggerFor<WellKnownFileContentTransformers>()
 
     /**
      * Removes Apache License headers commonly found at the top of source files.
      */
-    val removeApacheLicenseHeader: FileContentTransformer = { content ->
+    val removeApacheLicenseHeader: FileContentTransformer = FileContentTransformer { content ->
         val apacheLicensePattern = Regex(
             "/\\*\\s*\\n" +
                     " \\* Copyright .*?\\n" +
@@ -47,7 +48,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes documentation comments (/** ... */) from the code.
      */
-    val removeDocComments: FileContentTransformer = { content ->
+    val removeDocComments: FileContentTransformer = FileContentTransformer { content ->
         val docCommentPattern = Regex(
             "/\\*\\*\\s*\\n" +
                     "(?:.|\\n)*?" +  // Non-greedy match for any characters including newlines
@@ -63,7 +64,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes single-line comments (// ...) from the code.
      */
-    val removeSingleLineComments: FileContentTransformer = { content ->
+    val removeSingleLineComments: FileContentTransformer = FileContentTransformer { content ->
         val singleLineCommentPattern = Regex("\\s*//.*$", RegexOption.MULTILINE)
 
         val result = singleLineCommentPattern.replace(content, "")
@@ -74,7 +75,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes import statements from the code.
      */
-    val removeImports: FileContentTransformer = { content ->
+    val removeImports: FileContentTransformer = FileContentTransformer { content ->
         val importPattern = Regex("import .*$\\n", RegexOption.MULTILINE)
 
         val result = importPattern.replace(content, "")
@@ -85,7 +86,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes empty lines from file content
      */
-    val removeEmptyLines: FileContentTransformer = { content ->
+    val removeEmptyLines: FileContentTransformer = FileContentTransformer { content ->
         val emptyLinePattern = Regex("^\\s*$\\n", RegexOption.MULTILINE)
 
         val result = emptyLinePattern.replace(content, "")
@@ -96,7 +97,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes excessive whitespace from file content
      */
-    val compressWhitespace: FileContentTransformer = { content ->
+    val compressWhitespace: FileContentTransformer = FileContentTransformer { content ->
         // Replace multiple spaces with a single space
         val multipleSpacesPattern = Regex("[ \\t]+")
         // Replace multiple consecutive empty lines with a single empty line
@@ -121,7 +122,7 @@ object WellKnownFileContentTransformers {
             removeSingleLineComments,
             removeImports,
             removeEmptyLines,
-            compressWhitespace
+            compressWhitespace,
         )
     }
 

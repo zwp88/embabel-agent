@@ -27,7 +27,7 @@ import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
 
 /**
- * RagService wrapping a Spring VectorStore.
+ * RagService wrapping a Spring AI VectorStore.
  */
 class SpringVectorStoreRagService(
     private val vectorStore: VectorStore,
@@ -47,7 +47,7 @@ class SpringVectorStoreRagService(
             .topK(ragRequest.topK)
             .build()
         val results: List<Document> = vectorStore.similaritySearch(searchRequest)!!
-        return RagResponse.Companion(
+        return RagResponse(
             service = name,
             results = results.map { it ->
                 DocumentSimilarityResult(
@@ -68,7 +68,7 @@ class SpringVectorStoreRagService(
     }
 }
 
-private class DocumentSimilarityResult(
+class DocumentSimilarityResult(
     private val document: Document,
     override val score: ZeroToOne,
 ) : SimilarityResult<Chunk> {

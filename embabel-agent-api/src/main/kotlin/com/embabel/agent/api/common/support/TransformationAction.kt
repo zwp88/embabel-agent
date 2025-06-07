@@ -25,7 +25,7 @@ import java.lang.reflect.Modifier
 
 
 /**
- * Transformer agent that runs custom code.
+ * Transformation action that runs custom code.
  */
 open class TransformationAction<I, O>(
     name: String,
@@ -71,7 +71,7 @@ open class TransformationAction<I, O>(
                 input = input,
                 processContext = processContext,
                 action = this,
-                inputClass = inputClass as Class<I>,
+                inputClass = inputClass,
                 outputClass = outputClass,
             )
         )

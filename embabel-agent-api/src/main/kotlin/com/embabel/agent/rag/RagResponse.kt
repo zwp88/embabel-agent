@@ -20,8 +20,14 @@ import com.embabel.common.core.types.*
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.ai.document.DocumentWriter
 
+/**
+ * A Retrieved object instance is a chunk or an entity
+ */
 sealed interface Retrieved : HasInfoString
 
+/**
+ * Traditional RAG. Text chunk
+ */
 interface Chunk : Retrieved {
     val text: String
 
@@ -42,6 +48,9 @@ private data class ChunkImpl(
     override val text: String,
 ) : Chunk
 
+/**
+ * Retrieved Entity
+ */
 interface EntityData : StableIdentified, Retrieved, Described {
 
     @get:Schema(
@@ -120,6 +129,12 @@ interface RagService : Described, HasInfoString {
     fun search(ragRequest: RagRequest): RagResponse
 
     companion object {
+
+        /**
+         * Return a RAG service that will never return any results
+         */
+        @JvmStatic
+        @JvmOverloads
         fun empty(
             name: String = "empty",
             description: String = "empty",
@@ -130,28 +145,6 @@ interface RagService : Described, HasInfoString {
             )
         }
     }
-}
-
-data class IngestionResult(
-    val documentsWritten: Int,
-    val storesWrittenTo: Set<String>,
-) {
-
-    fun success(): Boolean {
-        return storesWrittenTo.isNotEmpty()
-    }
-}
-
-interface Ingester : DocumentWriter, HasInfoString {
-
-    /**
-     * Is this ingester presently active?
-     */
-    fun active(): Boolean
-
-    val ragServices: List<WritableRagService>
-
-    fun ingest(resourcePath: String): IngestionResult
 }
 
 interface WritableRagService : RagService, DocumentWriter

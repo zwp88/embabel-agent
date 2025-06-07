@@ -19,7 +19,7 @@ import com.embabel.agent.api.common.support.SelfToolCallbackPublisher
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponseFormatter
 import com.embabel.agent.rag.RagService
-import com.embabel.agent.rag.SimpleRagRagResponseFormatter
+import com.embabel.agent.rag.SimpleRagResponseFormatter
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 
@@ -30,7 +30,7 @@ interface RagServiceTools : SelfToolCallbackPublisher {
 
     val ragService: RagService
 
-    val toolFormatter: RagResponseFormatter get() = SimpleRagRagResponseFormatter
+    val toolFormatter: RagResponseFormatter get() = SimpleRagResponseFormatter
 
     @Tool(description = "Query the RAG service")
     fun search(
@@ -46,7 +46,7 @@ interface RagServiceTools : SelfToolCallbackPublisher {
 
         operator fun invoke(
             ragService: RagService,
-            toolFormatter: RagResponseFormatter = SimpleRagRagResponseFormatter,
+            toolFormatter: RagResponseFormatter = SimpleRagResponseFormatter,
         ): RagServiceTools {
             return object : RagServiceTools {
                 override val ragService: RagService = ragService
