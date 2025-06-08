@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.domain.persistence.support
 
-import com.embabel.agent.api.common.ActionContext
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.domain.persistence.EntityMatch
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
@@ -27,12 +27,14 @@ import org.springframework.data.repository.CrudRepository
 import java.util.*
 
 inline fun <reified T, ID> CrudRepository<T, ID>.naturalLanguageRepository(
-    context: ActionContext,
+    noinline idGetter: (T) -> ID?,
+    context: OperationContext,
     llm: LlmOptions,
 ): NaturalLanguageRepository<T> =
     SpringDataRepositoryNaturalLanguageRepository(
         repository = this,
         entityType = T::class.java,
+        idGetter = idGetter,
         context = context,
         llm = llm,
     )
@@ -44,7 +46,8 @@ inline fun <reified T, ID> CrudRepository<T, ID>.naturalLanguageRepository(
 class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     val repository: CrudRepository<T, ID>,
     val entityType: Class<T>,
-    val context: ActionContext,
+    private val idGetter: (T) -> ID?,
+    val context: OperationContext,
     val llm: LlmOptions,
 ) : NaturalLanguageRepository<T> {
 
@@ -55,55 +58,63 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     ): FindEntitiesResponse<T> {
 
         // Find the finder methods on the repository
-        val finderMethodsOnRepositoryTakingOneArg: List<String> =
+        val finderMethodsOnRepository: List<String> =
             repository.javaClass.methods
                 .filter { it.name.startsWith("find") }
-                // TODO questionable
-                .filterNot { it.name.startsWith("findAll") }
-                .filter { it.parameterTypes.size == 1 }
+                .filter { it.parameterTypes.size >= 1 }
                 .map { it.name }
                 .distinct()
         logger.info(
             "Eligible repository finder methods on {}: {}",
             repository.javaClass.name,
-            finderMethodsOnRepositoryTakingOneArg.sorted()
+            finderMethodsOnRepository.sorted()
         )
 
-        val referencedFinderInvocations = context.promptRunner(llm).createObject<FinderInvocations>(
+        val finderInvocations = context.promptRunner(llm).createObject<FinderInvocations>(
             """
             Given the following description, what finder methods could help resolve an entity of type ${entityType.simpleName}
-            You can choose from the following finders:
-            ${finderMethodsOnRepositoryTakingOneArg.joinToString("\n") { "- $it" }}
-            For each finder method, return its name and the value you would use to call it.
+            You can choose from the following finders, which follow Spring Data conventions:
+            ${finderMethodsOnRepository.joinToString("\n") { "- $it" }}
+            For each finder method, return its name and the values you would use to call it.
             Remember that findById might work with one of the fields.
 
             <description>${findEntitiesRequest.description}</description>
             """.trimIndent()
         )
         logger.info(
-            "Found finder methods for {}: {}",
+            "Found finder invocations for {}: {}",
             entityType.simpleName,
-            referencedFinderInvocations.invocations.sortedBy { it.name }
+            finderInvocations.invocations.sortedBy { it.name }
         )
 
-        val matches = mutableListOf<EntityMatch<T>>()
+        val matches = invokeFinders(findEntitiesRequest, finderInvocations)
 
-        for (finder in referencedFinderInvocations.invocations) {
-            // Find the method on the repository
+        return FindEntitiesResponse(
+            request = findEntitiesRequest,
+            matches = matches,
+        )
+    }
+
+    private fun invokeFinders(
+        findEntitiesRequest: FindEntitiesRequest,
+        finderInvocations: FinderInvocations
+    ): List<EntityMatch<T>> {
+        val allMatches = mutableListOf<EntityMatch<T>>()
+        for (finder in finderInvocations.invocations) {
             val repositoryMethod = repository.javaClass.methods
                 .firstOrNull { it.name == finder.name }
                 ?: continue
 
             logger.info(
-                "Invoking repository method {} with value {}",
+                "Invoking repository method {} with values {}",
                 repositoryMethod,
-                finder.value,
+                finder.values,
             )
-            val result = repositoryMethod.invoke(repository, finder.value)
+            val result = repositoryMethod.invoke(repository, *finder.values.toTypedArray())
             val maybeEntity = extractResultIfPossible(result)
             logger.debug("Found result for {}: {}", finder.name, maybeEntity)
             if (maybeEntity != null) {
-                matches.add(
+                allMatches.add(
                     EntityMatch(
                         match = maybeEntity,
                         score = 1.0,
@@ -111,8 +122,8 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
                     )
                 )
             }
-
         }
+        val matches = allMatches.distinctBy { idGetter(it.match) }
         if (matches.isEmpty()) {
             logger.warn(
                 "No matching entities found for description: {}",
@@ -125,14 +136,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
                 findEntitiesRequest.description
             )
         }
-        logger.warn(
-            "No matching entities found for description: {}",
-            findEntitiesRequest.description
-        )
-        return FindEntitiesResponse(
-            request = findEntitiesRequest,
-            matches = matches,
-        )
+        return matches
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -149,12 +153,14 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
     }
 }
 
-
+/**
+ * Returned by LLM. Contains desired invocations of finder methods
+ */
 internal data class FinderInvocations(
     val invocations: List<FinderInvocation>,
 )
 
 internal data class FinderInvocation(
     val name: String,
-    val value: String,
+    val values: List<Any>,
 )

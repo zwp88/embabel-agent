@@ -23,11 +23,23 @@ enum class Cardinality {
     MANY,
 }
 
+/**
+ * Find entities matching a description.
+ * @param description The description to match against.
+ * @param cardinality The expected cardinality of the result.
+ */
 data class FindEntitiesRequest(
     val description: String,
     val cardinality: Cardinality = Cardinality.ONE,
 )
 
+/**
+ * Match for an entity
+ * @param T The type of the entity being matched.
+ * @param match The matched entity.
+ * @param score The confidence score of the match, between 0 and 1.
+ * @param source The source of the match, e.g., the repository method that provided the match.
+ */
 data class EntityMatch<T>(
     override val match: T,
     override val score: ZeroToOne,
