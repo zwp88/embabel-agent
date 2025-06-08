@@ -8,8 +8,7 @@ name: Publish Docs
 
 on:
   workflow_dispatch:  # Enables manual triggering
-  
-  inputs:
+    inputs:
       environment:
         description: 'Deploy Environment'
         required: true
