@@ -26,31 +26,28 @@ class InMemoryMovieBuffRepository : MovieBuffRepository,
         idSetter = { it, id -> it.copy(name = id) },
     )
 
-fun populateMovieBuffRepository(
-    movieBuffRepository: MovieBuffRepository,
-) {
-
-    val ratings = parseRatings(
+val Rod = MovieBuff(
+    name = "Rod",
+    movieRatings = parseRatings(
         RandomFromFileMessageGenerator("examples/movie/rod_ratings.tsv")
             .messages
-    )
-
-
-    movieBuffRepository.save(
-        MovieBuff(
-            name = "Rod",
-            movieRatings = ratings,
-            hobbies = listOf("Travel", "Skiing", "Chess", "Hiking", "Reading"),
-            countryCode = "au",
-            about = """
+    ),
+    hobbies = listOf("Travel", "Skiing", "Chess", "Hiking", "Reading"),
+    countryCode = "au",
+    about = """
                 Rod is an Australian man who has a PhD in Musicology and
                 has a career as a software engineer, author and tech entrepreneur.
                 He is widely traveled and has lived in California and the UK
                 before returning to Sydney.
             """.trimIndent(),
-            streamingServices = listOf("Netflix", "Stan", "Disney+")
-        )
-    )
+    streamingServices = listOf("Netflix", "Stan", "Disney+")
+)
+
+fun populateMovieBuffRepository(
+    movieBuffRepository: MovieBuffRepository,
+) {
+
+    movieBuffRepository.save(Rod)
 
 }
 

@@ -117,6 +117,7 @@ data class MovieFinderConfig(
     val suggesterPersona: Persona = Roger,
     val writerPersona: Persona = Roger,
     val model: String = OpenAiModels.GPT_41_MINI,
+    val confirmMovieBuff: Boolean = true,
 ) {
 
     val llm = LlmOptions(
@@ -181,10 +182,12 @@ class MovieFinder(
             idGetter = { it.name },
             context = context,
         ) { movieBuff ->
-            ConfirmationRequest(
-                movieBuff.match,
-                "Please confirm whether this is the movie buff you meant: ${movieBuff.match.name}",
-            )
+            if (config.confirmMovieBuff) {
+                ConfirmationRequest(
+                    movieBuff.match,
+                    "Please confirm whether this is the movie buff you meant: ${movieBuff.match.name}",
+                )
+            } else null
         }
 
 

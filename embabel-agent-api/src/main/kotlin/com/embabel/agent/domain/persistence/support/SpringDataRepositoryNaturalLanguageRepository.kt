@@ -165,11 +165,11 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
 /**
  * Returned by LLM. Contains desired invocations of finder methods
  */
-internal data class FinderInvocations(
+data class FinderInvocations(
     val invocations: List<FinderInvocation>,
 )
 
-internal data class FinderInvocation(
+data class FinderInvocation(
     val name: String,
     val args: List<Any>,
 )
