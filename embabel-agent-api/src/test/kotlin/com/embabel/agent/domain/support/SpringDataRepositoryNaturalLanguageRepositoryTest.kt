@@ -74,12 +74,12 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
     fun `returns nothing with nullable finder`() {
         val tr = mockk<ThingRepository>()
         every {
-            tr.findByName("something")
+            tr.findByName(any())
         } returns null
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByName", values = listOf("something"))),
+            invocations = listOf(FinderInvocation(name = "findByName", args = mapOf("name" to "something"))),
         )
         every {
             mockPromptRunner.createObject(
@@ -110,7 +110,12 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByDescription", values = listOf("something"))),
+            invocations = listOf(
+                FinderInvocation(
+                    name = "findByDescription",
+                    args = mapOf("description" to "something")
+                )
+            ),
         )
         every {
             mockPromptRunner.createObject(
@@ -139,10 +144,49 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         every {
             tr.findByName("something")
         } returns theThing
+        every {
+            tr.findByName("Something")
+        } returns null
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByName", values = listOf("something"))),
+            invocations = listOf(FinderInvocation(name = "findByName", args = mapOf("name" to "something"))),
+        )
+        every {
+            mockPromptRunner.createObject(
+                capture(promptSlot),
+                FinderInvocations::class.java,
+            )
+        } answers { result }
+        val mockPayload = mockk<ActionContext>()
+        every { mockPayload.promptRunner(any()) } returns mockPromptRunner
+        val nlr = tr.naturalLanguageRepository(
+            context = mockPayload,
+            llm = mockk(),
+            idGetter = { it.name }
+        )
+        val matches = nlr.find(FindEntitiesRequest("Description"))
+        val found = matches.matches.single()
+        assertEquals(theThing, found.match, "Should find the thing")
+//        verify(exactly = 1) {
+//            tr.findByName(result.fields[0].name)
+//        }
+    }
+
+    @Test
+    fun `returns something with nullable finder and alternate case`() {
+        val theThing = Thing("Something", "Description")
+        val tr = mockk<ThingRepository>()
+        every {
+            tr.findByName("Something")
+        } returns theThing
+        every {
+            tr.findByName("something")
+        } returns null
+        val mockPromptRunner = mockk<PromptRunner>()
+        val promptSlot = slot<String>()
+        val result = FinderInvocations(
+            invocations = listOf(FinderInvocation(name = "findByName", args = mapOf("name" to "something"))),
         )
         every {
             mockPromptRunner.createObject(
@@ -172,10 +216,18 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         every {
             tr.findByNameAndCount("something", 1)
         } returns theThing
+        every {
+            tr.findByNameAndCount("Something", 1)
+        } returns null
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByNameAndCount", values = listOf("something", 1))),
+            invocations = listOf(
+                FinderInvocation(
+                    name = "findByNameAndCount",
+                    args = mapOf("name" to "something", "count" to 1)
+                )
+            ),
         )
         every {
             mockPromptRunner.createObject(

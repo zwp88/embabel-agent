@@ -23,10 +23,12 @@ import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.all
+import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
+import com.embabel.agent.domain.persistence.findOneFromContent
 import com.embabel.agent.event.ProgressUpdateEvent
 import com.embabel.agent.experimental.prompt.Persona
 import com.embabel.common.ai.model.LlmOptions
@@ -172,34 +174,19 @@ class MovieFinder(
      * @return The identified MovieBuff or null if none found
      */
     @Action(description = "Retrieve a MovieBuff based on the user input")
-    fun findMovieBuff(userInput: UserInput, context: ActionContext): MovieBuff? {
-        return movieBuffRepository.findAll().firstOrNull()
-
-        /*
-	val fer = movieBuffRepository.naturalLanguageRepository(
-            context,
-            config.llm,
-        ).find(
-            FindEntitiesRequest(description = userInput.content),
-        )
-        // TODO present a choices form
-        return when {
-            fer.matches.size == 1 -> {
-                waitFor(
-                    ConfirmationRequest(
-                        fer.matches.single().match,
-                        "Please confirm whether this is the movie buff you meant: ${fer.matches.single().match.name}",
-                    )
-                )
-            }
-
-            else -> {
-                logger.info("Found {} movie buffs", fer.matches.size)
-                null
-            }
+    fun findMovieBuff(userInput: UserInput, context: OperationContext): MovieBuff? =
+        movieBuffRepository.findOneFromContent(
+            content = userInput.content,
+            llm = LlmOptions(),
+            idGetter = { it.name },
+            context = context,
+        ) { movieBuff ->
+            ConfirmationRequest(
+                movieBuff.match,
+                "Please confirm whether this is the movie buff you meant: ${movieBuff.match.name}",
+            )
         }
-	*/
-    }
+
 
     /**
      * Analyzes the taste profile of a MovieBuff using LLM to understand their preferences.

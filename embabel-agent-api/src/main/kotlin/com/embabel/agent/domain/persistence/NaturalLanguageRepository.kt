@@ -25,11 +25,11 @@ enum class Cardinality {
 
 /**
  * Find entities matching a description.
- * @param description The description to match against.
+ * @param content The content to match against.
  * @param cardinality The expected cardinality of the result.
  */
 data class FindEntitiesRequest(
-    val description: String,
+    val content: String,
     val cardinality: Cardinality = Cardinality.ONE,
 )
 
@@ -48,7 +48,7 @@ data class EntityMatch<T>(
 
 data class FindEntitiesResponse<T>(
     val request: FindEntitiesRequest,
-    val matches: List<SimilarityResult<T>>
+    val matches: List<EntityMatch<T>>
 )
 
 /**
@@ -74,7 +74,7 @@ interface NaturalLanguageRepository<T> {
     ): T? {
         val matches = find(
             findEntitiesRequest = FindEntitiesRequest(
-                description = description,
+                content = description,
                 cardinality = Cardinality.ONE,
             )
         )
