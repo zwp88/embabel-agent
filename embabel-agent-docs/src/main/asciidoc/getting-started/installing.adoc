@@ -1,5 +1,5 @@
 [[getting-started.installing]]
-=== Getting the JAR
+=== Getting the Binaries
 
 ==== Maven
 

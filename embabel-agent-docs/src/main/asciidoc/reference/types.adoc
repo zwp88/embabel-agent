@@ -3,8 +3,6 @@
 
 ==== LlmOptions
 
-==== PromptContributor
-
 ==== PromptRunner
 
 All LLM calls go via the `PromptRunner` interface.

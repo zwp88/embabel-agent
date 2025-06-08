@@ -1,9 +1,12 @@
 [[reference.tools]]
 === Tools
 
-Tools DEFINITION
+Tools are passed to LLMs to allow them to perform actions.
 
-Two kinds in Embabel
+Embabel provides tools to LLMs in two ways:
+
+* At action or `PromptRunner` level, from a tool group.
+* At domain object level via `@Tool` methods authored by the application developer.
 
 ==== Tool Groups
 

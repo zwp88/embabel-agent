@@ -8,6 +8,28 @@ This is the recommended model to use in Java, and remains compelling in Kotlin.
 
 ==== The `@Action` annotation
 
+===== Parameters
+
+`@Action` methods must have at least one parameter.
+
+Parameters fall in two categories:
+
+* _Domain objects_.
+These are the usual inputs.
+* _Infrastructure objects_.
+
+===== Handling of return types
+
+Action methods normally return a single domain object.
+
+Nullable return types are allowed.
+
+===== Action method implementation
+
+Using PromptRunner etc.
+
 ==== The `@AchievesGoal` annotation
+
+The `@AchievesGoal` annotation can be added to an `@Action` method to indicate that the completion of the action achieves a specific goal.
 
 ==== The `@Condition` annotation

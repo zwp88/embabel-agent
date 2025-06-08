@@ -1,0 +1,6 @@
+[[reference.invoking]]
+=== Invoking Embabel Agents
+
+Explain intent
+
+TypedOps

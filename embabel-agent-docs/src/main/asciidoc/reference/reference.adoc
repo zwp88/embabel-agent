@@ -9,9 +9,12 @@ include::annotations.adoc[]
 include::dsl.adoc[]
 include::types.adoc[]
 include::tools.adoc[]
+include::prompt-contributors.adoc[]
 
 include::agent-process.adoc[]
 include::agent-platform.adoc[]
+
+include::invoking.adoc[]
 
 include::spring.adoc[]
 
@@ -23,4 +26,7 @@ include::integrations.adoc[]
 
 include::testing.adoc[]
 
+include::architecture.adoc[]
+
 include::troubleshooting.adoc[]
+
