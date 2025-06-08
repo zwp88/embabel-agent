@@ -22,7 +22,6 @@ import com.embabel.agent.domain.persistence.FindEntitiesRequest
 import com.embabel.agent.domain.persistence.FindEntitiesResponse
 import com.embabel.agent.domain.persistence.NaturalLanguageRepository
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.CrudRepository
 import java.util.*
@@ -62,30 +61,39 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
         val finderMethodsOnRepository: List<String> =
             repository.javaClass.methods
                 .filter { it.name.startsWith("find") }
+                .filterNot { it.name.startsWith("findAll") }
                 .filter { it.parameterTypes.size >= 1 }
                 .map { it.name }
                 .distinct()
         logger.info(
             "Eligible repository finder methods on {}: {}",
             repository.javaClass.name,
-            finderMethodsOnRepository.sorted(),
+            finderMethodsOnRepository.sorted()
         )
-
-        val finderInvocations = context.promptRunner(llm).createObject<FinderInvocations>(
-            """
-            Given the following description, what finder methods could help resolve an entity of type ${entityType.simpleName}
-            You can choose from the following finders, which follow Spring Data conventions:
+        val prompt = """
+            Given the following description, what finder invocations could help resolve an entity of type ${entityType.simpleName}?
+            You can choose from the following finder methods, which follow Spring Data conventions:
             ${finderMethodsOnRepository.joinToString("\n") { "- $it" }}
-            For each finder method, return its name and the values you would use to call it.
+            For each finder method, return its name and the args you would use to call it.
             Remember that findById might work with one of the fields.
+            You can invoke a finder more than once.
+            Generate variants of case that might be useful: e.g. if description contains "greg" you mgiht want to use "Greg".
 
             <description>${findEntitiesRequest.content}</description>
             """.trimIndent()
+
+        logger.debug(
+            "Creating finder invocations for {} from description {} using prompt {}",
+            entityType.simpleName,
+            findEntitiesRequest.content,
+            prompt,
         )
+
+        val finderInvocations = context.promptRunner(llm).createObject<FinderInvocations>(prompt)
         logger.info(
             "Found finder invocations for {}: {}",
             entityType.simpleName,
-            finderInvocations.invocations().sortedBy { it.name },
+            finderInvocations.invocations.sortedBy { it.name }
         )
 
         val matches = invokeFinders(findEntitiesRequest, finderInvocations)
@@ -101,7 +109,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
         finderInvocations: FinderInvocations
     ): List<EntityMatch<T>> {
         val allMatches = mutableListOf<EntityMatch<T>>()
-        for (finder in finderInvocations.invocations()) {
+        for (finder in finderInvocations.invocations) {
             val repositoryMethod = repository.javaClass.methods
                 .firstOrNull { it.name == finder.name }
                 ?: continue
@@ -111,7 +119,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
                 repositoryMethod,
                 finder.args,
             )
-            val result = repositoryMethod.invoke(repository, *finder.args.values.toTypedArray())
+            val result = repositoryMethod.invoke(repository, *finder.args.toTypedArray())
             val maybeEntity = extractResultIfPossible(result)
             logger.debug("Found result for {}: {}", finder.name, maybeEntity)
             if (maybeEntity != null) {
@@ -158,37 +166,10 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
  * Returned by LLM. Contains desired invocations of finder methods
  */
 internal data class FinderInvocations(
-    private val invocations: List<FinderInvocation>,
-) {
-
-    /**
-     * Complete list of invocations to be made on the repository by considering case variants
-     */
-    fun invocations(): List<FinderInvocation> {
-        val invs = mutableListOf<FinderInvocation>()
-        for (invocation in invocations) {
-            // Add the original invocation
-            invs.add(invocation)
-            if (invocation.args.containsKey("name") && !(invocation.args["name"] as String)[0].isUpperCase()) {
-                // Add a case-insensitive variant if the name is present
-                val nameArg = invocation.args["name"] as? String ?: continue
-                val casedFinder = FinderInvocation(
-                    name = invocation.name,
-                    args = invocation.args + ("name" to nameArg.replaceFirstChar { it.uppercase() })
-                )
-                loggerFor<FinderInvocations>().info(
-                    "Adding case-insensitive variant for {}: {}",
-                    invocation.name,
-                    casedFinder
-                )
-                invs.add(casedFinder)
-            }
-        }
-        return invs
-    }
-}
+    val invocations: List<FinderInvocation>,
+)
 
 internal data class FinderInvocation(
     val name: String,
-    val args: Map<String, Any>
+    val args: List<Any>,
 )

@@ -79,7 +79,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByName", args = mapOf("name" to "something"))),
+            invocations = listOf(FinderInvocation(name = "findByName", args = listOf("something"))),
         )
         every {
             mockPromptRunner.createObject(
@@ -113,7 +113,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
             invocations = listOf(
                 FinderInvocation(
                     name = "findByDescription",
-                    args = mapOf("description" to "something")
+                    args = listOf("something")
                 )
             ),
         )
@@ -150,7 +150,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByName", args = mapOf("name" to "something"))),
+            invocations = listOf(FinderInvocation(name = "findByName", args = listOf("something"))),
         )
         every {
             mockPromptRunner.createObject(
@@ -186,7 +186,10 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByName", args = mapOf("name" to "something"))),
+            invocations = listOf(
+                FinderInvocation(name = "findByName", args = listOf("something")),
+                FinderInvocation(name = "findByName", args = listOf("Something")),
+            ),
         )
         every {
             mockPromptRunner.createObject(
@@ -225,7 +228,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
             invocations = listOf(
                 FinderInvocation(
                     name = "findByNameAndCount",
-                    args = mapOf("name" to "something", "count" to 1)
+                    args = listOf("something", 1)
                 )
             ),
         )

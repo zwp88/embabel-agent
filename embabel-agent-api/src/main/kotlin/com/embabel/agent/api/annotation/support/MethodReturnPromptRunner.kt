@@ -47,6 +47,7 @@ internal data class MethodReturnPromptRunner(
             toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
+            generateExamples = generateExamples,
         )
     }
 
@@ -63,6 +64,7 @@ internal data class MethodReturnPromptRunner(
             toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
+            generateExamples = generateExamples,
         )
     }
 
@@ -81,6 +83,7 @@ internal data class MethodReturnPromptRunner(
             toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
+            generateExamples = generateExamples,
         )
     }
 
@@ -92,4 +95,7 @@ internal data class MethodReturnPromptRunner(
 
     override fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
         copy(promptContributors = this.promptContributors + promptContributor)
+
+    override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
+        copy(generateExamples = generateExamples)
 }

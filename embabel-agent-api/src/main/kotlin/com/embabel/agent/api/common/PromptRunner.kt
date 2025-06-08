@@ -81,7 +81,7 @@ interface PromptRunner : LlmUse {
 
     /**
      * Add a tool group to the PromptRunner
-     * @param name of the toolGroup we're requesting
+     * @param toolGroup name of the toolGroup we're requesting
      * @return PromptRunner instance with the added tool group
      */
     fun withToolGroup(toolGroup: String): PromptRunner
@@ -100,6 +100,8 @@ interface PromptRunner : LlmUse {
      * @return PromptRunner instance with the added PromptContributor
      */
     fun withPromptContributor(promptContributor: PromptContributor): PromptRunner
+
+    fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 
     companion object {
 

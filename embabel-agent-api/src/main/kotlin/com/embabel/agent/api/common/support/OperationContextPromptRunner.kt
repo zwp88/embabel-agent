@@ -50,7 +50,7 @@ internal data class OperationContextPromptRunner(
         prompt: String,
         outputClass: Class<T>,
     ): T {
-        return context.processContext.createObject<T>(
+        return context.processContext.createObject(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
@@ -58,6 +58,7 @@ internal data class OperationContextPromptRunner(
                 toolCallbacks = safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
+                generateExamples = generateExamples,
             ),
             outputClass = outputClass,
             agentProcess = context.processContext.agentProcess,
@@ -77,6 +78,7 @@ internal data class OperationContextPromptRunner(
                 toolCallbacks = safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
+                generateExamples = generateExamples,
             ),
             outputClass = outputClass,
             agentProcess = context.processContext.agentProcess,
@@ -132,4 +134,6 @@ internal data class OperationContextPromptRunner(
     override fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
         copy(promptContributors = this.promptContributors + promptContributor)
 
+    override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
+        copy(generateExamples = generateExamples)
 }
