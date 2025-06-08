@@ -64,7 +64,7 @@ interface EarlyTerminationPolicy {
         /**
          * Default maximum number of actions an agent process can perform before termination.
          */
-        const val DEFAULT_ACTION_LIMIT = 40
+        const val DEFAULT_ACTION_LIMIT = 50
 
         /**
          * Creates a policy that terminates the process after a maximum number of actions.
