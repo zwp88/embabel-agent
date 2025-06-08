@@ -1,4 +1,0 @@
-[[preface]]
-== About the documentation
-
-This Guide is intended for Java and Kotlin Developers utilizing Embabel Agent Framework

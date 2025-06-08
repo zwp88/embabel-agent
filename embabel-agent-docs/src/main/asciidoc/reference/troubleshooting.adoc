@@ -1,4 +1,4 @@
 [[reference.troubleshooting]]
-=== Trouble shooting
+=== Troubleshooting
 
 Test

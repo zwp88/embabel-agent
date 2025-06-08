@@ -13,7 +13,7 @@ include::tools.adoc[]
 include::agent-process.adoc[]
 include::agent-platform.adoc[]
 
-include::profiles.adoc[]
+include::spring.adoc[]
 
 include::llms.adoc[]
 

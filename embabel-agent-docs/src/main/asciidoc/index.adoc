@@ -26,8 +26,6 @@ endif::backend-html5[]
 
 include::authors.adoc[]
 
-include::preface.adoc[]
-
 include::user-guide.adoc[]
 
 //==========================================================================

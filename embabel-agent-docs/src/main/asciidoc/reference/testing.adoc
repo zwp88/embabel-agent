@@ -1,6 +1,8 @@
 [[reference.testing]]
 === Testing
 
+Like Spring, Embabel facilitates testing of user applications.
+
 ==== Unit testing
 
 ==== Integration testing

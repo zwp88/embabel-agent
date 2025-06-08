@@ -1,5 +1,10 @@
 [[reference.llms]]
 === Working with LLMs
 
+Embabel supports any LLM supported by Spring AI.
+In practice, this is just about any LLM.
+
 ==== Choosing an LLM
+
+Embabel encourages intent
 

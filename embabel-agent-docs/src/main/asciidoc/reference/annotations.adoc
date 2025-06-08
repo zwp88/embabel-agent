@@ -1,6 +1,9 @@
 [[reference.annotations]]
 === Annotation model
 
+Embabel provides a Spring-style annotation model to define agents, actions, goals, and conditions.
+This is the recommended model to use in Java, and remains compelling in Kotlin.
+
 ==== The `@Agent` annotation
 
 ==== The `@Action` annotation
