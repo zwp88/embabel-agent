@@ -21,7 +21,6 @@
     <modules>
         <module>embabel-agent-api</module>
         <module>embabel-agent-rag</module>
-        <module>embabel-agent-docs</module>
         <module>embabel-agent-shell</module>
         <module>embabel-agent-starter</module>
         <module>embabel-agent-autoconfigure</module>
@@ -115,6 +114,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Build Embabel Agent Documentation -->
+        <profile>
+            <id>embabel-agent-docs</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>embabel-agent-docs</module>
+            </modules>
+        </profile>
+    </profiles>
 
     
    <repositories>
