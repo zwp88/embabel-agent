@@ -10,6 +10,9 @@ include::dsl.adoc[]
 include::types.adoc[]
 include::tools.adoc[]
 
+include::agent-process.adoc[]
+include::agent-platform.adoc[]
+
 include::profiles.adoc[]
 
 include::llms.adoc[]
