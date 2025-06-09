@@ -20,11 +20,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      # Install Graphviz for PlantUML diagrams
-      - name: Install Graphviz
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
