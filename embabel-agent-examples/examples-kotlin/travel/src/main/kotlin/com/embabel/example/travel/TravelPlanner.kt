@@ -30,7 +30,7 @@ import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.library.InternetResource
 import com.embabel.agent.domain.library.InternetResources
-import com.embabel.agent.experimental.prompt.Persona
+import com.embabel.agent.prompt.Persona
 import com.embabel.agent.shell.markdownToConsole
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName

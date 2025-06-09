@@ -32,7 +32,7 @@ import com.embabel.agent.domain.library.ResearchReport
 import com.embabel.agent.domain.library.ResearchResult
 import com.embabel.agent.domain.library.ResearchTopics
 import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
-import com.embabel.agent.experimental.prompt.CoStar
+import com.embabel.agent.prompt.CoStar
 import com.embabel.agent.shell.formatProcessOutput
 import com.embabel.agent.tools.file.FileContentTransformer
 import com.embabel.agent.tools.file.FileReadTools

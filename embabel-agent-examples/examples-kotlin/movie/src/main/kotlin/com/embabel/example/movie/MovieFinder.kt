@@ -30,7 +30,7 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
 import com.embabel.agent.domain.persistence.findOneFromContent
 import com.embabel.agent.event.ProgressUpdateEvent
-import com.embabel.agent.experimental.prompt.Persona
+import com.embabel.agent.prompt.Persona
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import org.slf4j.LoggerFactory

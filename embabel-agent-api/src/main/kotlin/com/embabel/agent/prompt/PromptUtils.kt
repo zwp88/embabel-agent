@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental.prompt
+package com.embabel.agent.prompt
 
 import com.embabel.common.util.DummyInstanceCreator
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

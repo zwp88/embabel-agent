@@ -20,7 +20,7 @@ import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.FileArtifact
-import com.embabel.agent.experimental.prompt.CoStar
+import com.embabel.agent.prompt.CoStar
 import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
 import io.mockk.every
 import io.mockk.mockk
