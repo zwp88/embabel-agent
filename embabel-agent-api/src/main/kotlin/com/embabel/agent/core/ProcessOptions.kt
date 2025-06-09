@@ -67,4 +67,11 @@ data class ProcessOptions(
             EarlyTerminationPolicy.hardBudgetLimit(budget = 2.00),
         )
     ),
-)
+) {
+
+    companion object {
+
+        @JvmStatic
+        val DEFAULT = ProcessOptions()
+    }
+}

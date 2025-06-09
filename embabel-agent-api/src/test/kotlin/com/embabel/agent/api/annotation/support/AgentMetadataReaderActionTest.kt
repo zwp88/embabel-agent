@@ -368,6 +368,43 @@ class AgentMetadataReaderActionTest {
     }
 
     @Test
+    fun `action invocation with internal parameters`() {
+        val reader = AgentMetadataReader()
+        val metadata = reader.createAgentMetadata(InternalDomainClasses())
+        assertNotNull(metadata)
+        assertEquals(
+            1, metadata!!.actions.size,
+            "Should have exactly 1 action",
+        )
+        val action = metadata.actions.first()
+        val agent = CoreAgent(
+            name = "name",
+            provider = "provider",
+            actions = listOf(action),
+            schemaTypes = emptyList(),
+            goals = emptySet(),
+            description = "whatever",
+        )
+        val platformServices = dummyPlatformServices()
+
+        val pc = ProcessContext(
+            agentProcess = SimpleAgentProcess(
+                id = "test",
+                agent = agent,
+                platformServices = platformServices,
+                processOptions = ProcessOptions(),
+                blackboard = InMemoryBlackboard(),
+                parentId = null,
+            ),
+            platformServices = platformServices,
+        )
+        pc.blackboard += InternalInput("John Doe")
+        val result = action.execute(pc, action)
+        assertEquals(ActionStatusCode.SUCCEEDED, result.status)
+        assertEquals(InternalOutput("John Doe"), pc.blackboard.lastResult())
+    }
+
+    @Test
     fun `action invocation with OperationPayload`() {
         val reader = AgentMetadataReader()
         val metadata = reader.createAgentMetadata(OneTransformerActionTakingOperationPayload())

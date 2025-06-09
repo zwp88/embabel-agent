@@ -248,6 +248,19 @@ class OneTransformerActionWithNullableParameter {
 
 }
 
+internal data class InternalInput(val content: String)
+internal data class InternalOutput(val content: String)
+
+@Agent(description = "Package visible domain classes")
+class InternalDomainClasses {
+
+    @Action(cost = 500.0)
+    internal fun oo(internalInput: InternalInput): InternalOutput {
+        return InternalOutput(internalInput.content)
+    }
+
+}
+
 @AgentCapabilities
 class OneTransformerActionTakingPayloadOnly {
 
