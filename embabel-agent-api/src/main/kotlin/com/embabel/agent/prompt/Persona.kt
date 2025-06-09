@@ -38,6 +38,17 @@ interface Persona : PromptContributor {
     }
 
     companion object {
+
+        @JvmStatic
+        fun create(
+            name: String,
+            persona: String,
+            voice: String,
+            objective: String,
+        ): Persona {
+            return PersonaImpl(name, persona, voice, objective)
+        }
+
         operator fun invoke(
             name: String,
             persona: String,
@@ -46,6 +57,7 @@ interface Persona : PromptContributor {
         ): Persona {
             return PersonaImpl(name, persona, voice, objective)
         }
+
     }
 
 }

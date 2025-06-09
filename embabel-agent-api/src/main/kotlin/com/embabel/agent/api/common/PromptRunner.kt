@@ -80,6 +80,11 @@ interface PromptRunner : LlmUse {
     ): Boolean
 
     /**
+     * Specify an LLM for the PromptRunner
+     */
+    fun withLlm(llm: LlmOptions): PromptRunner
+
+    /**
      * Add a tool group to the PromptRunner
      * @param toolGroup name of the toolGroup we're requesting
      * @return PromptRunner instance with the added tool group
@@ -110,7 +115,7 @@ interface PromptRunner : LlmUse {
          */
         @JvmStatic
         @JvmOverloads
-        fun withLlm(llm: LlmOptions = LlmOptions()): PromptRunner {
+        fun usingLlm(llm: LlmOptions = LlmOptions()): PromptRunner {
             return using(llm)
         }
     }
