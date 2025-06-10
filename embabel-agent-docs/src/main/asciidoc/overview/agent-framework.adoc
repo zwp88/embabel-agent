@@ -1,4 +1,4 @@
 [[overview.agent-framework]]
 === Why do we need an Agent Framework?
 
-Agent frameworks break up
+Agent frameworks break up.
