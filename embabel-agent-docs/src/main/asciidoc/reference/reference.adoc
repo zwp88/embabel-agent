@@ -5,6 +5,7 @@
 
 include::flow.adoc[]
 include::steps.adoc[]
+include::domain.adoc[]
 include::annotations.adoc[]
 include::dsl.adoc[]
 include::types.adoc[]
@@ -15,6 +16,8 @@ include::agent-process.adoc[]
 include::agent-platform.adoc[]
 
 include::invoking.adoc[]
+
+include::api-spi.adoc[]
 
 include::spring.adoc[]
 

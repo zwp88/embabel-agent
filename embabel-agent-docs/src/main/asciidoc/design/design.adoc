@@ -1,0 +1,10 @@
+[[agent.design]]
+== Design Considerations
+
+=== Domain objects
+
+=== Mixing LLMs
+
+=== Tool Call Choice
+
+When to use MCP or other tools versus method calls in agents
