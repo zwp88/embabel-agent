@@ -16,7 +16,6 @@
     <modules>
         <module>movie</module>
         <module>horoscope</module>
-        <module>travel</module>
         <module>dogfood</module>
     </modules>
 

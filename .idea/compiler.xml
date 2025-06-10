@@ -19,13 +19,13 @@
         <module name="embabel-agent-test" />
         <module name="embabel-agent-eval" />
         <module name="horoscope (1) (com.embabel.agent.example.java)" />
-        <module name="travel" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="embabel-agent-docs" target="21" />
       <module name="embabel-horoscope-example" target="21" />
       <module name="embabel-movie-example" target="21" />
+      <module name="travel" target="21" />
     </bytecodeTargetLevel>
   </component>
 </project>
