@@ -16,12 +16,14 @@
 package com.embabel.agent.spi
 
 import com.embabel.agent.core.AgentProcess
-import org.springframework.data.repository.Repository
 
 /**
  * Spring-style repository for agent processes.
+ * We don't extend Repository because it confuses
+ * Spring's component scanning if JPA/Neo or another Spring Data
+ * solution is used on the classpath downstream.
  */
-interface AgentProcessRepository : Repository<AgentProcess, String> {
+interface AgentProcessRepository {
 
     fun findById(id: String): AgentProcess?
 

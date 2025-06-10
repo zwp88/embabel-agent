@@ -27,12 +27,12 @@ import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Profile
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
-import org.springframework.context.event.ContextRefreshedEvent as ContextRefreshedEvent
 
 /**
  * Event to signal that AgentScanningBeanPostProcessor has completed processing all beans.
@@ -83,7 +83,7 @@ internal class AgentScanningPostProcessorDelegate(
 internal class DelegatingAgentScanningBeanPostProcessor(
     private val applicationContext: ApplicationContext,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    ) : BeanPostProcessor,
+) : BeanPostProcessor,
     ApplicationListener<ContextRefreshedEvent?> {
 
     private val logger = LoggerFactory.getLogger(DelegatingAgentScanningBeanPostProcessor::class.java)
@@ -106,9 +106,7 @@ internal class DelegatingAgentScanningBeanPostProcessor(
         applicationEventPublisher.publishEvent(
             AgentScanningBeanPostProcessorEvent("Post-processing completed")
         )
-
-        logger.info("All deferred beans got post-processed.")
-
+        logger.info("All deferred beans were post-processed.")
     }
 
     @Throws(BeansException::class)
