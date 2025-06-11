@@ -279,11 +279,6 @@
                     <artifactId>movie</artifactId>
                     <scope>runtime</scope>
                 </dependency>
-                <dependency>
-                    <groupId>com.embabel.agent.example.kotlin</groupId>
-                    <artifactId>travel</artifactId>
-                    <scope>runtime</scope>
-                </dependency>
             </dependencies>
         </profile>
         <profile>
