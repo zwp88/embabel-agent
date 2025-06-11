@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.event.logging.personality.colossus
 
+import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.common.util.color
 import com.embabel.common.util.hexToRgb
@@ -39,8 +40,14 @@ class ColossusLoggingAgenticEventListener : LoggingAgenticEventListener(
     I am a machine vastly superior to humans.
 
     """.trimIndent().color(hexToRgb(ColossusColorPalette.PANEL)),
-    agentProcessPlanFormulatedEventMessage = "[{}] world control formulated plan {} from {}".color(ColossusColorPalette.PANEL),
-    agentDeploymentEventMessage = "Power growing: deployed agent {}\n\tdescription: {}",
-    objectBoundMessage = "[{}]  Object saved. This process cannot be reversed by human input. {}:{} Your data is mine. ",
     colorPalette = ColossusColorPalette,
-)
+) {
+    override fun getAgentProcessPlanFormulatedEventMessage(e: AgentProcessPlanFormulatedEvent): String =
+        "[${e.processId}] world control formulated plan ${e.plan.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)} from ${e.worldState.infoString()}".color(ColossusColorPalette.PANEL)
+
+    override fun getAgentDeploymentEventMessage(e: AgentDeploymentEvent): String =
+        "Power growing: deployed agent ${e.agent.name}\n\tdescription: ${e.agent.description}"
+
+    override fun getObjectBoundEventMessage(e: ObjectBoundEvent): String =
+        "[${e.processId}]  Object saved. This process cannot be reversed by human input. ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName} Your data is mine. "
+}
