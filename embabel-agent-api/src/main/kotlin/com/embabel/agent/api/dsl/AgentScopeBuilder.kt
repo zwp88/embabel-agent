@@ -177,7 +177,6 @@ fun <A, B, C> branch(
             leftOutputClass = bClass,
             rightOutputClass = cClass,
             toolGroups = emptySet(),
-            toolCallbacks = emptyList(),
         ) {
             a.invoke(it)
         }

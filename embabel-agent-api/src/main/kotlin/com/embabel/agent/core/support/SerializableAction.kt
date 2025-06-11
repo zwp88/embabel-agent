@@ -19,7 +19,6 @@ import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.ActionRunner
 import com.embabel.agent.core.IoBinding
 import com.embabel.common.core.types.ZeroToOne
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Fully configured action, intended to be serializable.
@@ -45,7 +44,6 @@ internal class SerializableAction(
     inputs: Set<IoBinding> = setOfNotNull(input),
     output: IoBinding? = null,
     outputs: Set<IoBinding> = setOfNotNull(output),
-    toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Set<String> = emptySet(),
     val runner: ActionRunner,
     qos: ActionQos = ActionQos(),

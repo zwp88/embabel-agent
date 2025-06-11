@@ -24,7 +24,6 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import kotlin.test.assertNull
 
 class AgentMetadataReaderGoalsTest {
 
@@ -39,11 +38,11 @@ class AgentMetadataReaderGoalsTest {
     @Test
     fun `one condition taking ProcessContext`() {
         val reader = AgentMetadataReader()
-        val metadata = reader.createAgentMetadata(OneProcessContextConditionOnly())
+        val metadata = reader.createAgentMetadata(OneOperationContextConditionOnly())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         assertEquals(
-            "${OneProcessContextConditionOnly::class.java.name}.condition1",
+            "${OneOperationContextConditionOnly::class.java.name}.condition1",
             metadata.conditions.first().name
         )
     }
@@ -51,7 +50,7 @@ class AgentMetadataReaderGoalsTest {
     @Test
     fun `processContext condition invocation`() {
         val reader = AgentMetadataReader()
-        val metadata = reader.createAgentMetadata(OneProcessContextConditionOnly())
+        val metadata = reader.createAgentMetadata(OneOperationContextConditionOnly())
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
