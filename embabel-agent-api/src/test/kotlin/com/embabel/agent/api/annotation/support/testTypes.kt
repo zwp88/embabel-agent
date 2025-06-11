@@ -185,10 +185,10 @@ class NoConditions {
 }
 
 @AgentCapabilities
-class OneProcessContextConditionOnly {
+class OneOperationContextConditionOnly {
 
     @Condition(cost = .5)
-    fun condition1(processContext: ProcessContext): Boolean {
+    fun condition1(operationContext: OperationContext): Boolean {
         return true
     }
 
