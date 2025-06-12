@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.embabel.build</groupId>
         <artifactId>embabel-dependencies-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.1.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
     <groupId>com.embabel.agent.example</groupId>
     <artifactId>embabel-agent-example-dependencies</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Embabel Agent Examples BOM</name>
     <description>Embabel Agent Example BOM</description>
