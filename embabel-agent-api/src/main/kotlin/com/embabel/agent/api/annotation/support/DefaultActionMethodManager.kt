@@ -143,6 +143,7 @@ internal class DefaultActionMethodManager(
         }
 
         val result = try {
+            method.trySetAccessible()
             ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray())
         } catch (cope: CreateObjectPromptException) {
             // This is our own exception to get typesafe prompt execution

@@ -71,27 +71,6 @@ interface LoggingPersonality {
 open class LoggingAgenticEventListener(
     url: String? = null,
     welcomeMessage: String? = null,
-    private val agentDeploymentEventMessage: String = "Deployed agent {}\n\tdescription: {}",
-    private val rankingChoiceRequestEventMessage: String = "Choosing {} based on {}",
-    private val rankingChoiceMadeEventMessage: String = "Chose {} '{}' with confidence {} based on {}. Choices: {}",
-    private val rankingChoiceNotMadeEventMessage: String = "Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
-    private val dynamicAgentCreationMessage: String = "Created agent {}",
-    private val agentProcessCreationEventMessage: String = "[{}] created",
-    private val agentProcessReadyToPlanEventMessage: String = "[{}] ready to plan from {}",
-    private val agentProcessPlanFormulatedEventMessage: String = "[{}] formulated plan {} from {}",
-    private val processCompletionMessage: String = "[{}] completed in {}",
-    private val processFailureMessage: String = "[{}] failed",
-    private val earlyTerminationMessage: String = "[{}] early termination by {} for {}",
-    private val objectAddedMessage: String = "[{}] object added: {}",
-    private val objectBoundMessage: String = "[{}] object bound {}:{}",
-    private val toolCallRequestEventMessage: String = "[{}] ({}) calling tool {}({})",
-    private val toolCallSuccessResponseEventMessage: String = "[{}] ({}) tool {} returned {} in {}ms with payload {}",
-    private val toolCallFailureResponseEventMessage: String = "[{}] ({}) failed tool {} -> {} in {}ms with payload {}",
-    private val llmRequestEventMessage: String = "[{}] requesting LLM {} to transform {} from {} -> {} using {}",
-    private val llmResponseEventMessage: () -> String = { "[{}] received LLM response {} of type {} from {} in {} seconds" },
-    private val actionExecutionStartMessage: String = "[{}] executing action {}",
-    private val actionExecutionResultMessage: String = "[{}] executed action {} in {}",
-    private val progressUpdateEventMessage: String = "[{}] progress: {}",
     override val logger: Logger = LoggerFactory.getLogger("Embabel"),
     override val colorPalette: ColorPalette = DefaultColorPalette(),
 ) : AgenticEventListener, LoggingPersonality {
@@ -105,43 +84,41 @@ open class LoggingAgenticEventListener(
         }
     }
 
+    protected open fun getAgentDeploymentEventMessage(e: AgentDeploymentEvent): String =
+        "Deployed agent ${e.agent.name}\n\tdescription: ${e.agent.description}"
+
+    protected open fun getRankingChoiceRequestEventMessage(e: RankingChoiceRequestEvent<*>): String =
+        "Choosing ${e.type.simpleName} based on ${e.basis}"
+
+    protected open fun getRankingChoiceMadeEventMessage(e: RankingChoiceMadeEvent<*>): String =
+        "Chose ${e.type.simpleName} '${e.choice.match.name}' with confidence ${e.choice.score} based on ${e.basis}. Choices: ${e.rankings.infoString()}"
+
+    protected open fun getRankingChoiceNotMadeEventMessage(e: RankingChoiceCouldNotBeMadeEvent<*>): String =
+        "Failed to choose ${e.type.simpleName} based on ${e.basis}. Choices: ${e.rankings.infoString()}. Confidence cutoff: ${e.confidenceCutOff}"
+
+    protected open fun getDynamicAgentCreationMessage(e: DynamicAgentCreationEvent): String =
+        "Created agent ${e.agent.infoString()}"
+
     override fun onPlatformEvent(event: AgentPlatformEvent) {
         when (event) {
             is AgentDeploymentEvent -> {
-                logger.info(agentDeploymentEventMessage, event.agent.name, event.agent.description)
+                logger.info(getAgentDeploymentEventMessage(event))
             }
 
             is RankingChoiceRequestEvent<*> -> {
-                logger.info(
-                    rankingChoiceRequestEventMessage,
-                    event.type.simpleName,
-                    event.basis,
-                )
+                logger.info(getRankingChoiceRequestEventMessage(event))
             }
 
             is RankingChoiceMadeEvent<*> -> {
-                logger.info(
-                    rankingChoiceMadeEventMessage,
-                    event.type.simpleName,
-                    event.choice.match.name,
-                    event.choice.score,
-                    event.basis,
-                    event.rankings.infoString(),
-                )
+                logger.info(getRankingChoiceMadeEventMessage(event))
             }
 
             is RankingChoiceCouldNotBeMadeEvent<*> -> {
-                logger.info(
-                    rankingChoiceNotMadeEventMessage,
-                    event.type.simpleName,
-                    event.basis,
-                    event.rankings.infoString(),
-                    event.confidenceCutOff,
-                )
+                logger.info(getRankingChoiceNotMadeEventMessage(event))
             }
 
             is DynamicAgentCreationEvent -> {
-                logger.info(dynamicAgentCreationMessage, event.agent.infoString())
+                logger.info(getDynamicAgentCreationMessage(event))
             }
 
             else -> {
@@ -150,59 +127,110 @@ open class LoggingAgenticEventListener(
         }
     }
 
+    protected open fun getAgentProcessCreationEventMessage(e: AgentProcessCreationEvent): String =
+        "[${e.processId}] created"
+
+    protected open fun getAgentProcessReadyToPlanEventMessage(e: AgentProcessReadyToPlanEvent): String =
+        "[${e.processId}] ready to plan from ${e.worldState.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)}"
+
+    protected open fun getAgentProcessPlanFormulatedEventMessage(e: AgentProcessPlanFormulatedEvent): String =
+        "[${e.processId}] formulated plan ${e.plan.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)} from ${e.worldState.infoString()}"
+
+    protected open fun getEarlyTerminationMessage(e: EarlyTermination): String =
+        "[${e.processId}] early termination by ${e.policy} for ${e.reason}"
+
+    protected open fun getGoalAchievedEventMessage(e: GoalAchievedEvent): String =
+        "[${e.processId}] goal ${e.goal.name} achieved in ${e.agentProcess.runningTime}"
+
+    protected open fun getToolCallRequestEventMessage(e: ToolCallRequestEvent): String =
+        "[${e.processId}] (${e.action?.shortName()}) calling tool ${e.function}(${e.toolInput})"
+
+    protected open fun getToolCallSuccessResponseEventMessage(e: ToolCallResponseEvent, resultToShow: String): String =
+        "[${e.processId}] (${e.action?.shortName()}) tool ${e.function} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+
+    protected open fun getToolCallFailureResponseEventMessage(e: ToolCallResponseEvent, throwable: Throwable?): String =
+        "[${e.processId}] (${e.action?.shortName()}) failed tool ${e.function} -> ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+
+    protected open fun getProcessCompletionMessage(e: AgentProcessFinishedEvent): String =
+        "[${e.processId}] completed in ${e.agentProcess.runningTime}"
+
+    protected open fun getProcessFailureMessage(e: AgentProcessFinishedEvent): String =
+        "[${e.processId}] failed"
+
+    protected open fun getAgentProcessWaitingEventMessage(e: AgentProcessWaitingEvent): String =
+        "[${e.processId}] waiting"
+
+    protected open fun getAgentProcessStuckEventMessage(e: AgentProcessStuckEvent): String =
+        "[${e.processId}] stuck at ${e.agentProcess.lastWorldState}"
+
+    protected open fun getObjectAddedEventMessage(e: ObjectAddedEvent): String =
+        "[${e.processId}] object added: ${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
+
+    protected open fun getObjectBoundEventMessage(e: ObjectBoundEvent): String =
+        "[${e.processId}] object bound ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
+
+    protected open fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
+        "[${e.processId}] requesting LLM ${e.interaction.llm.criteria} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+
+    protected open fun getChatModelCallEventMessage(e: ChatModelCallEvent<*>): String {
+        val promptInfo = "using ${e.interaction.llm.criteria.toString().color(AnsiColor.GREEN)}\n${
+            e.springAiPrompt.toInfoString().color(AnsiColor.GREEN)
+        }\nprompt id: '${e.interaction.id}'\ntools: [${
+            e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
+                .color(AnsiColor.BRIGHT_MAGENTA)
+        }]"
+        return "${e.processId} Spring AI ChatModel call:\n${promptInfo}"
+    }
+
+    protected open fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String {
+        var message =
+            "[${e.processId}] received LLM response ${e.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.interaction.llm.criteria} in ${e.runningTime.seconds} seconds"
+
+        if (e.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
+            message += "\nResponse from prompt ${e.interaction.id}:\n${
+                (jacksonObjectMapper().writeValueAsString(e.response)).color(
+                    color = AnsiColor.YELLOW
+                )
+            }"
+        }
+
+        return message
+    }
+
+    protected open fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =
+        "[${e.processId}] executing action ${e.action.name}"
+
+    protected open fun getActionExecutionResultMessage(e: ActionExecutionResultEvent): String =
+        "[${e.processId}] executed action ${e.action.name} in ${e.actionStatus.runningTime}"
+
+    protected open fun getProgressUpdateEventMessage(e: ProgressUpdateEvent): String =
+        "[${e.processId}] progress: ${e.createProgressBar(length = 50).color(LumonColorPalette.MEMBRANE)}"
+
     override fun onProcessEvent(event: AgentProcessEvent) {
         when (event) {
 
             is AgentProcessCreationEvent -> {
-                logger.info(
-                    agentProcessCreationEventMessage,
-                    event.processId,
-                )
+                logger.info(getAgentProcessCreationEventMessage(event))
             }
 
             is AgentProcessReadyToPlanEvent -> {
-                logger.info(
-                    agentProcessReadyToPlanEventMessage,
-                    event.processId,
-                    event.worldState.infoString(verbose = event.agentProcess.processContext.processOptions.verbosity.showLongPlans),
-                )
+                logger.info(getAgentProcessReadyToPlanEventMessage(event))
             }
 
             is AgentProcessPlanFormulatedEvent -> {
-                logger.info(
-                    agentProcessPlanFormulatedEventMessage,
-                    event.processId,
-                    event.plan.infoString(verbose = event.agentProcess.processContext.processOptions.verbosity.showLongPlans),
-                    event.worldState.infoString(),
-                )
+                logger.info(getAgentProcessPlanFormulatedEventMessage(event))
             }
 
             is EarlyTermination -> {
-                logger.info(
-                    earlyTerminationMessage,
-                    event.processId,
-                    event.policy,
-                    event.reason,
-                )
+                logger.info(getEarlyTerminationMessage(event))
             }
 
             is GoalAchievedEvent -> {
-                logger.info(
-                    "[{}] goal {} achieved in {}",
-                    event.processId,
-                    event.goal.name,
-                    event.agentProcess.runningTime,
-                )
+                logger.info(getGoalAchievedEventMessage(event))
             }
 
             is ToolCallRequestEvent -> {
-                logger.info(
-                    toolCallRequestEventMessage,
-                    event.processId,
-                    event.action?.shortName(),
-                    event.function,
-                    event.toolInput,
-                )
+                logger.info(getToolCallRequestEventMessage(event))
             }
 
             is ToolCallResponseEvent -> {
@@ -215,28 +243,12 @@ open class LoggingAgenticEventListener(
                             } else {
                                 trim(s = raw, max = 80, keepRight = 5)
                             }
-                        logger.info(
-                            toolCallSuccessResponseEventMessage,
-                            event.processId,
-                            event.action?.shortName(),
-                            event.function,
-                            resultToShow,
-                            event.runningTime.toMillis(),
-                            event.toolInput,
-                        )
+                        logger.info(getToolCallSuccessResponseEventMessage(event, resultToShow ?: "null"))
                     }
 
                     false -> {
                         val throwable = event.result.exceptionOrNull()
-                        logger.info(
-                            toolCallFailureResponseEventMessage,
-                            event.processId,
-                            event.action?.shortName(),
-                            event.function,
-                            throwable,
-                            event.runningTime.toMillis(),
-                            event.toolInput,
-                        )
+                        logger.info(getToolCallFailureResponseEventMessage(event, throwable))
                         throwable?.let {
                             logger.debug(
                                 "Error in function call {}",
@@ -251,15 +263,11 @@ open class LoggingAgenticEventListener(
             is AgentProcessFinishedEvent -> {
                 when (event.agentProcess.status) {
                     AgentProcessStatusCode.COMPLETED -> {
-                        logger.info(
-                            processCompletionMessage,
-                            event.processId,
-                            event.agentProcess.runningTime,
-                        )
+                        logger.info(getProcessCompletionMessage(event))
                     }
 
                     AgentProcessStatusCode.FAILED -> {
-                        logger.info(processFailureMessage, event.agentProcess.id)
+                        logger.info(getProcessFailureMessage(event))
                     }
 
                     else -> {
@@ -269,106 +277,46 @@ open class LoggingAgenticEventListener(
             }
 
             is AgentProcessWaitingEvent -> {
-                logger.info(
-                    "[{}] waiting",
-                    event.processId,
-                )
+                logger.info(getAgentProcessWaitingEventMessage(event))
             }
 
             is AgentProcessStuckEvent -> {
-                logger.info(
-                    "[{}] stuck at {}",
-                    event.processId,
-                    event.agentProcess.lastWorldState
-                )
+                logger.info(getAgentProcessStuckEventMessage(event))
             }
 
             is ObjectAddedEvent -> {
-                logger.info(
-                    objectAddedMessage,
-                    event.processId,
-                    if (event.agentProcess.processContext.processOptions.verbosity.debug)
-                        event.value else event.value::class.java.simpleName,
-                )
+                logger.info(getObjectAddedEventMessage(event))
             }
 
             is ObjectBoundEvent -> {
-                logger.info(
-                    objectBoundMessage,
-                    event.processId,
-                    event.name,
-                    if (event.agentProcess.processContext.processOptions.verbosity.debug)
-                        event.value else event.value::class.java.simpleName,
-                )
+                logger.info(getObjectBoundEventMessage(event))
             }
 
             is LlmRequestEvent<*> -> {
-                var message = llmRequestEventMessage
-                logger.info(
-                    message,
-                    event.processId,
-                    event.interaction.llm.criteria,
-                    event.interaction.id.value,
-                    event.outputClass.simpleName,
-                    event.interaction.llm,
-                )
+                logger.info(getLlmRequestEventMessage(event))
             }
 
             // Only show this at all if verbose
             is ChatModelCallEvent<*> -> {
                 if (event.agentProcess.processContext.processOptions.verbosity.showPrompts) {
-                    val promptInfo = "using ${event.interaction.llm.criteria.toString().color(AnsiColor.GREEN)}\n${
-                        event.springAiPrompt.toInfoString().color(AnsiColor.GREEN)
-                    }\nprompt id: '${event.interaction.id}'\ntools: [${
-                        event.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
-                            .color(AnsiColor.BRIGHT_MAGENTA)
-                    }]"
-                    logger.info(
-                        "{} Spring AI ChatModel call:\n{}",
-                        event.processId,
-                        promptInfo,
-                    )
+                    logger.info(getChatModelCallEventMessage(event))
                 }
             }
 
             is LlmResponseEvent<*> -> {
-                var message = llmResponseEventMessage()
-                if (event.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
-                    message += "\nResponse from prompt ${event.interaction.id}:\n${
-                        (jacksonObjectMapper().writeValueAsString(event.response)).color(
-                            color = AnsiColor.YELLOW
-                        )
-                    }"
-                }
-                logger.info(
-                    message,
-                    event.processId,
-                    event.interaction.id.value,
-                    event.response?.let { it::class.java.simpleName } ?: "null",
-                    event.interaction.llm.criteria,
-                    event.runningTime.seconds,
-                )
+                logger.info(getLlmResponseEventMessage(event))
             }
 
             is ActionExecutionStartEvent -> {
-                logger.info(actionExecutionStartMessage, event.processId, event.action.name)
+                logger.info(getActionExecutionStartMessage(event))
             }
 
             is ActionExecutionResultEvent -> {
-                logger.info(
-                    actionExecutionResultMessage,
-                    event.processId,
-                    event.action.name,
-                    event.actionStatus.runningTime,
-                )
+                logger.info(getActionExecutionResultMessage(event))
             }
 
             is ProgressUpdateEvent -> {
-                logger.info(
-                    progressUpdateEventMessage,
-                    event.processId,
-                    event.createProgressBar(length = 50).color(LumonColorPalette.MEMBRANE),
-                )
+                logger.info(getProgressUpdateEventMessage(event))
             }
 
             else -> {
@@ -395,6 +343,5 @@ open class LoggingAgenticEventListener(
            |${this.options}
            |""".trimMargin()
     }
-
 
 }

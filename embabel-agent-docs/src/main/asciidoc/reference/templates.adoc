@@ -1,0 +1,10 @@
+[[reference.templates]]
+=== Templates
+
+Embabel supports Jinja templates for generating prompts and `PromptContributors`.
+
+To do this, your agent or other type should declare a `TemplateRenderer` parameter, which will be provided by the platform and injected by Spring.
+
+TIP: Don't rush to externalize prompts.
+In modern languages with multi-line strings, it's often easier to keep prompts in the codebase.
+Externalizing them can sacrifice type safety and lead to complexity and maintenance challenges.

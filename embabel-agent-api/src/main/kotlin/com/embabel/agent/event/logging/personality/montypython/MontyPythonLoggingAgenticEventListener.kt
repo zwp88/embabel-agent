@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.event.logging.personality.montypython
 
+import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.common.util.color
 import org.slf4j.LoggerFactory
@@ -48,18 +49,44 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
     |__________|                                       |__________|
 
     """.trimIndent().color(MontyPythonColorPalette.BRIGHT_RED),
-    agentDeploymentEventMessage = "Found a parrot: {}\n\tdescription: {}",
-    rankingChoiceMadeEventMessage = "You don't vote for kings. We have chosen {} with {} certainty based on {}",
-    dynamicAgentCreationMessage = "It's not dead yet: Created agent {}",
-    agentProcessCreationEventMessage = "And now for something completely different: {}",
-    agentProcessReadyToPlanEventMessage = "[{}] My brain hurts! Ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "[{}] We've found a witch! Formulated plan <{}> from {}",
-    processCompletionMessage = "[{}] Tis but a scratch: process completed in {}",
-    processFailureMessage = "[{}] It's just a flesh wound: Process failed",
-    objectAddedMessage = "Bring out your dead! Object added: {} to process {}",
-    llmRequestEventMessage = "[{}] Strange women lying in ponds: Requesting LLM {} transform from {} -> {}",
-    actionExecutionStartMessage = "[{}] Run away! Run away! executing action {}",
-    actionExecutionResultMessage = "[{}] I fart in your general direction! Executed action {} in {}",
-    objectBoundMessage = "[{}] Object saved! Nudge nudge, wink wink, say no more! {}:{}",
     colorPalette = MontyPythonColorPalette,
-)
+) {
+    override fun getAgentDeploymentEventMessage(e: AgentDeploymentEvent): String =
+        "Found a parrot: ${e.agent.name}\n\tdescription: ${e.agent.description}"
+
+    override fun getRankingChoiceMadeEventMessage(e: RankingChoiceMadeEvent<*>): String =
+        "You don't vote for kings. We have chosen ${e.type.simpleName} with ${e.choice.score} certainty based on ${e.basis}"
+
+    override fun getDynamicAgentCreationMessage(e: DynamicAgentCreationEvent): String =
+        "It's not dead yet: Created agent ${e.agent.infoString()}"
+
+    override fun getAgentProcessCreationEventMessage(e: AgentProcessCreationEvent): String =
+        "And now for something completely different: ${e.processId}"
+
+    override fun getAgentProcessReadyToPlanEventMessage(e: AgentProcessReadyToPlanEvent): String =
+        "[${e.processId}] My brain hurts! Ready to plan from ${e.worldState.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)}"
+
+    override fun getAgentProcessPlanFormulatedEventMessage(e: AgentProcessPlanFormulatedEvent): String =
+        "[${e.processId}] We've found a witch! Formulated plan <${e.plan.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)}> from ${e.worldState.infoString()}"
+
+    override fun getProcessCompletionMessage(e: AgentProcessFinishedEvent): String =
+        "[${e.processId}] Tis but a scratch: process completed in ${e.agentProcess.runningTime}"
+
+    override fun getProcessFailureMessage(e: AgentProcessFinishedEvent): String =
+        "[${e.processId}] It's just a flesh wound: Process failed"
+
+    override fun getObjectAddedEventMessage(e: ObjectAddedEvent): String =
+        "Bring out your dead! Object added: ${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName} to process ${e.processId}"
+
+    override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
+        "[${e.processId}] Strange women lying in ponds: Requesting LLM ${e.interaction.llm.criteria} transform from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+
+    override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =
+        "[${e.processId}] Run away! Run away! executing action ${e.action.name}"
+
+    override fun getActionExecutionResultMessage(e: ActionExecutionResultEvent): String =
+        "[${e.processId}] I fart in your general direction! Executed action ${e.action.name} in ${e.actionStatus.runningTime}"
+
+    override fun getObjectBoundEventMessage(e: ObjectBoundEvent): String =
+        "[${e.processId}] Object saved! Nudge nudge, wink wink, say no more! ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
+}

@@ -1,4 +1,4 @@
 [[overview.agent-framework]]
 === Why do we need an Agent Framework?
 
-Agent frameworks break up
+Agent frameworks break complex tasks into smaller, manageable components, offering greater control and predictability.

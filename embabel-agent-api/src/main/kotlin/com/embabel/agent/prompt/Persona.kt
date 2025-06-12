@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.experimental.prompt
+package com.embabel.agent.prompt
 
 import com.embabel.common.ai.prompt.PromptContributor
 
@@ -38,6 +38,17 @@ interface Persona : PromptContributor {
     }
 
     companion object {
+
+        @JvmStatic
+        fun create(
+            name: String,
+            persona: String,
+            voice: String,
+            objective: String,
+        ): Persona {
+            return PersonaImpl(name, persona, voice, objective)
+        }
+
         operator fun invoke(
             name: String,
             persona: String,
@@ -46,6 +57,7 @@ interface Persona : PromptContributor {
         ): Persona {
             return PersonaImpl(name, persona, voice, objective)
         }
+
     }
 
 }

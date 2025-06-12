@@ -87,6 +87,9 @@ internal data class MethodReturnPromptRunner(
         )
     }
 
+    override fun withLlm(llm: LlmOptions): PromptRunner =
+        copy(llm = llm)
+
     override fun withToolGroup(toolGroup: String): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 

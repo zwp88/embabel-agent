@@ -285,10 +285,6 @@ class AgentMetadataReader(
         )
         for (parameter in method.parameters) {
             when {
-                ProcessContext::class.java.isAssignableFrom(parameter.type) -> {
-                    args += processContext
-                }
-
                 OperationContext::class.java.isAssignableFrom(parameter.type) -> {
                     args += operationContext
                 }

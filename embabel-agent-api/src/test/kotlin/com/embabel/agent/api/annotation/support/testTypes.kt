@@ -185,10 +185,10 @@ class NoConditions {
 }
 
 @AgentCapabilities
-class OneProcessContextConditionOnly {
+class OneOperationContextConditionOnly {
 
     @Condition(cost = .5)
-    fun condition1(processContext: ProcessContext): Boolean {
+    fun condition1(operationContext: OperationContext): Boolean {
         return true
     }
 
@@ -244,6 +244,19 @@ class OneTransformerActionWithNullableParameter {
             content += " and tasty!"
         }
         return PersonWithReverseTool(content)
+    }
+
+}
+
+internal data class InternalInput(val content: String)
+internal data class InternalOutput(val content: String)
+
+@Agent(description = "Package visible domain classes")
+class InternalDomainClasses {
+
+    @Action(cost = 500.0)
+    internal fun oo(internalInput: InternalInput): InternalOutput {
+        return InternalOutput(internalInput.content)
     }
 
 }

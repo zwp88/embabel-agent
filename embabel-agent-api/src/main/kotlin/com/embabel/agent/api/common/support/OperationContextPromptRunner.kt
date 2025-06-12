@@ -125,6 +125,9 @@ internal data class OperationContextPromptRunner(
         return determination.result && determination.confidence >= confidenceThreshold
     }
 
+    override fun withLlm(llm: LlmOptions): PromptRunner =
+        copy(llm = llm)
+
     override fun withToolGroup(toolGroup: String): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
