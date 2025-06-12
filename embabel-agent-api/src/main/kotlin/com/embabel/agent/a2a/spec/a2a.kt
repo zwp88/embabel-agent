@@ -690,3 +690,34 @@ object A2AErrorCodes {
 data class ResponseWrapper(
     val root: JSONRPCResponse
 )
+
+/**
+ * Parameters for streaming messages
+ */
+data class MessageStreamParams(
+    /** The ID of the task to stream messages for */
+    val taskId: String,
+
+    /** The message to process */
+    val message: Message? = null,
+
+    /** Optional configuration for streaming */
+    val configuration: StreamConfiguration? = null,
+
+    /** Extension metadata */
+    val metadata: Map<String, Any>? = null
+)
+
+/**
+ * Configuration for message streaming
+ */
+data class StreamConfiguration(
+    /** Whether to include message history */
+    val includeHistory: Boolean = false,
+
+    /** Maximum number of messages to include in history */
+    val historyLength: Int? = null,
+
+    /** Whether to stream in real-time */
+    val realTime: Boolean = true
+)
