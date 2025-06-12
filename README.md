@@ -23,7 +23,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;
 
-Framework for authoring agentic flows on the JVM that seamlessly mix LLM-prompted interactions
+Embabel (Em-BAY-bel) is a framework for authoring agentic flows on the JVM that seamlessly mix LLM-prompted interactions
 with code and domain models. Supports
 intelligent path finding towards goals. Written in Kotlin
 but offers a natural usage
@@ -145,7 +145,7 @@ To create your own Embabel agent project, type:
 uvx --from git+https://github.com/embabel/project-creator.git project-creator
 ```
 
-Choose Java or Kotlin and specify your project name and package name and you'll have an agent running in under a minute, 
+Choose Java or Kotlin and specify your project name and package name and you'll have an agent running in under a minute,
 if you already have an `OPENAI_API_KEY` and have Maven installed.
 
 ## Why Is Embabel Needed?
