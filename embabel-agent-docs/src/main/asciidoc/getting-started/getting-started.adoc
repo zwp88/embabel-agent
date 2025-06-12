@@ -3,6 +3,8 @@
 :sectids:
 :sectanchors:
 
+include::quickstart.adoc[]
+
 include::installing.adoc[]
 include::running.adoc[]
 include::first-agent.adoc[]

@@ -1,6 +1,7 @@
 [[reference.invoking]]
 === Invoking Embabel Agents
 
-Explain intent
+While the examples primarily show Embabel agents being invoked via `UserInput` through the Embabel shell, they can also be invoked programmatically, with strong typing.
 
-TypedOps
+==== The `TypedOps` interface
+

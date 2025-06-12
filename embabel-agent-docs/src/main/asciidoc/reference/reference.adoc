@@ -11,6 +11,7 @@ include::dsl.adoc[]
 include::types.adoc[]
 include::tools.adoc[]
 include::prompt-contributors.adoc[]
+include::templates.adoc[]
 
 include::agent-process.adoc[]
 include::agent-platform.adoc[]
