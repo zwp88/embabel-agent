@@ -30,14 +30,16 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.DirtiesContext;
 
 /**
- * Java test for DefaultAgentAutoConfiguration
+ * Java INTEGRATION test for DefaultAgentAutoConfiguration.
+ * Test employs OPEN API KEY.
+ * 
  */
 @Profile("test")
 @SpringBootTest(classes=DefaultAgentAutoConfiguration.class)
 @ComponentScan(basePackages = "com.embabel.agent.autoconfigure")
 @ImportAutoConfiguration(classes = {DefaultAgentAutoConfiguration.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class DefaultAgentAutoConfigurationTest {
+class DefaultAgentAutoConfigurationIT {
 
 
     @Autowired
