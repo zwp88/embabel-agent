@@ -365,6 +365,7 @@ class PresentationMakerShell(
             result = AgentProcessExecution.fromProcessStatus(basis = presentationRequest, agentProcess = agentProcess),
             colorPalette = LumonColorPalette,
             objectMapper = objectMapper,
+            lineLength = 140,
         ) + "\ndeck is at ${presentationRequest.outputDirectory}/${presentationRequest.outputFile}"
     }
 }

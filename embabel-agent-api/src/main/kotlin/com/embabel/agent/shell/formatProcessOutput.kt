@@ -32,16 +32,17 @@ fun formatProcessOutput(
     result: AgentProcessExecution,
     colorPalette: ColorPalette,
     objectMapper: ObjectMapper,
+    lineLength: Int,
 ): String {
     var output = ""
     if (result.output is HasContent) {
         // TODO naive Markdown test
         output += if (result.output.content.contains("#")) {
             "\n" + WordUtils.wrap(
-                markdownToConsole(result.output.content), 140
+                markdownToConsole(result.output.content), lineLength
             ).color(colorPalette.color2)
         } else {
-            WordUtils.wrap(result.output.content, 140).color(
+            WordUtils.wrap(result.output.content, lineLength).color(
                 colorPalette.color2,
             )
         }
