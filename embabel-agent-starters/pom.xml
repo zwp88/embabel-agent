@@ -13,7 +13,7 @@
     <description>Embabel Agent Starters</description>
     <modules>
         <module>embabel-agent-starter</module>
-        <module>embabel-agent-api-starter</module>
+        <module>embabel-agent-starter-platform</module>
     </modules>
 
 </project>

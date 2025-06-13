@@ -7,7 +7,7 @@
         <artifactId>embabel-agent-starters</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>embabel-agent-api-starter</artifactId>
+    <artifactId>embabel-agent-starter-platform</artifactId>
     <packaging>pom</packaging>
     <name>Embabel Agent API Starter</name>
     <description>Embabel Agent API Starter</description>
@@ -17,7 +17,6 @@
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-starter</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

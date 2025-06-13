@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.autoconfigure.defaultconfig;
+package com.embabel.agent.autoconfigure.platform;
 
 import com.embabel.agent.event.AgenticEventListener;
 import com.embabel.agent.rag.RagService;
@@ -26,15 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.DirtiesContext;
 
 /**
  * Java INTEGRATION test for DefaultAgentAutoConfiguration.
  * Test employs OPEN API KEY.
- * 
+ *
  */
-@Profile("test")
 @SpringBootTest(classes=DefaultAgentAutoConfiguration.class)
 @ComponentScan(basePackages = "com.embabel.agent.autoconfigure")
 @ImportAutoConfiguration(classes = {DefaultAgentAutoConfiguration.class})
