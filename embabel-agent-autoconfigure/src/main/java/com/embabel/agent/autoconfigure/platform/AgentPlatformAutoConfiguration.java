@@ -44,11 +44,11 @@ import org.springframework.context.annotation.Import;
 )
 @ConditionalOnClass({AgentPlatformConfiguration.class, ToolGroupsConfiguration.class, RagServiceConfiguration.class})
 @Import({AgentPlatformConfiguration.class, ToolGroupsConfiguration.class, RagServiceConfiguration.class})
-public class DefaultAgentAutoConfiguration {
-    final private Logger logger = LoggerFactory.getLogger(DefaultAgentAutoConfiguration.class);
+public class AgentPlatformAutoConfiguration {
+    final private Logger logger = LoggerFactory.getLogger(AgentPlatformAutoConfiguration.class);
 
     @PostConstruct
     public void logEvent() {
-        logger.info("DefaultAgentAutoConfiguration about to be processed...");
+        logger.info("AgentPlatformAutoConfiguration about to be processed...");
     }
 }

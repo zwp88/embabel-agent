@@ -1,1 +1,1 @@
-com.embabel.agent.autoconfigure.platform.DefaultAgentAutoConfiguration
+com.embabel.agent.autoconfigure.platform.AgentPlatformAutoConfiguration
