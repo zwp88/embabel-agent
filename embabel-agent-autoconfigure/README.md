@@ -5,18 +5,18 @@ Bootstrap beans defined in @**Configuration** artifacts for Spring Boot Applicat
 
 ## Auto-Configuration Types
 
-1. **DefaultAgentAutoConfiguration** - bootstraps Agent Platform Configuration,  Tools Group Configuration, and RAG Service Configuration
+1. **AgentPlatformAutoConfiguration** - bootstraps Agent Platform Configuration,  Tools Group Configuration, and RAG Service Configuration
 
 
 ## Usage
 
 Required dependency:
 
-**embabel-agent-api-starter**
+    **embabel-agent-starter-platform**
 
 Example:
 Include
 
-**@ImportAutoConfiguration(DefaultAgentAutoConfiguration.class)**
+    **@ImportAutoConfiguration(AgentPlatformAutoConfiguration.class)**
 
 into Spring Boot Application

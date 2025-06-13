@@ -10,7 +10,7 @@
     <artifactId>embabel-agent-autoconfigure</artifactId>
     <packaging>jar</packaging>
     <name>Embabel Agent Autoconfiguration</name>
-    <description>Spring Boot Autoconfigurations for Embabel Agent API(s)</description>
+    <description>Spring Boot Auto-Configurations for Embabel Agent API</description>
 
     <dependencies>
         <dependency>
