@@ -104,7 +104,10 @@ interface PromptRunner : LlmUse {
      * @param promptContributor
      * @return PromptRunner instance with the added PromptContributor
      */
-    fun withPromptContributor(promptContributor: PromptContributor): PromptRunner
+    fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
+        withPromptContributors(listOf(promptContributor))
+
+    fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner
 
     fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 

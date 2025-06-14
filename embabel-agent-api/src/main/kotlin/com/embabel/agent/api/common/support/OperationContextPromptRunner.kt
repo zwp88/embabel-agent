@@ -134,8 +134,8 @@ internal data class OperationContextPromptRunner(
     override fun withToolObject(toolObject: Any?): PromptRunner =
         copy(toolObjects = (this.toolObjects + toolObject).filterNotNull())
 
-    override fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
-        copy(promptContributors = this.promptContributors + promptContributor)
+    override fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner =
+        copy(promptContributors = this.promptContributors + promptContributors)
 
     override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
         copy(generateExamples = generateExamples)
