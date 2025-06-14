@@ -15,12 +15,15 @@
  */
 package com.embabel.agent.prompt
 
+import com.embabel.common.ai.prompt.PromptContributionLocation
 import com.embabel.common.ai.prompt.PromptContributor
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 /**
  * A way to structure LLM responses, by grounding them
  * in a personality.
  */
+@JsonDeserialize(`as` = PersonaImpl::class)
 interface Persona : PromptContributor {
 
     val name: String
@@ -45,8 +48,17 @@ interface Persona : PromptContributor {
             persona: String,
             voice: String,
             objective: String,
+            role: String? = null,
+            promptContributionLocation: PromptContributionLocation = PromptContributionLocation.BEGINNING,
         ): Persona {
-            return PersonaImpl(name, persona, voice, objective)
+            return PersonaImpl(
+                name = name,
+                persona = persona,
+                voice = voice,
+                objective = objective,
+                role = role,
+                promptContributionLocation = promptContributionLocation,
+            )
         }
 
         operator fun invoke(
@@ -54,8 +66,16 @@ interface Persona : PromptContributor {
             persona: String,
             voice: String,
             objective: String,
+            role: String? = null,
+            promptContributionLocation: PromptContributionLocation = PromptContributionLocation.BEGINNING,
         ): Persona {
-            return PersonaImpl(name, persona, voice, objective)
+            return PersonaImpl(
+                name = name, persona = persona,
+                voice = voice,
+                objective = objective,
+                role = role,
+                promptContributionLocation = promptContributionLocation,
+            )
         }
 
     }
@@ -67,4 +87,6 @@ private data class PersonaImpl(
     override val persona: String,
     override val voice: String,
     override val objective: String,
+    override val role: String?,
+    override val promptContributionLocation: PromptContributionLocation,
 ) : Persona
