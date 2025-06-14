@@ -1,0 +1,12 @@
+[[reference.profiles]]
+=== Embabel and Spring
+
+Embabel embraces Spring.
+
+It is built on Spring AI, and leverages Spring Boot for configuration and management.
+
+==== Spring profiles
+
+Embabel makes extensive use of Spring profiles.
+
+YML file

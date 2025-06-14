@@ -1,0 +1,54 @@
+[[agent.design]]
+== Design Considerations
+
+Embabel is designed to give you the ability to determine the correct balance between LLM autonomy and control from code.
+This section discusses the design considerations that you can use to achieve this balance.
+
+=== Domain objects
+
+A rich domain model helps build a good agentic system.
+Domain objects should not merely contain state, but also expose behavior.
+Avoid the https://en.wikipedia.org/wiki/Anemic_domain_model[anemic domain model].
+Domain objects have multiple roles:
+
+1. _Ensuring type safety and toolability._
+Code can access their state; prompts will be strongly typed; and LLMs know what to return.
+2. _Exposing behavior to call in code_, exactly as in any well-designed object-oriented system.
+3. _Exposing tools to LLMs_, allowing them to call domain objects.
+
+The third role _is_ novel in the context of LLMs and Embabel.
+
+IMPORTANT: When designing your domain objects, consider which methods should be callable by LLMs and which should not.
+
+Expose methods that LLMs should be able to call using the `@Tool` annotation:
+
+[source,kotlin]
+----
+@Tool(description = "Build the project using the given command in the root") // <1>
+fun build(command: String): String {
+    val br = ci.buildAndParse(BuildOptions(command, true))
+    return br.relevantOutput()
+}
+----
+
+<1> The Spring AI `@Tool` annotation indicates that this method is callable by LLMs.
+
+When an `@Action` method issues a prompt, tool methods on all domain objects are available to the LLM.
+
+You can also add additional tool methods with the `withToolObjects` method on `PromptRunner`.
+
+Domain objects may or may not be persistent.
+If persistent, they will likely be stored in a familiar JVM technology such as JPA or JDBC.
+We advocate the use of https://spring.io/projects/spring-data[Spring Data] patterns and repositories, although you are free to use any persistence technology you like.
+
+=== Tool Call Choice
+
+When to use MCP or other tools versus method calls in agents
+
+=== Mixing LLMs
+
+It's good practice to use multiple LLMs in your agentic system.
+Embabel makes it easy.
+One key benefit of breaking functionality into smaller actions is that you can use different LLMs for different actions, depending on their strengths and weaknesses.
+You can also the cheapest (greenest) possible LLM for a given task.
+

@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
  * @param description A description of the agent. Required
  * @param goals The goals the agent can achieve
  * @param stuckHandler The handler to call when the agent is stuck, provided
- * @param conditions Well known conditions that can be referenced by actions
+ * @param conditions Well-known conditions that can be referenced by actions
  * @param actions The actions the agent can use
  * @param schemaTypes Data types used in this agent
  */
@@ -54,6 +54,27 @@ data class Agent(
         actions = actions,
     ),
 ) : Described, AssetCoordinates, AgentScope {
+
+    @JvmOverloads
+    constructor(
+        name: String,
+        provider: String,
+        version: String,
+        description: String,
+        goals: Set<Goal>,
+        actions: List<Action>,
+        conditions: Set<Condition> = emptySet(),
+        stuckHandler: StuckHandler? = null,
+    ) : this(
+        name = name,
+        provider = provider,
+        version = Semver(version),
+        description = description,
+        goals = goals,
+        actions = actions,
+        conditions = conditions,
+        stuckHandler = stuckHandler,
+    )
 
     /**
      * Return a version of the agent with the single goal

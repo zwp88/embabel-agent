@@ -23,7 +23,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;
 
-Framework for authoring agentic flows on the JVM that seamlessly mix LLM-prompted interactions
+Embabel (Em-BAY-bel) is a framework for authoring agentic flows on the JVM that seamlessly mix LLM-prompted interactions
 with code and domain models. Supports
 intelligent path finding towards goals. Written in Kotlin
 but offers a natural usage
@@ -136,6 +136,17 @@ Possible future modes:
 
 Embabel agent systems will also support federation, both with other Embabel systems (allowing planning to incorporate
 remote actions and goals) and third party agent frameworks.
+
+## Quick Start
+
+To create your own Embabel agent project, type:
+
+```
+uvx --from git+https://github.com/embabel/project-creator.git project-creator
+```
+
+Choose Java or Kotlin and specify your project name and package name and you'll have an agent running in under a minute,
+if you already have an `OPENAI_API_KEY` and have Maven installed.
 
 ## Why Is Embabel Needed?
 
@@ -353,6 +364,14 @@ If you're running Ollama locally, set the `ollama` profile and Embabel will auto
 endpoint and make all models available.
 
 ### Running
+
+Create your own agent project with
+
+```
+uvx --from git+https://github.com/embabel/project-creator.git project-creator
+```
+
+### Working with this repository
 
 The easiest way to run the application using one of the scripts in the
 `scripts` directory. You can start the shell in interactive mode with:

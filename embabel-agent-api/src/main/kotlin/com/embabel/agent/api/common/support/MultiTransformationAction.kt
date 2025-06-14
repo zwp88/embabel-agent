@@ -48,7 +48,7 @@ class MultiTransformationAction<O : Any>(
     post = post,
     cost = cost,
     value = value,
-    inputs,
+    inputs = inputs,
     outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.name)),
     toolGroups = toolGroups,
     canRerun = canRerun,

@@ -1,32 +1,20 @@
 [[user-guide]]
-
 ifndef::imagesdir[]
 :imagesdir: images
 endif::[]
 
-== Embabel Agent Framework
-
-Framework for authoring agentic flows that seamlessly mix LLM-prompted interactions with manual code and domain models and support intelligent path finding towards goals.
-
-[.lead]
-Architecture
-
-[.lead]
-Technology Stack
-
-* JDK 21
-* Kotlin
-* Etc
+include::overview/overview.adoc[]
+include::getting-started/getting-started.adoc[]
+include::reference/reference.adoc[]
 
 
-[.lead]
-LLM Providers
-
-* OpenAI
-* Anthropic
-* Etc
-
-include::agent-api/agent-guide.adoc[]
 include::shell/shell-guide.adoc[]
-include::eval/eval-guide.adoc[]
+// include::eval/eval-guide.adoc[]
 include::examples/examples-guide.adoc[]
+
+include::design/design.adoc[]
+
+include::contributing/contributing.adoc[]
+include::roadmap/roadmap.adoc[]
+
+include::resources/resources.adoc[]

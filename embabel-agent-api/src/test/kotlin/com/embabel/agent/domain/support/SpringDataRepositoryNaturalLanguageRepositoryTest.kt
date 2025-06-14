@@ -18,6 +18,9 @@ package com.embabel.agent.domain.support
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.agent.domain.persistence.FindEntitiesRequest
+import com.embabel.agent.domain.persistence.support.FinderInvocation
+import com.embabel.agent.domain.persistence.support.FinderInvocations
+import com.embabel.agent.domain.persistence.support.naturalLanguageRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -27,13 +30,17 @@ import org.springframework.data.repository.CrudRepository
 import java.util.*
 import kotlin.test.assertTrue
 
-data class Thing(val name: String)
+data class Thing(val name: String, val description: String, val count: Int = 0)
 
 interface ThingRepository : CrudRepository<Thing, String> {
 
     fun findByName(name: String): Thing?
 
     fun findByDescription(description: String): Optional<Thing>
+
+    fun findByNameAndDescription(name: String, description: String): Thing?
+
+    fun findByNameAndCount(name: String, count: Int): Thing?
 }
 
 class SpringDataRepositoryNaturalLanguageRepositoryTest {
@@ -57,6 +64,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
             llm = mockk(),
+            idGetter = { it.name },
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -66,12 +74,12 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
     fun `returns nothing with nullable finder`() {
         val tr = mockk<ThingRepository>()
         every {
-            tr.findByName("something")
+            tr.findByName(any())
         } returns null
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByName", value = "something")),
+            invocations = listOf(FinderInvocation(name = "findByName", args = listOf("something"))),
         )
         every {
             mockPromptRunner.createObject(
@@ -84,6 +92,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
             llm = mockk(),
+            idGetter = { it.name }
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -101,7 +110,12 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByDescription", value = "something")),
+            invocations = listOf(
+                FinderInvocation(
+                    name = "findByDescription",
+                    args = listOf("something")
+                )
+            ),
         )
         every {
             mockPromptRunner.createObject(
@@ -114,6 +128,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
             llm = mockk(),
+            idGetter = { it.name }
         )
         val found = nlr.find(FindEntitiesRequest("Description"))
         assertTrue(found.matches.isEmpty(), "Should not find anything")
@@ -124,15 +139,18 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
 
     @Test
     fun `returns something with nullable finder`() {
-        val theThing = Thing("something")
+        val theThing = Thing("something", "Description")
         val tr = mockk<ThingRepository>()
         every {
             tr.findByName("something")
         } returns theThing
+        every {
+            tr.findByName("Something")
+        } returns null
         val mockPromptRunner = mockk<PromptRunner>()
         val promptSlot = slot<String>()
         val result = FinderInvocations(
-            invocations = listOf(FinderInvocation(name = "findByName", value = "something")),
+            invocations = listOf(FinderInvocation(name = "findByName", args = listOf("something"))),
         )
         every {
             mockPromptRunner.createObject(
@@ -145,6 +163,7 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
         val nlr = tr.naturalLanguageRepository(
             context = mockPayload,
             llm = mockk(),
+            idGetter = { it.name }
         )
         val matches = nlr.find(FindEntitiesRequest("Description"))
         val found = matches.matches.single()
@@ -152,6 +171,82 @@ class SpringDataRepositoryNaturalLanguageRepositoryTest {
 //        verify(exactly = 1) {
 //            tr.findByName(result.fields[0].name)
 //        }
+    }
+
+    @Test
+    fun `returns something with nullable finder and alternate case`() {
+        val theThing = Thing("Something", "Description")
+        val tr = mockk<ThingRepository>()
+        every {
+            tr.findByName("Something")
+        } returns theThing
+        every {
+            tr.findByName("something")
+        } returns null
+        val mockPromptRunner = mockk<PromptRunner>()
+        val promptSlot = slot<String>()
+        val result = FinderInvocations(
+            invocations = listOf(
+                FinderInvocation(name = "findByName", args = listOf("something")),
+                FinderInvocation(name = "findByName", args = listOf("Something")),
+            ),
+        )
+        every {
+            mockPromptRunner.createObject(
+                capture(promptSlot),
+                FinderInvocations::class.java,
+            )
+        } answers { result }
+        val mockPayload = mockk<ActionContext>()
+        every { mockPayload.promptRunner(any()) } returns mockPromptRunner
+        val nlr = tr.naturalLanguageRepository(
+            context = mockPayload,
+            llm = mockk(),
+            idGetter = { it.name }
+        )
+        val matches = nlr.find(FindEntitiesRequest("Description"))
+        val found = matches.matches.single()
+        assertEquals(theThing, found.match, "Should find the thing")
+//        verify(exactly = 1) {
+//            tr.findByName(result.fields[0].name)
+//        }
+    }
+
+    @Test
+    fun `handles non-string parameter`() {
+        val theThing = Thing("something", "Description", count = 1)
+        val tr = mockk<ThingRepository>()
+        every {
+            tr.findByNameAndCount("something", 1)
+        } returns theThing
+        every {
+            tr.findByNameAndCount("Something", 1)
+        } returns null
+        val mockPromptRunner = mockk<PromptRunner>()
+        val promptSlot = slot<String>()
+        val result = FinderInvocations(
+            invocations = listOf(
+                FinderInvocation(
+                    name = "findByNameAndCount",
+                    args = listOf("something", 1)
+                )
+            ),
+        )
+        every {
+            mockPromptRunner.createObject(
+                capture(promptSlot),
+                FinderInvocations::class.java,
+            )
+        } answers { result }
+        val mockPayload = mockk<ActionContext>()
+        every { mockPayload.promptRunner(any()) } returns mockPromptRunner
+        val nlr = tr.naturalLanguageRepository(
+            context = mockPayload,
+            llm = mockk(),
+            idGetter = { it.name }
+        )
+        val matches = nlr.find(FindEntitiesRequest("Description"))
+        val found = matches.matches.single()
     }
 
 }

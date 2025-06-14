@@ -50,7 +50,7 @@ internal data class OperationContextPromptRunner(
         prompt: String,
         outputClass: Class<T>,
     ): T {
-        return context.processContext.createObject<T>(
+        return context.processContext.createObject(
             prompt = prompt,
             interaction = LlmInteraction(
                 llm = llm,
@@ -58,6 +58,7 @@ internal data class OperationContextPromptRunner(
                 toolCallbacks = safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
+                generateExamples = generateExamples,
             ),
             outputClass = outputClass,
             agentProcess = context.processContext.agentProcess,
@@ -77,6 +78,7 @@ internal data class OperationContextPromptRunner(
                 toolCallbacks = safelyGetToolCallbacks(toolObjects),
                 promptContributors = promptContributors,
                 id = idForPrompt(prompt, outputClass),
+                generateExamples = generateExamples,
             ),
             outputClass = outputClass,
             agentProcess = context.processContext.agentProcess,
@@ -123,13 +125,18 @@ internal data class OperationContextPromptRunner(
         return determination.result && determination.confidence >= confidenceThreshold
     }
 
+    override fun withLlm(llm: LlmOptions): PromptRunner =
+        copy(llm = llm)
+
     override fun withToolGroup(toolGroup: String): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
     override fun withToolObject(toolObject: Any?): PromptRunner =
         copy(toolObjects = (this.toolObjects + toolObject).filterNotNull())
 
-    override fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
-        copy(promptContributors = this.promptContributors + promptContributor)
+    override fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner =
+        copy(promptContributors = this.promptContributors + promptContributors)
 
+    override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
+        copy(generateExamples = generateExamples)
 }

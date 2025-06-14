@@ -80,8 +80,13 @@ interface PromptRunner : LlmUse {
     ): Boolean
 
     /**
+     * Specify an LLM for the PromptRunner
+     */
+    fun withLlm(llm: LlmOptions): PromptRunner
+
+    /**
      * Add a tool group to the PromptRunner
-     * @param name of the toolGroup we're requesting
+     * @param toolGroup name of the toolGroup we're requesting
      * @return PromptRunner instance with the added tool group
      */
     fun withToolGroup(toolGroup: String): PromptRunner
@@ -99,7 +104,12 @@ interface PromptRunner : LlmUse {
      * @param promptContributor
      * @return PromptRunner instance with the added PromptContributor
      */
-    fun withPromptContributor(promptContributor: PromptContributor): PromptRunner
+    fun withPromptContributor(promptContributor: PromptContributor): PromptRunner =
+        withPromptContributors(listOf(promptContributor))
+
+    fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner
+
+    fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 
     companion object {
 
@@ -108,7 +118,7 @@ interface PromptRunner : LlmUse {
          */
         @JvmStatic
         @JvmOverloads
-        fun withLlm(llm: LlmOptions = LlmOptions()): PromptRunner {
+        fun usingLlm(llm: LlmOptions = LlmOptions()): PromptRunner {
             return using(llm)
         }
     }

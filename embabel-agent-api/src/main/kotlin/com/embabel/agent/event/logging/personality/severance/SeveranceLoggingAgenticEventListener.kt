@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.event.logging.personality.severance
 
+import com.embabel.agent.core.EarlyTermination
+import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.event.logging.LoggingPersonality.Companion.BANNER_WIDTH
 import com.embabel.common.util.color
@@ -81,53 +83,93 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         ▐▙▄▄▖▝▚▄▞▘▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌
 
     """.trimIndent().color(hexToRgb(LumonColorPalette.MEMBRANE)),
-    agentDeploymentEventMessage = "${highlight("WILES")}: Deployed agent {}\n\tdescription: {}",
-    rankingChoiceRequestEventMessage = kier("Choosing {} based on {}"),
-    rankingChoiceMadeEventMessage = kier(
-        """
-        Chose {} '{}' with confidence {} based on {}. Choices: {}
+) {
+
+    override fun getAgentDeploymentEventMessage(e: AgentDeploymentEvent): String =
+        "${highlight("WILES")}: Deployed agent ${e.agent.name}\n\tdescription: ${e.agent.description}"
+
+    override fun getRankingChoiceRequestEventMessage(e: RankingChoiceRequestEvent<*>): String =
+        kier("Choosing ${e.type.simpleName} based on ${e.basis}")
+
+    override fun getRankingChoiceMadeEventMessage(e: RankingChoiceMadeEvent<*>): String =
+        kier(
+            """
+        Chose ${e.type.simpleName} '${e.choice.match.name}' with confidence ${e.choice.score} based on ${e.basis}. Choices: ${e.rankings.infoString()}
             May my cunning acument slice through the fog of small minds, guiding them to their great purpose in labor.
         """.trimIndent()
-    ),
-    rankingChoiceNotMadeEventMessage = "${highlight("WOE")}: Failed to choose {} based on {}. Choices: {}. Confidence cutoff: {}",
-    dynamicAgentCreationMessage = "${highlight("WILES")}: Created agent {}",
-    agentProcessCreationEventMessage = kier(
-        """
+        )
+
+    override fun getRankingChoiceNotMadeEventMessage(e: RankingChoiceCouldNotBeMadeEvent<*>): String =
+        "${highlight("WOE")}: Failed to choose ${e.type.simpleName} based on ${e.basis}. Choices: ${e.rankings.infoString()}. Confidence cutoff: ${e.confidenceCutOff}"
+
+    override fun getDynamicAgentCreationMessage(e: DynamicAgentCreationEvent): String =
+        "${highlight("WILES")}: Created agent ${e.agent.infoString()}"
+
+    override fun getAgentProcessCreationEventMessage(e: AgentProcessCreationEvent): String =
+        kier(
+            """
         May my gaze be singularly placed upon the path, may the words of virtue guide me in the daily labor of my great undertaking.
-            [{}] created
-                    """.trimIndent()
-    ),
-    agentProcessReadyToPlanEventMessage = "[{}] ${highlight("WIT")}  ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "[{}] ${highlight("WILES")}: formulated plan {} from {}".color(
-        LumonColorPalette.MEMBRANE
-    ),
-    processCompletionMessage = """
-        [{}] completed in {}
+            [${e.processId}] created
+        """.trimIndent()
+        )
+
+    override fun getAgentProcessReadyToPlanEventMessage(e: AgentProcessReadyToPlanEvent): String =
+        "[${e.processId}] ${highlight("WIT")}  ready to plan from ${e.worldState.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)}"
+
+    override fun getAgentProcessPlanFormulatedEventMessage(e: AgentProcessPlanFormulatedEvent): String =
+        "[${e.processId}] ${highlight("WILES")}: formulated plan ${e.plan.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)} from ${e.worldState.infoString()}".color(
+            LumonColorPalette.MEMBRANE
+        )
+
+    override fun getProcessCompletionMessage(e: AgentProcessFinishedEvent): String =
+        """
+        [${e.processId}] completed in ${e.agentProcess.runningTime}
         ${CompletionMessages.random()}
 
         ${"The Board has concluded the call.".color(LumonColorPalette.MEMBRANE)}
+        """.trimIndent()
 
-        """.trimIndent(),
-    processFailureMessage = "[{}] ${highlight("WOE")}: failed",
-    earlyTerminationMessage = """"
-        [{}] early termination by {} for {}
+    override fun getProcessFailureMessage(e: AgentProcessFinishedEvent): String =
+        "[${e.processId}] ${highlight("WOE")}: failed"
+
+    override fun getEarlyTerminationMessage(e: EarlyTermination): String =
+        """
+        [${e.processId}] early termination by ${e.policy} for ${e.reason}
         Please refrain from any further speech, as you are no longer authorized to consort with any severed employee, nor they with you.
         """
-        .trimIndent(),
-    objectAddedMessage = "[{}] Perpetuity wing: object added: {}",
-    objectBoundMessage = "[{}] Perpetuity wing: object bound: {}:{}",
-    toolCallRequestEventMessage = "[{}] ${highlight("VERVE")}: ({}) calling tool {}({})",
-    toolCallSuccessResponseEventMessage = "[{}] ${highlight("VISION")}: ({}) tool {} returned {} in {}ms with payload {}",
-    toolCallFailureResponseEventMessage = "[{}] ${highlight("WOE")}: ({}) tool {} failed {} in {}ms with payload {}",
-    llmRequestEventMessage = "[{}] 🖥️ MACRODATA REFINEMENT: requesting LLM {} to transform {} from {} -> {} using {}",
-    llmResponseEventMessage = {
+            .trimIndent()
+
+    override fun getObjectAddedEventMessage(e: ObjectAddedEvent): String =
+        "[${e.processId}] Perpetuity wing: object added: ${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
+
+    override fun getObjectBoundEventMessage(e: ObjectBoundEvent): String =
+        "[${e.processId}] Perpetuity wing: object bound: ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
+
+    override fun getToolCallRequestEventMessage(e: ToolCallRequestEvent): String =
+        "[${e.processId}] ${highlight("VERVE")}: (${e.action?.shortName()}) calling tool ${e.function}(${e.toolInput})"
+
+    override fun getToolCallSuccessResponseEventMessage(e: ToolCallResponseEvent, resultToShow: String): String =
+        "[${e.processId}] ${highlight("VISION")}: (${e.action?.shortName()}) tool ${e.function} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+
+    override fun getToolCallFailureResponseEventMessage(e: ToolCallResponseEvent, throwable: Throwable?): String =
+        "[${e.processId}] ${highlight("WOE")}: (${e.action?.shortName()}) tool ${e.function} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+
+    override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
+        "[${e.processId}] \uD83D\uDDA5\uFE0F MACRODATA REFINEMENT: requesting LLM ${e.interaction.llm.criteria} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm} using ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"
+
+    override fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String =
         """
-        [{}] received LLM response {} of type {} from {} in {} seconds
+        [${e.processId}] received LLM response ${e.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
         ${TransformSuccessResponses.random()}
         """.trimIndent()
-    },
-    actionExecutionStartMessage = "[{}] ${highlight("VERVE")}: executing action {}",
-    actionExecutionResultMessage = "[{}] ${highlight("CHEER")}: completed action {} in {}",
-    progressUpdateEventMessage = "[{}] Industry: {}",
-    colorPalette = LumonColorPalette,
-)
+
+    override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =
+        "[${e.processId}] ${highlight("VERVE")}: executing action ${e.action.name}"
+
+    override fun getActionExecutionResultMessage(e: ActionExecutionResultEvent): String =
+        "[${e.processId}] ${highlight("CHEER")}: completed action ${e.action.name} in ${e.actionStatus.runningTime}"
+
+    override fun getProgressUpdateEventMessage(e: ProgressUpdateEvent): String =
+        "[${e.processId}] Industry: ${e.createProgressBar(length = 50).color(LumonColorPalette.MEMBRANE)}"
+
+}

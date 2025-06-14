@@ -28,6 +28,7 @@ import com.embabel.common.util.color
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.shell.standard.ShellComponent
@@ -35,6 +36,11 @@ import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
 import java.util.concurrent.CompletableFuture
 import kotlin.system.exitProcess
+
+@ConfigurationProperties(prefix = "embabel.shell")
+data class ShellConfig(
+    val lineLength: Int = 140,
+)
 
 /**
  * Main shell entry point
@@ -51,6 +57,7 @@ class ShellCommands(
     private val ingester: Ingester,
     private val toolStatsSource: ToolStatsSource,
     private val context: ConfigurableApplicationContext,
+    private val shellConfig: ShellConfig = ShellConfig(),
 ) {
 
     private val logger: Logger = loggingPersonality.logger
@@ -120,7 +127,7 @@ class ShellCommands(
     fun agents(): String {
         return "${"Agents:".bold()}\n${
             agentPlatform.agents()
-                .joinToString(separator = "\n${"-".repeat(120)}\n") { "\t" + it.infoString(verbose = true) }
+                .joinToString(separator = "\n${"-".repeat(shellConfig.lineLength)}\n") { "\t" + it.infoString(verbose = true) }
         }"
     }
 
@@ -425,7 +432,7 @@ class ShellCommands(
             val result = run()
             logger.debug("Result: {}\n", result)
             recordAgentProcess(result.agentProcess)
-            return formatProcessOutput(result, colorPalette, objectMapper)
+            return formatProcessOutput(result, colorPalette, objectMapper, shellConfig.lineLength)
         } catch (ngf: NoGoalFound) {
             if (verbosity.debug) {
                 logger.info(

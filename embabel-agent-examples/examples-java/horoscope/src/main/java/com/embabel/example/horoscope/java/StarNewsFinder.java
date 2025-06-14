@@ -40,8 +40,7 @@ import java.util.stream.Collectors;
 @Agent(
         name = "JavaStarNewsFinder",
         description = "Find news based on a person's star sign",
-        beanName = "javaStarNewsFinder",
-        scan = false)
+        beanName = "javaStarNewsFinder")
 public class StarNewsFinder {
 
     private final HoroscopeService horoscopeService;
@@ -56,7 +55,7 @@ public class StarNewsFinder {
 
     @Action
     public PersonImpl extractPerson(UserInput userInput) {
-        return PromptRunner.withLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
+        return PromptRunner.usingLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name:
                         %s""".formatted(userInput.getContent()),
@@ -80,7 +79,7 @@ public class StarNewsFinder {
 
     @Action
     public StarPerson extractStarPerson(UserInput userInput) {
-        return PromptRunner.withLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
+        return PromptRunner.usingLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name and star sign:
                         %s""".formatted(userInput.getContent()),
@@ -114,7 +113,7 @@ public class StarNewsFinder {
                 find news stories about training courses.""".formatted(
                 person.name(), person.sign(), horoscope.summary(), storyCount);
 
-        return PromptRunner.withLlm().createObject(prompt, RelevantNewsStories.class);
+        return PromptRunner.usingLlm().createObject(prompt, RelevantNewsStories.class);
     }
 
     // The @AchievesGoal annotation indicates that completing this action
@@ -150,6 +149,6 @@ public class StarNewsFinder {
                 
                 Format it as Markdown with links.""".formatted(
                 person.name(), person.sign(), horoscope.summary(), newsItems);
-        return PromptRunner.withLlm(llm).createObject(prompt, Writeup.class);
+        return PromptRunner.usingLlm(llm).createObject(prompt, Writeup.class);
     }
 }

@@ -37,7 +37,7 @@ object Rerun {
 }
 
 /**
- * Abstract action implementation
+ * Abstract action implementation that computes outputs.
  * @param name the name of the action
  * @param description a description of the action
  * @param pre a list of preconditions. These are additional to the input
@@ -82,7 +82,6 @@ abstract class AbstractAction(
             conditions
         }
 
-    // TODO possible effects can include effects of any nodes that have a transition
     @JsonIgnore
     override val effects: EffectSpec = run {
         val conditions = post.associate { it to ConditionDetermination(true) }.toMutableMap()

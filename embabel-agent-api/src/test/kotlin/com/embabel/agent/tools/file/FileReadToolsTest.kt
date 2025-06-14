@@ -15,14 +15,17 @@
  */
 package com.embabel.agent.tools.file
 
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.test.assertFalse
 
-@Disabled("there are some issues in this test, need to be fixed")
 class FileReadToolsTest {
 
     @TempDir
@@ -58,22 +61,32 @@ class FileReadToolsTest {
         }
 
         @Test
-        fun `should find files by extension`() {
+        fun `should find files by extension excluding root`() {
             val result = fileReadTools.findFiles("**/*.txt")
 
             assertEquals(3, result.size)
+
+            assertTrue(result.any { it.endsWith("dir1/file3.txt") })
+            assertTrue(result.any { it.endsWith("dir2/file4.txt") })
+            assertFalse(
+                result.any { it.endsWith("file1.txt") }, "" +
+                        "Expected file1.txt NOT to be found:\n${result.joinToString("\n")}"
+            )
+        }
+
+        @Test
+        fun `should find files by extension in root`() {
+            val result = fileReadTools.findFiles("*.txt")
+            assertEquals(1, result.size)
             assertTrue(
                 result.any { it.endsWith("file1.txt") }, "" +
                         "Expected file1.txt to be found:\n${result.joinToString("\n")}"
             )
-            assertTrue(result.any { it.endsWith("dir1/file3.txt") })
-            assertTrue(result.any { it.endsWith("dir2/file4.txt") })
         }
 
         @Test
         fun `should find files in specific directory`() {
             val result = fileReadTools.findFiles("dir1/*")
-
             assertEquals(1, result.size)
             assertTrue(result[0].endsWith("dir1/file3.txt"))
         }

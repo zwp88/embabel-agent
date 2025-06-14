@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.experimental.domain.mixin
 
-import com.embabel.agent.domain.persistence.MixinEnabledEntity
 import org.aopalliance.intercept.MethodInvocation
 import org.springframework.aop.framework.ProxyFactory
 import org.springframework.aop.support.DefaultIntroductionAdvisor

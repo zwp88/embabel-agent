@@ -21,14 +21,15 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.CoreToolGroups
-import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.all
+import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.domain.library.RelevantNewsStories
+import com.embabel.agent.domain.persistence.findOneFromContent
 import com.embabel.agent.event.ProgressUpdateEvent
-import com.embabel.agent.experimental.prompt.Persona
+import com.embabel.agent.prompt.Persona
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import org.slf4j.LoggerFactory
@@ -115,6 +116,7 @@ data class MovieFinderConfig(
     val suggesterPersona: Persona = Roger,
     val writerPersona: Persona = Roger,
     val model: String = OpenAiModels.GPT_41_MINI,
+    val confirmMovieBuff: Boolean = true,
 ) {
 
     val llm = LlmOptions(
@@ -172,34 +174,21 @@ class MovieFinder(
      * @return The identified MovieBuff or null if none found
      */
     @Action(description = "Retrieve a MovieBuff based on the user input")
-    fun findMovieBuff(userInput: UserInput, context: ActionContext): MovieBuff? {
-        return movieBuffRepository.findAll().firstOrNull()
-
-        /*
-	val fer = movieBuffRepository.naturalLanguageRepository(
-            context,
-            config.llm,
-        ).find(
-            FindEntitiesRequest(description = userInput.content),
-        )
-        // TODO present a choices form
-        return when {
-            fer.matches.size == 1 -> {
-                waitFor(
-                    ConfirmationRequest(
-                        fer.matches.single().match,
-                        "Please confirm whether this is the movie buff you meant: ${fer.matches.single().match.name}",
-                    )
+    fun findMovieBuff(userInput: UserInput, context: OperationContext): MovieBuff? =
+        movieBuffRepository.findOneFromContent(
+            content = userInput.content,
+            llm = LlmOptions(),
+            idGetter = { it.name },
+            context = context,
+        ) { movieBuff ->
+            if (config.confirmMovieBuff) {
+                ConfirmationRequest(
+                    movieBuff.match,
+                    "Please confirm whether this is the movie buff you meant: ${movieBuff.match.name}",
                 )
-            }
-
-            else -> {
-                logger.info("Found {} movie buffs", fer.matches.size)
-                null
-            }
+            } else null
         }
-	*/
-    }
+
 
     /**
      * Analyzes the taste profile of a MovieBuff using LLM to understand their preferences.
@@ -321,7 +310,7 @@ class MovieFinder(
                     }
             }
             Don't include these movies we've already suggested:
-            ${excludedTitles(context.processContext).joinToString("\n")}
+            ${excludedTitles(context).joinToString("\n")}
 
             Consider also the following news stories for topical inspiration:
             """.trimIndent(),
@@ -429,8 +418,8 @@ class MovieFinder(
      * @return Boolean indicating if we have enough movies
      */
     @Condition(name = HAVE_ENOUGH_MOVIES)
-    fun haveEnoughMovies(processContext: ProcessContext): Boolean {
-        val allStreamableMovies = allStreamableMovies(processContext)
+    fun haveEnoughMovies(operationContext: OperationContext): Boolean {
+        val allStreamableMovies = allStreamableMovies(operationContext)
         logger.debug("Have {} streamable movies", allStreamableMovies.size)
         return allStreamableMovies.size >= config.suggestionCount
     }
@@ -447,15 +436,15 @@ class MovieFinder(
      * @return List of all unique StreamableMovie objects
      */
     private fun allStreamableMovies(
-        processContext: ProcessContext,
+        operationContext: OperationContext,
     ): List<StreamableMovie> {
-        val streamableMovies = processContext.blackboard
+        val streamableMovies = operationContext
             .all<StreamableMovies>()
             .flatMap { it.movies }
             .distinctBy { it.movie.imdbID }
-        processContext.onProcessEvent(
+        operationContext.processContext.onProcessEvent(
             ProgressUpdateEvent(
-                agentProcess = processContext.agentProcess,
+                agentProcess = operationContext.processContext.agentProcess,
                 name = "Streamable movies",
                 current = streamableMovies.size,
                 total = config.suggestionCount,
@@ -472,15 +461,15 @@ class MovieFinder(
      * - Combining data from multiple sources
      * - Deduplication and sorting for consistent output
      *
-     * @param processContext The process context to access the blackboard
+     * @param operationContext The process context to access the blackboard
      * @return List of movie titles that should be excluded from new suggestions
      */
     private fun excludedTitles(
-        processContext: ProcessContext,
+        operationContext: OperationContext,
     ): List<String> {
-        val excludes = (processContext.blackboard
+        val excludes = (operationContext
             .all<SuggestedMovieTitles>()
-            .flatMap { it.titles } + allStreamableMovies(processContext).map { it.movie.Title })
+            .flatMap { it.titles } + allStreamableMovies(operationContext).map { it.movie.Title })
             .distinct()
             .sorted()
         return excludes
@@ -522,7 +511,7 @@ class MovieFinder(
 
                 The streamable movie recommendations are:
                 ${
-                    allStreamableMovies(context.processContext).joinToString("\n\n") {
+                    allStreamableMovies(context).joinToString("\n\n") {
                         """
                         ${it.movie.Title} (${it.movie.Year}): ${it.movie.imdbID}
                         Director: ${it.movie.Director}

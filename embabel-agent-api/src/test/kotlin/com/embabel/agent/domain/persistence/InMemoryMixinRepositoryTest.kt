@@ -16,7 +16,9 @@
 package com.embabel.agent.domain.persistence
 
 import com.embabel.agent.domain.library.Person
-import com.embabel.agent.domain.persistence.support.InMemoryMixinRepository
+import com.embabel.agent.experimental.domain.mixin.MixinEnabledEntity
+import com.embabel.agent.experimental.domain.mixin.findById
+import com.embabel.agent.experimental.domain.mixin.support.InMemoryMixinRepository
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

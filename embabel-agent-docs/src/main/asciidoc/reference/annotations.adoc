@@ -1,0 +1,43 @@
+[[reference.annotations]]
+=== Annotation model
+
+Embabel provides a Spring-style annotation model to define agents, actions, goals, and conditions.
+This is the recommended model to use in Java, and remains compelling in Kotlin.
+
+==== The `@Agent` annotation
+
+==== The `@Action` annotation
+
+==== The `@Condition` annotation
+
+==== Parameters
+
+`@Action` or `@Condition` methods must have at least one parameter.
+Ordering of parameters is not important.
+
+Parameters fall in two categories:
+
+* _Domain objects_.
+These are the usual inputs.
+
+* _Infrastructure objects_. `OperationContext` parameters may be passed to action or condition methods.
+Actions may use the `ActionContext` subclass.
+
+==== Binding by name
+
+The `@RequireNameMatch` annotation can be used to bind parameters by name.
+
+==== Handling of return types
+
+Action methods normally return a single domain object.
+
+Nullable return types are allowed.
+
+==== Action method implementation
+
+Using PromptRunner etc.
+
+==== The `@AchievesGoal` annotation
+
+The `@AchievesGoal` annotation can be added to an `@Action` method to indicate that the completion of the action achieves a specific goal.
+

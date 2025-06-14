@@ -40,6 +40,19 @@ annotation class AgentCapabilities(
 )
 
 /**
+ * Specifies the type of planner that an agent uses.
+ */
+enum class Planner {
+
+    /**
+     * Goal Oriented Action Planning.
+     * This is the default planner.
+     * It uses goals, actions and conditions to plan actions.
+     */
+    GOAP,
+}
+
+/**
  * Indicates that this class is an agent.
  * It doesn't just contribute actions, goals and conditions:
  * it is an agent in itself.
@@ -48,7 +61,12 @@ annotation class AgentCapabilities(
  * @param name Name of the agent. If not provided, the name will be the class simple name
  * @param provider provider of the agent. If not provided, will default to the package this annotation is used in
  * @param description Description of the agent. Required. This is used for documentation purposes and to choose an agent
+ * @param version Version of the agent
+ * @param planner The type of planning this agent uses. Defaults to GOAP (Goal Oriented Action Planning).
  * @param scan Whether to find this agent in the classpath. If false, it will not be found by the agent manager. Defaults to true
+ * @param beanName The value may indicate a suggestion for a logical component name,
+ * to be turned into a Spring bean in case of an autodetected component. Use only if there's the likelihood of
+ * conflict with the default bean name.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(
@@ -60,13 +78,8 @@ annotation class Agent(
     val provider: String = "",
     val description: String,
     val version: String = DEFAULT_VERSION,
+    val planner: Planner = Planner.GOAP,
     val scan: Boolean = true,
-
-    /**
-     * The value may indicate a suggestion for a logical component name,
-     * to be turned into a Spring bean in case of an autodetected component.
-     * @return the suggested component name, if any (or empty String otherwise)
-     */
     @get:AliasFor(annotation = Component::class, attribute = "value")
     val beanName: String = ""
 )

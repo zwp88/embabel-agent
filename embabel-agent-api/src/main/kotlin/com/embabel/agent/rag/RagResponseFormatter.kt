@@ -29,20 +29,28 @@ fun interface RagResponseFormatter {
     fun format(ragResponse: RagResponse): String
 }
 
-val SimpleRagRagResponseFormatter = RagResponseFormatter { ragResponse ->
-    val results = ragResponse.results
-    if (results.isEmpty()) {
-        "No results found"
-    } else {
-        results.joinToString(separator = "\n\n") { result ->
-            when (val match = result.match) {
-                is EntityData -> {
-                    val properties = match.properties.entries.joinToString(", ") { "${it.key}=${it.value}" }
-                    "${result.score}: ${match.infoString(verbose = true)} ($properties)"
-                }
+/**
+ * Sensible default RagResponseFormatter
+ */
+object SimpleRagResponseFormatter : RagResponseFormatter {
 
-                is Chunk -> {
-                    "${result.score}: $match"
+    const val NO_RESULTS_FOUND = "No results found"
+
+    override fun format(ragResponse: RagResponse): String {
+        val results = ragResponse.results
+        return if (results.isEmpty()) {
+            NO_RESULTS_FOUND
+        } else {
+            results.joinToString(separator = "\n\n") { result ->
+                when (val match = result.match) {
+                    is EntityData -> {
+                        val properties = match.properties.entries.joinToString(", ") { "${it.key}=${it.value}" }
+                        "${result.score}: ${match.infoString(verbose = true)} ($properties)"
+                    }
+
+                    is Chunk -> {
+                        "${result.score}: ${match.text}"
+                    }
                 }
             }
         }

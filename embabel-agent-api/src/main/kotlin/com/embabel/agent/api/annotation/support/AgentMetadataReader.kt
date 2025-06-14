@@ -95,7 +95,7 @@ class AgentMetadataReader(
 
     /**
      * Given this configured instance, find all the methods annotated with @Action and @Condition
-     * The instance will have been previous injected by Spring if it's Spring-managed.
+     * The instance will have been injected by Spring if it's Spring-managed.
      * @return null if the class doesn't satisfy the requirements of @Agentic
      * or doesn't have the annotation at all.
      * @return an Agent if the class has the @Agent annotation,
@@ -285,10 +285,6 @@ class AgentMetadataReader(
         )
         for (parameter in method.parameters) {
             when {
-                ProcessContext::class.java.isAssignableFrom(parameter.type) -> {
-                    args += processContext
-                }
-
                 OperationContext::class.java.isAssignableFrom(parameter.type) -> {
                     args += operationContext
                 }

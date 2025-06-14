@@ -1,0 +1,23 @@
+[[reference.agent-process]]
+=== The AgentProcess
+
+An `AgentProcess` is created every time an agent is run.
+It has a unique id.
+
+=== ProcessOptions
+
+Agent processes can be configured with `ProcessOptions`.
+
+`ProcessOptions` controls:
+
+* `contextId`: An ientifier of any existing context in which the agent is running.
+* `blackboard`: The blackboard to use for the agent.
+Allows starting from a particular state.
+* `test`: Whether the agent is running in test mode.
+* `verbosity`: The verbosity level of the agent.
+Allows fine grained control over logging prompts, LLM returns and detailed planning information
+* `control`: Control options, determining whether the agent should be terminated as a last resort. `EarlyTerminationPolicy` can based on an absolute number of actions or a maximum budget.
+* Delays: Both operations (actions) and tools can have delays.
+This is useful to avoid rate limiting.
+
+

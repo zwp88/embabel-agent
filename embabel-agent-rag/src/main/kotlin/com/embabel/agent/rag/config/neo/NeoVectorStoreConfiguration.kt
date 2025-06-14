@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.config.neo
+package com.embabel.agent.rag.config.neo
 
 import com.embabel.common.ai.model.EmbeddingService
+import com.embabel.common.util.loggerFor
 import org.neo4j.driver.Driver
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore
@@ -27,8 +28,12 @@ import org.springframework.context.annotation.Profile
 @Profile("neo")
 class NeoVectorStoreConfiguration {
 
+    init {
+        loggerFor<NeoVectorStoreConfiguration>().info("Initializing Neo VectorStore")
+    }
+
     @Bean
-    fun vectorStore(driver: Driver, embeddingService: EmbeddingService): VectorStore {
+    fun neoVectorStore(driver: Driver, embeddingService: EmbeddingService): VectorStore {
         return Neo4jVectorStore.builder(
             driver,
             embeddingService.model,

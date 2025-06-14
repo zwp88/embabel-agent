@@ -16,15 +16,18 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.dsl.Frog
+import com.embabel.agent.api.dsl.SnakeMeal
 import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.support.InMemoryBlackboard
+import com.embabel.agent.core.support.SimpleAgentProcess
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.testing.IntegrationTestUtils
+import com.embabel.agent.testing.IntegrationTestUtils.dummyPlatformServices
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
@@ -55,6 +58,23 @@ class AgentMetadataReaderActionTest {
         assertEquals(1, metadata!!.actions.size)
         val action = metadata.actions.single()
         assertEquals(1, action.inputs.size, "Should have 1 input")
+        assertEquals(UserInput::class.java.name, action.inputs.single().type)
+        assertEquals(1, action.outputs.size, "Should have 1 output")
+        assertEquals(
+            PersonWithReverseTool::class.java.name,
+            action.outputs.single().type,
+            "Output name must match",
+        )
+    }
+
+    @Test
+    fun `one action with nullable parameter metadata`() {
+        val reader = AgentMetadataReader()
+        val metadata = reader.createAgentMetadata(OneTransformerActionWithNullableParameter())
+        assertNotNull(metadata)
+        assertEquals(1, metadata!!.actions.size)
+        val action = metadata.actions.single()
+        assertEquals(1, action.inputs.size, "Should have 1 input as nullable doesn't count")
         assertEquals(UserInput::class.java.name, action.inputs.single().type)
         assertEquals(1, action.outputs.size, "Should have 1 output")
         assertEquals(
@@ -218,6 +238,86 @@ class AgentMetadataReaderActionTest {
     }
 
     @Test
+    fun `action invocation with nullable parameter, passing no value`() {
+        val reader = AgentMetadataReader()
+        val metadata = reader.createAgentMetadata(OneTransformerActionWithNullableParameter())
+        assertNotNull(metadata)
+        assertEquals(
+            1, metadata!!.actions.size,
+            "Should have exactly 1 action",
+        )
+        val action = metadata.actions.first()
+        val agent = mockk<CoreAgent>()
+        every { agent.domainTypes } returns listOf(SnakeMeal::class.java, UserInput::class.java)
+        val mockAgentProcess = mockk<AgentProcess>()
+        every { mockAgentProcess.agent } returns agent
+        val mockPlatformServices = mockk<PlatformServices>()
+        every { mockPlatformServices.llmOperations } returns mockk()
+        every { mockPlatformServices.eventListener } returns DevNull
+        val blackboard = InMemoryBlackboard().bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
+        every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+            blackboard.getValue(
+                firstArg(),
+                secondArg(),
+                thirdArg(),
+            )
+        }
+        every { mockAgentProcess.set(any(), any()) } answers {
+            blackboard.set(
+                firstArg(),
+                secondArg(),
+            )
+        }
+        every { mockAgentProcess.lastResult() } returns PersonWithReverseTool("John Doe")
+
+        val pc = ProcessContext(
+            platformServices = mockPlatformServices,
+            agentProcess = mockAgentProcess,
+        )
+        val result = action.execute(pc, action)
+        assertEquals(ActionStatusCode.SUCCEEDED, result.status)
+        assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
+    }
+
+    @Test
+    fun `action invocation with nullable parameter, passing value`() {
+        val reader = AgentMetadataReader()
+        val metadata = reader.createAgentMetadata(OneTransformerActionWithNullableParameter())
+        assertNotNull(metadata)
+        assertEquals(
+            1, metadata!!.actions.size,
+            "Should have exactly 1 action",
+        )
+        val action = metadata.actions.first()
+        val agent = CoreAgent(
+            name = "name",
+            provider = "provider",
+            actions = listOf(action),
+            schemaTypes = emptyList(),
+            goals = emptySet(),
+            description = "whatever",
+        )
+        val platformServices = dummyPlatformServices()
+
+        val pc = ProcessContext(
+            agentProcess = SimpleAgentProcess(
+                id = "test",
+                agent = agent,
+                platformServices = platformServices,
+                processOptions = ProcessOptions(),
+                blackboard = InMemoryBlackboard(),
+                parentId = null,
+            ),
+            platformServices = platformServices,
+        )
+        pc.blackboard += UserInput("John Doe")
+        pc.blackboard += SnakeMeal(emptyList())
+        val result = action.execute(pc, action)
+        assertEquals(ActionStatusCode.SUCCEEDED, result.status)
+        assertEquals(PersonWithReverseTool("John Doe and tasty!"), pc.blackboard.lastResult())
+    }
+
+    @Test
     fun `transformer action invocation with payload`() {
         val reader = AgentMetadataReader()
         val metadata = reader.createAgentMetadata(OneTransformerActionTakingPayloadOnly())
@@ -265,6 +365,43 @@ class AgentMetadataReaderActionTest {
         val result = action.execute(pc, action)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
+    }
+
+    @Test
+    fun `action invocation with internal parameters`() {
+        val reader = AgentMetadataReader()
+        val metadata = reader.createAgentMetadata(InternalDomainClasses())
+        assertNotNull(metadata)
+        assertEquals(
+            1, metadata!!.actions.size,
+            "Should have exactly 1 action",
+        )
+        val action = metadata.actions.first()
+        val agent = CoreAgent(
+            name = "name",
+            provider = "provider",
+            actions = listOf(action),
+            schemaTypes = emptyList(),
+            goals = emptySet(),
+            description = "whatever",
+        )
+        val platformServices = dummyPlatformServices()
+
+        val pc = ProcessContext(
+            agentProcess = SimpleAgentProcess(
+                id = "test",
+                agent = agent,
+                platformServices = platformServices,
+                processOptions = ProcessOptions(),
+                blackboard = InMemoryBlackboard(),
+                parentId = null,
+            ),
+            platformServices = platformServices,
+        )
+        pc.blackboard += InternalInput("John Doe")
+        val result = action.execute(pc, action)
+        assertEquals(ActionStatusCode.SUCCEEDED, result.status)
+        assertEquals(InternalOutput("John Doe"), pc.blackboard.lastResult())
     }
 
     @Test

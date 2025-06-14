@@ -5,16 +5,16 @@
     <parent>
         <groupId>com.embabel.agent</groupId>
         <artifactId>embabel-agent-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
     <artifactId>embabel-agent-api</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Embabel Agent API</name>
     <description>Fluent DSL and Kotlin DSL for Agentic Flows</description>
 
     <properties>
-        <embabel-common.version>1.0.0-SNAPSHOT</embabel-common.version>
+        <embabel-common.version>0.1.0-SNAPSHOT</embabel-common.version>
     </properties>
 
     <dependencies>
@@ -113,12 +113,6 @@
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-vector-store</artifactId>
-        </dependency>
-
-        <!-- This should go as it's a concrete implementation -->
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-neo4j-store</artifactId>
         </dependency>
 
         <dependency>
@@ -235,7 +229,6 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>com/embabel/examples/**</exclude>
                         <exclude>com/embabel/agent/shell/**</exclude>
                         <exclude>com/embabel/agent/testing/**</exclude>
                         <exclude>com/embabel/agent/experimental/**</exclude>
@@ -264,7 +257,7 @@
                     <dependency>
                         <groupId>com.embabel.agent.example</groupId>
                         <artifactId>embabel-agent-example-dependencies</artifactId>
-                        <version>1.0.0-SNAPSHOT</version>
+                        <version>0.1.0-SNAPSHOT</version>
                         <type>pom</type>
                         <scope>import</scope>
                     </dependency>
@@ -272,24 +265,19 @@
             </dependencyManagement>
             <dependencies>
                 <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>dogfood</artifactId>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.kotlin</groupId>
+                    <artifactId>dogfood</artifactId>
+                    <scope>runtime</scope>
                 </dependency>
                 <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>horoscope</artifactId>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.kotlin</groupId>
+                    <artifactId>horoscope</artifactId>
+                    <scope>runtime</scope>
                 </dependency>
                 <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>movie</artifactId>
-                     <scope>runtime</scope>
-                </dependency>
-                <dependency>
-                     <groupId>com.embabel.agent.example.kotlin</groupId>
-                     <artifactId>travel</artifactId>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.kotlin</groupId>
+                    <artifactId>movie</artifactId>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
         </profile>
@@ -300,10 +288,10 @@
             </activation>
             <dependencies>
                 <dependency>
-                     <groupId>com.embabel.agent.example.java</groupId>
-                     <artifactId>horoscope</artifactId>
-                     <version>${project.version}</version>
-                     <scope>runtime</scope>
+                    <groupId>com.embabel.agent.example.java</groupId>
+                    <artifactId>horoscope</artifactId>
+                    <version>${project.version}</version>
+                    <scope>runtime</scope>
                 </dependency>
             </dependencies>
         </profile>

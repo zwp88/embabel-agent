@@ -1,0 +1,15 @@
+[[getting-started.quickstart]]
+=== Quickstart
+
+There are two GitHub template repos you can use to create your own project:
+
+* Java template - https://github.com/embabel/java-agent-template
+* Kotlin template - https://github.com/embabel/kotlin-agent-template
+
+Or you can use our https://github.com/embabel/project-creator[project creator] to create a custom project:
+
+-----
+[source, shell]
+uvx --from git+https://github.com/embabel/project-creator.git project-creator
+-----
+

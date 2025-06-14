@@ -62,6 +62,15 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         )
     }
 
+    /**
+     * Create a prompt runner for this context
+     * that can be customized later.
+     * Principally for use from Java.
+     */
+    fun promptRunner(): PromptRunner = promptRunner(
+        llm = LlmOptions(),
+    )
+
     companion object {
         operator fun invoke(
             processContext: ProcessContext,

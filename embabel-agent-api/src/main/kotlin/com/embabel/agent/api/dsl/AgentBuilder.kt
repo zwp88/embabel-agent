@@ -83,7 +83,7 @@ class AgentBuilder(
     /**
      * Require prompt contributors at agent level
      */
-    fun requirePromptContributors(vararg promptContributors: PromptContributor) {
+    fun registerPromptContributors(vararg promptContributors: PromptContributor) {
         _promptContributors += promptContributors
     }
 
@@ -136,7 +136,6 @@ class AgentBuilder(
         inputVarName: String = IoBinding.DEFAULT_BINDING,
         outputVarName: String? = IoBinding.DEFAULT_BINDING,
         cost: ZeroToOne = 0.0,
-        toolCallbacks: List<ToolCallback> = emptyList(),
         toolGroups: Set<String> = emptySet(),
         qos: ActionQos = ActionQos(),
         referencedInputProperties: Set<String>? = null,
@@ -154,7 +153,6 @@ class AgentBuilder(
             inputClass = I::class.java,
             outputClass = O::class.java,
             referencedInputProperties = referencedInputProperties,
-            toolCallbacks = toolCallbacks,
             toolGroups = toolGroups,
             block = block,
         )
@@ -292,6 +290,11 @@ class AgentBuilder(
         )
     }
 
+    /**
+     * Declare a condition determined with an LLM. Assign it a name to ensure
+     * type safe access
+     * val myCondition = condition("custom prompt")
+     */
     fun condition(
         name: String? = null,
         prompt: (processContext: ProcessContext) -> String,

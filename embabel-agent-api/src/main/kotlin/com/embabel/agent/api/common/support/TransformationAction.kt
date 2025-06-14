@@ -21,12 +21,11 @@ import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import com.embabel.agent.domain.special.Aggregation
 import com.embabel.common.core.types.ZeroToOne
-import org.springframework.ai.tool.ToolCallback
 import java.lang.reflect.Modifier
 
 
 /**
- * Transformer agent that runs custom code.
+ * Transformation action that runs custom code.
  */
 open class TransformationAction<I, O>(
     name: String,
@@ -42,7 +41,6 @@ open class TransformationAction<I, O>(
     private val inputVarName: String = IoBinding.DEFAULT_BINDING,
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Set<String>,
     private val block: Transformation<I, O>,
 ) : AbstractAction(
@@ -73,7 +71,7 @@ open class TransformationAction<I, O>(
                 input = input,
                 processContext = processContext,
                 action = this,
-                inputClass = inputClass as Class<I>,
+                inputClass = inputClass,
                 outputClass = outputClass,
             )
         )

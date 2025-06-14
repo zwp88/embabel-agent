@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component
 class TerminalServices(
     private val terminal: Terminal,
     private val objectMapper: ObjectMapper,
+    private val shellConfig: ShellConfig,
 ) : GoalChoiceApprover {
     /**
      * Get further input
@@ -75,6 +76,7 @@ class TerminalServices(
                             result = it.agentProcessExecution,
                             colorPalette = colorPalette,
                             objectMapper = objectMapper,
+                            lineLength = shellConfig.lineLength,
                         )
                         lineReader.printAbove("Assistant:\n$formatted")
                     }

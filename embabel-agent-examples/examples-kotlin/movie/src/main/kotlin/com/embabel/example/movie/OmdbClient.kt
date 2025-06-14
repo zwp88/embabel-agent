@@ -15,6 +15,7 @@
  */
 package com.embabel.example.movie
 
+import com.embabel.common.util.loggerFor
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
@@ -51,15 +52,21 @@ class OmdbClient(
     }
 
     fun getMovieByTitle(title: String): MovieResponse? {
-        return omdbRestClient.get()
-            .uri { uriBuilder ->
-                uriBuilder
-                    .queryParam("apikey", apiKey)
-                    .queryParam("t", title)
-                    .build()
-            }
-            .retrieve()
-            .body(MovieResponse::class.java)
+        return try {
+            omdbRestClient.get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .queryParam("apikey", apiKey)
+                        .queryParam("t", title)
+                        .build()
+                }
+                .retrieve()
+                .body(MovieResponse::class.java)
+        } catch (e: Exception) {
+            // This API can be flaky, so we log the error and return null
+            loggerFor<OmdbClient>().warn("Failed to fetch movie by title: $title", e)
+            null
+        }
     }
 
 }

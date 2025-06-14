@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.event.logging.personality.starwars
 
+import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.common.util.color
 import org.slf4j.LoggerFactory
@@ -69,18 +70,48 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠿⠄⠈⠻⠿⠿⠿⠿⠿⠿⠛⠛⠿⠛⠉⠁⠀⠀⠀⠀⠀⠀⠻⠿⠿⠿⠿⠟⠉⠀⠀⠤⠴⠶⠌⠿⠘⠿⠿⠿⠿⠶⠤⠀⠀⠀⠀
 
     """.trimIndent().color(StarWarsColorPalette.highlight),
-    agentDeploymentEventMessage = "Deployed an agent I have: {}\n\tdescription: {}",
-    rankingChoiceMadeEventMessage = "Chosen {} I have with confidence {} based on {}",
-    dynamicAgentCreationMessage = "You will find only what you bring in: Created agent instance {}",
-    agentProcessCreationEventMessage = "Created a process I have: {}",
-    agentProcessReadyToPlanEventMessage = "[{}] Difficult to see. Always in motion is the future: Ready to plan from {}",
-    agentProcessPlanFormulatedEventMessage = "[{}] Control, control, you must learn control! Formulated plan <{}> from {}",
-    processCompletionMessage = "[{}]Feel the force: process completed in {}",
-    processFailureMessage = "Powerful the dark side is: Process {} failed",
-    objectAddedMessage = "A little more knowledge lights our way: Object added: {} to process {}",
-    llmRequestEventMessage = "[{}] Ask LLM we will: Requesting LLM {} to transform from {} -> {}",
-    actionExecutionStartMessage = "[{}] Do or do not. There is no try: executing action {}",
-    actionExecutionResultMessage = "[{}] Powerful you have become: executed action {} in {}",
-    objectBoundMessage = "[{}]  Object saved, kid. Don't worry, I've made special modifications to this database myself: {}:{}",
-    colorPalette = StarWarsColorPalette,
-)
+) {
+
+    override fun getAgentDeploymentEventMessage(e: AgentDeploymentEvent): String =
+        "Deployed an agent I have: ${e.agent.name}\\n\\tdescription: ${e.agent.description}"
+
+    override fun getRankingChoiceMadeEventMessage(e: RankingChoiceMadeEvent<*>): String =
+        "Chosen ${e.type.simpleName} I have with confidence ${e.choice.score} based on ${e.basis}"
+
+    override fun getDynamicAgentCreationMessage(e: DynamicAgentCreationEvent): String =
+        "You will find only what you bring in: Created agent instance ${e.agent.infoString()}"
+
+    override fun getAgentProcessCreationEventMessage(e: AgentProcessCreationEvent): String =
+        "Created a process I have: ${e.processId}"
+
+    override fun getAgentProcessReadyToPlanEventMessage(e: AgentProcessReadyToPlanEvent): String =
+        "[${e.processId}] Difficult to see. Always in motion is the future: Ready to plan from ${
+            e.worldState.infoString(
+                verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans
+            )
+        }"
+
+    override fun getAgentProcessPlanFormulatedEventMessage(e: AgentProcessPlanFormulatedEvent): String =
+        "[${e.processId}] Control, control, you must learn control! Formulated plan <${e.plan.infoString(verbose = e.agentProcess.processContext.processOptions.verbosity.showLongPlans)}> from ${e.worldState.infoString()}"
+
+    override fun getProcessCompletionMessage(e: AgentProcessFinishedEvent): String =
+        "[${e.processId}]Feel the force: process completed in ${e.agentProcess.runningTime}"
+
+    override fun getProcessFailureMessage(e: AgentProcessFinishedEvent): String =
+        "Powerful the dark side is: Process ${e.processId} failed"
+
+    override fun getObjectAddedEventMessage(e: ObjectAddedEvent): String =
+        "A little more knowledge lights our way: Object added: ${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName} to process ${e.processId}"
+
+    override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
+        "[${e.processId}] Ask LLM we will: Requesting LLM ${e.interaction.llm.criteria} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+
+    override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =
+        "[${e.processId}] Do or do not. There is no try: executing action ${e.action.name}"
+
+    override fun getActionExecutionResultMessage(e: ActionExecutionResultEvent): String =
+        "[${e.processId}] Powerful you have become: executed action ${e.action.name} in ${e.actionStatus.runningTime}"
+
+    override fun getObjectBoundEventMessage(e: ObjectBoundEvent): String =
+        "[${e.processId}] Object saved, kid. Don't worry, I've made special modifications to this database myself: ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
+}

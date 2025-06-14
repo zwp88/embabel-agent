@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service
 
 /**
  * Return a tool callback for each goal.
+ * These will be exposed via the MCP server.
  */
 @Service
 @Profile("!test")
@@ -106,6 +107,9 @@ class PerGoalToolCallbackProvider(
             }
         }
         return GoalToolCallback()
+    }
 
+    override fun infoString(verbose: Boolean?): String {
+        return "${javaClass.name} with ${toolCallbacks.size} tools"
     }
 }

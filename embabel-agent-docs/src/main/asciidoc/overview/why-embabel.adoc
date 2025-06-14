@@ -1,0 +1,8 @@
+[[overview.why-embabel]]
+=== Embabel Differentiators
+
+Planning Type safety Domain model
+
+Intent
+
+Extensibility

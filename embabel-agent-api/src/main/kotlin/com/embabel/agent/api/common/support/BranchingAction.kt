@@ -20,7 +20,6 @@ import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import com.embabel.common.core.types.ZeroToOne
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Return type to indicate that the action can return one of two types.
@@ -61,7 +60,6 @@ open class BranchingAction<I, O1, O2>(
     private val inputVarName: String = IoBinding.Companion.DEFAULT_BINDING,
     private val outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Set<String>,
     private val block: Transformation<I, Branch<O1, O2>>,
 ) : AbstractAction(

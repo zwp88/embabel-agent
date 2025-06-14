@@ -19,7 +19,6 @@ import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.IoBinding
 import com.embabel.common.core.types.ZeroToOne
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * Action that has input preconditions, but produces no output
@@ -36,7 +35,6 @@ class ConsumerAction<I>(
     inputClass: Class<I>,
     outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
     referencedInputProperties: Set<String>? = null,
-    toolCallbacks: List<ToolCallback> = emptyList(),
     toolGroups: Set<String>,
     block: Transformation<I, Unit>,
 ) : TransformationAction<I, Unit>(
@@ -52,7 +50,6 @@ class ConsumerAction<I>(
     outputClass = Unit::class.java,
     outputVarName = outputVarName,
     referencedInputProperties = referencedInputProperties,
-    toolCallbacks = toolCallbacks,
     toolGroups = toolGroups,
     block = block
 )

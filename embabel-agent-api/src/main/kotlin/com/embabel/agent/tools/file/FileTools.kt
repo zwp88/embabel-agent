@@ -33,7 +33,26 @@ import java.util.zip.ZipInputStream
 /**
  * Function that can edit a file. Functions can be changed.
  */
-typealias FileContentTransformer = (raw: String) -> String
+fun interface FileContentTransformer {
+
+    fun transform(raw: String): String
+
+    companion object {
+
+        /**
+         * Apply transformers in order
+         */
+        fun transform(raw: String, transformers: List<FileContentTransformer>): String {
+            var transformedContent = raw
+
+            // Run all sanitizers over the content in order
+            for (transformer in transformers) {
+                transformedContent = transformer.transform(transformedContent)
+            }
+            return transformedContent
+        }
+    }
+}
 
 /**
  * Read and Write file tools. Extend FileReadTools for safe read only use
@@ -131,12 +150,9 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
     fun readFile(path: String): String {
         val resolvedPath = resolveAndValidateFile(path)
         val rawContent = Files.readString(resolvedPath)
-        var transformedContent = rawContent
+        val transformedContent =
+            FileContentTransformer.transform(rawContent, fileContentTransformers)
 
-        // Run all sanitizers over the content in order
-        for (sanitizer in fileContentTransformers) {
-            transformedContent = sanitizer(transformedContent)
-        }
         loggerFor<FileReadTools>().debug(
             "Transformed {} content with {} sanitizers: Length went from {} to {}",
             path,

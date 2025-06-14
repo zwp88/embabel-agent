@@ -47,7 +47,6 @@ fun <A, B : Any> doSplit(
         canRerun = true,
         inputClass = aClass,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
     ) {
         val list = splitter(it)
         it addAll list
@@ -135,7 +134,6 @@ fun <A, B, C> chain(
             inputClass = aClass,
             outputClass = bClass,
             toolGroups = emptySet(),
-            toolCallbacks = emptyList(),
         ) {
             a.invoke(it)
         },
@@ -148,7 +146,6 @@ fun <A, B, C> chain(
             inputClass = bClass,
             outputClass = cClass,
             toolGroups = emptySet(),
-            toolCallbacks = emptyList(),
         ) {
             b.invoke(it)
         })
@@ -180,7 +177,6 @@ fun <A, B, C> branch(
             leftOutputClass = bClass,
             rightOutputClass = cClass,
             toolGroups = emptySet(),
-            toolCallbacks = emptyList(),
         ) {
             a.invoke(it)
         }
@@ -236,7 +232,6 @@ fun <A, B, C> aggregate(
             inputClass = aClass,
             outputClass = bClass,
             toolGroups = emptySet(),
-            toolCallbacks = emptyList(),
         ) {
             transform.invoke(it)
         }
@@ -251,7 +246,6 @@ fun <A, B, C> aggregate(
         canRerun = true,
         outputClass = cClass,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
     ) { context ->
         merge(context.objects.filterIsInstance(bClass), context)
     }
@@ -316,7 +310,6 @@ fun <A1, A2, B : Any, C> biAggregate(
         inputClass = bClass,
         outputClass = cClass,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
     ) {
         val cList = it.objects.filterIsInstance<B>(bClass)
         merge(cList)
@@ -395,7 +388,6 @@ inline fun <reified A, reified B : Any, reified C> repeatableAggregate(
         canRerun = true,
         outputClass = C::class.java,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
     ) {
         startWith
     }
@@ -433,7 +425,6 @@ fun <C> repeat(
         inputClass = cClass,
         outputClass = cClass,
         toolGroups = emptySet(),
-        toolCallbacks = emptyList(),
     ) {
         TODO()
     }
@@ -532,7 +523,6 @@ data class AgentScopeBuilder<O>(
             inputClass = (lastAction as TransformationAction<*, *>).outputClass,
             outputClass = fClass,
             toolGroups = emptySet(),
-            toolCallbacks = emptyList(),
         ) {
             loggerFor<AgentScopeBuilder<*>>().info("Running extra action {}", name)
             fn.transform(it as TransformationActionContext<O, F>)

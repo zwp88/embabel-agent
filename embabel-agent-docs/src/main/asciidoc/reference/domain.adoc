@@ -1,0 +1,4 @@
+[[reference.domain]]
+=== Domain objects
+
+Not just strong typing Behavior

@@ -23,11 +23,23 @@ enum class Cardinality {
     MANY,
 }
 
+/**
+ * Find entities matching a description.
+ * @param content The content to match against.
+ * @param cardinality The expected cardinality of the result.
+ */
 data class FindEntitiesRequest(
-    val description: String,
+    val content: String,
     val cardinality: Cardinality = Cardinality.ONE,
 )
 
+/**
+ * Match for an entity
+ * @param T The type of the entity being matched.
+ * @param match The matched entity.
+ * @param score The confidence score of the match, between 0 and 1.
+ * @param source The source of the match, e.g., the repository method that provided the match.
+ */
 data class EntityMatch<T>(
     override val match: T,
     override val score: ZeroToOne,
@@ -36,7 +48,7 @@ data class EntityMatch<T>(
 
 data class FindEntitiesResponse<T>(
     val request: FindEntitiesRequest,
-    val matches: List<SimilarityResult<T>>
+    val matches: List<EntityMatch<T>>
 )
 
 /**
@@ -62,7 +74,7 @@ interface NaturalLanguageRepository<T> {
     ): T? {
         val matches = find(
             findEntitiesRequest = FindEntitiesRequest(
-                description = description,
+                content = description,
                 cardinality = Cardinality.ONE,
             )
         )
