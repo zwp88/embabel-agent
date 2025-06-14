@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.util.*
 
 /**
@@ -39,10 +40,18 @@ import java.util.*
 class AutonomyA2ARequestHandler(
     private val autonomy: Autonomy,
     private val agenticEventListener: AgenticEventListener,
+    private val streamingHandler: A2AStreamingHandler,
     private val objectMapper: ObjectMapper,
 ) : A2ARequestHandler {
 
     private val logger = LoggerFactory.getLogger(A2ARequestHandler::class.java)
+
+    override fun handleJsonRpcStream(request: JSONRPCRequest): SseEmitter {
+        return when (request.method) {
+            "message/stream" -> handleMessageStream(request)
+            else -> throw UnsupportedOperationException("Method ${request.method} is not supported for streaming")
+        }
+    }
 
     override fun handleJsonRpc(
         request: JSONRPCRequest
@@ -58,10 +67,6 @@ class AutonomyA2ARequestHandler(
             "message/send" -> {
                 val messageSendParams = objectMapper.convertValue(request.params, MessageSendParams::class.java)
                 handleMessageSend(request, messageSendParams)
-            }
-
-            "message/stream" -> {
-                TODO("Streaming is not supported")
             }
 
             "message/list" -> {
@@ -146,6 +151,109 @@ class AutonomyA2ARequestHandler(
                 )
             )
         }
+    }
+
+    fun handleMessageStream(request: JSONRPCRequest): SseEmitter {
+        val params = objectMapper.convertValue(request.params, MessageStreamParams::class.java)
+        val streamId = request.id?.toString() ?: UUID.randomUUID().toString()
+        val emitter = streamingHandler.createStream(streamId)
+
+        Thread.startVirtualThread {
+            try {
+                // Send initial status event
+                val statusEvent = TaskStatusUpdateEvent(
+                    taskId = params.taskId,
+                    contextId = "ctx_${UUID.randomUUID()}",
+                    status = TaskStatus(
+                        state = TaskState.working,
+                        message = Message(
+                            role = "system",
+                            parts = listOf(TextPart("Task started...")),
+                            messageId = UUID.randomUUID().toString(),
+                            taskId = params.taskId
+                        )
+                    )
+                )
+                streamingHandler.sendStreamEvent(streamId, statusEvent)
+
+                // Send the received message, if any
+                params.message?.let { userMsg ->
+                    streamingHandler.sendStreamEvent(streamId, MessageResult(message = userMsg))
+                }
+
+                val intent = params.message?.parts?.filterIsInstance<TextPart>()?.firstOrNull()?.text
+                    ?: "Task ${params.taskId}"
+
+                // Execute the task using autonomy service
+                val result = autonomy.chooseAndRunAgent(
+                    intent = intent,
+                    processOptions = ProcessOptions()
+                )
+
+                // Send intermediate status updates
+                streamingHandler.sendStreamEvent(streamId, TaskStatusUpdateEvent(
+                    taskId = params.taskId,
+                    contextId = "ctx_${UUID.randomUUID()}",
+                    status = TaskStatus(
+                        state = TaskState.working,
+                        message = Message(
+                            role = "system",
+                            parts = listOf(TextPart("Processing task...")),
+                            messageId = UUID.randomUUID().toString(),
+                            taskId = params.taskId
+                        )
+                    )
+                ))
+
+                // Send result
+                val taskResult = TaskResult(
+                    task = Task(
+                        id = params.taskId,
+                        contextId = "ctx_${UUID.randomUUID()}",
+                        status = TaskStatus(
+                            state = TaskState.completed,
+                            message = Message(
+                                role = "system",
+                                parts = listOf(TextPart("Task completed successfully")),
+                                messageId = UUID.randomUUID().toString(),
+                                taskId = params.taskId
+                            )
+                        ),
+                        history = listOfNotNull(params.message),
+                        artifacts = listOf(
+                            Artifact(
+                                parts = listOf(DataPart(data = mapOf("output" to result.output)))
+                            )
+                        ),
+                        metadata = null
+                    )
+                )
+                streamingHandler.sendStreamEvent(streamId, taskResult)
+                streamingHandler.closeStream(streamId)
+            } catch (e: Exception) {
+                logger.error("Streaming error", e)
+                try {
+                    streamingHandler.sendStreamEvent(streamId, TaskStatusUpdateEvent(
+                        taskId = params.taskId,
+                        contextId = "ctx_${UUID.randomUUID()}",
+                        status = TaskStatus(
+                            state = TaskState.failed,
+                            message = Message(
+                                role = "system",
+                                parts = listOf(TextPart("Error: ${e.message}")),
+                                messageId = UUID.randomUUID().toString(),
+                                taskId = params.taskId
+                            )
+                        )
+                    ))
+                } catch (sendError: Exception) {
+                    logger.error("Error sending error event", sendError)
+                }
+                streamingHandler.closeStream(streamId)
+            }
+        }
+
+        return emitter
     }
 
     private fun handleTasksGet(

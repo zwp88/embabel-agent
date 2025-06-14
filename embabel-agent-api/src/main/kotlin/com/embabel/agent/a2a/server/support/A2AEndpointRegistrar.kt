@@ -17,6 +17,8 @@ package com.embabel.agent.a2a.server.support
 
 import com.embabel.agent.a2a.server.AgentCardHandler
 import com.embabel.agent.a2a.spec.AgentCard
+import com.embabel.agent.a2a.spec.JSONRPCError
+import com.embabel.agent.a2a.spec.JSONRPCErrorResponse
 import com.embabel.agent.a2a.spec.JSONRPCRequest
 import jakarta.servlet.ServletRequest
 import org.slf4j.LoggerFactory
@@ -81,7 +83,7 @@ class A2AEndpointRegistrar(
         val jsonRpcPostMapping = RequestMappingInfo.paths(agentCardHandler.path)
             .methods(RequestMethod.POST)
             .consumes(MediaType.APPLICATION_JSON_VALUE)
-            .produces(MediaType.APPLICATION_JSON_VALUE)
+            .produces(MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_EVENT_STREAM_VALUE)
             .build()
         requestMappingHandlerMapping.registerMapping(
             jsonRpcPostMapping,
@@ -107,10 +109,32 @@ private class AgentCardHandlerWebFacade(
             .body(agentCard)
     }
 
-    fun handleJsonRpc(@RequestBody request: JSONRPCRequest): ResponseEntity<Any> {
-        val response = agentCardHandler.handleJsonRpc(request)
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(response)
+    @ResponseBody
+    fun handleJsonRpc(@RequestBody request: JSONRPCRequest): Any {
+        return try {
+            // Check if this is a streaming request and handler supports streaming
+            if (request.method == "message/stream") {
+                // For streaming requests, return the SseEmitter directly without wrapping
+                agentCardHandler.handleJsonRpcStream(request)
+
+            } else {
+                // Regular JSON-RPC handling
+                ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(agentCardHandler.handleJsonRpc(request))
+            }
+        } catch (e: Exception) {
+            ResponseEntity.status(500)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                    JSONRPCErrorResponse(
+                        id = request.id,
+                        error = JSONRPCError(
+                            code = 500,
+                            message = "Internal server error: ${e.message}"
+                        )
+                    )
+                )
+        }
     }
 }
