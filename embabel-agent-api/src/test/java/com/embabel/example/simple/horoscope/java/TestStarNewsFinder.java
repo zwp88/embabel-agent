@@ -20,6 +20,7 @@ import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
 import com.embabel.agent.api.annotation.WaitFor;
 import com.embabel.agent.api.common.PromptRunner;
+import com.embabel.agent.config.models.OpenAiModels;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.domain.io.UserInput;
 import com.embabel.agent.domain.library.Person;
@@ -55,7 +56,7 @@ public class TestStarNewsFinder {
 
     @Action
     public PersonImpl extractPerson(UserInput userInput) {
-        return PromptRunner.withLlm(LlmOptions.fromCriteria(ModelSelectionCriteria.getAuto())).createObjectIfPossible(
+        return PromptRunner.usingLlm(LlmOptions.fromCriteria(ModelSelectionCriteria.getAuto())).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name:
                         %s""".formatted(userInput.getContent()),
