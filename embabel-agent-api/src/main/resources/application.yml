@@ -54,7 +54,7 @@ embabel:
 
 logging:
   pattern:
-    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr([%t]){magenta} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
   level:
 
     # Temporary hack until we resolve BeanPostProcessor warnings
