@@ -262,7 +262,7 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
         return "directory created"
     }
 
-    @Tool(description = "Append content to an existing file")
+    @Tool(description = "Append content to an existing file. The file must already exist.")
     fun appendFile(path: String, content: String): String {
         val resolvedPath = resolveAndValidateFile(root = root, path = path)
         Files.write(resolvedPath, content.toByteArray(), java.nio.file.StandardOpenOption.APPEND)
@@ -277,10 +277,14 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
      */
     fun appendToFile(path: String, content: String, createIfNotExists: Boolean) {
         if (createIfNotExists) {
-            createFile(path, content, overwrite = false)
-        } else {
-            appendFile(path, content)
+            try {
+                createFile(path, content, overwrite = false)
+                return
+            } catch (_: IllegalArgumentException) {
+                // Ignore if the file already exists
+            }
         }
+        appendFile(path, content)
     }
 
     @Tool(description = "Delete a file at the given path")

@@ -15,12 +15,12 @@
  */
 package com.embabel.agent.shell
 
+import com.embabel.agent.api.common.ToolsStats
 import com.embabel.agent.api.common.autonomy.*
 import com.embabel.agent.core.*
 import com.embabel.agent.event.logging.LoggingPersonality
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.rag.Ingester
-import com.embabel.agent.spi.ToolsStats
 import com.embabel.chat.agent.LastMessageIntentAgentPlatformChatSession
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.util.bold
@@ -234,7 +234,7 @@ class ShellCommands(
 
     @ShellMethod("Show tool stats")
     fun toolStats(): String {
-        return toolsStats.toString()
+        return toolsStats.infoString(verbose = true)
     }
 
     @ShellMethod("List available models")

@@ -113,8 +113,11 @@ internal class AgentPlatformConfiguration(
         toolGroups
     )
 
+    /**
+     * Gets registered as an event listener
+     */
     @Bean
-    fun toolsStats(): ToolsStats = AgenticEventListenerToolsStats()
+    fun toolsStats() = AgenticEventListenerToolsStats()
 
     @Bean
     fun actionScheduler(): OperationScheduler =

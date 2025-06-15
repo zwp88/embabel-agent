@@ -231,6 +231,21 @@ class FileWriteToolsTest {
                 "Content should be appended to new file",
             )
         }
+
+        @Test
+        fun `appendToFile should never throw exception if file exists`() {
+            val path = "new-file.txt"
+            fileWriteTools.createFile(path, "")
+            val appendedContent = "Appended content"
+            fileWriteTools.appendToFile(path, appendedContent, true)
+            assertEquals(
+                appendedContent,
+                Files.readString(
+                    File(tempDir, path).toPath()
+                ),
+                "Content should be appended to new file",
+            )
+        }
     }
 
     @Nested

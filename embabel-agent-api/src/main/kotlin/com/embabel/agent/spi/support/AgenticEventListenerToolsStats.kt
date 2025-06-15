@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.api.common.ToolStats
+import com.embabel.agent.api.common.ToolsStats
 import com.embabel.agent.event.AgentProcessEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ToolCallResponseEvent
-import com.embabel.agent.spi.ToolStats
-import com.embabel.agent.spi.ToolsStats
 
 class AgenticEventListenerToolsStats : AgenticEventListener, ToolsStats {
 
@@ -31,12 +31,21 @@ class AgenticEventListenerToolsStats : AgenticEventListener, ToolsStats {
     private fun record(e: ToolCallResponseEvent) {
         val existing = _stats[e.function]
         if (existing != null) {
-            _stats[e.function] = existing.copy(calls = existing.calls + 1)
+            _stats[e.function] = ToolStats(
+                name = e.function,
+                calls = existing.calls + 1,
+                failures = existing.failures + if (e.result.isFailure) 1 else 0,
+                averageResponseTime = (existing.averageResponseTime * existing.calls + e.runningTime.toMillis()) / (existing.calls + 1)
+            )
         } else {
-            _stats[e.function] = ToolStats(name = e.function, 1)
+            _stats[e.function] = ToolStats(
+                name = e.function,
+                calls = 1,
+                averageResponseTime = e.runningTime.toMillis(),
+                failures = if (e.result.isFailure) 1 else 0
+            )
         }
     }
-
 
     override fun onProcessEvent(event: AgentProcessEvent) {
         if (event is ToolCallResponseEvent) {

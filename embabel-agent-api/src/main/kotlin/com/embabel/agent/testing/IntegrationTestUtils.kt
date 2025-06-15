@@ -15,8 +15,13 @@
  */
 package com.embabel.agent.testing
 
+import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.support.DefaultAgentPlatform
+import com.embabel.agent.core.support.InMemoryBlackboard
+import com.embabel.agent.core.support.SimpleAgentProcess
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.LlmOperations
@@ -56,6 +61,18 @@ object IntegrationTestUtils {
             eventListener = EventSavingAgenticEventListener(),
             operationScheduler = OperationScheduler.PRONTO,
             ragService = RagService.empty(),
+        )
+    }
+
+    @JvmStatic
+    fun dummyAgentProcessRunning(agent: Agent): AgentProcess {
+        return SimpleAgentProcess(
+            id = "dummy-agent-process",
+            parentId = null,
+            agent = agent,
+            blackboard = InMemoryBlackboard(),
+            processOptions = ProcessOptions(),
+            platformServices = dummyPlatformServices(),
         )
     }
 
