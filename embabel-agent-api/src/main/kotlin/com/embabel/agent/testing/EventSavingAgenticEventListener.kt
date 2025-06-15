@@ -19,15 +19,24 @@ import com.embabel.agent.event.AgentPlatformEvent
 import com.embabel.agent.event.AgentProcessEvent
 import com.embabel.agent.event.AgenticEventListener
 
-class EventSavingAgenticEventListener(
-    val platformEvents: MutableList<AgentPlatformEvent> = mutableListOf(),
-    val processEvents: MutableList<AgentProcessEvent> = mutableListOf(),
-) : AgenticEventListener {
+/**
+ * Simple implementation of [AgenticEventListener] that saves each kind of event to a list.
+ */
+class EventSavingAgenticEventListener : AgenticEventListener {
+
+    private val _platformEvents = mutableListOf<AgentPlatformEvent>()
+
+    private val _processEvents = mutableListOf<AgentProcessEvent>()
+
     override fun onPlatformEvent(event: AgentPlatformEvent) {
-        platformEvents += event
+        _platformEvents += event
     }
 
     override fun onProcessEvent(event: AgentProcessEvent) {
-        processEvents += event
+        _processEvents += event
     }
+
+    val platformEvents get() = _platformEvents.toList()
+
+    val processEvents get() = _processEvents.toList()
 }

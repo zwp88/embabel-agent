@@ -77,7 +77,7 @@ class ToolDecoratorsKtTest {
         every { mockPlatformServices.eventListener } returns ese
         val agentProcess = mockk<AgentProcess>()
         every { agentProcess.processContext.onProcessEvent(any()) } answers {
-            ese.processEvents.add(firstArg())
+            ese.onProcessEvent(firstArg())
         }
         every { agentProcess.processContext.platformServices } returns mockPlatformServices
         every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
