@@ -15,42 +15,19 @@
  */
 package com.embabel.agent.spi
 
-import com.embabel.agent.event.AgentProcessEvent
-import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.event.ToolCallResponseEvent
-
+/**
+ * Stats for calling a tool.
+ */
 data class ToolStats(
     val name: String,
     val calls: Int
 )
 
-interface ToolStatsSource {
-    val toolsStats: ToolsStats
-}
 
-class AgenticEventListenerToolStatsSource(
-    override val toolsStats: ToolsStats = ToolsStats(),
-) : AgenticEventListener, ToolStatsSource {
-    override fun onProcessEvent(event: AgentProcessEvent) {
-        if (event is ToolCallResponseEvent) {
-            toolsStats.record(event)
-        }
-    }
-}
-
-data class ToolsStats(
-    private val _stats: MutableMap<String, ToolStats> = mutableMapOf(),
-) {
+/**
+ * Tool statistics, indexed by tool name.
+ */
+interface ToolsStats {
 
     val stats: Map<String, ToolStats>
-        get() = _stats.toSortedMap()
-
-    fun record(e: ToolCallResponseEvent) {
-        val existing = _stats[e.function]
-        if (existing != null) {
-            _stats[e.function] = existing.copy(calls = existing.calls + 1)
-        } else {
-            _stats[e.function] = ToolStats(name = e.function, 1)
-        }
-    }
 }

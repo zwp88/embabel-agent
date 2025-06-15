@@ -27,7 +27,6 @@ import kotlin.system.measureTimeMillis
 
 class MapperTest {
 
-    // Use a real or dummy OperationContext; mocking unnecessary for these tests
     private val context = mockk<OperationContext>()
 
     @Test
