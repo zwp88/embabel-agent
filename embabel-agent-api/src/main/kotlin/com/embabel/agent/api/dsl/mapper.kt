@@ -17,17 +17,32 @@ package com.embabel.agent.api.dsl
 
 import com.embabel.agent.api.common.OperationContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 /**
  * Map parallel. Block on all results
+ * @param T the type of elements in the collection
+ * @param R the type of the result of the transformation
+ * @param context the operation context
+ * @param concurrencyLevel the maximum number of concurrent operations
+ * @param dispatcher the coroutine dispatcher to use for parallel execution
+ * @param transform the transformation function to apply to each element
  */
 fun <T, R> Collection<T>.parallelMap(
-    operationContext: OperationContext,
-    concurrencyLevel: Int = 10, // Control parallelization
-    dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    context: OperationContext,
+    concurrencyLevel: Int = 10,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
     transform: suspend (T) -> R,
 ): List<R> =
-    runBlocking { mapAsync(operationContext, concurrencyLevel, dispatcher, transform) }
+    runBlocking {
+        mapAsync(
+            context = context,
+            concurrencyLevel = concurrencyLevel,
+            dispatcher = dispatcher,
+            transform = transform,
+        )
+    }
 
 
 /**
@@ -35,17 +50,20 @@ fun <T, R> Collection<T>.parallelMap(
  */
 suspend fun <T, R> Collection<T>.mapAsync(
     context: OperationContext,
-    concurrencyLevel: Int = 10, // Control parallelization
-    dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    concurrencyLevel: Int = 10,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
     transform: suspend (T) -> R
 ): List<R> = coroutineScope {
-    val chunkedList = chunked((size / concurrencyLevel.coerceAtLeast(1)).coerceAtLeast(1))
+    if (isEmpty()) return@coroutineScope emptyList()
 
-    chunkedList.flatMap { chunk ->
-        chunk.map { item ->
-            async(dispatcher) {
+    // Use kotlinx.coroutines.sync.Semaphore for proper concurrency control
+    val semaphore = Semaphore(concurrencyLevel)
+
+    map { item ->
+        async(dispatcher) {
+            semaphore.withPermit {
                 transform(item)
             }
-        }.awaitAll()
-    }
+        }
+    }.awaitAll()
 }
