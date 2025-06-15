@@ -270,6 +270,19 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
         return "content appended to file"
     }
 
+    /**
+     * Append content to a file, creating it if it doesn't exist.
+     * If create is true, the file will be created if it doesn't exist.
+     * If createIfNotExists is false, an exception will be thrown if the file doesn't exist.
+     */
+    fun appendToFile(path: String, content: String, createIfNotExists: Boolean) {
+        if (createIfNotExists) {
+            createFile(path, content, overwrite = false)
+        } else {
+            appendFile(path, content)
+        }
+    }
+
     @Tool(description = "Delete a file at the given path")
     fun delete(path: String): String {
         val resolvedPath = resolveAndValidateFile(root = root, path = path)

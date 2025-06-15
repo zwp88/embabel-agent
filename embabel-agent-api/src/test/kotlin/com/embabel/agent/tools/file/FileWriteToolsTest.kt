@@ -206,9 +206,7 @@ class FileWriteToolsTest {
         @Test
         fun `should append content to file`() {
             val appendedContent = "Appended content"
-
             val result = fileWriteTools.appendFile(path, appendedContent)
-
             assertEquals("content appended to file", result)
             assertEquals(originalContent + appendedContent, Files.readString(file.toPath()))
         }
@@ -218,6 +216,20 @@ class FileWriteToolsTest {
             assertThrows<IllegalArgumentException> {
                 fileWriteTools.appendFile("nonexistent.txt", "content")
             }
+        }
+
+        @Test
+        fun `should create if required when file does not exist`() {
+            val path = "new-file.txt"
+            val appendedContent = "Appended content"
+            fileWriteTools.appendToFile(path, appendedContent, true)
+            assertEquals(
+                appendedContent,
+                Files.readString(
+                    File(tempDir, path).toPath()
+                ),
+                "Content should be appended to new file",
+            )
         }
     }
 
