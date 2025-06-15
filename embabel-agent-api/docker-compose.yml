@@ -17,6 +17,11 @@ services:
     ports:
       - "9411:9411"
 
-  # the environment variables that will be automatically set in this process are
-  # LLAMA3.2_URL - this is the http base url - add /chat/completions to this for doing completions
-  # LLAMA3.2_MODEL - this is the name of the model that should be passed in the request
+  a2a-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.a2a
+    ports:
+      - "12000:12000"
+    profiles:
+      - a2a
