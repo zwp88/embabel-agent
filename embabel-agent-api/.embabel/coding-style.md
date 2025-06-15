@@ -8,7 +8,9 @@ Follow the style of the code you read. Favor clarity.
 
 Don't bother putting in licence headers, as build will do that.
 
-Don't comment obvious things inline; only things that may be non-obvious.
+Don't comment obvious things, inline or in type headers.
+Comment only things that may be non-obvious. LLMs offer comment
+more than humans; don't do that.
 
 Use consistent naming in the Spring idiom.
 
@@ -32,5 +34,5 @@ Use Kotlin coding conventions and consistent formatting.
 
 ## Java
 
-Use modern Java features like var, records, and switch expressions.
-Use multiline strings rather than concatenation.
+- Use modern Java features like var, records, and switch expressions.
+- Use multiline strings rather than concatenation.
