@@ -18,7 +18,6 @@ package com.embabel.example.simple.horoscope.kotlin
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
-import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
@@ -74,17 +73,6 @@ data class Writeup(
 
 /**
  * An agent that finds personalized news stories based on a person's star sign.
- *
- * This agent demonstrates the workflow of:
- * 1. Extracting person information from user input
- * 2. Obtaining astrological details
- * 3. Retrieving a horoscope
- * 4. Finding relevant news stories based on the horoscope
- * 5. Creating a personalized writeup combining the horoscope and news
- *
- * The agent leverages Spring dependency injection for services and uses
- * the annotation-driven programming model with @Agent and @Action annotations
- * to define its capabilities and workflow.
  */
 @Agent(
     description = "Find news based on a person's star sign",
@@ -93,26 +81,12 @@ data class Writeup(
 )
 class TestStarNewsFinder(
     private val horoscopeService: TestHoroscopeService,
-    @Value("\${star-news-finder.model:gpt-4.1-mini}")
-//    @Value("\${star-news-finder.model:ai/llama3.2}")
-
-    private val model: String = OpenAiModels.GPT_41_NANO,
     @Value("\${star-news-finder.story.count:5}")
     private val storyCount: Int,
     @Value("\${star-news-finder.word.count:100}")
     private val wordCount: Int,
 ) {
 
-    /**
-     * Extracts a person entity from user input by parsing the text for a name.
-     *
-     * This method uses a lightweight LLM model (GPT-41-NANO) to efficiently extract
-     * just the person's name from the user's input text. It's an entry point for
-     * the agent workflow when only basic person information is available.
-     *
-     * @param userInput The user's text input
-     * @return A Person object if extraction is successful, null otherwise
-     */
     @Action
     fun extractPerson(userInput: UserInput): Person? =
         // All prompts are typesafe
@@ -207,8 +181,8 @@ class TestStarNewsFinder(
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION, "rag"])
     internal fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
-        usingModel(model).createObject(
-            """
+        usingDefaultLlm createObject (
+                """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
                 <horoscope>${horoscope.summary}</horoscope>
@@ -225,7 +199,7 @@ class TestStarNewsFinder(
             - If the horoscope says that they may want to work on their career,
             find news stories about training courses.
             """.trimIndent()
-        )
+                )
 
     /**
      * Creates a personalized writeup combining the horoscope and relevant news stories.
@@ -251,7 +225,7 @@ class TestStarNewsFinder(
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
     ): Writeup = using(
-        LlmOptions(model).withTemperature(.9)
+        LlmOptions(Auto).withTemperature(.9)
     ).createObject<Writeup>(
         """
         Take the following news stories and write up something

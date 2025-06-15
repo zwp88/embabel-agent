@@ -36,11 +36,8 @@ import com.embabel.common.core.types.Named
 import com.embabel.example.simple.horoscope.TestHoroscopeService
 import com.embabel.example.simple.horoscope.java.TestStarNewsFinder
 import com.embabel.example.simple.horoscope.kotlin.Writeup
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -72,14 +69,15 @@ class FakeConfig {
         ): Rankings<T> where T : Named, T : Described {
             when (description) {
                 "agent" -> {
-                    val a = rankables.first { it.name.contains("Star") }
+                    val a = rankables.firstOrNull { it.name.contains("Star") } ?: fail { "No agent with Star found" }
                     return Rankings(
                         rankings = listOf(Ranking(a, .9))
                     )
                 }
 
                 "goal" -> {
-                    val g = rankables.first { it.description.contains("horoscope") }
+                    val g =
+                        rankables.firstOrNull { it.description.contains("horoscope") } ?: fail("No goal with horoscope")
                     return Rankings(
                         rankings = listOf(Ranking(g, .9))
                     )
@@ -143,7 +141,7 @@ class AgentPlatformIntegrationTest(
         fun `run Java star finder as transform by name`() {
             val writeup = typedOps.asFunction<UserInput, HasContent>(
                 outputClass = HasContent::class.java,
-                agentName = "JavaStarNewsFinder",
+                agentName = "JavaTestStarNewsFinder",
             ).apply(
                 UserInput("Lynda is a Scorpio, find some news for her"),
                 ProcessOptions(test = true),

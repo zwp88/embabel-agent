@@ -244,6 +244,11 @@ class StarNewsFinder(
     // achieves the given goal, so the agent flow can be complete
     @AchievesGoal(
         description = "Create an amusing writeup for the target person based on their horoscope and current news stories",
+        tags = ["horoscope", "astrology", "news"],
+        examples = [
+            "Tristan is Virgo. What can he learn from today's news?",
+            "Lynda is a Scorpio. Find news for her",
+        ]
     )
     @Action
     fun starNewsWriteup(

@@ -12,18 +12,11 @@ services:
     environment:
       - OLLAMA_MODELS=qwen2.5
 
-
   zipkin:
     image: 'openzipkin/zipkin:latest'
     ports:
       - "9411:9411"
+
   # the environment variables that will be automatically set in this process are
   # LLAMA3.2_URL - this is the http base url - add /chat/completions to this for doing completions
   # LLAMA3.2_MODEL - this is the name of the model that should be passed in the request
-  # MCP_GATEWAY_ENDPOINT - this is a listening socket - connect to it and use pass the out/in streams to
-  #                        an MCP STDIO client
-#  star-news-agent:
-#    image: springrod/embabel-agent-api:1.0.0-SNAPSHOT
-#    depends_on:
-#      - llama3.2
-#      - mcp-gateway

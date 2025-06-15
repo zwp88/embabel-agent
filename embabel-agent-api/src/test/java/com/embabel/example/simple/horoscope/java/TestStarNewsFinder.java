@@ -38,9 +38,9 @@ import java.util.stream.Collectors;
  * Find news based on a person's star sign
  */
 @Agent(
-        name = "JavaStarNewsFinder",
+        name = "JavaTestStarNewsFinder",
         description = "Find news based on a person's star sign",
-        beanName = "javaStarNewsFinder",
+        beanName = "javaTestStarNewsFinder",
         scan = false)
 public class TestStarNewsFinder {
 
@@ -56,7 +56,7 @@ public class TestStarNewsFinder {
 
     @Action
     public PersonImpl extractPerson(UserInput userInput) {
-        return PromptRunner.usingLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
+        return PromptRunner.usingLlm(LlmOptions.fromCriteria(ModelSelectionCriteria.getAuto())).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name:
                         %s""".formatted(userInput.getContent()),
@@ -127,9 +127,8 @@ public class TestStarNewsFinder {
             StarPerson person,
             RelevantNewsStories relevantNewsStories,
             Horoscope horoscope) {
-        var llm = LlmOptions.fromCriteria(
-                ModelSelectionCriteria.firstOf(OpenAiModels.GPT_41_MINI)
-        ).withTemperature(0.9);
+        var llm = LlmOptions.Companion.fromCriteria(ModelSelectionCriteria.getAuto())
+                .withTemperature(0.9);
 
         var newsItems = relevantNewsStories.getItems().stream()
                 .map(item -> "- " + item.getUrl() + ": " + item.getSummary())
