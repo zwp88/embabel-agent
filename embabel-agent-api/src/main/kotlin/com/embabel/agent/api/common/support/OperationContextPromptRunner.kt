@@ -20,6 +20,7 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
+import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
@@ -29,7 +30,7 @@ import com.embabel.common.util.loggerFor
 
 /**
  * Uses the platform's LlmOperations to execute the prompt.
- * Prompt running ends up through here.
+ * All prompt running ends up through here.
  */
 internal data class OperationContextPromptRunner(
     private val context: OperationContext,
@@ -37,6 +38,7 @@ internal data class OperationContextPromptRunner(
     override val toolGroups: Set<String>,
     override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
+    private val contextualPromptContributors: List<ContextualPromptElement>,
     override val generateExamples: Boolean?,
 ) : PromptRunner {
 
@@ -56,7 +58,11 @@ internal data class OperationContextPromptRunner(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
                 toolCallbacks = safelyGetToolCallbacks(toolObjects),
-                promptContributors = promptContributors,
+                promptContributors = promptContributors + contextualPromptContributors.map {
+                    it.toPromptContributor(
+                        context
+                    )
+                },
                 id = idForPrompt(prompt, outputClass),
                 generateExamples = generateExamples,
             ),
@@ -76,7 +82,11 @@ internal data class OperationContextPromptRunner(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
                 toolCallbacks = safelyGetToolCallbacks(toolObjects),
-                promptContributors = promptContributors,
+                promptContributors = promptContributors + contextualPromptContributors.map {
+                    it.toPromptContributor(
+                        context
+                    )
+                },
                 id = idForPrompt(prompt, outputClass),
                 generateExamples = generateExamples,
             ),
@@ -136,6 +146,11 @@ internal data class OperationContextPromptRunner(
 
     override fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner =
         copy(promptContributors = this.promptContributors + promptContributors)
+
+    override fun withContextualPromptContributors(
+        contextualPromptContributors: List<ContextualPromptElement>,
+    ): PromptRunner =
+        copy(contextualPromptContributors = this.contextualPromptContributors + contextualPromptContributors)
 
     override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
         copy(generateExamples = generateExamples)

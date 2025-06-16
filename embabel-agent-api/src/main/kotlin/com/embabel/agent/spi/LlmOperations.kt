@@ -20,6 +20,7 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ToolConsumer
 import com.embabel.agent.core.ToolGroupConsumer
 import com.embabel.agent.event.LlmRequestEvent
+import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
@@ -56,6 +57,8 @@ interface LlmUse : PromptContributorConsumer, ToolGroupConsumer {
  */
 interface LlmCall : LlmUse, ToolConsumer {
 
+    val contextualPromptContributors: List<ContextualPromptElement>
+
     companion object {
         operator fun invoke(): LlmCall = LlmCallImpl(name = MobyNameGenerator.generateName())
     }
@@ -67,6 +70,7 @@ private data class LlmCallImpl(
     override val toolGroups: Set<String> = emptySet(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
+    override val contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
     override val generateExamples: Boolean = false,
 ) : LlmCall
 
@@ -91,6 +95,7 @@ data class LlmInteraction(
     override val toolGroups: Set<String> = emptySet(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
+    override val contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
     override val generateExamples: Boolean? = null,
 ) : LlmCall {
 

@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
@@ -31,6 +32,7 @@ internal data class MethodReturnPromptRunner(
     override val toolGroups: Set<String>,
     override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
+    private val contextualPromptContributors: List<ContextualPromptElement>,
     override val generateExamples: Boolean?,
 ) : PromptRunner {
 
@@ -47,6 +49,7 @@ internal data class MethodReturnPromptRunner(
             toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
+            contextualPromptContributors = contextualPromptContributors,
             generateExamples = generateExamples,
         )
     }
@@ -64,6 +67,7 @@ internal data class MethodReturnPromptRunner(
             toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
+            contextualPromptContributors = contextualPromptContributors,
             generateExamples = generateExamples,
         )
     }
@@ -83,6 +87,7 @@ internal data class MethodReturnPromptRunner(
             toolCallbacks = emptyList(),
             toolObjects = toolObjects,
             promptContributors = promptContributors,
+            contextualPromptContributors = contextualPromptContributors,
             generateExamples = generateExamples,
         )
     }
@@ -98,6 +103,11 @@ internal data class MethodReturnPromptRunner(
 
     override fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner =
         copy(promptContributors = this.promptContributors + promptContributors)
+
+    override fun withContextualPromptContributors(
+        contextualPromptContributors: List<ContextualPromptElement>,
+    ): PromptRunner =
+        copy(contextualPromptContributors = this.contextualPromptContributors + contextualPromptContributors)
 
     override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
         copy(generateExamples = generateExamples)

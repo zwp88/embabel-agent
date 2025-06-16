@@ -22,9 +22,15 @@ import com.embabel.common.ai.model.LlmOptions
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class OperationContextPromptRunnerTest {
+
+    @Test
+    @Disabled("test not implemented yet")
+    fun `test contextual prompt contributors`() {
+    }
 
     @Test
     fun `test evaluateCondition`() {
@@ -56,6 +62,7 @@ class OperationContextPromptRunnerTest {
             toolGroups = emptySet(),
             toolObjects = emptyList(),
             promptContributors = emptyList(),
+            contextualPromptContributors = emptyList(),
             generateExamples = false,
         )
 

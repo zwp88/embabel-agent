@@ -17,6 +17,7 @@ package com.embabel.agent.api.annotation
 
 import com.embabel.agent.api.annotation.support.MethodReturnPromptRunner
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 
@@ -37,6 +38,7 @@ fun using(
     toolGroups: Set<String> = emptySet(),
     toolObjects: List<Any> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
+    contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
     generateExamples: Boolean? = null,
 ): PromptRunner =
     MethodReturnPromptRunner(
@@ -45,6 +47,7 @@ fun using(
         toolObjects = toolObjects,
         promptContributors = promptContributors,
         generateExamples = generateExamples,
+        contextualPromptContributors = contextualPromptContributors, // No contextual contributors for this runner
     )
 
 /**
@@ -64,6 +67,7 @@ fun usingModel(
     toolGroups: Set<String> = emptySet(),
     toolObjects: List<Any> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
+    contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
     generateExamples: Boolean? = null,
 ): PromptRunner =
     MethodReturnPromptRunner(
@@ -71,6 +75,7 @@ fun usingModel(
         toolGroups = toolGroups,
         toolObjects = toolObjects,
         promptContributors = promptContributors,
+        contextualPromptContributors = contextualPromptContributors,
         generateExamples = generateExamples,
     )
 
@@ -84,5 +89,6 @@ val usingDefaultLlm: PromptRunner =
         toolGroups = emptySet(),
         toolObjects = emptyList(),
         promptContributors = emptyList(),
+        contextualPromptContributors = emptyList(),
         generateExamples = null,
     )

@@ -156,6 +156,7 @@ internal class DefaultActionMethodManager(
                 toolGroups = cope.toolGroups + actionContext.toolGroups,
                 toolObjects = (cope.toolObjects + actionContext.domainObjectInstances()).distinct(),
                 promptContributors = promptContributors,
+                contextualPromptContributors = cope.contextualPromptContributors,
                 generateExamples = cope.generateExamples == true,
             )
 

@@ -18,6 +18,7 @@ package com.embabel.agent.api.common
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.core.*
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.CurrentDate
 import com.embabel.common.ai.prompt.PromptContributor
@@ -49,6 +50,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         toolGroups: Set<String> = emptySet(),
         toolObjects: List<Any> = emptyList(),
         promptContributors: List<PromptContributor> = emptyList(),
+        contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
         generateExamples: Boolean = false,
     ): PromptRunner {
         val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
@@ -58,6 +60,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
             toolGroups = toolGroups,
             toolObjects = toolObjects,
             promptContributors = promptContributorsToUse,
+            contextualPromptContributors = contextualPromptContributors,
             generateExamples = generateExamples,
         )
     }
@@ -105,12 +108,12 @@ interface ActionContext : OperationContext {
     override val processContext: ProcessContext
     val action: Action?
 
-    // TODO default LLM options from action
     override fun promptRunner(
         llm: LlmOptions,
         toolGroups: Set<String>,
         toolObjects: List<Any>,
         promptContributors: List<PromptContributor>,
+        contextualPromptContributors: List<ContextualPromptElement>,
         generateExamples: Boolean,
     ): PromptRunner {
         val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
@@ -121,6 +124,7 @@ interface ActionContext : OperationContext {
             toolGroups = this.toolGroups + toolGroups,
             toolObjects = (toolObjects + domainObjectInstances()).distinct(),
             promptContributors = promptContributorsToUse,
+            contextualPromptContributors = contextualPromptContributors,
             generateExamples = generateExamples,
         )
     }

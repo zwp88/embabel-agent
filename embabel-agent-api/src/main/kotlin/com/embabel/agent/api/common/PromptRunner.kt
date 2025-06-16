@@ -17,6 +17,7 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.api.annotation.using
 import com.embabel.agent.experimental.primitive.Determination
+import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmUse
 import com.embabel.common.ai.model.LlmOptions
@@ -109,6 +110,18 @@ interface PromptRunner : LlmUse {
 
     fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner
 
+    /**
+     * Add a prompt contributor that can see context
+     */
+    fun withContextualPromptContributors(
+        contextualPromptContributors: List<ContextualPromptElement>,
+    ): PromptRunner
+
+    fun withContextualPromptContributor(
+        contextualPromptContributor: ContextualPromptElement,
+    ): PromptRunner =
+        withContextualPromptContributors(listOf(contextualPromptContributor))
+
     fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 
     companion object {
@@ -165,6 +178,7 @@ sealed class ExecutePromptException(
     override val toolCallbacks: List<ToolCallback>,
     val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
+    override val contextualPromptContributors: List<ContextualPromptElement>,
     override val generateExamples: Boolean?,
 ) : LlmObjectCreationRequest, RuntimeException(
     "Not a real failure but meant to be intercepted by infrastructure"
@@ -182,6 +196,7 @@ class CreateObjectPromptException(
     toolCallbacks: List<ToolCallback>,
     toolObjects: List<Any>,
     promptContributors: List<PromptContributor>,
+    contextualPromptContributors: List<ContextualPromptElement>,
     generateExamples: Boolean? = null,
 ) : ExecutePromptException(
     requireResult = requireResult,
@@ -190,6 +205,7 @@ class CreateObjectPromptException(
     toolCallbacks = toolCallbacks,
     toolObjects = toolObjects,
     promptContributors = promptContributors,
+    contextualPromptContributors = contextualPromptContributors,
     generateExamples = generateExamples,
 ), LlmCallRequest
 
@@ -203,6 +219,7 @@ class EvaluateConditionPromptException(
     toolObjects: List<Any>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>,
+    contextualPromptContributors: List<ContextualPromptElement>,
     generateExamples: Boolean? = null,
 ) : ExecutePromptException(
     requireResult = requireResult,
@@ -211,5 +228,6 @@ class EvaluateConditionPromptException(
     toolCallbacks = toolCallbacks,
     toolObjects = toolObjects,
     promptContributors = promptContributors,
+    contextualPromptContributors = contextualPromptContributors,
     generateExamples = generateExamples,
 )

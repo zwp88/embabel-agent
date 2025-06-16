@@ -337,18 +337,19 @@ class AgentMetadataReader(
                 args,
             )
             evaluationResult
-        } catch (e: EvaluateConditionPromptException) {
+        } catch (ecpe: EvaluateConditionPromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
             val promptRunner = operationContext.promptRunner(
-                llm = e.llm ?: LlmOptions(),
-                promptContributors = emptyList(),
+                llm = ecpe.llm ?: LlmOptions(),
+                promptContributors = ecpe.promptContributors,
+                contextualPromptContributors = ecpe.contextualPromptContributors,
             )
 
             promptRunner.evaluateCondition(
-                condition = e.condition,
-                context = e.context,
-                confidenceThreshold = e.confidenceThreshold,
+                condition = ecpe.condition,
+                context = ecpe.context,
+                confidenceThreshold = ecpe.confidenceThreshold,
             )
         } catch (t: Throwable) {
             logger.warn("Error invoking condition method ${method.name} with args $args", t)
