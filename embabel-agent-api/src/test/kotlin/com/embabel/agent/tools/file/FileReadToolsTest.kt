@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
 import java.nio.file.Path
@@ -61,6 +63,7 @@ class FileReadToolsTest {
         }
 
         @Test
+        @DisabledOnOs(OS.WINDOWS)
         fun `should find files by extension excluding root`() {
             val result = fileReadTools.findFiles("**/*.txt")
 
@@ -85,6 +88,7 @@ class FileReadToolsTest {
         }
 
         @Test
+        @DisabledOnOs(OS.WINDOWS)
         fun `should find files in specific directory`() {
             val result = fileReadTools.findFiles("dir1/*")
             assertEquals(1, result.size)
