@@ -8,7 +8,6 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <artifactId>embabel-agent-starter</artifactId>
-    <packaging>pom</packaging>
     <name>Embabel Agent Starter</name>
     <description>Embabel Agent Starter. Parent to all starters</description>
 
