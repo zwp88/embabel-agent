@@ -19,16 +19,32 @@ import com.embabel.common.util.DummyInstanceCreator
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
+/**
+ * Utility functions for building prompts.
+ */
 object PromptUtils {
 
     val dummyInstanceCreator = DummyInstanceCreator()
     val om = jacksonObjectMapper().registerKotlinModule()
 
+    /**
+     * Generates a JSON example of the given class
+     * with dummy data. Makes few shot examples easier to create.
+     *
+     * @param clazz The class to generate a JSON example for.
+     */
+    @JvmStatic
     fun jsonExampleOf(clazz: Class<*>): String {
         val dummy = dummyInstanceCreator.createDummyInstance(clazz)
         return om.writerWithDefaultPrettyPrinter().writeValueAsString(dummy)
     }
 
+    /**
+     * Generates a JSON example of the given class
+     * with dummy data. Makes few shot examples easier to create.
+     *
+     * @param T The type to generate a JSON example for.
+     */
     inline fun <reified T> jsonExampleOf(): String {
         return jsonExampleOf(T::class.java)
     }

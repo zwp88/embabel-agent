@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.prompt
+package com.embabel.agent.prompt.persona
 
 import com.embabel.common.ai.prompt.PromptContributor
 

@@ -23,9 +23,9 @@ import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.ResearchReport
-import com.embabel.agent.prompt.Persona
 import com.embabel.agent.prompt.PromptUtils
 import com.embabel.agent.prompt.ResponseFormat
+import com.embabel.agent.prompt.persona.Persona
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider.Companion.CHEAPEST_ROLE
 import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byRole

@@ -65,20 +65,20 @@ class HitchhikerLoggingAgenticEventListener : LoggingAgenticEventListener(
 Welcome to the Hitchhiker's Guide to the Galaxy
 The standard repository for all knowledge and wisdom in the universe
 
-        
-  _____   ____  _   _ _ _______  
- |  __ \ / __ \| \ | ( )__   __| 
- | |  | | |  | |  \| |/   | |    
- | |  | | |  | | . ` |    | |    
- | |__| | |__| | |\  |    | |    
- |_____/ \____/|_| \_|____|_|___ 
+
+  _____   ____  _   _ _ _______
+ |  __ \ / __ \| \ | ( )__   __|
+ | |  | | |  | |  \| |/   | |
+ | |  | | |  | | . ` |    | |
+ | |__| | |__| | |\  |    | |
+ |_____/ \____/|_| \_|____|_|___
  |  __ \ /\   | \ | |_   _/ ____|
- | |__) /  \  |  \| | | || |     
- |  ___/ /\ \ | . ` | | || |     
- | |  / ____ \| |\  |_| || |____ 
+ | |__) /  \  |  \| | | || |
+ |  ___/ /\ \ | . ` | | || |
+ | |  / ____ \| |\  |_| || |____
  |_| /_/    \_\_| \_|_____\_____|
-                                 
-                                 
+
+
 
     """.trimIndent().color(hexToRgb(HitchhikerColorPalette.PANIC_RED)),
 ) {

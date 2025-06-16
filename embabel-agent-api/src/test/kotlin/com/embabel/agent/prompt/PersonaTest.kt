@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.prompt
 
+import com.embabel.agent.prompt.persona.Persona
 import com.embabel.common.ai.prompt.PromptContributionLocation
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
