@@ -29,17 +29,12 @@ import com.embabel.agent.core.*
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.Person
-import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
-import com.embabel.agent.event.logging.personality.severance.SeveranceLoggingAgenticEventListener
-import com.embabel.agent.spi.OperationScheduler
-import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.EventSavingAgenticEventListener
 import com.embabel.agent.testing.IntegrationTestUtils.dummyPlatformServices
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -138,12 +133,7 @@ class SimpleAgentProcessTest {
         }
 
         private fun waitOnTick(agent: Agent) {
-            val ese = EventSavingAgenticEventListener()
-            val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmOperations } returns mockk()
-            every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
-
+            val dummyPlatformServices = dummyPlatformServices()
             val blackboard = InMemoryBlackboard()
             blackboard += UserInput("Rod")
             val agentProcess = SimpleAgentProcess(
@@ -151,7 +141,7 @@ class SimpleAgentProcessTest {
                 agent = agent,
                 processOptions = ProcessOptions(),
                 blackboard = blackboard,
-                platformServices = mockPlatformServices,
+                platformServices = dummyPlatformServices,
                 parentId = null,
             )
             val agentStatus = agentProcess.tick()
@@ -161,12 +151,7 @@ class SimpleAgentProcessTest {
         }
 
         private fun waitOnRun(agent: Agent) {
-            val ese: AgenticEventListener = SeveranceLoggingAgenticEventListener()
-            val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmOperations } returns mockk()
-            every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
-
+            val dummyPlatformServices = dummyPlatformServices()
             val blackboard = InMemoryBlackboard()
             blackboard += (IoBinding.DEFAULT_BINDING to UserInput("Rod"))
             val agentProcess = SimpleAgentProcess(
@@ -174,7 +159,7 @@ class SimpleAgentProcessTest {
                 agent = agent,
                 processOptions = ProcessOptions(),
                 blackboard = blackboard,
-                platformServices = mockPlatformServices,
+                platformServices = dummyPlatformServices,
                 parentId = null,
             )
             val agentStatus = agentProcess.run()
@@ -226,11 +211,7 @@ class SimpleAgentProcessTest {
 
 
         private fun run(agent: Agent): AgentProcess {
-            val ese = EventSavingAgenticEventListener()
-            val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmOperations } returns mockk()
-            every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
+            val dummyPlatformServices = dummyPlatformServices()
             val blackboard = InMemoryBlackboard()
             // Don't add anything to the blackboard
             val agentProcess = SimpleAgentProcess(
@@ -238,7 +219,7 @@ class SimpleAgentProcessTest {
                 agent = agent,
                 processOptions = ProcessOptions(),
                 blackboard = blackboard,
-                platformServices = mockPlatformServices,
+                platformServices = dummyPlatformServices,
                 parentId = null,
             )
             return agentProcess.run()
@@ -252,16 +233,14 @@ class SimpleAgentProcessTest {
         @Test
         fun adds() {
             val ese = EventSavingAgenticEventListener()
-            val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmOperations } returns mockk()
+            val dummyPlatformServices = dummyPlatformServices(ese)
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 id = "test",
                 agent = SimpleTestAgent,
                 processOptions = mockk(),
                 blackboard = blackboard,
-                platformServices = mockPlatformServices,
+                platformServices = dummyPlatformServices,
                 parentId = null,
             )
             val person = LocalPerson("John")
@@ -272,16 +251,14 @@ class SimpleAgentProcessTest {
         @Test
         fun `emits add event`() {
             val ese = EventSavingAgenticEventListener()
-            val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmOperations } returns mockk()
+            val dummyPlatformServices = dummyPlatformServices(ese)
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 id = "test",
                 agent = SimpleTestAgent,
                 processOptions = mockk(),
                 blackboard = blackboard,
-                platformServices = mockPlatformServices,
+                platformServices = dummyPlatformServices,
                 parentId = null,
             )
             val person = LocalPerson("John")
@@ -292,16 +269,13 @@ class SimpleAgentProcessTest {
 
         @Test
         fun binds() {
-            val ese = EventSavingAgenticEventListener()
-            val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmOperations } returns mockk()
+            val dummyPlatformServices = dummyPlatformServices()
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 "test", agent = SimpleTestAgent,
                 processOptions = mockk(),
                 blackboard = blackboard,
-                platformServices = mockPlatformServices,
+                platformServices = dummyPlatformServices,
                 parentId = null,
             )
             val person = LocalPerson("John")
@@ -313,15 +287,13 @@ class SimpleAgentProcessTest {
         @Test
         fun `emits binding event`() {
             val ese = EventSavingAgenticEventListener()
-            val mockPlatformServices = mockk<PlatformServices>()
-            every { mockPlatformServices.eventListener } returns ese
-            every { mockPlatformServices.llmOperations } returns mockk()
+            val dummyPlatformServices = dummyPlatformServices(ese)
             val blackboard = InMemoryBlackboard()
             val agentProcess = SimpleAgentProcess(
                 "test", agent = SimpleTestAgent,
                 processOptions = mockk(),
                 blackboard = blackboard,
-                platformServices = mockPlatformServices,
+                platformServices = dummyPlatformServices,
                 parentId = null,
             )
             val person = LocalPerson("John")
@@ -332,6 +304,25 @@ class SimpleAgentProcessTest {
             val e = ese.processEvents.filterIsInstance<ObjectBoundEvent>().single()
             assertEquals(person, e.value)
             assertEquals("john", e.name)
+        }
+    }
+
+    @Nested
+    inner class ToolsStatsTest {
+
+        @Test
+        fun `no tools called`() {
+            val ese = EventSavingAgenticEventListener()
+            val dummyPlatformServices = dummyPlatformServices()
+            val blackboard = InMemoryBlackboard()
+            val agentProcess = SimpleAgentProcess(
+                "test", agent = SimpleTestAgent,
+                processOptions = mockk(),
+                blackboard = blackboard,
+                platformServices = dummyPlatformServices,
+                parentId = null,
+            )
+            assertEquals(0, agentProcess.toolsStats.toolsStats.size, "No tools called yet")
         }
     }
 

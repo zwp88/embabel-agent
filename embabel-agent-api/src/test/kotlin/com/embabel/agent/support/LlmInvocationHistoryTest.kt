@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.support
 
+import com.embabel.agent.api.common.ToolsStats
 import com.embabel.agent.core.LlmInvocation
 import com.embabel.agent.core.LlmInvocationHistory
 import com.embabel.common.ai.model.Llm
@@ -30,6 +31,7 @@ import java.time.Instant
 
 class LlmInvocationHistoryImpl(
     override val llmInvocations: MutableList<LlmInvocation> = mutableListOf(),
+    override val toolsStats: ToolsStats = mockk(),
 ) : LlmInvocationHistory
 
 class LlmInvocationHistoryTest {
@@ -66,7 +68,11 @@ class LlmInvocationHistoryTest {
         assertEquals(100, llmih.usage().promptTokens, "Correct prompt tokens")
         assertEquals(200, llmih.usage().completionTokens, "Correct completion tokens")
         assertEquals(
-            "LLMs: [Mock LLM]; prompt tokens: ${usage.promptTokens}; completion tokens: ${usage.completionTokens}; cost: $${"%.4f".format(0.0)}",
+            "LLMs: [Mock LLM]; prompt tokens: ${usage.promptTokens}; completion tokens: ${usage.completionTokens}; cost: $${
+                "%.4f".format(
+                    0.0
+                )
+            }",
             llmih.costInfoString(false),
             "No cost info yet"
         )

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.spi.support
 
+import com.embabel.agent.api.common.ToolsStats
 import com.embabel.agent.core.*
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
@@ -45,6 +46,8 @@ class MutableLlmInvocationHistory : LlmInvocationHistory {
     override val llmInvocations: List<LlmInvocation>
         get() = invocations
 
+    override val toolsStats: ToolsStats
+        get() = TODO("Not yet implemented")
 }
 
 data class SpiPerson(val name: String)

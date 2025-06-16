@@ -25,7 +25,7 @@ class AgenticEventListenerToolsStats : AgenticEventListener, ToolsStats {
 
     private val _stats: MutableMap<String, ToolStats> = mutableMapOf()
 
-    override val stats: Map<String, ToolStats>
+    override val toolsStats: Map<String, ToolStats>
         get() = _stats.toSortedMap()
 
     private fun record(e: ToolCallResponseEvent) {

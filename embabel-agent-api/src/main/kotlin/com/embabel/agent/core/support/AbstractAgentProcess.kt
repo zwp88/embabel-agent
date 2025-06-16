@@ -16,12 +16,14 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.api.common.StuckHandlingResultCode
+import com.embabel.agent.api.common.ToolsStats
 import com.embabel.agent.core.*
 import com.embabel.agent.event.*
 import com.embabel.agent.spi.DelayedActionExecutionSchedule
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ProntoActionExecutionSchedule
 import com.embabel.agent.spi.ScheduledActionExecutionSchedule
+import com.embabel.agent.spi.support.AgenticEventListenerToolsStats
 import com.embabel.plan.Planner
 import com.embabel.plan.WorldState
 import com.embabel.plan.goap.WorldStateDeterminer
@@ -63,8 +65,12 @@ abstract class AbstractAgentProcess(
     override val lastWorldState: WorldState?
         get() = _lastWorldState
 
+    private val agenticEventListenerToolsStats = AgenticEventListenerToolsStats()
+
     override val processContext = ProcessContext(
-        platformServices = platformServices,
+        platformServices = platformServices.copy(
+            eventListener = AgenticEventListener.of(platformServices.eventListener, agenticEventListenerToolsStats),
+        ),
         agentProcess = this,
         processOptions = processOptions,
     )
@@ -85,12 +91,15 @@ abstract class AbstractAgentProcess(
     override val history: List<ActionInvocation>
         get() = _history.toList()
 
-    override fun bind(name: String, value: Any): Bindable {
-        blackboard[name] = value
+    override val toolsStats: ToolsStats
+        get() = agenticEventListenerToolsStats
+
+    override fun bind(key: String, value: Any): Bindable {
+        blackboard[key] = value
         processContext.onProcessEvent(
             ObjectBoundEvent(
                 agentProcess = this,
-                name = name,
+                name = key,
                 value = value,
             )
         )

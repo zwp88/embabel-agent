@@ -54,11 +54,12 @@ object IntegrationTestUtils {
     }
 
     @JvmStatic
-    fun dummyPlatformServices(): PlatformServices {
+    @JvmOverloads
+    fun dummyPlatformServices(eventListener: AgenticEventListener? = null): PlatformServices {
         return PlatformServices(
             agentPlatform = dummyAgentPlatform(),
             llmOperations = DummyObjectCreatingLlmOperations.Companion.LoremIpsum,
-            eventListener = EventSavingAgenticEventListener(),
+            eventListener = eventListener ?: EventSavingAgenticEventListener(),
             operationScheduler = OperationScheduler.PRONTO,
             ragService = RagService.empty(),
         )

@@ -33,7 +33,7 @@ open class ToolStats(
 ) : HasInfoString {
 
     override fun infoString(verbose: Boolean?): String =
-        "ToolStats(name='$name', calls=$calls, averageResponseTime=$averageResponseTime ms, failures=$failures)"
+        "ToolStats(name=$name, calls=$calls, avgResponseTime=$averageResponseTime ms, failures=$failures)"
 
 }
 
@@ -42,15 +42,14 @@ open class ToolStats(
  */
 interface ToolsStats : HasInfoString {
 
-    val stats: Map<String, ToolStats>
+    val toolsStats: Map<String, ToolStats>
 
     override fun infoString(verbose: Boolean?): String {
-        return stats.entries.joinToString(
-            prefix = "ToolsStats(\n",
-            postfix = "\n)",
+        return toolsStats.entries.joinToString(
+            prefix = "Tool usage:\n",
             separator = ",\n"
-        ) { (name, toolStats) ->
-            "  $name: ${toolStats.infoString(verbose)}"
+        ) { (_, toolStats) ->
+            "\t${toolStats.infoString(verbose)}"
         }
     }
 }

@@ -33,6 +33,7 @@ interface AgenticEventListener {
     fun onProcessEvent(event: AgentProcessEvent) {}
 
     companion object {
+
         fun of(vararg listeners: AgenticEventListener): AgenticEventListener =
             from(listeners.toList())
 

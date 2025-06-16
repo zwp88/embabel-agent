@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.api.common.ToolsStats
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
@@ -26,6 +27,8 @@ import java.time.Instant
 interface LlmInvocationHistory {
 
     val llmInvocations: List<LlmInvocation>
+
+    val toolsStats: ToolsStats
 
     fun cost(): Double {
         return llmInvocations.sumOf { it.cost() }
@@ -61,8 +64,7 @@ interface LlmInvocationHistory {
                 usage.completionTokens
             )
         }
-            |Cost: $${"%.4f".format(cost())}
-            |""".trimMargin()
+            |Cost: $${"%.4f".format(cost())}""".trimMargin()
         else "LLMs: ${modelsUsed().map { it.name }}; " +
                 "prompt tokens: ${"%,d".format(usage.promptTokens)}; completion tokens: ${
                     "%,d".format(

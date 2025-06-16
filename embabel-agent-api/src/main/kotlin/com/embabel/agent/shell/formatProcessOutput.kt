@@ -68,5 +68,6 @@ fun formatProcessOutput(
             |${output.color(colorPalette.color2)}
             |
             |${result.agentProcess.costInfoString(verbose = true)}
+            |${result.agentProcess.toolsStats.infoString(verbose = true)}
             |""".trimMargin()
 }

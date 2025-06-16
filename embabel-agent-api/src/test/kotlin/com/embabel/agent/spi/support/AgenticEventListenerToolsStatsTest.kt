@@ -51,7 +51,7 @@ class AgenticEventListenerToolsStatsTest {
             statsListener.onProcessEvent(newEvent("toolA", isFailure = true, runningTime = Duration.ofMillis(200)))
             statsListener.onProcessEvent(newEvent("toolB"))
 
-            val stats = statsListener.stats
+            val stats = statsListener.toolsStats
             assertEquals(2, stats["toolA"]?.calls)
             assertEquals(1, stats["toolA"]?.failures)
             assertEquals(1, stats["toolB"]?.calls)
@@ -63,7 +63,7 @@ class AgenticEventListenerToolsStatsTest {
             val statsListener = AgenticEventListenerToolsStats()
             statsListener.onProcessEvent(newEvent("toolA", runningTime = Duration.ofMillis(100)))
             statsListener.onProcessEvent(newEvent("toolA", runningTime = Duration.ofMillis(300)))
-            val avg = statsListener.stats["toolA"]?.averageResponseTime
+            val avg = statsListener.toolsStats["toolA"]?.averageResponseTime
             assertEquals(200, avg)
         }
     }
