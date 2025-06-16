@@ -13,6 +13,7 @@
         <module name="embabel-agent-autoconfigure" />
         <module name="dogfood" />
         <module name="embabel-agent-rag" />
+        <module name="embabel-agent-starter" />
         <module name="embabel-agent-api" />
         <module name="embabel-movie-example" />
         <module name="examples-common" />
