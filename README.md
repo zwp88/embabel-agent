@@ -674,8 +674,10 @@ Available logging experiences:
 - `starwars`: Star Wars logging. Feel the force. The default as it's understood throughout the galaxy.
 - `colossus`: Colossus logging. The Forbin Project.
 - `montypython`: Monty Python logging. No one expects it.
+- `hh`: Hitchhiker's Guide to the Galaxy logging. The answer is 42.
 
-If none of these profiles is chosen, vanilla logging will occur. This makes me sad.
+If none of these profiles is chosen, Embabel will use vanilla logging.
+This makes me sad.
 
 ## Using Embabel Agent Framework in Your Project
 
