@@ -113,17 +113,17 @@ internal class DefaultAgentPlatform(
         processOptions: ProcessOptions,
         bindings: Map<String, Any>,
     ): AgentProcess {
-        val blackboard = createBlackboard(processOptions)
-        blackboard.bindAll(bindings)
-        val agentProcess = createAgentProcess(agent, processOptions, blackboard)
+        val agentProcess = createAgentProcess(agent, processOptions, bindings)
         return agentProcess.run()
     }
 
-    private fun createAgentProcess(
+    override fun createAgentProcess(
         agent: Agent,
         processOptions: ProcessOptions,
-        blackboard: Blackboard,
+        bindings: Map<String, Any>,
     ): AgentProcess {
+        val blackboard = createBlackboard(processOptions)
+        blackboard.bindAll(bindings)
         val platformServicesToUse = if (processOptions.test) {
             logger.warn("Using test LLM operations: {}", processOptions)
             platformServices.copy(llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum)
@@ -140,6 +140,7 @@ internal class DefaultAgentPlatform(
             processOptions = processOptions,
         )
         logger.debug("🚀 Creating process {}", agentProcess.id)
+        agentProcessRepository.save(agentProcess)
         eventListener.onProcessEvent(AgentProcessCreationEvent(agentProcess))
         return agentProcess
     }
@@ -164,6 +165,7 @@ internal class DefaultAgentPlatform(
             processOptions = processOptions,
         )
         logger.debug("👶 Creating child process {} from {}", childAgentProcess.id, parentAgentProcess.id)
+        agentProcessRepository.save(childAgentProcess)
         eventListener.onProcessEvent(AgentProcessCreationEvent(childAgentProcess))
         return childAgentProcess
     }

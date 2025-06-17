@@ -89,6 +89,22 @@ interface AgentPlatform : AgentScope {
         mapOf(IoBinding.DEFAULT_BINDING to input),
     )
 
+    /**
+     * Create an agent process with the given options and bindings.
+     * The process will not be started automatically, so this will return quickly,
+     * unlike the run method on the created process.
+     * AgentProcess status will be NOT_STARTED.
+     * @param agent the agent to run. Does not need to be deployed to the platform
+     * @param processOptions the options for the process
+     * @param bindings the bindings for the process: Objects that are pre-bound
+     * to the blackboard.
+     */
+    fun createAgentProcess(
+        agent: Agent,
+        processOptions: ProcessOptions,
+        bindings: Map<String, Any>,
+    ): AgentProcess
+
     fun createChildProcess(
         agent: Agent,
         parentAgentProcess: AgentProcess,
