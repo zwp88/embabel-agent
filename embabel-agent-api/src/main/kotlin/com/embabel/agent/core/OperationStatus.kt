@@ -22,6 +22,10 @@ import java.time.Duration
  * Stuck means we failed to find a plan from here
  */
 enum class AgentProcessStatusCode {
+
+    /** The process has not started yet */
+    NOT_STARTED,
+
     /** The process is running without any known problems */
     RUNNING,
 
