@@ -24,7 +24,9 @@ import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.GoalChoiceApprover
 import com.embabel.agent.api.dsl.EvilWizardAgent
 import com.embabel.agent.api.dsl.Frog
+import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
@@ -37,6 +39,7 @@ import com.embabel.example.simple.horoscope.TestHoroscopeService
 import com.embabel.example.simple.horoscope.java.TestStarNewsFinder
 import com.embabel.example.simple.horoscope.kotlin.Writeup
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -126,6 +129,25 @@ class AgentPlatformIntegrationTest(
     }
 
     @Nested
+    inner class Repository {
+
+        @Test
+        fun `process not started`() {
+            val ap = agentPlatform.createAgentProcess(evenMoreEvilWizard(), ProcessOptions(), emptyMap())
+            assertEquals(AgentProcessStatusCode.NOT_STARTED, ap.status)
+        }
+
+        @Test
+        fun `process not started via repository`() {
+            val ap = agentPlatform.createAgentProcess(evenMoreEvilWizard(), ProcessOptions(), emptyMap())
+            val ap2 = agentPlatform.getAgentProcess(ap.id)
+            assertNotNull(ap2, "Process should be saved to repository")
+            assertEquals(AgentProcessStatusCode.NOT_STARTED, ap2.status)
+        }
+    }
+
+
+    @Nested
     inner class SmokeTest {
 
         @Test
@@ -199,7 +221,6 @@ class AgentPlatformIntegrationTest(
                 dynamicExecutionResult.output is HasContent,
                 "Expected HasContent, got ${dynamicExecutionResult.output.javaClass.name}"
             )
-
         }
     }
 

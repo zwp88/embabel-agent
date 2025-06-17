@@ -55,7 +55,7 @@ abstract class AbstractAgentProcess(
 
     protected val _history: MutableList<ActionInvocation> = mutableListOf()
 
-    protected var _status: AgentProcessStatusCode = AgentProcessStatusCode.RUNNING
+    protected var _status: AgentProcessStatusCode = AgentProcessStatusCode.NOT_STARTED
 
     private var _failureInfo: Any? = null
 
@@ -131,6 +131,7 @@ abstract class AbstractAgentProcess(
     }
 
     override fun run(): AgentProcess {
+        _status = AgentProcessStatusCode.RUNNING
         if (agent.goals.isEmpty()) {
             logger.info("🤔 Process {} has no goals: {}", this.id, agent.goals)
             error("Agent ${agent.name} has no goals: ${agent.infoString(verbose = true)}")
@@ -154,6 +155,10 @@ abstract class AbstractAgentProcess(
             tick()
         }
         when (status) {
+            AgentProcessStatusCode.NOT_STARTED -> {
+                logger.debug("Process {} is not started: {}", this.id, status)
+            }
+
             AgentProcessStatusCode.RUNNING -> {
                 logger.debug("Process {} is happily running: {}", this.id, status)
             }

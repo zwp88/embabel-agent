@@ -140,6 +140,7 @@ internal class DefaultAgentPlatform(
             processOptions = processOptions,
         )
         logger.debug("🚀 Creating process {}", agentProcess.id)
+        agentProcessRepository.save(agentProcess)
         eventListener.onProcessEvent(AgentProcessCreationEvent(agentProcess))
         return agentProcess
     }
@@ -164,6 +165,7 @@ internal class DefaultAgentPlatform(
             processOptions = processOptions,
         )
         logger.debug("👶 Creating child process {} from {}", childAgentProcess.id, parentAgentProcess.id)
+        agentProcessRepository.save(childAgentProcess)
         eventListener.onProcessEvent(AgentProcessCreationEvent(childAgentProcess))
         return childAgentProcess
     }
