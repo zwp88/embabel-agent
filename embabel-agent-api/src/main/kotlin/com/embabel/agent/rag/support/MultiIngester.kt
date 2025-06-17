@@ -25,7 +25,7 @@ import org.springframework.ai.transformer.splitter.TextSplitter
 import org.springframework.ai.transformer.splitter.TokenTextSplitter
 
 /**
- * Write to all RAG services that implement [com.embabel.agent.rag.WritableRagService].
+ * Write to all RAG services that implement [WritableRagService].
  */
 class MultiIngester(
     override val ragServices: List<WritableRagService>,

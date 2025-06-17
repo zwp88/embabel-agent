@@ -18,7 +18,6 @@ package com.embabel.agent.rag
 import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.*
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.ai.document.DocumentWriter
 
 /**
  * A Retrieved object instance is a chunk or an entity
@@ -122,46 +121,3 @@ data class RagRequest(
     override val similarityThreshold: ZeroToOne = .8,
     override val topK: Int = 8,
 ) : SimilarityCutoff
-
-interface RagService : Described, HasInfoString {
-    val name: String
-
-    fun search(ragRequest: RagRequest): RagResponse
-
-    companion object {
-
-        /**
-         * Return a RAG service that will never return any results
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun empty(
-            name: String = "empty",
-            description: String = "empty",
-        ): RagService {
-            return EmptyRagService(
-                name = name,
-                description = description,
-            )
-        }
-    }
-}
-
-interface WritableRagService : RagService, DocumentWriter
-
-private data class EmptyRagService(
-    override val name: String,
-    override val description: String,
-) : RagService {
-
-    override fun search(ragRequest: RagRequest): RagResponse {
-        return RagResponse(
-            service = name,
-            results = emptyList(),
-        )
-    }
-
-    override fun infoString(verbose: Boolean?): String {
-        return "Empty RAG service: $name"
-    }
-}
