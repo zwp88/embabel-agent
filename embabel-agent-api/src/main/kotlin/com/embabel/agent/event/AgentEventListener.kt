@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.event
 
+import org.slf4j.LoggerFactory
+
 /**
  * Listen to events related to processes and the platform itself
  */
@@ -53,11 +55,25 @@ private class MulticastAgenticEventListener(
     private val eventListeners: List<AgenticEventListener>,
 ) : AgenticEventListener {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     override fun onPlatformEvent(event: AgentPlatformEvent) {
-        eventListeners.forEach { it.onPlatformEvent(event) }
+        eventListeners.forEach {
+            try {
+                it.onPlatformEvent(event)
+            } catch (t: Throwable) {
+                logger.warn("Exception in onPlatformEvent from $it", t)
+            }
+        }
     }
 
     override fun onProcessEvent(event: AgentProcessEvent) {
-        eventListeners.forEach { it.onProcessEvent(event) }
+        eventListeners.forEach {
+            try {
+                it.onProcessEvent(event)
+            } catch (t: Throwable) {
+                logger.warn("Exception in onProcessEvent from $it", t)
+            }
+        }
     }
 }
