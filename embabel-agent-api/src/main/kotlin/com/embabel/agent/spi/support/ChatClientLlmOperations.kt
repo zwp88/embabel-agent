@@ -218,8 +218,7 @@ internal class ChatClientLlmOperations(
                 .call()
                 .responseEntity<MaybeReturn<*>>(
                     WithExampleConverter(
-                        // TODO why does passing ObjectMapper break unit test?
-                        delegate = SuppressThinkingConverter(BeanOutputConverter(typeReference /*objectMapper*/)),
+                        delegate = SuppressThinkingConverter(BeanOutputConverter(typeReference, objectMapper)),
                         outputClass = outputClass as Class<MaybeReturn<*>>,
                         ifPossible = true,
                         generateExamples = shouldGenerateExamples(interaction),

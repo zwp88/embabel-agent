@@ -28,6 +28,7 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.ai.model.ModelSelectionCriteria
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
@@ -44,6 +45,7 @@ import org.springframework.ai.chat.prompt.DefaultChatOptions
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.model.tool.ToolCallingChatOptions
 import org.springframework.ai.tool.ToolCallbacks
+import java.time.LocalDate
 import kotlin.test.assertEquals
 
 /**
@@ -107,11 +109,17 @@ class ChatClientLlmOperationsTest {
         val crit = slot<ModelSelectionCriteria>()
         val fakeLlm = Llm("fake", "provider", fakeChatModel)
         every { mockModelProvider.getLlm(capture(crit)) } returns fakeLlm
-        val cco = ChatClientLlmOperations(mockModelProvider, DefaultToolDecorator(), JinjavaTemplateRenderer())
+        val cco = ChatClientLlmOperations(
+            mockModelProvider,
+            DefaultToolDecorator(), JinjavaTemplateRenderer(),
+            objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+        )
         return Setup(cco, mockAgentProcess, mutableLlmInvocationHistory)
     }
 
     data class Dog(val name: String)
+
+    data class TemporalDog(val name: String, val birthDate: LocalDate)
 
     @Nested
     inner class CreateObject {
@@ -272,6 +280,27 @@ class ChatClientLlmOperationsTest {
             )
             assertEquals(duke, result)
         }
+
+        @Test
+        fun `handles LocalDate return`() {
+            val duke = TemporalDog("Duke", birthDate = LocalDate.of(2021, 2, 26))
+
+            val fakeChatModel = FakeChatModel(
+                jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(duke)
+            )
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObject(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = TemporalDog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result)
+        }
     }
 
     @Nested
@@ -344,6 +373,29 @@ class ChatClientLlmOperationsTest {
         }
 
         @Test
+        fun `handles LocalDate return`() {
+            val duke = TemporalDog("Duke", birthDate = LocalDate.of(2021, 2, 26))
+
+            val fakeChatModel = FakeChatModel(
+                jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(
+                    MaybeReturn(duke)
+                )
+            )
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.createObjectIfPossible(
+                prompt = "prompt",
+                interaction = LlmInteraction(
+                    id = InteractionId("id"), llm = LlmOptions()
+                ),
+                outputClass = TemporalDog::class.java,
+                action = SimpleTestAgent.actions.first(),
+                agentProcess = setup.mockAgentProcess,
+            )
+            assertEquals(duke, result.getOrThrow())
+        }
+
+        @Test
         fun `returns data class - failure`() {
             val fakeChatModel =
                 FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn<Dog>(failure = "didn't work")))
@@ -365,7 +417,11 @@ class ChatClientLlmOperationsTest {
         fun `presents tools to ChatModel`() {
             val duke = Dog("Duke")
 
-            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))
+            val fakeChatModel = FakeChatModel(
+                jacksonObjectMapper().writeValueAsString(
+                    MaybeReturn(duke)
+                )
+            )
 
             // Wumpus's have tools
             val toolCallbacks = ToolCallbacks.from(Wumpus("wumpy")).toList()
