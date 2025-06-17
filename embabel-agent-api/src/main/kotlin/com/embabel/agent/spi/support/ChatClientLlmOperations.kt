@@ -27,6 +27,7 @@ import com.embabel.common.ai.model.*
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.DatabindException
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
@@ -108,7 +109,7 @@ internal class ChatClientLlmOperations(
     private val autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
     private val dataBindingProperties: LlmDataBindingProperties = LlmDataBindingProperties(),
     private val llmOperationsPromptsProperties: LlmOperationsPromptsProperties = LlmOperationsPromptsProperties(),
-    private val objectMapper: ObjectMapper = jacksonObjectMapper(),
+    private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
 ) : AbstractLlmOperations(toolDecorator) {
 
     @Suppress("UNCHECKED_CAST")

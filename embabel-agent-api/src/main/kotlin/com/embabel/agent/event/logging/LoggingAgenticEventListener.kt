@@ -24,6 +24,7 @@ import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
 import com.embabel.common.util.trim
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -83,6 +84,8 @@ open class LoggingAgenticEventListener(
             logger.info("${url.color(AnsiColor.BLUE)}\n")
         }
     }
+
+    private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     protected open fun getAgentDeploymentEventMessage(e: AgentDeploymentEvent): String =
         "Deployed agent ${e.agent.name}\n\tdescription: ${e.agent.description}"
@@ -188,7 +191,7 @@ open class LoggingAgenticEventListener(
 
         if (e.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
             message += "\nResponse from prompt ${e.interaction.id}:\n${
-                (jacksonObjectMapper().writeValueAsString(e.response)).color(
+                (objectMapper.writeValueAsString(e.response)).color(
                     color = AnsiColor.YELLOW
                 )
             }"
