@@ -17,6 +17,7 @@ package com.embabel.agent.experimental.dsl
 
 import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.core.ToolGroup
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.aopalliance.intercept.MethodInvocation
 import org.slf4j.LoggerFactory
@@ -52,7 +53,7 @@ private class ToolGroupIntroductionInterceptor(
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    private val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     init {
         if (!intf.isInterface) {
