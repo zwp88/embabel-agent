@@ -67,6 +67,8 @@ class SSEController : AgenticEventListener {
     fun streamEventsForId(@PathVariable processId: String): SseEmitter {
         val emitter = SseEmitter(Long.MAX_VALUE)
 
+        logger.debug("SSE streaming active for process {}", processId)
+
         // Add emitter to the map for this process
         processEmitters.computeIfAbsent(processId) {
             Collections.synchronizedList(mutableListOf())
