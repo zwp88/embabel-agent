@@ -37,7 +37,7 @@ class SSEController : AgenticEventListener {
         logger.info("SSEController initialized, ready to stream AgentProcessEvents...")
     }
 
-    // Map to store emitters for each process ID
+    // Map from processId to a list of SseEmitters
     private val processEmitters = ConcurrentHashMap<String, MutableList<SseEmitter>>()
 
     override fun onProcessEvent(event: AgentProcessEvent) {
@@ -46,9 +46,10 @@ class SSEController : AgenticEventListener {
 
         emitters?.removeIf { emitter ->
             try {
+                logger.debug("Sending SSE event for process {}: {}", processId, event)
                 emitter.send(
                     SseEmitter.event()
-                        .name("process-event")
+                        .name("agent-process-event")
                         .data(event)
                 )
                 false // Keep this emitter
