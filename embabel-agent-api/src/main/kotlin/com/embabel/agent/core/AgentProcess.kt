@@ -82,6 +82,8 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
     /**
      * Run the process as far as we can.
      * Might complete, fail, get stuck or hit a waiting state.
+     * This is a slow operation. We may wish to run this async.
+     * Events will be emitted as the process runs, so we can track progress.
      * @return status code of the process. Side effects may have occurred in Blackboard
      */
     fun run(): AgentProcess

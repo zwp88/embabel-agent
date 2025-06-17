@@ -113,17 +113,17 @@ internal class DefaultAgentPlatform(
         processOptions: ProcessOptions,
         bindings: Map<String, Any>,
     ): AgentProcess {
-        val blackboard = createBlackboard(processOptions)
-        blackboard.bindAll(bindings)
-        val agentProcess = createAgentProcess(agent, processOptions, blackboard)
+        val agentProcess = createAgentProcess(agent, processOptions, bindings)
         return agentProcess.run()
     }
 
-    private fun createAgentProcess(
+    override fun createAgentProcess(
         agent: Agent,
         processOptions: ProcessOptions,
-        blackboard: Blackboard,
+        bindings: Map<String, Any>,
     ): AgentProcess {
+        val blackboard = createBlackboard(processOptions)
+        blackboard.bindAll(bindings)
         val platformServicesToUse = if (processOptions.test) {
             logger.warn("Using test LLM operations: {}", processOptions)
             platformServices.copy(llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum)
