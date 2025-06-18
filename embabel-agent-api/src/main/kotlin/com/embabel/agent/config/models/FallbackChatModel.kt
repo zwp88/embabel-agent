@@ -53,17 +53,21 @@ fun ChatModel.withFallback(
     return FallbackChatModel(this, model, whenError)
 }
 
+/**
+ * LLM that falls back to another LLM if the first one fails.
+ * @param fallbackTo the LLM to fall back to if the first one fails
+ */
 fun Llm.withFallback(
-    llm: Llm?,
+    fallbackTo: Llm?,
     whenError: (t: Throwable) -> Boolean,
 ): Llm {
-    if (llm == null) {
+    if (fallbackTo == null) {
         return this
     }
     return Llm(
         name = this.name,
-        model = this.model.withFallback(llm.model, whenError),
-        optionsConverter = llm.optionsConverter,
+        model = this.model.withFallback(fallbackTo.model, whenError),
+        optionsConverter = this.optionsConverter,
         provider = this.provider,
         knowledgeCutoffDate = this.knowledgeCutoffDate,
     )

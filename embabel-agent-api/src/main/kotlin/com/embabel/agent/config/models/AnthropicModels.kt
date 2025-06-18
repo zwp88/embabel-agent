@@ -120,7 +120,7 @@ class AnthropicModels(
             knowledgeCutoffDate = LocalDate.of(2025, 3, 31),
             maxTokens = 200000,
         )
-            .withFallback(llm = gpt41, whenError = flipTrigger)
+            .withFallback(fallbackTo = gpt41, whenError = flipTrigger)
             .copy(
                 pricingModel = PerTokenPricingModel(
                     usdPer1mInputTokens = 15.0,
@@ -137,7 +137,7 @@ class AnthropicModels(
             CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31),
             maxTokens = 20000,
         )
-            .withFallback(llm = gpt41, whenError = flipTrigger)
+            .withFallback(fallbackTo = gpt41, whenError = flipTrigger)
             .copy(
                 pricingModel = PerTokenPricingModel(
                     usdPer1mInputTokens = 3.0,
@@ -154,7 +154,7 @@ class AnthropicModels(
         knowledgeCutoffDate = LocalDate.of(2024, 10, 22),
         maxTokens = 8192,
     )
-        .withFallback(llm = gpt41mini, whenError = flipTrigger)
+        .withFallback(fallbackTo = gpt41mini, whenError = flipTrigger)
         .copy(
             pricingModel = PerTokenPricingModel(
                 usdPer1mInputTokens = .80,
