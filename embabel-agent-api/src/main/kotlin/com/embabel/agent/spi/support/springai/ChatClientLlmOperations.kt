@@ -100,12 +100,13 @@ internal class ChatClientLlmOperations(
             )
         }
 
+        val chatOptions = llm.optionsConverter.convertOptions(interaction.llm)
         return dataBindingProperties.retryTemplate().execute<O, DatabindException> {
             val callResponse = chatClient
                 .prompt(springAiPrompt)
                 // Try to lock to correct overload. Method overloading is evil.
                 .toolCallbacks(interaction.toolCallbacks)
-                .options(llm.optionsConverter.convertOptions(interaction.llm))
+                .options(chatOptions)
                 .call()
             if (outputClass == String::class.java) {
                 val chatResponse = callResponse.chatResponse()
@@ -181,11 +182,12 @@ internal class ChatClientLlmOperations(
             MaybeReturn::class.java,
             outputClass,
         )
+        val chatOptions = llm.optionsConverter.convertOptions(interaction.llm)
         return dataBindingProperties.retryTemplate().execute<Result<O>, DatabindException> {
             val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = chatClient
                 .prompt(springAiPrompt)
                 .toolCallbacks(interaction.toolCallbacks)
-                .options(llm.optionsConverter.convertOptions(interaction.llm))
+                .options(chatOptions)
                 .call()
                 .responseEntity<MaybeReturn<*>>(
                     ExceptionWrappingConverter(
