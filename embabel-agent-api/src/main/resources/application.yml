@@ -69,5 +69,5 @@ logging:
     com.embabel.agent.core.support.BlackboardWorldStateDeterminer: INFO
     com.embabel.agent.api.annotation.support.AgentMetadataReader: INFO
     com.embabel.agent.spi.support.LlmRanker: INFO
-    com.embabel.agent.spi.support.ChatClientLlmOperations: INFO
+    com.embabel.agent.spi.support.com.embabel.agent.spi.support.springai.ChatClientLlmOperations: INFO
 
