@@ -71,6 +71,10 @@ internal class DefaultAgentPlatform(
         return agentProcessRepository.findById(id)
     }
 
+    override fun killAgentProcess(id: String): AgentProcess? {
+        TODO("Not yet implemented")
+    }
+
     override fun agents(): List<Agent> =
         agents.values.sortedBy { it.name }
 
