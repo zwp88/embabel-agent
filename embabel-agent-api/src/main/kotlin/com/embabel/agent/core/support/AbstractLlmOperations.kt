@@ -18,9 +18,11 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.LlmRequestEvent
+import com.embabel.agent.spi.AutoLlmSelectionCriteriaResolver
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.ToolDecorator
+import com.embabel.common.ai.model.*
 import com.embabel.common.util.time
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -35,6 +37,8 @@ import java.time.Duration
  */
 abstract class AbstractLlmOperations(
     private val toolDecorator: ToolDecorator,
+    private val modelProvider: ModelProvider,
+    private val autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
 ) : LlmOperations {
 
     protected val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -59,7 +63,7 @@ abstract class AbstractLlmOperations(
         agentProcess: AgentProcess,
         action: Action?,
     ): O {
-        val (allToolCallbacks, literalPrompt, llmRequestEvent) = setup<O>(
+        val (allToolCallbacks, literalPrompt, llmRequestEvent) = setup(
             agentProcess = agentProcess,
             interaction = interaction,
             action = action,
@@ -130,6 +134,19 @@ abstract class AbstractLlmOperations(
         return response
     }
 
+    protected fun chooseLlm(
+        llmOptions: LlmOptions,
+    ): Llm {
+        val crit: ModelSelectionCriteria = when (llmOptions.criteria) {
+            null -> DefaultModelSelectionCriteria
+            is AutoModelSelectionCriteria ->
+                autoLlmSelectionCriteriaResolver.resolveAutoLlm()
+
+            else -> llmOptions.criteria ?: DefaultModelSelectionCriteria
+        }
+        return modelProvider.getLlm(crit)
+    }
+
     protected abstract fun <O> doTransformIfPossible(
         prompt: String,
         interaction: LlmInteraction,
@@ -151,10 +168,12 @@ abstract class AbstractLlmOperations(
             )
         val llmRequestEvent = LlmRequestEvent(
             agentProcess = agentProcess,
+            action = action,
             outputClass = outputClass,
             interaction = interaction.copy(
                 toolCallbacks = allToolCallbacks,
             ),
+            llm = chooseLlm(llmOptions = interaction.llm),
             prompt = prompt,
         )
         agentProcess.processContext.onProcessEvent(

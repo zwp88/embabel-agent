@@ -20,6 +20,7 @@ import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timed
 import com.embabel.common.util.VisualizableTask
@@ -160,8 +161,10 @@ class AgentProcessStuckEvent(
 
 class LlmRequestEvent<O>(
     agentProcess: AgentProcess,
+    action: Action?,
     val outputClass: Class<O>,
     val interaction: LlmInteraction,
+    val llm: Llm,
     val prompt: String,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
@@ -170,6 +173,7 @@ class LlmRequestEvent<O>(
             agentProcess = agentProcess,
             outputClass = outputClass,
             interaction = interaction,
+            llm = llm,
             prompt = prompt,
             springAiPrompt = springAiPrompt
         )
@@ -210,6 +214,7 @@ class ChatModelCallEvent<O> internal constructor(
     agentProcess: AgentProcess,
     val outputClass: Class<O>,
     val interaction: LlmInteraction,
+    val llm: Llm,
     val prompt: String,
     val springAiPrompt: Prompt,
 ) : AbstractAgentProcessEvent(agentProcess)

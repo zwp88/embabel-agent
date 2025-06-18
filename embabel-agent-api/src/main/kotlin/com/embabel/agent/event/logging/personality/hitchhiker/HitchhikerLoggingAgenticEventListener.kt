@@ -153,7 +153,7 @@ The standard repository for all knowledge and wisdom in the universe
         "[${e.processId}] ${highlight("DISASTER AREA")}: (${e.action?.shortName()}) tool ${e.function} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
-        "[${e.processId}] 🧠 DEEP THOUGHT: calculating LLM ${e.interaction.llm.criteria} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm} using ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"
+        "[${e.processId}] 🧠 DEEP THOUGHT: calculating LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm} using ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"
 
     override fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String =
         """

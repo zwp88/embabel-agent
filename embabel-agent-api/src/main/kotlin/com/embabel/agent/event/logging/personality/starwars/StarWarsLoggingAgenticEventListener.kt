@@ -104,7 +104,7 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
         "A little more knowledge lights our way: Object added: ${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName} to process ${e.processId}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
-        "[${e.processId}] Ask LLM we will: Requesting LLM ${e.interaction.llm.criteria} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+        "[${e.processId}] Ask LLM we will: Requesting LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
 
     override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =
         "[${e.processId}] Do or do not. There is no try: executing action ${e.action.name}"
