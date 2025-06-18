@@ -26,7 +26,6 @@ import io.micrometer.observation.ObservationRegistry
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.document.MetadataMode
 import org.springframework.ai.openai.OpenAiChatModel
-import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.OpenAiEmbeddingModel
 import org.springframework.ai.openai.OpenAiEmbeddingOptions
 import org.springframework.ai.openai.api.OpenAiApi
@@ -124,9 +123,7 @@ class OpenAiModels(
     private fun chatModelOf(model: String): ChatModel {
         return OpenAiChatModel.builder()
             .openAiApi(openAiApi)
-            .defaultOptions(
-                OpenAiChatOptions.builder().model(model).build()
-            ).observationRegistry(
+            .observationRegistry(
                 observationRegistry
             ).build()
     }

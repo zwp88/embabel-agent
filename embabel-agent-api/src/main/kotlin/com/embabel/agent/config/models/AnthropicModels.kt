@@ -211,7 +211,10 @@ object AnthropicOptionsConverter : OptionsConverter<AnthropicChatOptions> {
                 if (options.thinking != null) AnthropicApi.ChatCompletionRequest.ThinkingConfig(
                     AnthropicApi.ThinkingType.ENABLED,
                     options.thinking!!.tokenBudget,
-                ) else null
+                ) else AnthropicApi.ChatCompletionRequest.ThinkingConfig(
+                    AnthropicApi.ThinkingType.DISABLED,
+                    1024,
+                )
             )
 //            .presencePenalty(options.presencePenalty)
 //            .frequencyPenalty(options.frequencyPenalty)

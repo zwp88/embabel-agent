@@ -32,12 +32,12 @@ class FallbackChatModel(
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    override fun call(prompt: Prompt?): ChatResponse? {
+    override fun call(prompt: Prompt): ChatResponse {
         return try {
             model.call(prompt)
         } catch (t: Throwable) {
             if (whenError(t)) {
-                logger.info("Flipping to fallback model: {}", t.message)
+                logger.info("Flipping to fallback model. Error: {}; options: {}", t.message, prompt.options)
                 fallback.call(prompt)
             } else {
                 throw t
