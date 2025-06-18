@@ -31,7 +31,7 @@ import kotlin.test.assertSame
 
 class FallbackChatModelTest {
 
-    private val prompt = mockk<Prompt>()
+    private val prompt = Prompt("foo")
     private val primaryResponse = mockk<ChatResponse>()
     private val fallbackResponse = mockk<ChatResponse>()
 
@@ -40,23 +40,19 @@ class FallbackChatModelTest {
 
         @Test
         fun `should use primary model when it succeeds`() {
-            // Arrange
             val primaryModel = mockk<ChatModel>()
             val fallbackModel = mockk<ChatModel>()
             every { primaryModel.call(prompt) } returns primaryResponse
             val resilientModel = FallbackChatModel(primaryModel, fallbackModel) { true }
 
-            // Act
             val result = resilientModel.call(prompt)
 
-            // Assert
             assertSame(primaryResponse, result)
             verify(exactly = 1) { primaryModel.call(prompt) }
         }
 
         @Test
         fun `should use fallback model when primary fails and predicate returns true`() {
-            // Arrange
             val primaryModel = mockk<ChatModel>()
             val fallbackModel = mockk<ChatModel>()
             val exception = RuntimeException("Primary model failed")
@@ -64,7 +60,6 @@ class FallbackChatModelTest {
             every { fallbackModel.call(prompt) } returns fallbackResponse
             val resilientModel = primaryModel.withFallback(fallbackModel) { true }
 
-            // Act
             val result = resilientModel.call(prompt)
 
             // Assert
