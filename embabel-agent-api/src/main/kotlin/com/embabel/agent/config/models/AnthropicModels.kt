@@ -208,12 +208,12 @@ object AnthropicOptionsConverter : OptionsConverter<AnthropicChatOptions> {
             .topP(options.topP)
             .maxTokens(options.maxTokens)
             .thinking(
-                if (options.thinking != null) AnthropicApi.ChatCompletionRequest.ThinkingConfig(
+                if (options.thinking?.enabled == true) AnthropicApi.ChatCompletionRequest.ThinkingConfig(
                     AnthropicApi.ThinkingType.ENABLED,
                     options.thinking!!.tokenBudget,
                 ) else AnthropicApi.ChatCompletionRequest.ThinkingConfig(
                     AnthropicApi.ThinkingType.DISABLED,
-                    1024,
+                    null,
                 )
             )
 //            .presencePenalty(options.presencePenalty)
