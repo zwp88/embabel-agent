@@ -25,6 +25,7 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
 import com.embabel.common.core.MobyNameGenerator
+import com.embabel.common.core.types.HasInfoString
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -114,6 +115,27 @@ data class LlmInteraction(
 }
 
 /**
+ * The LLM returned an object of the wrong type.
+ */
+class InvalidLlmReturnFormatException(
+    val llmReturn: String,
+    val expectedType: Class<*>,
+    cause: Throwable,
+) : RuntimeException(
+    "Invalid LLM return when expecting ${expectedType.name}: Root cause=${cause.message}",
+    cause,
+),
+    HasInfoString {
+
+    override fun infoString(verbose: Boolean?): String =
+        if (verbose == true) {
+            "${javaClass.simpleName}: Expected type: ${expectedType.name}, root cause: ${cause!!.message}, return\n$llmReturn"
+        } else {
+            "${javaClass.simpleName}: Expected type: ${expectedType.name}, root cause: ${cause!!.message}"
+        }
+}
+
+/**
  * Wraps LLM operations.
  * All user-initiated LLM operations go through this,
  * allowing the AgentPlatform to mediate them.
@@ -146,6 +168,7 @@ interface LlmOperations {
      * @param outputClass Class of the output object
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
+     * @throws InvalidLlmReturnFormatException if the LLM returns an object of the wrong type
      */
     fun <O> createObject(
         prompt: String,
@@ -163,6 +186,7 @@ interface LlmOperations {
      * @param outputClass Class of the output object
      * @param agentProcess Agent process we are running within
      * @param action Action we are running within if we are running within an action
+     * @throws InvalidLlmReturnFormatException if the LLM returns an object of the wrong type
      */
     fun <O> createObjectIfPossible(
         prompt: String,

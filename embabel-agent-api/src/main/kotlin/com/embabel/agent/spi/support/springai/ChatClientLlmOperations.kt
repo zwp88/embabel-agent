@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi.support
+package com.embabel.agent.spi.support.springai
 
-import com.embabel.agent.common.RetryTemplateProvider
 import com.embabel.agent.core.LlmInvocation
 import com.embabel.agent.core.support.AbstractLlmOperations
 import com.embabel.agent.event.LlmRequestEvent
@@ -29,7 +28,6 @@ import com.fasterxml.jackson.databind.DatabindException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.client.ResponseEntity
 import org.springframework.ai.chat.messages.SystemMessage
@@ -40,47 +38,10 @@ import org.springframework.ai.converter.BeanOutputConverter
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.ParameterizedTypeReference
-import org.springframework.retry.RetryCallback
-import org.springframework.retry.RetryContext
-import org.springframework.retry.RetryListener
-import org.springframework.retry.support.RetryTemplate
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
 import java.time.Duration
 import java.time.Instant
-
-/**
- * We want to be more forgiving with data binding. This
- * can be important for smaller models.
- */
-@ConfigurationProperties(prefix = "embabel.llm-operations.data-binding")
-data class LlmDataBindingProperties(
-    override val maxAttempts: Int = 10,
-    val fixedBackoffMillis: Long = 30L,
-) : RetryTemplateProvider {
-    private val logger = LoggerFactory.getLogger(LlmDataBindingProperties::class.java)
-
-    override fun retryTemplate(): RetryTemplate {
-        return RetryTemplate.builder()
-            .maxAttempts(maxAttempts)
-            .fixedBackoff(Duration.ofMillis(fixedBackoffMillis))
-            .withListener(object : RetryListener {
-                override fun <T : Any, E : Throwable> onError(
-                    context: RetryContext,
-                    callback: RetryCallback<T, E>,
-                    throwable: Throwable
-                ) {
-                    logger.info(
-                        "Retry attempt {} of {} due to: {}",
-                        context.retryCount,
-                        maxAttempts,
-                        throwable.message ?: "Unknown error"
-                    )
-                }
-            })
-            .build()
-    }
-}
 
 /**
  * Properties for the ChatClientLlmOperations operations
@@ -107,7 +68,7 @@ internal class ChatClientLlmOperations(
     toolDecorator: ToolDecorator,
     private val templateRenderer: TemplateRenderer,
     private val autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
-    private val dataBindingProperties: LlmDataBindingProperties = LlmDataBindingProperties(),
+    private val dataBindingProperties: com.embabel.agent.spi.support.LlmDataBindingProperties = _root_ide_package_.com.embabel.agent.spi.support.LlmDataBindingProperties(),
     private val llmOperationsPromptsProperties: LlmOperationsPromptsProperties = LlmOperationsPromptsProperties(),
     private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
 ) : AbstractLlmOperations(toolDecorator) {
@@ -150,11 +111,16 @@ internal class ChatClientLlmOperations(
                 chatResponse!!.result.output.text as O
             } else {
                 val re = callResponse.responseEntity<O>(
-                    WithExampleConverter(
-                        delegate = SuppressThinkingConverter(BeanOutputConverter(outputClass, objectMapper)),
-                        outputClass = outputClass,
-                        ifPossible = false,
-                        generateExamples = shouldGenerateExamples(interaction),
+                    ExceptionWrappingConverter(
+                        expectedType = outputClass,
+                        delegate = WithExampleConverter(
+                            delegate = SuppressThinkingConverter(
+                                BeanOutputConverter(outputClass, objectMapper)
+                            ),
+                            outputClass = outputClass,
+                            ifPossible = false,
+                            generateExamples = shouldGenerateExamples(interaction),
+                        )
                     ),
                 )
                 re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
@@ -218,11 +184,16 @@ internal class ChatClientLlmOperations(
                 .toolCallbacks(interaction.toolCallbacks)
                 .call()
                 .responseEntity<MaybeReturn<*>>(
-                    WithExampleConverter(
-                        delegate = SuppressThinkingConverter(BeanOutputConverter(typeReference, objectMapper)),
-                        outputClass = outputClass as Class<MaybeReturn<*>>,
-                        ifPossible = true,
-                        generateExamples = shouldGenerateExamples(interaction),
+                    ExceptionWrappingConverter(
+                        expectedType = MaybeReturn::class.java,
+                        delegate = WithExampleConverter(
+                            delegate = SuppressThinkingConverter(
+                                BeanOutputConverter(typeReference, objectMapper)
+                            ),
+                            outputClass = outputClass as Class<MaybeReturn<*>>,
+                            ifPossible = true,
+                            generateExamples = shouldGenerateExamples(interaction),
+                        )
                     )
                 )
             responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
@@ -243,7 +214,7 @@ internal class ChatClientLlmOperations(
         }
 
         // Create a ParameterizedTypeReference that uses our custom type
-        return object : ParameterizedTypeReference<T>() {
+        return object : org.springframework.core.ParameterizedTypeReference<T>() {
             override fun getType() = type
         }
     }

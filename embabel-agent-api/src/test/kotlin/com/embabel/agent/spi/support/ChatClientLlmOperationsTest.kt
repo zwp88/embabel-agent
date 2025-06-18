@@ -19,8 +19,10 @@ import com.embabel.agent.api.annotation.support.Wumpus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.spi.InteractionId
+import com.embabel.agent.spi.InvalidLlmReturnFormatException
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
+import com.embabel.agent.spi.support.springai.MaybeReturn
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.EventSavingAgenticEventListener
 import com.embabel.common.ai.model.Llm
@@ -34,6 +36,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.ai.chat.messages.AssistantMessage
@@ -109,7 +112,7 @@ class ChatClientLlmOperationsTest {
         val crit = slot<ModelSelectionCriteria>()
         val fakeLlm = Llm("fake", "provider", fakeChatModel)
         every { mockModelProvider.getLlm(capture(crit)) } returns fakeLlm
-        val cco = ChatClientLlmOperations(
+        val cco = _root_ide_package_.com.embabel.agent.spi.support.springai.ChatClientLlmOperations(
             mockModelProvider,
             DefaultToolDecorator(), JinjavaTemplateRenderer(),
             objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
@@ -163,6 +166,28 @@ class ChatClientLlmOperationsTest {
                 agentProcess = setup.mockAgentProcess,
             )
             assertEquals(fakeChatModel.response, result)
+        }
+
+        @Test
+        fun `handles ill formed JSON when returning data class`() {
+            val fakeChatModel = FakeChatModel("This ain't no JSON")
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            try {
+                setup.llmOperations.createObject(
+                    prompt = "prompt",
+                    interaction = LlmInteraction(
+                        id = InteractionId("id"), llm = LlmOptions()
+                    ),
+                    outputClass = Dog::class.java,
+                    action = SimpleTestAgent.actions.first(),
+                    agentProcess = setup.mockAgentProcess,
+                )
+                fail("Should have thrown exception")
+            } catch (e: InvalidLlmReturnFormatException) {
+                assertEquals(fakeChatModel.response, e.llmReturn)
+                assertTrue(e.infoString(verbose = true).contains(fakeChatModel.response))
+            }
         }
 
         @Test
@@ -309,7 +334,13 @@ class ChatClientLlmOperationsTest {
         @Test
         fun `should have correct prompt with success and failure`() {
             val fakeChatModel =
-                FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn<Dog>(failure = "didn't work")))
+                FakeChatModel(
+                    jacksonObjectMapper().writeValueAsString(
+                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn<Dog>(
+                            failure = "didn't work"
+                        )
+                    )
+                )
 
             val prompt = "The quick brown fox jumped over the lazy dog"
             val setup = createChatClientLlmOperations(fakeChatModel)
@@ -336,7 +367,13 @@ class ChatClientLlmOperationsTest {
         fun `returns data class - success`() {
             val duke = Dog("Duke")
 
-            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn(success = duke)))
+            val fakeChatModel = FakeChatModel(
+                jacksonObjectMapper().writeValueAsString(
+                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                        success = duke
+                    )
+                )
+            )
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObjectIfPossible(
@@ -356,7 +393,11 @@ class ChatClientLlmOperationsTest {
             val duke = Dog("Duke")
 
             val fakeChatModel = FakeChatModel(
-                "<think>More deep thoughts</think>\n" + jacksonObjectMapper().writeValueAsString(MaybeReturn(success = duke))
+                "<think>More deep thoughts</think>\n" + jacksonObjectMapper().writeValueAsString(
+                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                        success = duke
+                    )
+                )
             )
 
             val setup = createChatClientLlmOperations(fakeChatModel)
@@ -378,7 +419,7 @@ class ChatClientLlmOperationsTest {
 
             val fakeChatModel = FakeChatModel(
                 jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(
-                    MaybeReturn(duke)
+                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(duke)
                 )
             )
 
@@ -396,9 +437,37 @@ class ChatClientLlmOperationsTest {
         }
 
         @Test
+        fun `handles ill formed JSON when returning data class`() {
+            val fakeChatModel = FakeChatModel("This ain't no JSON")
+
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            try {
+                setup.llmOperations.createObjectIfPossible(
+                    prompt = "prompt",
+                    interaction = LlmInteraction(
+                        id = InteractionId("id"), llm = LlmOptions()
+                    ),
+                    outputClass = Dog::class.java,
+                    action = SimpleTestAgent.actions.first(),
+                    agentProcess = setup.mockAgentProcess,
+                )
+                fail("Should have thrown exception")
+            } catch (e: InvalidLlmReturnFormatException) {
+                assertEquals(fakeChatModel.response, e.llmReturn)
+                assertTrue(e.infoString(verbose = true).contains(fakeChatModel.response))
+            }
+        }
+
+        @Test
         fun `returns data class - failure`() {
             val fakeChatModel =
-                FakeChatModel(jacksonObjectMapper().writeValueAsString(MaybeReturn<Dog>(failure = "didn't work")))
+                FakeChatModel(
+                    jacksonObjectMapper().writeValueAsString(
+                        MaybeReturn<Dog>(
+                            failure = "didn't work"
+                        )
+                    )
+                )
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObjectIfPossible(
@@ -419,7 +488,7 @@ class ChatClientLlmOperationsTest {
 
             val fakeChatModel = FakeChatModel(
                 jacksonObjectMapper().writeValueAsString(
-                    MaybeReturn(duke)
+                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(duke)
                 )
             )
 

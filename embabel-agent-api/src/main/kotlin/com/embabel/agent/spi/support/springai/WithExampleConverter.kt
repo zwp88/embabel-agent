@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi.support
+package com.embabel.agent.spi.support.springai
 
 import com.embabel.common.util.DummyInstanceCreator
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -34,7 +34,7 @@ import org.springframework.ai.converter.StructuredOutputConverter
  * @param outputClass the class type for which dummy example instances will be generated
  * @param ifPossible determines whether to include both success and failure examples (true) or just a simple example (false)
  * @param generateExamples whether to generate examples or not. This class does nothing if it is false
- * Wrap an existing StructuredOutputConverter with this class to enhance its format description for LLM prompting.
+ * Wraps an existing StructuredOutputConverter with this class to enhance its format description for LLM prompting.
  */
 class WithExampleConverter<T>(
     private val delegate: StructuredOutputConverter<T>,

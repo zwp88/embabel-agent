@@ -157,7 +157,7 @@ class ChatClientLlmTransformerTest {
             )
             every { mockModelProvider.getLlm(any()) } returns Llm("test", "provider", mockChatModel)
 
-            val transformer = ChatClientLlmOperations(
+            val transformer = _root_ide_package_.com.embabel.agent.spi.support.springai.ChatClientLlmOperations(
                 mockModelProvider,
                 DefaultToolDecorator(),
                 JinjavaTemplateRenderer(),
@@ -182,7 +182,11 @@ class ChatClientLlmTransformerTest {
             fun `happy path`() {
                 val person = SpiPerson("John")
                 val result = runWithPromptReturning(
-                    llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(person)),
+                    llmReturn = jacksonObjectMapper().writeValueAsString(
+                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                            person
+                        )
+                    ),
                     outputClass = SpiPerson::class.java,
                 )
                 assertEquals(Result.success(person), result.result)
@@ -193,7 +197,11 @@ class ChatClientLlmTransformerTest {
                 val ese = EventSavingAgenticEventListener()
                 val person = SpiPerson("John")
                 val result = runWithPromptReturning(
-                    llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(person)),
+                    llmReturn = jacksonObjectMapper().writeValueAsString(
+                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                            person
+                        )
+                    ),
                     eventListener = ese,
                     outputClass = SpiPerson::class.java,
                 )
@@ -205,7 +213,11 @@ class ChatClientLlmTransformerTest {
             fun `records usage`() {
                 val person = SpiPerson("John")
                 val result = runWithPromptReturning(
-                    llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(person)),
+                    llmReturn = jacksonObjectMapper().writeValueAsString(
+                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                            person
+                        )
+                    ),
                     eventListener = EventSavingAgenticEventListener(),
                     outputClass = SpiPerson::class.java,
                 )
@@ -218,7 +230,11 @@ class ChatClientLlmTransformerTest {
                 val ese = EventSavingAgenticEventListener()
                 val person = WierdPerson("Marmaduke", 24, "weird")
                 val result = runWithPromptReturning(
-                    llmReturn = jacksonObjectMapper().writeValueAsString(MaybeReturn(success = person)),
+                    llmReturn = jacksonObjectMapper().writeValueAsString(
+                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                            success = person
+                        )
+                    ),
                     eventListener = ese,
                     outputClass = WierdPerson::class.java,
                 )
@@ -235,7 +251,7 @@ class ChatClientLlmTransformerTest {
                 val result = runWithPromptReturning(
                     llmReturn =
                         jacksonObjectMapper().writeValueAsString(
-                            MaybeReturn(
+                            _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
                                 success = null,
                                 failure = "couldn't do it"
                             )
@@ -317,7 +333,7 @@ class ChatClientLlmTransformerTest {
             every { mockModelProvider.getLlm(any()) } returns Llm("test", "provider", mockChatModel)
 
             val transformer =
-                ChatClientLlmOperations(
+                _root_ide_package_.com.embabel.agent.spi.support.springai.ChatClientLlmOperations(
                     mockModelProvider,
                     DefaultToolDecorator(),
                     JinjavaTemplateRenderer(),
