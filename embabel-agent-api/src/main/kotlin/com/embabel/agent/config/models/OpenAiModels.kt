@@ -17,8 +17,8 @@ package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.EmbeddingService
 import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.ai.model.PerTokenPricingModel
+import com.embabel.common.ai.model.config.OpenAiChatOptionsConverter
 import com.embabel.common.ai.model.config.OpenAiConfiguration
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
@@ -59,7 +59,7 @@ class OpenAiModels(
             name = model,
             model = chatModelOf(model),
             provider = PROVIDER,
-
+            optionsConverter = OpenAiChatOptionsConverter,
             knowledgeCutoffDate = LocalDate.of(2024, 7, 18),
         ).copy(
             pricingModel = PerTokenPricingModel(
@@ -76,7 +76,7 @@ class OpenAiModels(
             name = model,
             model = chatModelOf(model),
             provider = PROVIDER,
-            optionsConverter = optionsConverter,
+            optionsConverter = OpenAiChatOptionsConverter,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
         )
             .copy(
@@ -93,7 +93,7 @@ class OpenAiModels(
         return Llm(
             name = model,
             model = chatModelOf(model),
-            optionsConverter = optionsConverter,
+            optionsConverter = OpenAiChatOptionsConverter,
             provider = PROVIDER,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
         )
@@ -126,14 +126,9 @@ class OpenAiModels(
             .openAiApi(openAiApi)
             .defaultOptions(
                 OpenAiChatOptions.builder().model(model).build()
-            ).observationRegistry(observationRegistry
+            ).observationRegistry(
+                observationRegistry
             ).build()
-    }
-
-    private val optionsConverter: OptionsConverter = { options ->
-        OpenAiChatOptions.builder()
-            .temperature(options.temperature)
-            .build()
     }
 
     companion object {

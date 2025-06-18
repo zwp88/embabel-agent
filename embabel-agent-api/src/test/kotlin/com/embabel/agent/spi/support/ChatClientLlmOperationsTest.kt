@@ -22,13 +22,11 @@ import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.InvalidLlmReturnFormatException
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
+import com.embabel.agent.spi.support.springai.ChatClientLlmOperations
 import com.embabel.agent.spi.support.springai.MaybeReturn
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.EventSavingAgenticEventListener
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelProvider
-import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.embabel.common.ai.model.*
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -110,9 +108,9 @@ class ChatClientLlmOperationsTest {
 
         val mockModelProvider = mockk<ModelProvider>()
         val crit = slot<ModelSelectionCriteria>()
-        val fakeLlm = Llm("fake", "provider", fakeChatModel)
+        val fakeLlm = Llm("fake", "provider", fakeChatModel, DefaultOptionsConverter)
         every { mockModelProvider.getLlm(capture(crit)) } returns fakeLlm
-        val cco = _root_ide_package_.com.embabel.agent.spi.support.springai.ChatClientLlmOperations(
+        val cco = ChatClientLlmOperations(
             mockModelProvider,
             DefaultToolDecorator(), JinjavaTemplateRenderer(),
             objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
@@ -336,7 +334,7 @@ class ChatClientLlmOperationsTest {
             val fakeChatModel =
                 FakeChatModel(
                     jacksonObjectMapper().writeValueAsString(
-                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn<Dog>(
+                        MaybeReturn<Dog>(
                             failure = "didn't work"
                         )
                     )
@@ -369,7 +367,7 @@ class ChatClientLlmOperationsTest {
 
             val fakeChatModel = FakeChatModel(
                 jacksonObjectMapper().writeValueAsString(
-                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                    MaybeReturn(
                         success = duke
                     )
                 )
@@ -394,7 +392,7 @@ class ChatClientLlmOperationsTest {
 
             val fakeChatModel = FakeChatModel(
                 "<think>More deep thoughts</think>\n" + jacksonObjectMapper().writeValueAsString(
-                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                    MaybeReturn(
                         success = duke
                     )
                 )
@@ -419,7 +417,7 @@ class ChatClientLlmOperationsTest {
 
             val fakeChatModel = FakeChatModel(
                 jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(
-                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(duke)
+                    MaybeReturn(duke)
                 )
             )
 
@@ -488,7 +486,7 @@ class ChatClientLlmOperationsTest {
 
             val fakeChatModel = FakeChatModel(
                 jacksonObjectMapper().writeValueAsString(
-                    _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(duke)
+                    MaybeReturn(duke)
                 )
             )
 

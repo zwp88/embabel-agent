@@ -22,7 +22,9 @@ import com.embabel.agent.spi.AutoLlmSelectionCriteriaResolver
 import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
-import com.embabel.common.ai.model.*
+import com.embabel.agent.spi.support.LlmDataBindingProperties
+import com.embabel.common.ai.model.Llm
+import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.DatabindException
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -35,7 +37,6 @@ import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.model.ChatResponse
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.converter.BeanOutputConverter
-import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
@@ -68,7 +69,7 @@ internal class ChatClientLlmOperations(
     toolDecorator: ToolDecorator,
     private val templateRenderer: TemplateRenderer,
     autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
-    private val dataBindingProperties: com.embabel.agent.spi.support.LlmDataBindingProperties = _root_ide_package_.com.embabel.agent.spi.support.LlmDataBindingProperties(),
+    private val dataBindingProperties: LlmDataBindingProperties = LlmDataBindingProperties(),
     private val llmOperationsPromptsProperties: LlmOperationsPromptsProperties = LlmOperationsPromptsProperties(),
     private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
 ) : AbstractLlmOperations(toolDecorator, modelProvider, autoLlmSelectionCriteriaResolver) {
@@ -81,7 +82,7 @@ internal class ChatClientLlmOperations(
         llmRequestEvent: LlmRequestEvent<O>?,
     ): O {
         val llm = chooseLlm(interaction.llm)
-        val chatClient = createChatClient(interaction.llm, llm)
+        val chatClient = createChatClient(llm)
         val promptContributions =
             (interaction.promptContributors + llm.promptContributors).joinToString("\n") { it.contribution() }
 
@@ -104,6 +105,7 @@ internal class ChatClientLlmOperations(
                 .prompt(springAiPrompt)
                 // Try to lock to correct overload. Method overloading is evil.
                 .toolCallbacks(interaction.toolCallbacks)
+                .options(llm.optionsConverter.convertOptions(interaction.llm))
                 .call()
             if (outputClass == String::class.java) {
                 val chatResponse = callResponse.chatResponse()
@@ -160,7 +162,7 @@ internal class ChatClientLlmOperations(
         )
 
         val llm = chooseLlm(interaction.llm)
-        val chatClient = createChatClient(interaction.llm, llm)
+        val chatClient = createChatClient(llm)
         val promptContributions =
             (interaction.promptContributors + llm.promptContributors).joinToString("\n") { it.contribution() }
         val springAiPrompt = Prompt(
@@ -183,6 +185,7 @@ internal class ChatClientLlmOperations(
             val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = chatClient
                 .prompt(springAiPrompt)
                 .toolCallbacks(interaction.toolCallbacks)
+                .options(llm.optionsConverter.convertOptions(interaction.llm))
                 .call()
                 .responseEntity<MaybeReturn<*>>(
                     ExceptionWrappingConverter(
@@ -222,18 +225,10 @@ internal class ChatClientLlmOperations(
 
 
     private fun createChatClient(
-        llmOptions: LlmOptions,
         llm: Llm,
     ): ChatClient {
         return ChatClient
             .builder(llm.model)
-            .defaultOptions(
-                // TODO this should not be OpenAI specific but we lose tools if we aren't
-//                llm.optionsConverter.invoke(llmOptions)
-                OpenAiChatOptions.builder()
-                    .temperature(llmOptions.temperature)
-                    .build()
-            )
             .build()
     }
 

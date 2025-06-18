@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.ConfigurableModelProviderProperties
-import com.embabel.common.ai.model.EmbeddingService
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.PricingModel
+import com.embabel.common.ai.model.*
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.annotation.PostConstruct
@@ -155,7 +152,8 @@ class OllamaModels(
             name = name,
             model = springChatModel,
             provider = PROVIDER,
-            pricingModel = PricingModel.ALL_YOU_CAN_EAT
+            pricingModel = PricingModel.ALL_YOU_CAN_EAT,
+            optionsConverter = OllamaOptionsConverter,
         )
     }
 
@@ -180,4 +178,16 @@ class OllamaModels(
         const val OLLAMA_PROFILE = "ollama"
         const val PROVIDER = "Ollama"
     }
+}
+
+object OllamaOptionsConverter : OptionsConverter<OllamaOptions> {
+    override fun convertOptions(options: LlmOptions): OllamaOptions =
+        OllamaOptions.builder()
+            .temperature(options.temperature)
+            .topP(options.topP)
+//            .maxTokens(options.maxTokens)
+            .presencePenalty(options.presencePenalty)
+            .frequencyPenalty(options.frequencyPenalty)
+            .topP(options.topP)
+            .build()
 }

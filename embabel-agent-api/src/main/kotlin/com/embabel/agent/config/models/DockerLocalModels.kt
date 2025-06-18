@@ -17,8 +17,8 @@ package com.embabel.agent.config.models
 
 import com.embabel.agent.common.RetryProperties
 import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.ai.model.PricingModel
+import com.embabel.common.ai.model.config.OpenAiChatOptionsConverter
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
@@ -142,17 +142,12 @@ class DockerLocalModels(
             name = model.id,
             model = chatModel,
             provider = PROVIDER,
-            optionsConverter = optionsConverter,
+            optionsConverter = OpenAiChatOptionsConverter,
             knowledgeCutoffDate = null,
             pricingModel = PricingModel.ALL_YOU_CAN_EAT,
         )
     }
 
-    private val optionsConverter: OptionsConverter = { options ->
-        OpenAiChatOptions.builder()
-            .temperature(options.temperature)
-            .build()
-    }
 
     companion object {
         const val DOCKER_PROFILE = "docker"
