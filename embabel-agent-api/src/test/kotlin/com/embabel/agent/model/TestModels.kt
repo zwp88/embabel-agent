@@ -16,6 +16,7 @@
 package com.embabel.agent.model
 
 import com.embabel.agent.spi.support.FakeChatModel
+import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.PricingModel
 import org.springframework.context.annotation.Bean
@@ -33,6 +34,7 @@ class TestModels {
             model = FakeChatModel("I am a fake chat model"),
             pricingModel = PricingModel.usdPer1MTokens(.1, .1),
             provider = "test",
+            optionsConverter = DefaultOptionsConverter,
         )
     }
 }

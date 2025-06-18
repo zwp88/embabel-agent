@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.OptionsConverter
 import com.embabel.common.ai.model.PerTokenPricingModel
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
@@ -177,25 +177,16 @@ class AnthropicModels(
                     .build()
             )
             .retryTemplate(retryTemplate)
-            .defaultOptions(
-                AnthropicChatOptions.builder()
-                    .model(name)
-                    .maxTokens(maxTokens)
-                    .build()
-            )
             .build()
         return Llm(
             name = name,
             model = chatModel,
             provider = PROVIDER,
-            optionsConverter = optionsConverter,
+            optionsConverter = AnthropicOptionsConverter,
             knowledgeCutoffDate = knowledgeCutoffDate,
         )
     }
 
-    private val optionsConverter: OptionsConverter = { options ->
-        DefaultOptionsConverter.invoke(options)
-    }
 
     companion object {
 
@@ -208,4 +199,22 @@ class AnthropicModels(
         const val PROVIDER = "Anthropic"
     }
 
+}
+
+object AnthropicOptionsConverter : OptionsConverter<AnthropicChatOptions> {
+    override fun convertOptions(options: LlmOptions): AnthropicChatOptions =
+        AnthropicChatOptions.builder()
+            .temperature(options.temperature)
+            .topP(options.topP)
+            .maxTokens(options.maxTokens)
+            .thinking(
+                if (options.thinking != null) AnthropicApi.ChatCompletionRequest.ThinkingConfig(
+                    AnthropicApi.ThinkingType.ENABLED,
+                    options.thinking!!.tokenBudget,
+                ) else null
+            )
+//            .presencePenalty(options.presencePenalty)
+//            .frequencyPenalty(options.frequencyPenalty)
+            .topP(options.topP)
+            .build()
 }

@@ -21,7 +21,10 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.spi.support.springai.ChatClientLlmOperations
+import com.embabel.agent.spi.support.springai.MaybeReturn
 import com.embabel.agent.testing.EventSavingAgenticEventListener
+import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
@@ -155,9 +158,12 @@ class ChatClientLlmTransformerTest {
                     Generation(AssistantMessage(llmReturn)),
                 ),
             )
-            every { mockModelProvider.getLlm(any()) } returns Llm("test", "provider", mockChatModel)
+            every { mockModelProvider.getLlm(any()) } returns Llm(
+                "test", "provider", mockChatModel,
+                DefaultOptionsConverter
+            )
 
-            val transformer = _root_ide_package_.com.embabel.agent.spi.support.springai.ChatClientLlmOperations(
+            val transformer = ChatClientLlmOperations(
                 mockModelProvider,
                 DefaultToolDecorator(),
                 JinjavaTemplateRenderer(),
@@ -183,7 +189,7 @@ class ChatClientLlmTransformerTest {
                 val person = SpiPerson("John")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(
-                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                        MaybeReturn(
                             person
                         )
                     ),
@@ -198,7 +204,7 @@ class ChatClientLlmTransformerTest {
                 val person = SpiPerson("John")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(
-                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                        MaybeReturn(
                             person
                         )
                     ),
@@ -214,7 +220,7 @@ class ChatClientLlmTransformerTest {
                 val person = SpiPerson("John")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(
-                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                        MaybeReturn(
                             person
                         )
                     ),
@@ -231,7 +237,7 @@ class ChatClientLlmTransformerTest {
                 val person = WierdPerson("Marmaduke", 24, "weird")
                 val result = runWithPromptReturning(
                     llmReturn = jacksonObjectMapper().writeValueAsString(
-                        _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                        MaybeReturn(
                             success = person
                         )
                     ),
@@ -251,7 +257,7 @@ class ChatClientLlmTransformerTest {
                 val result = runWithPromptReturning(
                     llmReturn =
                         jacksonObjectMapper().writeValueAsString(
-                            _root_ide_package_.com.embabel.agent.spi.support.springai.MaybeReturn(
+                            MaybeReturn(
                                 success = null,
                                 failure = "couldn't do it"
                             )
@@ -330,10 +336,13 @@ class ChatClientLlmTransformerTest {
                     Generation(AssistantMessage(llmReturn)),
                 ),
             )
-            every { mockModelProvider.getLlm(any()) } returns Llm("test", "provider", mockChatModel)
+            every { mockModelProvider.getLlm(any()) } returns Llm(
+                "test", "provider", mockChatModel,
+                DefaultOptionsConverter
+            )
 
             val transformer =
-                _root_ide_package_.com.embabel.agent.spi.support.springai.ChatClientLlmOperations(
+                ChatClientLlmOperations(
                     mockModelProvider,
                     DefaultToolDecorator(),
                     JinjavaTemplateRenderer(),

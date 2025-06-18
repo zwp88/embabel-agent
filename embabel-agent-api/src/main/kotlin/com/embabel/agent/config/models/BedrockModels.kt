@@ -15,11 +15,7 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.ConfigurableModelProviderProperties
-import com.embabel.common.ai.model.DefaultOptionsConverter
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.OptionsConverter
-import com.embabel.common.ai.model.PerTokenPricingModel
+import com.embabel.common.ai.model.*
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
 import io.micrometer.observation.ObservationRegistry
@@ -140,7 +136,7 @@ class BedrockModels(
     private fun llmOf(model: BedrockModelProperties): Llm = Llm(
         name = model.name,
         model = chatModelOf(model.name),
-        optionsConverter = optionsConverter,
+        optionsConverter = BedrockOptionsConverter,
         provider = PROVIDER,
         knowledgeCutoffDate = LocalDate.parse(model.knowledgeCutoff),
         pricingModel = PerTokenPricingModel(
@@ -166,9 +162,6 @@ class BedrockModels(
         return chatModel
     }
 
-    private val optionsConverter: OptionsConverter = { options ->
-        DefaultOptionsConverter.invoke(options)
-    }
 
     companion object {
         const val BEDROCK_PROFILE = "bedrock"
@@ -197,4 +190,18 @@ class BedrockModels(
 
         const val PROVIDER = "Bedrock"
     }
+}
+
+
+object BedrockOptionsConverter : OptionsConverter<ToolCallingChatOptions> {
+
+    override fun convertOptions(options: LlmOptions) =
+        ToolCallingChatOptions.builder()
+            .temperature(options.temperature)
+            .topP(options.topP)
+            .maxTokens(options.maxTokens)
+            .presencePenalty(options.presencePenalty)
+            .frequencyPenalty(options.frequencyPenalty)
+            .topP(options.topP)
+            .build()
 }
