@@ -165,6 +165,11 @@ class OllamaModels(
                     .baseUrl(baseUrl)
                     .build()
             )
+            .defaultOptions(
+                OllamaOptions.builder()
+                    .model(name)
+                    .build()
+            )
             .build()
 
         return EmbeddingService(
