@@ -79,7 +79,7 @@ class MontyPythonLoggingAgenticEventListener : LoggingAgenticEventListener(
         "Bring out your dead! Object added: ${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName} to process ${e.processId}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
-        "[${e.processId}] Strange women lying in ponds: Requesting LLM ${e.interaction.llm.criteria} transform from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+        "[${e.processId}] Strange women lying in ponds: Requesting LLM ${e.llm.name} transform from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
 
     override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =
         "[${e.processId}] Run away! Run away! executing action ${e.action.name}"

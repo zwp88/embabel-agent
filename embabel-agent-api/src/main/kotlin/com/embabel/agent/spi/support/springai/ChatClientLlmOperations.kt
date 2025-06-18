@@ -64,14 +64,14 @@ data class LlmOperationsPromptsProperties(
  */
 @Service
 internal class ChatClientLlmOperations(
-    private val modelProvider: ModelProvider,
+    modelProvider: ModelProvider,
     toolDecorator: ToolDecorator,
     private val templateRenderer: TemplateRenderer,
-    private val autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
+    autoLlmSelectionCriteriaResolver: AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT,
     private val dataBindingProperties: com.embabel.agent.spi.support.LlmDataBindingProperties = _root_ide_package_.com.embabel.agent.spi.support.LlmDataBindingProperties(),
     private val llmOperationsPromptsProperties: LlmOperationsPromptsProperties = LlmOperationsPromptsProperties(),
     private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
-) : AbstractLlmOperations(toolDecorator) {
+) : AbstractLlmOperations(toolDecorator, modelProvider, autoLlmSelectionCriteriaResolver) {
 
     @Suppress("UNCHECKED_CAST")
     override fun <O> doTransform(
@@ -80,10 +80,10 @@ internal class ChatClientLlmOperations(
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>?,
     ): O {
-
-        val resources = getLlmInvocationResources(interaction.llm)
+        val llm = chooseLlm(interaction.llm)
+        val chatClient = createChatClient(interaction.llm, llm)
         val promptContributions =
-            (interaction.promptContributors + resources.llm.promptContributors).joinToString("\n") { it.contribution() }
+            (interaction.promptContributors + llm.promptContributors).joinToString("\n") { it.contribution() }
 
         val springAiPrompt = Prompt(
             buildList {
@@ -100,14 +100,14 @@ internal class ChatClientLlmOperations(
         }
 
         return dataBindingProperties.retryTemplate().execute<O, DatabindException> {
-            val callResponse = resources.chatClient
+            val callResponse = chatClient
                 .prompt(springAiPrompt)
                 // Try to lock to correct overload. Method overloading is evil.
                 .toolCallbacks(interaction.toolCallbacks)
                 .call()
             if (outputClass == String::class.java) {
                 val chatResponse = callResponse.chatResponse()
-                chatResponse?.let { recordUsage(resources.llm, it, llmRequestEvent) }
+                chatResponse?.let { recordUsage(llm, it, llmRequestEvent) }
                 chatResponse!!.result.output.text as O
             } else {
                 val re = callResponse.responseEntity<O>(
@@ -123,7 +123,7 @@ internal class ChatClientLlmOperations(
                         )
                     ),
                 )
-                re.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
+                re.response?.let { recordUsage(llm, it, llmRequestEvent) }
                 re.entity!!
             }
         }
@@ -159,9 +159,10 @@ internal class ChatClientLlmOperations(
             emptyMap(),
         )
 
-        val resources = getLlmInvocationResources(interaction.llm)
+        val llm = chooseLlm(interaction.llm)
+        val chatClient = createChatClient(interaction.llm, llm)
         val promptContributions =
-            (interaction.promptContributors + resources.llm.promptContributors).joinToString("\n") { it.contribution() }
+            (interaction.promptContributors + llm.promptContributors).joinToString("\n") { it.contribution() }
         val springAiPrompt = Prompt(
             buildList {
                 if (promptContributions.isNotEmpty()) {
@@ -179,7 +180,7 @@ internal class ChatClientLlmOperations(
             outputClass,
         )
         return dataBindingProperties.retryTemplate().execute<Result<O>, DatabindException> {
-            val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = resources.chatClient
+            val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = chatClient
                 .prompt(springAiPrompt)
                 .toolCallbacks(interaction.toolCallbacks)
                 .call()
@@ -196,7 +197,7 @@ internal class ChatClientLlmOperations(
                         )
                     )
                 )
-            responseEntity.response?.let { recordUsage(resources.llm, it, llmRequestEvent) }
+            responseEntity.response?.let { recordUsage(llm, it, llmRequestEvent) }
             responseEntity.entity!!.toResult() as Result<O>
         }
     }
@@ -219,26 +220,12 @@ internal class ChatClientLlmOperations(
         }
     }
 
-    /**
-     * LLM we're calling and Spring AI ChatClient we'll use
-     */
-    private data class LlmInvocationResources(
-        val llm: Llm,
-        val chatClient: ChatClient,
-    )
 
-    private fun getLlmInvocationResources(
+    private fun createChatClient(
         llmOptions: LlmOptions,
-    ): LlmInvocationResources {
-        val crit: ModelSelectionCriteria = when (llmOptions.criteria) {
-            null -> DefaultModelSelectionCriteria
-            is AutoModelSelectionCriteria ->
-                autoLlmSelectionCriteriaResolver.resolveAutoLlm()
-
-            else -> llmOptions.criteria ?: DefaultModelSelectionCriteria
-        }
-        val llm = modelProvider.getLlm(crit)
-        val chatClient = ChatClient
+        llm: Llm,
+    ): ChatClient {
+        return ChatClient
             .builder(llm.model)
             .defaultOptions(
                 // TODO this should not be OpenAI specific but we lose tools if we aren't
@@ -248,7 +235,6 @@ internal class ChatClientLlmOperations(
                     .build()
             )
             .build()
-        return LlmInvocationResources(chatClient = chatClient, llm = llm)
     }
 
     private fun shouldGenerateExamples(llmCall: LlmCall): Boolean {

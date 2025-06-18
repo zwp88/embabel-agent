@@ -173,10 +173,10 @@ open class LoggingAgenticEventListener(
         "[${e.processId}] object bound ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
 
     protected open fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
-        "[${e.processId}] requesting LLM ${e.interaction.llm.criteria} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+        "[${e.processId}] requesting LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
 
     protected open fun getChatModelCallEventMessage(e: ChatModelCallEvent<*>): String {
-        val promptInfo = "using ${e.interaction.llm.criteria.toString().color(AnsiColor.GREEN)}\n${
+        val promptInfo = "using ${e.llm.name.color(colorPalette.highlight)}\n${
             e.springAiPrompt.toInfoString().color(AnsiColor.GREEN)
         }\nprompt id: '${e.interaction.id}'\ntools: [${
             e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }
@@ -330,7 +330,6 @@ open class LoggingAgenticEventListener(
 
     fun Prompt.toInfoString(): String {
         val bannerChar = "."
-
         return """|${lineSeparator("Messages ", bannerChar)}
            |${
             this.instructions.joinToString(
