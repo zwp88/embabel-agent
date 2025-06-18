@@ -16,9 +16,14 @@
 package com.embabel.agent.web.rest
 
 import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.AgentProcessStatusReport
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 
 
 /**
@@ -34,7 +39,41 @@ class AgentProcessController(
     private val agentPlatform: AgentPlatform,
 ) {
 
-    // TODO status
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "Get process status",
+        description = "Returns the status of a process."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Process status returned successfully"),
+            ApiResponse(responseCode = "404", description = "Process not found")
+        ]
+    )
+    fun getStatusReport(@PathVariable id: String): AgentProcessStatusReport =
+        agentPlatform.getAgentProcess(id)?.statusReport() ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "No process found with id: $id",
+        )
 
-    // TODO kill endpoint
+
+    @DeleteMapping("/{id}")
+    @Operation(
+        summary = "Kill the given process",
+        description = "Returns the status of a process if it could be killed"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Process status killed successfully"),
+            ApiResponse(responseCode = "404", description = "Process not found")
+        ]
+    )
+    fun killAgentProcess(@PathVariable id: String): AgentProcessStatusReport {
+        val killedProcess = agentPlatform.killAgentProcess(id)
+            ?: throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "No process found with id: $id",
+            )
+        return killedProcess.statusReport()
+    }
 }
