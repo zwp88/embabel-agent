@@ -39,4 +39,16 @@ class AnthropicOptionsConverterTest : OptionsConverterTestSupport<AnthropicChatO
         assertEquals(2000, options.thinking.budgetTokens())
     }
 
+    @Test
+    fun `should set high maxTokens default`() {
+        val options = optionsConverter.convertOptions(LlmOptions())
+        assertEquals(AnthropicOptionsConverter.DEFAULT_MAX_TOKENS, options.maxTokens)
+    }
+
+    @Test
+    fun `should set override maxTokens default`() {
+        val options = optionsConverter.convertOptions(LlmOptions().withMaxTokens(200))
+        assertEquals(200, options.maxTokens)
+    }
+
 }
