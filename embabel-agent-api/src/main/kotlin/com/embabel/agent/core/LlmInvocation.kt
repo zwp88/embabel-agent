@@ -58,14 +58,14 @@ interface LlmInvocationHistory {
     fun costInfoString(verbose: Boolean): String {
         val usage = usage()
         return if (verbose) """|
-            |LLMs used: ${modelsUsed().map { it.name }}
+            |LLMs used: ${modelsUsed().map { it.name }} across ${llmInvocations.size} calls
             |Prompt tokens: ${"%,d".format(usage.promptTokens)}, completion tokens: ${
             "%,d".format(
                 usage.completionTokens
             )
         }
             |Cost: $${"%.4f".format(cost())}""".trimMargin()
-        else "LLMs: ${modelsUsed().map { it.name }}; " +
+        else "LLMs: ${modelsUsed().map { it.name }} across ${llmInvocations.size} calls; " +
                 "prompt tokens: ${"%,d".format(usage.promptTokens)}; completion tokens: ${
                     "%,d".format(
                         usage.completionTokens

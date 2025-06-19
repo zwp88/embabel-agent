@@ -75,8 +75,9 @@ class SuppressThinkingConverter<T>(
         val sanitization = identifyThinkBlock(source)
         sanitization.thinkBlock?.let {
             logger.info(
-                "Think block detected in input: {}",
+                "Think block detected in input: '{}': Remaining content: '{}'",
                 it,
+                sanitization.cleaned,
             )
         }
         return delegate.convert(sanitization.cleaned)
@@ -110,7 +111,7 @@ class SuppressThinkingConverter<T>(
         // Try to find and remove the think block markup
         for (thinkBlockFinder in thinkBlockFinders) {
             val thinkBlock = thinkBlockFinder(input)
-            if (thinkBlock != null) {
+            if (thinkBlock != null && thinkBlock.isNotEmpty()) {
                 return ThinkBlockSanitization(
                     input = input,
                     thinkBlock = thinkBlock,
@@ -150,7 +151,7 @@ val FindPrefixThinkBlock: ThinkBlockFinder = { input ->
  * @property thinkBlock The extracted thinking block, or null if none was found
  * @property cleaned The sanitized input with thinking blocks removed
  */
-data class ThinkBlockSanitization(
+internal data class ThinkBlockSanitization(
     val input: String,
     val thinkBlock: String?,
     val cleaned: String,
