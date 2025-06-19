@@ -32,8 +32,8 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
 import com.embabel.agent.support.SimpleTestAgent
-import com.embabel.agent.testing.EventSavingAgenticEventListener
-import com.embabel.agent.testing.IntegrationTestUtils.dummyPlatformServices
+import com.embabel.agent.testing.common.EventSavingAgenticEventListener
+import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyPlatformServices
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

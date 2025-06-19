@@ -25,7 +25,7 @@ import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.support.springai.ChatClientLlmOperations
 import com.embabel.agent.spi.support.springai.MaybeReturn
 import com.embabel.agent.support.SimpleTestAgent
-import com.embabel.agent.testing.EventSavingAgenticEventListener
+import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.common.ai.model.*
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule

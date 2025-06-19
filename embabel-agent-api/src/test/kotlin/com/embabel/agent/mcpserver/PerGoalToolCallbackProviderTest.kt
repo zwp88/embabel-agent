@@ -19,8 +19,8 @@ import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.AutonomyProperties
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.api.dsl.userInputToFrogOrPersonBranch
-import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
-import com.embabel.agent.testing.RandomRanker
+import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
+import com.embabel.agent.testing.integration.RandomRanker
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals

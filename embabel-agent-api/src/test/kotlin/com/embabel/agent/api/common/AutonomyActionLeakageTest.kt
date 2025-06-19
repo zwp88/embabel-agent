@@ -19,8 +19,8 @@ import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.AutonomyProperties
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
-import com.embabel.agent.testing.IntegrationTestUtils
-import com.embabel.agent.testing.RandomRanker
+import com.embabel.agent.testing.integration.IntegrationTestUtils
+import com.embabel.agent.testing.integration.RandomRanker
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.clearAllMocks

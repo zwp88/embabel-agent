@@ -17,7 +17,7 @@ package com.embabel.agent.event
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.domain.io.UserInput
-import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
+import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

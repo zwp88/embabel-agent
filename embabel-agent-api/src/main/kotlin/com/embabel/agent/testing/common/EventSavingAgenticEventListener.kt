@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.testing
+package com.embabel.agent.testing.common
 
 import com.embabel.agent.event.AgentPlatformEvent
 import com.embabel.agent.event.AgentProcessEvent
 import com.embabel.agent.event.AgenticEventListener
 
 /**
- * Simple implementation of [AgenticEventListener] that saves each kind of event to a list.
+ * Simple implementation of [com.embabel.agent.event.AgenticEventListener] that saves each kind of event to a list.
  */
 class EventSavingAgenticEventListener : AgenticEventListener {
 

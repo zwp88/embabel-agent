@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.testing
+package com.embabel.agent.testing.integration
 
 import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.Ranking

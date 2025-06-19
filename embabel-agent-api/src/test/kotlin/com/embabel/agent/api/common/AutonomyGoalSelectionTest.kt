@@ -25,7 +25,7 @@ import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
-import com.embabel.agent.testing.FakeRanker
+import com.embabel.agent.testing.integration.FakeRanker
 import io.mockk.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*

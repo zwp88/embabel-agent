@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.testing
+package com.embabel.agent.testing.unit
 
 import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.LlmCallRequest
@@ -30,9 +30,9 @@ object UnitTestUtils {
      * Should be a call to the agent method with the appropriate arguments.
      */
     @JvmStatic
-    fun captureLlmCall(block: () -> Unit): LlmCallRequest {
+    fun captureLlmCall(block: Runnable): LlmCallRequest {
         try {
-            block()
+            block.run()
             error("Expected an LLM call but none was made")
         } catch (epe: CreateObjectPromptException) {
             return epe

@@ -22,7 +22,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
-import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
+import com.embabel.agent.testing.integration.DummyObjectCreatingLlmOperations
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
