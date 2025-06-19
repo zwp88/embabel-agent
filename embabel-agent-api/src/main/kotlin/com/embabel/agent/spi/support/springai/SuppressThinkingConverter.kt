@@ -18,15 +18,11 @@ package com.embabel.agent.spi.support.springai
 import org.slf4j.LoggerFactory
 import org.springframework.ai.converter.StructuredOutputConverter
 
+typealias ThinkBlockFinder = (String) -> String?
+
 /**
  * A decorator for Spring AI's [StructuredOutputConverter] that cleans up LLM outputs by removing "thinking" blocks.
  *
- * ## Purpose
- * When working with LLMs that use chain-of-thought reasoning, the model may include its reasoning process
- * in the output, often enclosed in <think> tags. While this reasoning is valuable for understanding how
- * the model arrived at its conclusion, it can interfere with structured output parsing.
- *
- * ## Problem Solved
  * Spring AI's [StructuredOutputConverter] is designed to parse structured formats (like JSON) from
  * LLM outputs, but it can fail if the output contains additional text like reasoning blocks.
  * For example, if an LLM returns:
@@ -41,7 +37,6 @@ import org.springframework.ai.converter.StructuredOutputConverter
  *
  * A standard converter would fail to parse this as valid JSON.
  *
- * ## Solution
  * This decorator sanitizes the input by removing any content enclosed in <think> tags before
  * passing it to the delegate converter, allowing reasoning models to be used with Spring AI's
  * structured output functionality.
@@ -61,6 +56,7 @@ class SuppressThinkingConverter<T>(
      * This delegate handles the actual conversion from the cleaned string to the target type T.
      */
     private val delegate: StructuredOutputConverter<T>,
+    private val thinkBlockFinders: List<ThinkBlockFinder> = listOf(FindMarkupThinkBlock, FindPrefixThinkBlock),
 ) : StructuredOutputConverter<T> {
     private val logger = LoggerFactory.getLogger(SuppressThinkingConverter::class.java)
 
@@ -68,7 +64,7 @@ class SuppressThinkingConverter<T>(
      * Converts the source string to the target type after removing any thinking blocks.
      *
      * This method performs the following steps:
-     * 1. Calls [removeThinkBlock] to sanitize the input by removing thinking blocks
+     * 1. Calls [identifyThinkBlock] to sanitize the input by removing thinking blocks
      * 2. Logs any detected thinking blocks (for debugging/analysis purposes)
      * 3. Delegates the actual conversion to the wrapped converter
      *
@@ -76,7 +72,7 @@ class SuppressThinkingConverter<T>(
      * @return The converted object of type T, or null if conversion fails
      */
     override fun convert(source: String): T? {
-        val sanitization = removeThinkBlock(source)
+        val sanitization = identifyThinkBlock(source)
         sanitization.thinkBlock?.let {
             logger.info(
                 "Think block detected in input: {}",
@@ -89,13 +85,57 @@ class SuppressThinkingConverter<T>(
     /**
      * Returns the format description from the delegate converter.
      *
-     * This method is part of the [StructuredOutputConverter] interface's [FormatProvider] functionality.
+     * This method is part of the [StructuredOutputConverter] interface's [org.springframework.ai.converter.FormatProvider] functionality.
      * The format string provides instructions to the LLM about how to structure its response.
      * This implementation simply forwards to the delegate's format, maintaining the decorator pattern.
      *
      * @return The format description string from the delegate, or null if the delegate doesn't provide one
      */
     override fun getFormat(): String? = delegate.format
+
+    private fun identifyThinkBlock(input: String): ThinkBlockSanitization {
+        // First try to parse the input as JSON to see if it is already clean
+        try {
+            delegate.convert(input)
+            // If it succeeds, no need to sanitize
+            return ThinkBlockSanitization(
+                input = input,
+                thinkBlock = null,
+                cleaned = input,
+            )
+        } catch (e: Exception) {
+            // If it fails, we assume there might be a think block to sanitize
+            logger.debug("Failed to parse input as JSON, sanitizing for think blocks", e)
+        }
+        // Try to find and remove the think block markup
+        for (thinkBlockFinder in thinkBlockFinders) {
+            val thinkBlock = thinkBlockFinder(input)
+            if (thinkBlock != null) {
+                return ThinkBlockSanitization(
+                    input = input,
+                    thinkBlock = thinkBlock,
+                    cleaned = input.replace(thinkBlock, ""),
+                )
+            }
+        }
+        // If no think block is found, return the original input as cleaned
+        return ThinkBlockSanitization(
+            input = input,
+            thinkBlock = null,
+            cleaned = input,
+        )
+    }
+
+}
+
+val FindMarkupThinkBlock: ThinkBlockFinder = { input ->
+    val thinkBlockRegex = "<think>(.*?)</think>".toRegex(RegexOption.DOT_MATCHES_ALL)
+    thinkBlockRegex.find(input)?.value
+}
+
+val FindPrefixThinkBlock: ThinkBlockFinder = { input ->
+    val thinkBlockRegex = "[^{]*".toRegex(RegexOption.DOT_MATCHES_ALL)
+    thinkBlockRegex.find(input)?.value
 }
 
 /**
@@ -115,32 +155,3 @@ data class ThinkBlockSanitization(
     val thinkBlock: String?,
     val cleaned: String,
 )
-
-/**
- * Removes thinking blocks enclosed in <think> tags from the input string.
- *
- * This function uses a regex pattern to identify and extract content between <think> and </think> tags,
- * then removes these sections from the input string. The regex uses the DOT_MATCHES_ALL option to ensure
- * that newlines within the thinking blocks are properly handled.
- *
- * Example:
- * ```
- * Input: "Hello <think>This is my reasoning</think> World"
- * Output: ThinkBlockSanitization(
- *   input = "Hello <think>This is my reasoning</think> World",
- *   thinkBlock = "<think>This is my reasoning</think>",
- *   cleaned = "Hello  World"
- * )
- * ```
- *
- * @param input The string potentially containing thinking blocks
- * @return A [ThinkBlockSanitization] object containing the original input, extracted thinking block, and cleaned output
- */
-fun removeThinkBlock(input: String): ThinkBlockSanitization {
-    val regex = "<think>.*?</think>".toRegex(RegexOption.DOT_MATCHES_ALL)
-    return ThinkBlockSanitization(
-        input = input,
-        thinkBlock = regex.find(input)?.value,
-        cleaned = input.replace(regex, ""),
-    )
-}
