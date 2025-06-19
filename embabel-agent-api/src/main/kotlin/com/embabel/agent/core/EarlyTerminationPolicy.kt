@@ -62,11 +62,6 @@ interface EarlyTerminationPolicy {
     companion object {
 
         /**
-         * Default maximum number of actions an agent process can perform before termination.
-         */
-        const val DEFAULT_ACTION_LIMIT = 50
-
-        /**
          * Creates a policy that terminates the process after a maximum number of actions.
          *
          * @param maxActions The maximum number of actions allowed
@@ -75,6 +70,10 @@ interface EarlyTerminationPolicy {
         @JvmStatic
         fun maxActions(maxActions: Int): EarlyTerminationPolicy =
             MaxActionsEarlyTerminationPolicy(maxActions)
+
+        @JvmStatic
+        fun maxTokens(maxTokens: Int): EarlyTerminationPolicy =
+            MaxTokensEarlyTerminationPolicy(maxTokens)
 
         /**
          * Combines multiple early termination policies into one.
@@ -97,7 +96,7 @@ interface EarlyTerminationPolicy {
          */
         @JvmStatic
         fun hardBudgetLimit(budget: Double): EarlyTerminationPolicy =
-            BudgetEarlyTerminationPolicy(budget)
+            MaxCostEarlyTerminationPolicy(budget)
     }
 }
 
@@ -111,7 +110,17 @@ private data class MaxActionsEarlyTerminationPolicy(
 
 }
 
-private data class BudgetEarlyTerminationPolicy(
+private data class MaxTokensEarlyTerminationPolicy(
+    private val maxTokens: Int,
+) : EarlyTerminationPolicy {
+    override fun shouldTerminate(agentProcess: AgentProcess): EarlyTermination? =
+        if (agentProcess.usage().totalTokens >= maxTokens) {
+            EarlyTermination(agentProcess, "Max tokens of $maxTokens reached", this)
+        } else null
+
+}
+
+private data class MaxCostEarlyTerminationPolicy(
     private val budget: Double,
 ) : EarlyTerminationPolicy {
     override fun shouldTerminate(agentProcess: AgentProcess): EarlyTermination? =
