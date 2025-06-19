@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.spi
 
-import com.embabel.agent.core.Action
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.ToolConsumer
-import com.embabel.agent.core.ToolGroupConsumer
+import com.embabel.agent.core.*
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
@@ -68,7 +65,7 @@ interface LlmCall : LlmUse, ToolConsumer {
 private data class LlmCallImpl(
     override val name: String,
     override val llm: LlmOptions? = null,
-    override val toolGroups: Set<String> = emptySet(),
+    override val toolGroups: Set<ToolGroupRequirement> = emptySet(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
     override val contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
@@ -93,7 +90,7 @@ private data class LlmCallImpl(
 data class LlmInteraction(
     val id: InteractionId,
     override val llm: LlmOptions = LlmOptions(),
-    override val toolGroups: Set<String> = emptySet(),
+    override val toolGroups: Set<ToolGroupRequirement> = emptySet(),
     override val toolCallbacks: List<ToolCallback> = emptyList(),
     override val promptContributors: List<PromptContributor> = emptyList(),
     override val contextualPromptContributors: List<ContextualPromptElement> = emptyList(),

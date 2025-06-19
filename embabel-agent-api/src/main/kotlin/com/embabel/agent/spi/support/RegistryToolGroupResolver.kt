@@ -17,6 +17,7 @@ package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.ToolGroupResolution
 import com.embabel.agent.spi.ToolGroupResolver
 import org.slf4j.LoggerFactory
@@ -43,12 +44,12 @@ class RegistryToolGroupResolver(
 
     override fun availableToolGroups(): List<ToolGroupMetadata> = toolGroups.map { it.metadata }
 
-    override fun resolveToolGroup(role: String): ToolGroupResolution {
-        val group = toolGroups.find { it.metadata.role == role }
+    override fun resolveToolGroup(requirement: ToolGroupRequirement): ToolGroupResolution {
+        val group = toolGroups.find { it.metadata.role == requirement.role }
         return if (group == null) {
             ToolGroupResolution(
                 resolvedToolGroup = null,
-                failureMessage = "No tool group matching role '$role'",
+                failureMessage = "No tool group matching role '${requirement.role}'",
             )
         } else {
             ToolGroupResolution(

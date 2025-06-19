@@ -20,6 +20,7 @@ import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
@@ -38,7 +39,7 @@ fun <I, O : Any> promptTransformer(
     inputClass: Class<I>,
     outputClass: Class<O>,
     cost: ZeroToOne = 0.0,
-    toolGroups: Set<String> = emptySet(),
+    toolGroups: Set<ToolGroupRequirement> = emptySet(),
     qos: ActionQos = ActionQos(),
     referencedInputProperties: Set<String>? = null,
     llm: LlmOptions = LlmOptions(),

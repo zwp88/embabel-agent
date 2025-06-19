@@ -225,7 +225,7 @@ class ShellCommands(
             tgr.name,
             tgr.availableToolGroups().size,
             "\n\t" + tgr.availableToolGroups()
-                .map { tgr.resolveToolGroup(it.role) }
+                .map { tgr.resolveToolGroup(ToolGroupRequirement(it.role)) }
                 .mapNotNull { it.resolvedToolGroup }
                 .sortedBy { it.metadata.role }
                 .joinToString("\n\t") { it.infoString(verbose = true) },

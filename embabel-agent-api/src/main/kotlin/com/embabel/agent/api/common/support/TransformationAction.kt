@@ -41,7 +41,7 @@ open class TransformationAction<I, O>(
     private val inputVarName: String = IoBinding.DEFAULT_BINDING,
     private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    toolGroups: Set<String>,
+    toolGroups: Set<ToolGroupRequirement>,
     private val block: Transformation<I, O>,
 ) : AbstractAction(
     name = name,

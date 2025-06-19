@@ -18,6 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.ActionRunner
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.common.core.types.ZeroToOne
 
 /**
@@ -44,7 +45,7 @@ internal class SerializableAction(
     inputs: Set<IoBinding> = setOfNotNull(input),
     output: IoBinding? = null,
     outputs: Set<IoBinding> = setOfNotNull(output),
-    toolGroups: Set<String> = emptySet(),
+    toolGroups: Set<ToolGroupRequirement> = emptySet(),
     val runner: ActionRunner,
     qos: ActionQos = ActionQos(),
     canRerun: Boolean = false,

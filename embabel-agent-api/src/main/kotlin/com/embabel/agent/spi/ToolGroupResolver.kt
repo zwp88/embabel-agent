@@ -16,6 +16,7 @@
 package com.embabel.agent.spi
 
 import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.ToolGroupResolution
 import com.embabel.common.core.types.HasInfoString
 
@@ -28,7 +29,7 @@ interface ToolGroupResolver : HasInfoString {
     /**
      * Resolve tool group from the role
      */
-    fun resolveToolGroup(role: String): ToolGroupResolution
+    fun resolveToolGroup(requirement: ToolGroupRequirement): ToolGroupResolution
 
     fun findToolGroupForTool(toolName: String): ToolGroupResolution
 }

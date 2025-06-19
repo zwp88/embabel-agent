@@ -16,6 +16,7 @@
 package com.embabel.agent.api.common
 
 import com.embabel.agent.api.annotation.using
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.LlmCall
@@ -90,7 +91,13 @@ interface PromptRunner : LlmUse {
      * @param toolGroup name of the toolGroup we're requesting
      * @return PromptRunner instance with the added tool group
      */
-    fun withToolGroup(toolGroup: String): PromptRunner
+    fun withToolGroup(toolGroup: String): PromptRunner =
+        withToolGroup(ToolGroupRequirement(toolGroup))
+
+    fun withToolGroups(toolGroups: Set<String>): PromptRunner =
+        toolGroups.fold(this) { acc, toolGroup -> acc.withToolGroup(toolGroup) }
+
+    fun withToolGroup(toolGroup: ToolGroupRequirement): PromptRunner
 
     /**
      * Add a tool object to the prompt runner.
@@ -192,7 +199,7 @@ class CreateObjectPromptException(
     requireResult: Boolean,
     llm: LlmOptions? = null,
     outputClass: Class<*>,
-    override val toolGroups: Set<String>,
+    override val toolGroups: Set<ToolGroupRequirement>,
     toolCallbacks: List<ToolCallback>,
     toolObjects: List<Any>,
     promptContributors: List<PromptContributor>,
@@ -215,7 +222,7 @@ class EvaluateConditionPromptException(
     val confidenceThreshold: ZeroToOne,
     requireResult: Boolean,
     llm: LlmOptions? = null,
-    override val toolGroups: Set<String>,
+    override val toolGroups: Set<ToolGroupRequirement>,
     toolObjects: List<Any>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>,

@@ -17,10 +17,7 @@ package com.embabel.agent.api.dsl.support
 
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.MagicVictim
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.Condition
-import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.*
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.common.ai.model.LlmOptions
 import io.mockk.every
@@ -181,11 +178,11 @@ class PromptTransformerKtTest {
         fun `transformer should handle tool groups and callbacks`() {
             val toolCallback = mockk<ToolCallback>()
             every { toolCallback.toolDefinition.name() } returns "test"
-            val toolGroups = setOf("math", "web")
+            val toolGroups = setOf(ToolGroupRequirement("math"), ToolGroupRequirement("web"))
 
             val transformer = promptTransformer<MagicVictim, Frog>(
                 name = "toolTransformer",
-                toolGroups = toolGroups,
+                toolGroups = toolGroups.map { ToolGroupRequirement(it.role) }.toSet(),
                 toolCallbacks = listOf(toolCallback),
                 inputClass = MagicVictim::class.java,
                 outputClass = Frog::class.java,

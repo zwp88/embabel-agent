@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
@@ -29,7 +30,7 @@ import com.embabel.common.core.types.ZeroToOne
  */
 internal data class MethodReturnPromptRunner(
     override val llm: LlmOptions?,
-    override val toolGroups: Set<String>,
+    override val toolGroups: Set<ToolGroupRequirement>,
     override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
     private val contextualPromptContributors: List<ContextualPromptElement>,
@@ -95,7 +96,7 @@ internal data class MethodReturnPromptRunner(
     override fun withLlm(llm: LlmOptions): PromptRunner =
         copy(llm = llm)
 
-    override fun withToolGroup(toolGroup: String): PromptRunner =
+    override fun withToolGroup(toolGroup: ToolGroupRequirement): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
     override fun withToolObject(toolObject: Any?): PromptRunner =

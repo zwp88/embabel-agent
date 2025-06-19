@@ -18,6 +18,7 @@ package com.embabel.agent.api.common.support
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
@@ -35,7 +36,7 @@ import com.embabel.common.util.loggerFor
 internal data class OperationContextPromptRunner(
     private val context: OperationContext,
     override val llm: LlmOptions,
-    override val toolGroups: Set<String>,
+    override val toolGroups: Set<ToolGroupRequirement>,
     override val toolObjects: List<Any>,
     override val promptContributors: List<PromptContributor>,
     private val contextualPromptContributors: List<ContextualPromptElement>,
@@ -138,7 +139,7 @@ internal data class OperationContextPromptRunner(
     override fun withLlm(llm: LlmOptions): PromptRunner =
         copy(llm = llm)
 
-    override fun withToolGroup(toolGroup: String): PromptRunner =
+    override fun withToolGroup(toolGroup: ToolGroupRequirement): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
     override fun withToolObject(toolObject: Any?): PromptRunner =
