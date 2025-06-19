@@ -202,11 +202,17 @@ class AnthropicModels(
 }
 
 object AnthropicOptionsConverter : OptionsConverter<AnthropicChatOptions> {
+
+    /**
+     * Anthropic's default is too low, so we set it to 20,000 tokens.
+     */
+    const val DEFAULT_MAX_TOKENS = 20000
+
     override fun convertOptions(options: LlmOptions): AnthropicChatOptions =
         AnthropicChatOptions.builder()
             .temperature(options.temperature)
             .topP(options.topP)
-            .maxTokens(options.maxTokens)
+            .maxTokens(options.maxTokens ?: DEFAULT_MAX_TOKENS)
             .thinking(
                 if (options.thinking?.enabled == true) AnthropicApi.ChatCompletionRequest.ThinkingConfig(
                     AnthropicApi.ThinkingType.ENABLED,
