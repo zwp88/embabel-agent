@@ -38,7 +38,51 @@ data class ProcessControl(
     val toolDelay: Delay = Delay.NONE,
     val operationDelay: Delay = Delay.NONE,
     val earlyTerminationPolicy: EarlyTerminationPolicy,
-)
+) {
+
+    fun withToolDelay(toolDelay: Delay): ProcessControl =
+        this.copy(toolDelay = toolDelay)
+
+    fun withOperationDelay(operationDelay: Delay): ProcessControl =
+        this.copy(operationDelay = operationDelay)
+
+    fun withEarlyTerminationPolicy(earlyTerminationPolicy: EarlyTerminationPolicy): ProcessControl =
+        this.copy(earlyTerminationPolicy = earlyTerminationPolicy)
+}
+
+/**
+ * Budget for an agent process.
+ * @param cost the cost of running the process, in USD.
+ * @param actions the maximum number of actions the agent can perform before termination.
+ * @param tokens the maximum number of tokens the agent can use before termination. This can be useful in the case of
+ * local models where the cost is not directly measurable, but we don't want excessive work.
+ */
+data class Budget(
+    val cost: Double = DEFAULT_COST_LIMIT,
+    val actions: Int = DEFAULT_ACTION_LIMIT,
+    val tokens: Int = DEFAULT_TOKEN_LIMIT,
+) {
+
+    fun earlyTerminationPolicy(): EarlyTerminationPolicy {
+        return EarlyTerminationPolicy.firstOf(
+            EarlyTerminationPolicy.maxActions(maxActions = actions),
+            EarlyTerminationPolicy.maxTokens(maxTokens = tokens),
+            EarlyTerminationPolicy.hardBudgetLimit(budget = cost),
+        )
+    }
+
+    companion object {
+
+        const val DEFAULT_COST_LIMIT = 2.0
+
+        /**
+         * Default maximum number of actions an agent process can perform before termination.
+         */
+        const val DEFAULT_ACTION_LIMIT = 50
+
+        const val DEFAULT_TOKEN_LIMIT = 1000000
+    }
+}
 
 /**
  * How to run an AgentProcess
@@ -59,13 +103,11 @@ data class ProcessOptions(
     val test: Boolean = false,
     val verbosity: Verbosity = Verbosity(),
     val allowGoalChange: Boolean = true,
+    val budget: Budget = Budget(),
     val control: ProcessControl = ProcessControl(
         toolDelay = Delay.NONE,
         operationDelay = Delay.NONE,
-        earlyTerminationPolicy = EarlyTerminationPolicy.firstOf(
-            EarlyTerminationPolicy.maxActions(EarlyTerminationPolicy.DEFAULT_ACTION_LIMIT),
-            EarlyTerminationPolicy.hardBudgetLimit(budget = 2.00),
-        )
+        earlyTerminationPolicy = budget.earlyTerminationPolicy(),
     ),
 ) {
 
