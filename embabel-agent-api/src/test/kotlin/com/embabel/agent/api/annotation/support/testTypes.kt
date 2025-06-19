@@ -23,6 +23,7 @@ import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.dsl.*
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.common.ai.model.LlmOptions
@@ -325,7 +326,21 @@ class OneTransformerActionTakingInterfaceWithExpectationCustomToolGroupOnly {
     @Action(cost = 500.0, toolGroups = ["magic"])
     fun toPerson(person: PersonWithReverseTool, context: OperationContext): Frog {
         val pr = context.promptRunner()
-        assertEquals(setOf("magic"), pr.toolGroups.toSet())
+        assertEquals(setOf(ToolGroupRequirement("magic")), pr.toolGroups.toSet())
+//        assertFalse(pr.toolCallbacks.isEmpty(), "ToolCallbacks should be expanded")
+        return Frog(person.name)
+    }
+
+}
+
+@Agent(description = "thing")
+class OneTransformerActionTakingInterfaceWithExpectationCustomToolGroupRequirementOnly {
+
+    @AchievesGoal(description = "Creating a frog")
+    @Action(cost = 500.0, toolGroups = ["frogs"], toolGroupRequirements = [ToolGroup("magic")])
+    fun toPerson(person: PersonWithReverseTool, context: OperationContext): Frog {
+        val pr = context.promptRunner()
+        assertEquals(setOf(ToolGroupRequirement("magic"), ToolGroupRequirement("frogs")), pr.toolGroups.toSet())
 //        assertFalse(pr.toolCallbacks.isEmpty(), "ToolCallbacks should be expanded")
         return Frog(person.name)
     }

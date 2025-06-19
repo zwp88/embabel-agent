@@ -41,7 +41,7 @@ import kotlin.reflect.KProperty
 data class ConditionContext(
     override val processContext: ProcessContext,
     override val operation: Operation,
-    override val toolGroups: Set<String> = emptySet(),
+    override val toolGroups: Set<ToolGroupRequirement> = emptySet(),
 ) : OperationContext, Blackboard by processContext.blackboard
 
 typealias ConditionPredicate = (
@@ -136,7 +136,7 @@ class AgentBuilder(
         inputVarName: String = IoBinding.DEFAULT_BINDING,
         outputVarName: String? = IoBinding.DEFAULT_BINDING,
         cost: ZeroToOne = 0.0,
-        toolGroups: Set<String> = emptySet(),
+        toolGroups: Set<ToolGroupRequirement> = emptySet(),
         qos: ActionQos = ActionQos(),
         referencedInputProperties: Set<String>? = null,
         block: Transformation<I, O>,
@@ -170,7 +170,7 @@ class AgentBuilder(
         inputVarName: String = IoBinding.DEFAULT_BINDING,
         outputVarName: String = IoBinding.DEFAULT_BINDING,
         cost: ZeroToOne = 0.0,
-        toolGroups: Set<String> = emptySet(),
+        toolGroups: Set<ToolGroupRequirement> = emptySet(),
         qos: ActionQos = ActionQos(),
         referencedInputProperties: Set<String>? = null,
         llm: LlmOptions = LlmOptions(),

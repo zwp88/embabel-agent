@@ -141,13 +141,20 @@ interface ToolCallbackSpec {
 
 interface ToolCallbackConsumer : ToolCallbackSpec
 
+/**
+ * Specifies a tool group that a tool consumer requires.
+ */
+data class ToolGroupRequirement(
+    val role: String,
+)
+
 interface ToolGroupConsumer {
 
     /**
      * Tool groups exposed. This will include directly registered tool groups
      * and tool groups resolved from ToolGroups.
      */
-    val toolGroups: Set<String>
+    val toolGroups: Set<ToolGroupRequirement>
 }
 
 /**

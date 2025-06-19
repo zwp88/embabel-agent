@@ -60,7 +60,7 @@ open class BranchingAction<I, O1, O2>(
     private val inputVarName: String = IoBinding.Companion.DEFAULT_BINDING,
     private val outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
-    toolGroups: Set<String>,
+    toolGroups: Set<ToolGroupRequirement>,
     private val block: Transformation<I, Branch<O1, O2>>,
 ) : AbstractAction(
     name = name,

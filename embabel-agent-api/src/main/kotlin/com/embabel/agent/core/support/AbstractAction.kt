@@ -18,6 +18,7 @@ package com.embabel.agent.core.support
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
@@ -57,7 +58,7 @@ abstract class AbstractAction(
     override val value: ZeroToOne = 0.0,
     override val inputs: Set<IoBinding> = emptySet(),
     override val outputs: Set<IoBinding> = emptySet(),
-    override val toolGroups: Set<String>,
+    override val toolGroups: Set<ToolGroupRequirement>,
     override val canRerun: Boolean,
     override val qos: ActionQos = ActionQos(),
 ) : Action {

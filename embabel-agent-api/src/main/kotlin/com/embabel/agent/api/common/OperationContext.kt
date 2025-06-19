@@ -47,7 +47,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
      */
     fun promptRunner(
         llm: LlmOptions = LlmOptions(),
-        toolGroups: Set<String> = emptySet(),
+        toolGroups: Set<ToolGroupRequirement> = emptySet(),
         toolObjects: List<Any> = emptyList(),
         promptContributors: List<PromptContributor> = emptyList(),
         contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
@@ -78,7 +78,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         operator fun invoke(
             processContext: ProcessContext,
             operation: Operation,
-            toolGroups: Set<String>,
+            toolGroups: Set<ToolGroupRequirement>,
         ): OperationContext =
             MinimalOperationContext(
                 processContext = processContext,
@@ -91,7 +91,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
 private class MinimalOperationContext(
     override val processContext: ProcessContext,
     override val operation: Operation,
-    override val toolGroups: Set<String>,
+    override val toolGroups: Set<ToolGroupRequirement>,
 ) : OperationContext, Blackboard by processContext.agentProcess {
     override fun toString(): String {
         return "MinimalOperationContext(processContext=$processContext, operation=${operation.name})"
@@ -110,7 +110,7 @@ interface ActionContext : OperationContext {
 
     override fun promptRunner(
         llm: LlmOptions,
-        toolGroups: Set<String>,
+        toolGroups: Set<ToolGroupRequirement>,
         toolObjects: List<Any>,
         promptContributors: List<PromptContributor>,
         contextualPromptContributors: List<ContextualPromptElement>,
@@ -167,7 +167,7 @@ data class TransformationActionContext<I, O>(
 ) : InputActionContext<I>, Blackboard by processContext.agentProcess,
     AgenticEventListener by processContext {
 
-    override val toolGroups: Set<String>
+    override val toolGroups: Set<ToolGroupRequirement>
         get() = action.toolGroups
 
     override val operation = action

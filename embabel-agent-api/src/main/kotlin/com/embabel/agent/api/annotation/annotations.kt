@@ -102,6 +102,12 @@ annotation class Condition(
     val cost: ZeroToOne = 0.0,
 )
 
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class ToolGroup(
+    val role: String,
+)
+
 /**
  * Annotation to indicate a method implementing an Action.
  * Methods can have any number of parameters, which represent
@@ -119,6 +125,7 @@ annotation class Condition(
  * @param cost Cost of executing the action
  * @param value Value of performing the action
  * @param toolGroups Tool groups that this action requires. These are well known tools from the server.
+ * @param toolGroupRequirements Tool groups required, with explicit metadata such as QoS requirements.
  * @Tool methods on the @Agentic class are automatically added.
  */
 @Target(AnnotationTarget.FUNCTION)
@@ -133,6 +140,7 @@ annotation class Action(
     val cost: ZeroToOne = 0.0,
     val value: ZeroToOne = 0.0,
     val toolGroups: Array<String> = [],
+    val toolGroupRequirements: Array<ToolGroup> = [],
 )
 
 /**

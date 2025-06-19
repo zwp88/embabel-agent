@@ -18,6 +18,7 @@ package com.embabel.agent.api.common.support
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.core.ActionQos
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.common.core.types.ZeroToOne
 
 /**
@@ -35,7 +36,7 @@ class SupplierAction<O>(
     outputClass: Class<O>,
     outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
     referencedInputProperties: Set<String>? = null,
-    toolGroups: Set<String>,
+    toolGroups: Set<ToolGroupRequirement>,
     block: Transformation<Unit, O>,
 ) : TransformationAction<Unit, O>(
     name = name,

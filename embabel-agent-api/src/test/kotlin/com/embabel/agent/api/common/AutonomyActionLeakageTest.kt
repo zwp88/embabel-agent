@@ -159,7 +159,7 @@ class AutonomyActionLeakageTest {
 
             override val domainTypes: Collection<Class<*>>
                 get() = listOf(DummyType::class.java)
-            override val toolGroups: Set<String>
+            override val toolGroups: Set<ToolGroupRequirement>
                 get() = emptySet()
             override val schemaTypes = emptyList<SchemaType>()
         }
@@ -199,7 +199,7 @@ class AutonomyActionLeakageTest {
 
             override val domainTypes: Collection<Class<*>>
                 get() = listOf(DummyType::class.java)
-            override val toolGroups: Set<String>
+            override val toolGroups: Set<ToolGroupRequirement>
                 get() = emptySet()
             override val schemaTypes = emptyList<SchemaType>()
         }
@@ -430,7 +430,7 @@ class AutonomyActionLeakageTest {
 
             override fun referencedInputProperties(variable: String): Set<String> = emptySet()
             override val domainTypes: Collection<Class<*>> = listOf(DummyType::class.java)
-            override val toolGroups: Set<String> = emptySet()
+            override val toolGroups: Set<ToolGroupRequirement> = emptySet()
         }
     }
 

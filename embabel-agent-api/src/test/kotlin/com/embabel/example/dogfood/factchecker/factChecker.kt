@@ -22,6 +22,7 @@ import com.embabel.agent.api.dsl.parallelMap
 import com.embabel.agent.config.models.AnthropicModels
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.CoreToolGroups
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.InternetResource
 import com.embabel.agent.domain.library.InternetResources
@@ -110,8 +111,9 @@ fun factCheckerAgent(
         aggregate<UserInput, FactualAssertions, RationalizedFactualAssertions>(
             transforms = llms.map { llm ->
                 { context ->
-                    context.promptRunner(llm = llm, toolGroups = setOf(CoreToolGroups.WEB)).createObject(
-                        """
+                    context.promptRunner(llm = llm, toolGroups = setOf(ToolGroupRequirement(CoreToolGroups.WEB)))
+                        .createObject(
+                            """
             Given the following content, identify any factual assertions.
             Phrase them as standalone assertions.
             Do not duplicate assertions.
@@ -120,7 +122,7 @@ fun factCheckerAgent(
             # Content
             ${context.input.content}
             """.trimIndent()
-                    )
+                        )
                 }
             },
             merge = { list, context ->
@@ -141,7 +143,8 @@ fun factCheckerAgent(
     transformation<RationalizedFactualAssertions, FactCheck> { operationContext ->
         val promptRunner = operationContext.promptRunner(
             LlmOptions(ModelSelectionCriteria.Auto),
-            toolGroups = setOf(CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION),
+            toolGroups = setOf(CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION).map { ToolGroupRequirement(it) }
+                .toSet(),
         )
         val checks = operationContext.input.factualAssertions.parallelMap(operationContext) { assertion ->
             promptRunner.createObject<AssertionCheck>(

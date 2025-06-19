@@ -24,6 +24,7 @@ import com.embabel.agent.api.common.support.expandInputBindings
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
+import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
@@ -85,7 +86,11 @@ internal class DefaultActionMethodManager(
             inputClasses = inputClasses,
             outputClass = method.returnType as Class<Any>,
             outputVarName = actionAnnotation.outputBinding,
-            toolGroups = actionAnnotation.toolGroups.toSet(),
+            toolGroups = (actionAnnotation.toolGroupRequirements.map { ToolGroupRequirement(it.role) } + actionAnnotation.toolGroups.map {
+                ToolGroupRequirement(
+                    it
+                )
+            }).toSet(),
         ) { context ->
             invokeActionMethod(
                 method = method,
