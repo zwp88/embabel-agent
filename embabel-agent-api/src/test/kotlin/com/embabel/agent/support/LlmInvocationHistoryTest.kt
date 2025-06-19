@@ -44,7 +44,7 @@ class LlmInvocationHistoryTest {
         assertEquals(0, llmih.usage().promptTokens, "No prompt tokens yet")
         assertEquals(0, llmih.usage().completionTokens, "No completion tokens yet")
         assertEquals(
-            "LLMs: []; prompt tokens: 0; completion tokens: 0; cost: $${"%.4f".format(0.0)}",
+            "LLMs: [] across 0 calls; prompt tokens: 0; completion tokens: 0; cost: $${"%.4f".format(0.0)}",
             llmih.costInfoString(false),
             "No cost info yet"
         )
@@ -68,7 +68,7 @@ class LlmInvocationHistoryTest {
         assertEquals(100, llmih.usage().promptTokens, "Correct prompt tokens")
         assertEquals(200, llmih.usage().completionTokens, "Correct completion tokens")
         assertEquals(
-            "LLMs: [Mock LLM]; prompt tokens: ${usage.promptTokens}; completion tokens: ${usage.completionTokens}; cost: $${
+            "LLMs: [Mock LLM] across 1 calls; prompt tokens: ${usage.promptTokens}; completion tokens: ${usage.completionTokens}; cost: $${
                 "%.4f".format(
                     0.0
                 )
