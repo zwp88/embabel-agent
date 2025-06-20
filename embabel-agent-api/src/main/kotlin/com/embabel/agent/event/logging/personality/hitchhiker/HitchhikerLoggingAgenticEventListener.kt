@@ -93,7 +93,7 @@ The standard repository for all knowledge and wisdom in the universe
         guide(
             """
         The Guide recommends ${e.type.simpleName} '${e.choice.match.name}' with confidence ${e.choice.score} based on ${e.basis}.
-        Other options: ${e.rankings.infoString()}
+        All options: ${e.rankings.infoString()}
         Remember that the Guide is definitive. Reality is frequently inaccurate.
         """.trimIndent()
         )
