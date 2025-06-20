@@ -16,7 +16,7 @@
 package com.embabel.agent.event
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
-import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
+import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
 import io.mockk.mockk
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

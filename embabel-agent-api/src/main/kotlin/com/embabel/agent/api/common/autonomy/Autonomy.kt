@@ -22,8 +22,8 @@ import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.RankingChoiceRequestEvent
 import com.embabel.agent.spi.Ranker
 import com.embabel.agent.spi.Rankings
-import com.embabel.agent.testing.FakeRanker
-import com.embabel.agent.testing.RandomRanker
+import com.embabel.agent.testing.integration.FakeRanker
+import com.embabel.agent.testing.integration.RandomRanker
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.AStarGoapPlanner

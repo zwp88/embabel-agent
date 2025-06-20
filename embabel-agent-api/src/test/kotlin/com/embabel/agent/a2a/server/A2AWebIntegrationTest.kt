@@ -20,7 +20,7 @@ import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.e2e.FakeConfig
 import com.embabel.agent.spi.LlmOperations
-import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
+import com.embabel.agent.testing.integration.DummyObjectCreatingLlmOperations
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
 import com.embabel.example.simple.horoscope.TestHoroscopeService
 import com.embabel.example.simple.horoscope.java.TestStarNewsFinder

@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.testing
+package com.embabel.agent.testing.integration
 
-import com.embabel.agent.core.Agent
-import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.*
 import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.core.support.SimpleAgentProcess
@@ -29,6 +26,7 @@ import com.embabel.agent.spi.OperationScheduler
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
+import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 
 object IntegrationTestUtils {
     /**
@@ -44,10 +42,15 @@ object IntegrationTestUtils {
         ragService: RagService? = null,
     ): AgentPlatform {
         return DefaultAgentPlatform(
-            llmOperations = llmOperations ?: DummyObjectCreatingLlmOperations.Companion.LoremIpsum,
-            eventListener = AgenticEventListener.from(listOfNotNull(EventSavingAgenticEventListener(), listener)),
+            llmOperations = llmOperations ?: DummyObjectCreatingLlmOperations.LoremIpsum,
+            eventListener = AgenticEventListener.Companion.from(
+                listOfNotNull(
+                    EventSavingAgenticEventListener(),
+                    listener
+                )
+            ),
             toolGroupResolver = toolGroupResolver ?: RegistryToolGroupResolver("empty", emptyList()),
-            ragService = ragService ?: RagService.empty(),
+            ragService = ragService ?: RagService.Companion.empty(),
             name = "dummy-agent-platform",
             description = "Dummy Agent Platform for Integration Testing",
         )
@@ -58,10 +61,10 @@ object IntegrationTestUtils {
     fun dummyPlatformServices(eventListener: AgenticEventListener? = null): PlatformServices {
         return PlatformServices(
             agentPlatform = dummyAgentPlatform(),
-            llmOperations = DummyObjectCreatingLlmOperations.Companion.LoremIpsum,
+            llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum,
             eventListener = eventListener ?: EventSavingAgenticEventListener(),
-            operationScheduler = OperationScheduler.PRONTO,
-            ragService = RagService.empty(),
+            operationScheduler = OperationScheduler.Companion.PRONTO,
+            ragService = RagService.Companion.empty(),
         )
     }
 
@@ -74,6 +77,15 @@ object IntegrationTestUtils {
             blackboard = InMemoryBlackboard(),
             processOptions = ProcessOptions(),
             platformServices = dummyPlatformServices(),
+        )
+    }
+
+    @JvmStatic
+    fun dummyProcessContext(agent: Agent): ProcessContext {
+        return ProcessContext(
+            processOptions = ProcessOptions(),
+            platformServices = dummyPlatformServices(),
+            agentProcess = dummyAgentProcessRunning(agent),
         )
     }
 

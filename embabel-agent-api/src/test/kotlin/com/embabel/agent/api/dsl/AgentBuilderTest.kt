@@ -25,8 +25,8 @@ import com.embabel.agent.core.support.SimpleAgentProcess
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.support.Dog
-import com.embabel.agent.testing.DummyObjectCreatingLlmOperations
-import com.embabel.agent.testing.EventSavingAgenticEventListener
+import com.embabel.agent.testing.common.EventSavingAgenticEventListener
+import com.embabel.agent.testing.integration.DummyObjectCreatingLlmOperations
 import com.embabel.common.core.types.Semver
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

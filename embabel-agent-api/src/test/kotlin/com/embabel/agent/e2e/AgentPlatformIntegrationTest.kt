@@ -32,7 +32,7 @@ import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
-import com.embabel.agent.testing.FakeRanker
+import com.embabel.agent.testing.integration.FakeRanker
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.example.simple.horoscope.TestHoroscopeService

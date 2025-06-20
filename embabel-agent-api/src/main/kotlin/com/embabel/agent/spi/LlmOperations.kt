@@ -47,6 +47,7 @@ interface LlmUse : PromptContributorConsumer, ToolGroupConsumer {
      * Defaults to unknown: Set to false if generating your own examples.
      */
     val generateExamples: Boolean?
+
 }
 
 /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.testing
+package com.embabel.agent.testing.integration
 
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
@@ -88,7 +88,7 @@ open class DummyObjectCreatingLlmOperations(
          * style fake test
          */
         val LoremIpsum: LlmOperations = DummyObjectCreatingLlmOperations(
-            DummyInstanceCreator.Companion.LoremIpsums
+            LoremIpsums
         )
     }
 }

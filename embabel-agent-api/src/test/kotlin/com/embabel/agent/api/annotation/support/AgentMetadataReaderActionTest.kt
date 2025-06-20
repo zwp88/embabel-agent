@@ -26,8 +26,8 @@ import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
-import com.embabel.agent.testing.IntegrationTestUtils
-import com.embabel.agent.testing.IntegrationTestUtils.dummyPlatformServices
+import com.embabel.agent.testing.integration.IntegrationTestUtils
+import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyPlatformServices
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every

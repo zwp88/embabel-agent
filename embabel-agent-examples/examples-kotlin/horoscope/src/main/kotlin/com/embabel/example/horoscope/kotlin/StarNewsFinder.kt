@@ -116,7 +116,7 @@ class StarNewsFinder(
     @Action
     fun extractPerson(userInput: UserInput): Person? =
         // All prompts are typesafe
-        usingDefaultLlm.createObjectIfPossible(
+        usingDefaultLlm.withGenerateExamples(true).createObjectIfPossible(
             """
             Create a person from this user input, extracting their name:
             ${userInput.content}

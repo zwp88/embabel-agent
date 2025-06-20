@@ -23,7 +23,7 @@ import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.support.springai.ChatClientLlmOperations
 import com.embabel.agent.spi.support.springai.MaybeReturn
-import com.embabel.agent.testing.EventSavingAgenticEventListener
+import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.common.ai.model.DefaultOptionsConverter
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider

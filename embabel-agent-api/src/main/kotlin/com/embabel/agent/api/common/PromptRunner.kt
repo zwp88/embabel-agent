@@ -26,21 +26,10 @@ import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
 import org.springframework.ai.tool.ToolCallback
 
-
 /**
- * User code should always use this interface to execute prompts.
- * A PromptRunner is immutable once constructed, and has determined
- * LLM and hyperparameters.
- * Thus, a PromptRunner can be reused within an action implementation.
- * A contextual facade to LlmOperations.
- * @see com.embabel.agent.spi.LlmOperations
+ * User-facing interface for executing prompts.
  */
-interface PromptRunner : LlmUse {
-
-    /**
-     * Additional objects with @Tool annotation for use in this PromptRunner
-     */
-    val toolObjects: List<Any>
+interface PromptRunnerOperations {
 
     /**
      * Generate text
@@ -80,6 +69,25 @@ interface PromptRunner : LlmUse {
         context: String,
         confidenceThreshold: ZeroToOne = 0.8,
     ): Boolean
+
+}
+
+
+/**
+ * User code should always use this interface to execute prompts.
+ * A PromptRunner is immutable once constructed, and has determined
+ * LLM and hyperparameters.
+ * Thus, a PromptRunner can be reused within an action implementation.
+ * A contextual facade to LlmOperations.
+ * @see com.embabel.agent.spi.LlmOperations
+ */
+interface PromptRunner : LlmUse, PromptRunnerOperations {
+
+    /**
+     * Additional objects with @Tool annotation for use in this PromptRunner
+     */
+    val toolObjects: List<Any>
+
 
     /**
      * Specify an LLM for the PromptRunner

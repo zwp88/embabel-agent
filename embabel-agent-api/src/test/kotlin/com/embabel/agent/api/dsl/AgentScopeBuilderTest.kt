@@ -23,7 +23,7 @@ import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.all
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.spi.support.SpiPerson
-import com.embabel.agent.testing.IntegrationTestUtils.dummyAgentPlatform
+import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.Semver
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
