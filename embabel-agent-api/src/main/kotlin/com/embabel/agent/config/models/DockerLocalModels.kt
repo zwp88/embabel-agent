@@ -16,13 +16,15 @@
 package com.embabel.agent.config.models
 
 import com.embabel.agent.common.RetryProperties
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.PricingModel
+import com.embabel.common.ai.model.*
 import com.embabel.common.ai.model.config.OpenAiChatOptionsConverter
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.ai.model.NoopApiKey
+import org.springframework.ai.ollama.OllamaEmbeddingModel
+import org.springframework.ai.ollama.api.OllamaApi
+import org.springframework.ai.ollama.api.OllamaOptions
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.api.OpenAiApi
@@ -54,6 +56,7 @@ class DockerLocalModels(
     private val dockerProperties: DockerProperties,
     private val configurableBeanFactory: ConfigurableBeanFactory,
     private val environment: Environment,
+    private val properties: ConfigurableModelProviderProperties,
 ) {
     private val logger = LoggerFactory.getLogger(DockerLocalModels::class.java)
 
@@ -83,8 +86,7 @@ class DockerLocalModels(
                 // Additional validation to ensure model names are valid
                 Model(
                     id = modelDetails.id.replace(":", "-").lowercase(),
-
-                    )
+                )
             } ?: emptyList()
         } catch (e: Exception) {
             logger.warn("Failed to load models from {}: {}", dockerProperties.baseUrl, e.message)
@@ -101,6 +103,9 @@ class DockerLocalModels(
         logger.info("Docker local models will be discovered at {}", dockerProperties.baseUrl)
 
         val models = loadModels()
+        logger.debug(
+            "Discovered the following Docker models:\n{}",
+            models.joinToString("\n") { it.id })
         if (models.isEmpty()) {
             logger.warn("No Docker local models discovered. Check Docker server configuration.")
             return
@@ -123,7 +128,37 @@ class DockerLocalModels(
     /**
      * Docker models are open AI compatible
      */
-    private fun dockerModelOf(model: Model): Llm {
+    private fun dockerModelOf(model: Model): AiModel<*> {
+        val configuredEmbeddingModelNames = properties.embeddingServices.values.toSet()
+        return if (configuredEmbeddingModelNames.contains(model.id)) {
+            dockerEmbeddingServiceOf(model)
+        } else {
+            dockerLlmOf(model)
+        }
+    }
+
+    private fun dockerEmbeddingServiceOf(model: Model): EmbeddingService {
+        val springEmbeddingModel = OllamaEmbeddingModel.builder()
+            .ollamaApi(
+                OllamaApi.builder()
+                    .baseUrl(dockerProperties.baseUrl)
+                    .build()
+            )
+            .defaultOptions(
+                OllamaOptions.builder()
+                    .model(model.id)
+                    .build()
+            )
+            .build()
+
+        return EmbeddingService(
+            name = model.id,
+            model = springEmbeddingModel,
+            provider = PROVIDER,
+        )
+    }
+
+    private fun dockerLlmOf(model: Model): Llm {
         val chatModel = OpenAiChatModel.builder()
             .openAiApi(
                 OpenAiApi.Builder()
