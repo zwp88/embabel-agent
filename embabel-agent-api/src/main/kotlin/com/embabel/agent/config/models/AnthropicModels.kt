@@ -204,9 +204,9 @@ class AnthropicModels(
 object AnthropicOptionsConverter : OptionsConverter<AnthropicChatOptions> {
 
     /**
-     * Anthropic's default is too low, so we set it to 20,000 tokens.
+     * Anthropic's default is too low and results in truncated responses.
      */
-    const val DEFAULT_MAX_TOKENS = 20000
+    const val DEFAULT_MAX_TOKENS = 10000
 
     override fun convertOptions(options: LlmOptions): AnthropicChatOptions =
         AnthropicChatOptions.builder()
