@@ -114,11 +114,16 @@ class DockerLocalModels(
         models.forEach { model ->
             try {
                 val beanName = "dockerModel-${model.id}"
-                val llmModel = dockerModelOf(model)
+                val dockerModel = dockerModelOf(model)
 
                 // Use registerSingleton with a more descriptive bean name
-                configurableBeanFactory.registerSingleton(beanName, llmModel)
-                logger.debug("Successfully registered Docker model {} as bean {}", model.id, beanName)
+                configurableBeanFactory.registerSingleton(beanName, dockerModel)
+                logger.debug(
+                    "Successfully registered Docker {} {} as bean {}",
+                    dockerModel.model.javaClass.simpleName,
+                    model.id,
+                    beanName,
+                )
             } catch (e: Exception) {
                 logger.error("Failed to register Docker model {}", model.id, e)
             }
