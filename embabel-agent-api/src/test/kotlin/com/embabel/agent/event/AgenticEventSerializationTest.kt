@@ -21,6 +21,7 @@ import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlat
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
@@ -33,10 +34,14 @@ class AgenticEventSerializationTest {
     @Test
     fun `test process events can be serialized`() {
         val om = jacksonObjectMapper().registerModule(JavaTimeModule())
+        val fails = mutableListOf<String>()
         val serializingListener = object : AgenticEventListener {
             var count = 0
             override fun onProcessEvent(event: AgentProcessEvent) {
                 val s = om.writeValueAsString(event)
+                if (!s.contains("\"type\"")) {
+                    fails.add(s)
+                }
                 count++
                 loggerFor<AgenticEventSerializationTest>().info("Serialized event: $s")
                 assertTrue(s.contains("\"processId\""), "Process id is required")
@@ -46,15 +51,21 @@ class AgenticEventSerializationTest {
         // If it doesn't die we're happy
         ap.runAgentWithInput(evenMoreEvilWizard(), input = UserInput("anything at all"))
         assertTrue(serializingListener.count > 0, "Events were serialized")
+        assertEquals(0, fails.size, "Untyped events:\n${fails.joinToString(", ")}")
     }
 
     @Test
     fun `test platform events can be serialized`() {
         val om = jacksonObjectMapper().registerModule(JavaTimeModule())
+        val fails = mutableListOf<String>()
+
         val serializingListener = object : AgenticEventListener {
             var count = 0
             override fun onPlatformEvent(event: AgentPlatformEvent) {
                 val s = om.writeValueAsString(event)
+                if (!s.contains("\"type\"")) {
+                    fails.add(s)
+                }
                 count++
                 loggerFor<AgenticEventSerializationTest>().info("Serialized event: $s")
             }
@@ -63,6 +74,7 @@ class AgenticEventSerializationTest {
         // If it doesn't die we're happy
         ap.deploy(evenMoreEvilWizard())
         assertTrue(serializingListener.count > 0, "Events were serialized")
+        assertEquals(0, fails.size, "Untyped events:\n${fails.joinToString(", ")}")
     }
 
 }

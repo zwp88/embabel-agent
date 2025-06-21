@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="embabel-horoscope-example" />
+        <module name="embabel-agent-starter-platform" />
         <module name="embabel-agent-shell" />
         <module name="movie" />
         <module name="horoscope (2) (com.embabel.agent.example.kotlin)" />
