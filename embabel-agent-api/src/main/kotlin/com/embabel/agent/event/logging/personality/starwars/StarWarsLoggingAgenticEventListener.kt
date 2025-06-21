@@ -73,7 +73,7 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
 ) {
 
     override fun getAgentDeploymentEventMessage(e: AgentDeploymentEvent): String =
-        "Deployed an agent I have: ${e.agent.name}\\n\\tdescription: ${e.agent.description}"
+        "Deployed an agent I have: ${e.agent.name}\n\tdescription: ${e.agent.description}"
 
     override fun getRankingChoiceMadeEventMessage(e: RankingChoiceMadeEvent<*>): String =
         "Chosen ${e.type.simpleName} I have with confidence ${e.choice.score} based on ${e.basis}"
