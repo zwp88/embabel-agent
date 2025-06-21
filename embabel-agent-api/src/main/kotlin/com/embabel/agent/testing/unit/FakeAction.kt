@@ -31,7 +31,7 @@ class FakeAction(
     canRerun: Boolean = false,
     qos: ActionQos = ActionQos(),
     inputClass: Class<Unit> = Unit::class.java,
-    outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
+    outputVarName: String? = IoBinding.DEFAULT_BINDING,
     referencedInputProperties: Set<String>? = null,
     toolGroups: Set<ToolGroupRequirement> = emptySet(),
 ) : TransformationAction<Unit, Unit>(

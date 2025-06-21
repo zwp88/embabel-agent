@@ -37,7 +37,7 @@ class MultiTransformationAction<O : Any>(
     inputs: Set<IoBinding>,
     private val inputClasses: List<Class<*>>,
     private val outputClass: Class<O>,
-    private val outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
+    private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
     toolGroups: Set<ToolGroupRequirement>,
     private val block: Transformation<List<Any>, O>,
@@ -62,7 +62,7 @@ class MultiTransformationAction<O : Any>(
     override fun execute(
         processContext: ProcessContext,
         action: Action
-    ): ActionStatus = ActionRunner.Companion.execute(processContext) {
+    ): ActionStatus = ActionRunner.execute(processContext) {
         val inputValues: List<Any> = inputs.map {
             processContext.getValue(variable = it.name, type = it.type)
                 ?: throw IllegalArgumentException("Input ${it.name} of type ${it.type} not found in process context")

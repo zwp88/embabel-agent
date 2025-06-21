@@ -72,7 +72,7 @@ class ToolGroupExposerKtTest {
 
         @Test
         fun `valid call with args`() {
-            val toolGroup = ToolCallbackPublisher.Companion(
+            val toolGroup = ToolCallbackPublisher(
                 ToolCallbacks.from(MagicToolsImpl()).toList(),
             )
             val magicTool = exposeAsInterface(toolGroup, MagicToolsNoArg::class.java)

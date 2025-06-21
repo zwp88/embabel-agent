@@ -18,7 +18,9 @@ package com.embabel.agent.event
 import org.slf4j.LoggerFactory
 
 /**
- * Listen to events related to processes and the platform itself
+ * Listen to events related to processes and the platform itself.
+ * Subclasses can implement this interface to handle specific events.
+ * Default implementations do nothing.
  */
 interface AgenticEventListener {
 

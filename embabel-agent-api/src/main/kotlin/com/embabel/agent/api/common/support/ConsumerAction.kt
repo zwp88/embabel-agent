@@ -34,7 +34,7 @@ class ConsumerAction<I>(
     canRerun: Boolean = false,
     qos: ActionQos = ActionQos(),
     inputClass: Class<I>,
-    outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
+    outputVarName: String? = IoBinding.DEFAULT_BINDING,
     referencedInputProperties: Set<String>? = null,
     toolGroups: Set<ToolGroupRequirement>,
     block: Transformation<I, Unit>,

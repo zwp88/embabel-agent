@@ -57,8 +57,8 @@ open class BranchingAction<I, O1, O2>(
     private val inputClass: Class<I>,
     private val leftOutputClass: Class<O1>,
     private val rightOutputClass: Class<O2>,
-    private val inputVarName: String = IoBinding.Companion.DEFAULT_BINDING,
-    private val outputVarName: String? = IoBinding.Companion.DEFAULT_BINDING,
+    private val inputVarName: String = IoBinding.DEFAULT_BINDING,
+    private val outputVarName: String? = IoBinding.DEFAULT_BINDING,
     private val referencedInputProperties: Set<String>? = null,
     toolGroups: Set<ToolGroupRequirement>,
     private val block: Transformation<I, Branch<O1, O2>>,
@@ -71,8 +71,8 @@ open class BranchingAction<I, O1, O2>(
     value = value,
     inputs = expandInputBindings(inputVarName, inputClass),
     outputs = setOf(
-        IoBinding(IoBinding.Companion.DEFAULT_BINDING, leftOutputClass.name),
-        IoBinding(IoBinding.Companion.DEFAULT_BINDING, rightOutputClass.name)
+        IoBinding(IoBinding.DEFAULT_BINDING, leftOutputClass.name),
+        IoBinding(IoBinding.DEFAULT_BINDING, rightOutputClass.name)
     ),
     toolGroups = toolGroups,
     canRerun = canRerun,
@@ -86,7 +86,7 @@ open class BranchingAction<I, O1, O2>(
     override fun execute(
         processContext: ProcessContext,
         action: Action,
-    ): ActionStatus = ActionRunner.Companion.execute(processContext) {
+    ): ActionStatus = ActionRunner.execute(processContext) {
         val input = processContext.getValue(inputVarName, inputClass.name) as I
         val branch = block.transform(
             TransformationActionContext<I, Branch<O1, O2>>(

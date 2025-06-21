@@ -33,7 +33,7 @@ class ConsensusRagService(
             ragService.search(ragRequest).results
         }
         // TODO Count and commend duplicates
-        return RagResponse.Companion(
+        return RagResponse(
             service = name,
             results = allResults,
         )

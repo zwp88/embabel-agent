@@ -27,7 +27,12 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-
+/**
+ * Spring Controller for Server-Sent Events (SSE) streaming of AgentProcessEvents.
+ * This controller by being registered as a bean via the [RestController] annotation
+ * will automatically listen for [AgentProcessEvent]s because it implements
+ * [AgenticEventListener].
+ */
 @RestController
 class SSEController : AgenticEventListener {
 
@@ -49,7 +54,7 @@ class SSEController : AgenticEventListener {
                 logger.debug("Sending SSE event for process {}: {}", processId, event)
                 emitter.send(
                     SseEmitter.event()
-                        .name("agent-process-event")
+                        .name(SSE_EVENT_NAME)
                         .data(event)
                 )
                 false // Keep this emitter
@@ -103,6 +108,11 @@ class SSEController : AgenticEventListener {
         if (processEmitters[processId]?.isEmpty() == true) {
             processEmitters.remove(processId)
         }
+    }
+
+    companion object {
+
+        const val SSE_EVENT_NAME = "agent-process-event"
     }
 
 }
