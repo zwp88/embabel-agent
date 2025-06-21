@@ -149,7 +149,7 @@ open class LoggingAgenticEventListener(
         "[${e.processId}] (${e.action?.shortName()}) calling tool ${e.tool}(${e.toolInput})"
 
     protected open fun getToolCallSuccessResponseEventMessage(e: ToolCallResponseEvent, resultToShow: String): String =
-        "[${e.processId}] (${e.action?.shortName()}) tool ${e.tool} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+        "[${e.processId}] (${e.action?.shortName()}) tool ${e.tool} returned ${resultToShow.length} bytes in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     protected open fun getToolCallFailureResponseEventMessage(e: ToolCallResponseEvent, throwable: Throwable?): String =
         "[${e.processId}] (${e.action?.shortName()}) failed tool ${e.tool} -> ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"

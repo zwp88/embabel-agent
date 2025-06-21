@@ -149,7 +149,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         "[${e.processId}] ${highlight("VERVE")}: (${e.action?.shortName()}) calling tool ${e.tool}(${e.toolInput})"
 
     override fun getToolCallSuccessResponseEventMessage(e: ToolCallResponseEvent, resultToShow: String): String =
-        "[${e.processId}] ${highlight("VISION")}: (${e.action?.shortName()}) tool ${e.tool} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+        "[${e.processId}] ${highlight("VISION")}: (${e.action?.shortName()}) tool ${e.tool} returned ${resultToShow.length} bytes in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getToolCallFailureResponseEventMessage(e: ToolCallResponseEvent, throwable: Throwable?): String =
         "[${e.processId}] ${highlight("WOE")}: (${e.action?.shortName()}) tool ${e.tool} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
