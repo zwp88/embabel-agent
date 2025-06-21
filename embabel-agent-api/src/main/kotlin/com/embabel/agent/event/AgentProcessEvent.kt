@@ -20,6 +20,7 @@ import com.embabel.agent.core.ActionStatus
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.agent.spi.support.springai.ChatModelCallEvent
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timed
@@ -206,18 +207,6 @@ class LlmRequestEvent<O>(
     }
 }
 
-
-/**
- * Spring AI low level event
- */
-class ChatModelCallEvent<O> internal constructor(
-    agentProcess: AgentProcess,
-    val outputClass: Class<O>,
-    val interaction: LlmInteraction,
-    val llm: Llm,
-    val prompt: String,
-    val springAiPrompt: Prompt,
-) : AbstractAgentProcessEvent(agentProcess)
 
 /**
  * Response from an LLM

@@ -21,6 +21,7 @@ import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
 import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
+import com.embabel.agent.spi.support.springai.ChatModelCallEvent
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
 import com.embabel.common.util.trim
