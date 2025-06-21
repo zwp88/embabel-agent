@@ -34,7 +34,7 @@ class AgenticEventListenerToolsStatsTest {
         return ToolCallResponseEvent(
             agentProcess = dummyAgentProcessRunning(evenMoreEvilWizard()),
             action = null,
-            function = function,
+            tool = function,
             toolInput = "{}",
             llmOptions = mockk(),
             result = if (isFailure) Result.failure(Exception("fail")) else Result.success("ok"),

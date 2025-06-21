@@ -146,13 +146,13 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         "[${e.processId}] Perpetuity wing: object bound: ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
 
     override fun getToolCallRequestEventMessage(e: ToolCallRequestEvent): String =
-        "[${e.processId}] ${highlight("VERVE")}: (${e.action?.shortName()}) calling tool ${e.function}(${e.toolInput})"
+        "[${e.processId}] ${highlight("VERVE")}: (${e.action?.shortName()}) calling tool ${e.tool}(${e.toolInput})"
 
     override fun getToolCallSuccessResponseEventMessage(e: ToolCallResponseEvent, resultToShow: String): String =
-        "[${e.processId}] ${highlight("VISION")}: (${e.action?.shortName()}) tool ${e.function} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+        "[${e.processId}] ${highlight("VISION")}: (${e.action?.shortName()}) tool ${e.tool} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getToolCallFailureResponseEventMessage(e: ToolCallResponseEvent, throwable: Throwable?): String =
-        "[${e.processId}] ${highlight("WOE")}: (${e.action?.shortName()}) tool ${e.function} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+        "[${e.processId}] ${highlight("WOE")}: (${e.action?.shortName()}) tool ${e.tool} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
         "[${e.processId}] \uD83D\uDDA5\uFE0F MACRODATA REFINEMENT: requesting LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm} using ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"

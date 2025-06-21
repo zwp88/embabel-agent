@@ -88,8 +88,8 @@ class ToolDecoratorsKtTest {
         assertEquals(0, ese.platformEvents.size)
         val fce = ese.processEvents.filterIsInstance<ToolCallRequestEvent>().single()
         val fre = ese.processEvents.filterIsInstance<ToolCallResponseEvent>().single()
-        assertEquals(decorated.toolDefinition.name(), fce.function)
-        assertEquals(decorated.toolDefinition.name(), fre.function, decorated.toolDefinition.name())
+        assertEquals(decorated.toolDefinition.name(), fce.tool)
+        assertEquals(decorated.toolDefinition.name(), fre.tool, decorated.toolDefinition.name())
         assertEquals(llm, fce.llmOptions)
         assertEquals(llm, fre.llmOptions)
     }

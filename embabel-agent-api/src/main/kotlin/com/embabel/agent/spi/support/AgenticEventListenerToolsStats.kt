@@ -29,17 +29,17 @@ class AgenticEventListenerToolsStats : AgenticEventListener, ToolsStats {
         get() = _stats.toSortedMap()
 
     private fun record(e: ToolCallResponseEvent) {
-        val existing = _stats[e.function]
+        val existing = _stats[e.tool]
         if (existing != null) {
-            _stats[e.function] = ToolStats(
-                name = e.function,
+            _stats[e.tool] = ToolStats(
+                name = e.tool,
                 calls = existing.calls + 1,
                 failures = existing.failures + if (e.result.isFailure) 1 else 0,
                 averageResponseTime = (existing.averageResponseTime * existing.calls + e.runningTime.toMillis()) / (existing.calls + 1)
             )
         } else {
-            _stats[e.function] = ToolStats(
-                name = e.function,
+            _stats[e.tool] = ToolStats(
+                name = e.tool,
                 calls = 1,
                 averageResponseTime = e.runningTime.toMillis(),
                 failures = if (e.result.isFailure) 1 else 0

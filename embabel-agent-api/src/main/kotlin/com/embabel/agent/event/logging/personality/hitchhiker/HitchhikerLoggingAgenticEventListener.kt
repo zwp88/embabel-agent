@@ -144,13 +144,13 @@ The standard repository for all knowledge and wisdom in the universe
         "[${e.processId}] Object bound to the Guide: ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
 
     override fun getToolCallRequestEventMessage(e: ToolCallRequestEvent): String =
-        "[${e.processId}] ${highlight("INFINITE IMPROBABILITY")}: (${e.action?.shortName()}) calling tool ${e.function}(${e.toolInput})"
+        "[${e.processId}] ${highlight("INFINITE IMPROBABILITY")}: (${e.action?.shortName()}) calling tool ${e.tool}(${e.toolInput})"
 
     override fun getToolCallSuccessResponseEventMessage(e: ToolCallResponseEvent, resultToShow: String): String =
-        "[${e.processId}] ${highlight("HEART OF GOLD")}: (${e.action?.shortName()}) tool ${e.function} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+        "[${e.processId}] ${highlight("HEART OF GOLD")}: (${e.action?.shortName()}) tool ${e.tool} returned ${resultToShow} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getToolCallFailureResponseEventMessage(e: ToolCallResponseEvent, throwable: Throwable?): String =
-        "[${e.processId}] ${highlight("DISASTER AREA")}: (${e.action?.shortName()}) tool ${e.function} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
+        "[${e.processId}] ${highlight("DISASTER AREA")}: (${e.action?.shortName()}) tool ${e.tool} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
         "[${e.processId}] 🧠 DEEP THOUGHT: calculating LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm} using ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"

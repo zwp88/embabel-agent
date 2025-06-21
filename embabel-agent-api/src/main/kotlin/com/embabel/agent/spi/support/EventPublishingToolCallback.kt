@@ -86,7 +86,7 @@ class EventPublishingToolCallback(
             agentProcess = agentProcess,
             action = action,
             llmOptions = llmOptions,
-            function = delegate.toolDefinition.name(),
+            tool = delegate.toolDefinition.name(),
             toolGroupMetadata = (delegate as? MetadataEnrichedToolCallback)?.toolGroupMetadata,
             toolInput = toolInput,
         )
