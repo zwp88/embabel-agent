@@ -371,11 +371,10 @@ Create your own agent project with
 uvx --from git+https://github.com/embabel/project-creator.git project-creator
 ```
 
-### Running Agents
+### Example Agents
 
 > **📚 For examples and tutorials**, see the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
 
-The easiest way to run agents is using the example applications from the [examples repository](https://github.com/embabel/embabel-agent-examples):
 
 ```bash
 # Clone and run examples
