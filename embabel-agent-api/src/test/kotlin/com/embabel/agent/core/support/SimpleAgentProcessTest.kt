@@ -226,6 +226,11 @@ class SimpleAgentProcessTest {
             unstick(AgentMetadataReader().createAgentMetadata(AnnotationWaitingAgent()) as Agent)
         }
 
+        @Test
+        fun `fail to unstick with stuck handler that cannot resolve issue`() {
+            failToUnstick(DslWaitingAgent)
+        }
+
         private fun unstick(agent: Agent) {
             var called = false
             val stuckHandler = StuckHandler {
@@ -240,7 +245,30 @@ class SimpleAgentProcessTest {
             }
             val agentProcess = run(agent.copy(stuckHandler = stuckHandler))
             assertTrue(called, "Stuck handler must have been called")
-            assertEquals(AgentProcessStatusCode.WAITING, agentProcess.status)
+            assertEquals(
+                AgentProcessStatusCode.RUNNING, agentProcess.status,
+                "Stuck handler should have resolved the stuckness",
+            )
+        }
+
+        private fun failToUnstick(agent: Agent) {
+            var called = false
+            val stuckHandler = StuckHandler {
+                called = true
+                it.processContext.blackboard += UserInput("Rod")
+                StuckHandlerResult(
+                    message = "The magic unsticker unstuck the stuckness",
+                    handler = null,
+                    code = StuckHandlingResultCode.NO_RESOLUTION,
+                    agentProcess = it,
+                )
+            }
+            val agentProcess = run(agent.copy(stuckHandler = stuckHandler))
+            assertTrue(called, "Stuck handler must have been called")
+            assertEquals(
+                AgentProcessStatusCode.STUCK, agentProcess.status,
+                "Stuck handler should not have resolved the stuckness",
+            )
         }
 
 

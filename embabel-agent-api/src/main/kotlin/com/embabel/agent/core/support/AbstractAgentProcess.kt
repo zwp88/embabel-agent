@@ -32,6 +32,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Abstract implementation of AgentProcess that provides common functionality
@@ -53,9 +54,9 @@ abstract class AbstractAgentProcess(
 
     protected var goalName: String? = null
 
-    protected val _history: MutableList<ActionInvocation> = mutableListOf()
+    private val _history: MutableList<ActionInvocation> = mutableListOf()
 
-    protected var _status: AgentProcessStatusCode = AgentProcessStatusCode.NOT_STARTED
+    private val _status = AtomicReference(AgentProcessStatusCode.NOT_STARTED)
 
     private var _failureInfo: Any? = null
 
@@ -66,6 +67,10 @@ abstract class AbstractAgentProcess(
         get() = _lastWorldState
 
     private val agenticEventListenerToolsStats = AgenticEventListenerToolsStats()
+
+    protected fun setStatus(status: AgentProcessStatusCode) {
+        _status.set(status)
+    }
 
     override val processContext = ProcessContext(
         platformServices = platformServices.copy(
@@ -86,7 +91,7 @@ abstract class AbstractAgentProcess(
     protected abstract val planner: Planner<*, *, *>
 
     override val status: AgentProcessStatusCode
-        get() = _status
+        get() = _status.get()
 
     override val history: List<ActionInvocation>
         get() = _history.toList()
@@ -95,7 +100,7 @@ abstract class AbstractAgentProcess(
         get() = agenticEventListenerToolsStats
 
     override fun kill(): ProcessKilledEvent? {
-        _status = AgentProcessStatusCode.KILLED
+        _status.set(AgentProcessStatusCode.KILLED)
         return ProcessKilledEvent(this)
     }
 
@@ -136,12 +141,13 @@ abstract class AbstractAgentProcess(
     }
 
     override fun run(): AgentProcess {
-        if (_status == AgentProcessStatusCode.KILLED) {
-            logger.warn("Process {} has been killed {}", this.id, _status)
+        if (!_status.compareAndSet(AgentProcessStatusCode.NOT_STARTED, AgentProcessStatusCode.RUNNING)) {
+            if (_status.get() == AgentProcessStatusCode.KILLED) {
+                logger.warn("Process {} has been killed {}", this.id, _status.get())
+            }
             return this
         }
 
-        _status = AgentProcessStatusCode.RUNNING
         if (agent.goals.isEmpty()) {
             logger.info("🤔 Process {} has no goals: {}", this.id, agent.goals)
             error("Agent ${agent.name} has no goals: ${agent.infoString(verbose = true)}")
@@ -159,7 +165,7 @@ abstract class AbstractAgentProcess(
                 )
                 platformServices.eventListener.onProcessEvent(earlyTermination)
                 _failureInfo = earlyTermination
-                _status = AgentProcessStatusCode.TERMINATED
+                _status.set(AgentProcessStatusCode.TERMINATED)
                 return this
             }
             tick()
@@ -220,20 +226,29 @@ abstract class AbstractAgentProcess(
         platformServices.eventListener.onProcessEvent(result)
         when (result.code) {
             StuckHandlingResultCode.REPLAN -> {
-                logger.info("Process {} unstuck and will replan: {}", this.id, result.message)
-                _status = AgentProcessStatusCode.RUNNING
+                logger.info(
+                    "Process {} unstuck by handler {} and will replan: {}",
+                    this.id,
+                    stuckHandler.javaClass.name,
+                    result.message,
+                )
+                _status.set(AgentProcessStatusCode.RUNNING)
                 run()
             }
 
             StuckHandlingResultCode.NO_RESOLUTION -> {
-                logger.warn("Process {} stuck: {}", this.id, result.message)
-                _status = AgentProcessStatusCode.STUCK
+                logger.warn(
+                    "Process {} could not be unstuck by handler {}: {}",
+                    this.id,
+                    stuckHandler.javaClass.name,
+                    result.message,
+                )
             }
         }
     }
 
     override fun tick(): AgentProcess {
-        if (_status == AgentProcessStatusCode.KILLED) {
+        if (status == AgentProcessStatusCode.KILLED) {
             logger.warn("Process {} has been killed {}", this.id, _status)
             return this
         }
@@ -292,14 +307,23 @@ abstract class AbstractAgentProcess(
             is DelayedActionExecutionSchedule -> {
                 // Delay and move on
                 logger.debug("Process {} delayed action {}: {}", id, action.name, actionExecutionSchedule)
-                Thread.sleep(actionExecutionSchedule.delay.toMillis())
+                try {
+                    Thread.sleep(actionExecutionSchedule.delay.toMillis())
+                } catch (_: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    _status.set(AgentProcessStatusCode.TERMINATED)
+                    return ActionStatus(
+                        runningTime = Duration.between(actionExecutionStartEvent.timestamp, Instant.now()),
+                        status = ActionStatusCode.FAILED,
+                    )
+                }
                 logger.debug("Process {} delayed action {}: done", id, action.name)
             }
 
             is ScheduledActionExecutionSchedule -> {
                 return ActionStatus(
-                    Duration.between(actionExecutionStartEvent.timestamp, Instant.now()),
-                    ActionStatusCode.PAUSED
+                    runningTime = Duration.between(actionExecutionStartEvent.timestamp, Instant.now()),
+                    status = ActionStatusCode.PAUSED,
                 )
             }
         }
