@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME) // Keep the annotation at runtime for reflection
 @Target(ElementType.TYPE)
 @EnableAgents("mcp-server")
-public @interface EnableAgentMcp {
+public @interface EnableAgentMcpServer {
     /**
      * Optional logging theme for the MCP agent.
      * Default is SEVERANCE.

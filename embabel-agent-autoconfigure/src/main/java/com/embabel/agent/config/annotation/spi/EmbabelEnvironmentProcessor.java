@@ -15,21 +15,20 @@
  */
 package com.embabel.agent.config.annotation.spi;
 
-import com.embabel.agent.config.annotation.EnableAgentMcp;
-import com.embabel.agent.config.annotation.EnableAgents;
+import com.embabel.agent.config.annotation.EnableAgentMcpServer;
 import com.embabel.agent.config.annotation.EnableAgentShell;
+import com.embabel.agent.config.annotation.EnableAgents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.ConfigurableEnvironment;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Sets Spring Active Profile from [EnableAgents] annotation and processes loggingTheme.
@@ -42,10 +41,10 @@ public class EmbabelEnvironmentProcessor implements EnvironmentPostProcessor, Or
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        List<String> allProfiles = new ArrayList<>();
+        var allProfiles = new ArrayList<String>();
 
         // Get profiles from @EnableAgents
-        String[] agentProfiles = findProfilesFromAnnotation(application);
+        var agentProfiles = findProfilesFromAnnotation(application);
         if (agentProfiles.length > 0) {
             allProfiles.addAll(Arrays.asList(agentProfiles));
         }
@@ -85,12 +84,12 @@ public class EmbabelEnvironmentProcessor implements EnvironmentPostProcessor, Or
                 /*
                  * Generic EmbabelAgents annotation
                  */
-                EnableAgents enableProfile = AnnotationUtils.findAnnotation((Class<?>) source, EnableAgents.class);
+                var enableProfile = AnnotationUtils.findAnnotation((Class<?>) source, EnableAgents.class);
                 /*
                  * Get "value" attribute of child annotation by hierarchy, such as EnableAgentShell, etc.
                  */
-                AnnotationAttributes mergedAnnotationAttributes = AnnotatedElementUtils.getMergedAnnotationAttributes(
-                        (Class) source, EnableAgents.class);
+                var mergedAnnotationAttributes = AnnotatedElementUtils.getMergedAnnotationAttributes(
+                        (Class<?>) source, EnableAgents.class);
 
                 if (mergedAnnotationAttributes != null && !mergedAnnotationAttributes.isEmpty()) {
                     return mergedAnnotationAttributes.getStringArray("value");
@@ -109,8 +108,8 @@ public class EmbabelEnvironmentProcessor implements EnvironmentPostProcessor, Or
                 EnableAgentShell enableAgentShell = AnnotationUtils.findAnnotation(
                         (Class<?>) source, EnableAgentShell.class);
 
-                EnableAgentMcp enableAgentMcp = AnnotationUtils.findAnnotation(
-                        (Class<?>) source, EnableAgentMcp.class);
+                EnableAgentMcpServer enableAgentMcp = AnnotationUtils.findAnnotation(
+                        (Class<?>) source, EnableAgentMcpServer.class);
 
                 if (enableAgentShell != null) {
                     return enableAgentShell.loggingTheme().getTheme();
@@ -125,7 +124,7 @@ public class EmbabelEnvironmentProcessor implements EnvironmentPostProcessor, Or
     }
 
     private String findLoggingThemeProfile(SpringApplication application) {
-        String loggingTheme = getLoggingTheme(application);
+        var loggingTheme = getLoggingTheme(application);
 
         // Map theme to profile
         switch (loggingTheme) {
