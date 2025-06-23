@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.domain.library
 
+import com.embabel.common.ai.prompt.PromptContributor
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 
@@ -24,10 +25,20 @@ data class InternetResource(
     val url: String,
     @get: JsonPropertyDescription("concise summary of the resource")
     val summary: String,
-)
+) : PromptContributor {
 
-interface InternetResources {
+    override fun contribution(): String {
+        return "URL: $url\nSummary: $summary"
+    }
+}
+
+interface InternetResources : PromptContributor {
 
     @get:JsonPropertyDescription("internet resources")
     val links: List<InternetResource>
+
+    override fun contribution(): String {
+        return links.joinToString("\n") { it.contribution() }
+            .ifBlank { "No relevant internet resources found." }
+    }
 }

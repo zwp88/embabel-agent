@@ -15,12 +15,26 @@
  */
 package com.embabel.agent.domain.library
 
+import com.embabel.common.ai.prompt.PromptContributor
+
 data class RelevantNewsStories(
-    val items: List<NewsStory>
-)
+    val items: List<NewsStory>,
+) : PromptContributor {
+
+    override fun contribution(): String {
+        return items.joinToString("\n") {
+            it.contribution()
+        }.ifBlank { "No relevant news stories found." }
+    }
+}
 
 data class NewsStory(
     val url: String,
     val title: String,
     val summary: String,
-)
+) : PromptContributor {
+
+    override fun contribution(): String {
+        return "Title: $title\nSummary: $summary\nURL: $url"
+    }
+}
