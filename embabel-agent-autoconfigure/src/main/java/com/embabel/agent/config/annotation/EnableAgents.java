@@ -51,11 +51,11 @@ import java.lang.annotation.Target;
  *   <li>{@code mcpClients} - Activates profiles for Model Context Protocol clients</li>
  * </ul>
  *
+ * @author Embabel Team
  * @see AgentPlatform
  * @see EnableAgentShell
  * @see EnableAgentMcpServer
  * @since 1.0
- * @author Embabel Team
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -65,7 +65,7 @@ public @interface EnableAgents {
     /**
      * Specifies the logging theme to use for agent operations.
      *
-     * <p>When set, this activates a corresponding Spring profile that
+     * <p>If set, this activates a corresponding Spring profile that
      * customizes logging output with themed messages and formatting.
      *
      * <h4>Supported themes:</h4>
@@ -77,13 +77,13 @@ public @interface EnableAgents {
      *
      * <h4>Example:</h4>
      * <pre>{@code
-     * @EnableAgents(loggingTheme = "starwars")
+     * @EnableAgents(loggingTheme = LoggingThemes.STAR_WARS)
      * // Outputs: "May the Force be with your agents!"
      * }</pre>
      *
      * @return the logging theme name, or empty string for default logging
      */
-    String loggingTheme() default "";
+    String loggingTheme() default LoggingThemes.STAR_WARS;
 
     /**
      * Specifies local AI model providers to enable.
