@@ -139,7 +139,13 @@ remote actions and goals) and third party agent frameworks.
 
 ## Quick Start
 
-To create your own Embabel agent project, type:
+Get an agent running in under 5 minutes.
+
+Create your own agent repo from our [Java](https://github.com/embabel/java-agent-template)
+or [Kotlin](https://github.com/embabel/kotlin-agent-template) GitHub template by clicking the "Use this template"
+button.
+
+You can also create your own Embabel agent project locally with our quick start tool:
 
 ```
 uvx --from git+https://github.com/embabel/project-creator.git project-creator
