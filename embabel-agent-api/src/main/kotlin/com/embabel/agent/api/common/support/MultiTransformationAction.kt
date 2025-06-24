@@ -15,11 +15,13 @@
  */
 package com.embabel.agent.api.common.support
 
+import com.embabel.agent.api.common.SomeOf
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import com.embabel.common.core.types.ZeroToOne
+import java.lang.reflect.Modifier
 
 /**
  * Transformer that can take multiple inputs.
@@ -49,7 +51,7 @@ class MultiTransformationAction<O : Any>(
     cost = cost,
     value = value,
     inputs = inputs,
-    outputs = if (outputVarName == null) emptySet() else setOf(IoBinding(outputVarName, outputClass.name)),
+    outputs = calculateOutputs(outputVarName, outputClass),
     toolGroups = toolGroups,
     canRerun = canRerun,
     qos = qos,
@@ -77,26 +79,55 @@ class MultiTransformationAction<O : Any>(
                 action = this,
             )
         )
-        if (output == null) {
-            null
-        } else {
-            if (!outputClass.isInstance(output)) {
-                throw IllegalArgumentException(
-                    """
+        if (output != null) {
+            bindOutput(processContext, output)
+        }
+    }
+
+    private fun bindOutput(
+        processContext: ProcessContext,
+        output: O
+    ) {
+        if (!outputClass.isInstance(output)) {
+            throw IllegalArgumentException(
+                """
                 Output of action $name is not of type ${outputClass.name}.
                 Did you incorrectly obtain a PromptRunner via 'using' before the end of an action method?
                 Take a context object as the last signature of your method signature.
                 Return was $output
                 """.trimIndent()
-                )
-            }
-            if (outputVarName != null) {
-                logger.debug("Binding output of action {}: {} to {}", name, outputVarName, output)
-                processContext.agentProcess[outputVarName] = output
-            } else {
-                logger.debug("Adding output of action {}: {}", name, output)
-                processContext.agentProcess += output
-            }
+            )
+        }
+        if (SomeOf::class.java.isAssignableFrom(outputClass)) {
+            outputClass.declaredFields
+                .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
+                .forEach { field ->
+                    field.setAccessible(true)
+                    val fieldValue = field.get(output)
+                    if (fieldValue != null) {
+                        val bindingName = IoBinding.DEFAULT_BINDING // field.name
+                        processContext.agentProcess[bindingName] = fieldValue
+                        logger.info(
+                            "Binding output element of composition action {}: {} to {}",
+                            name,
+                            bindingName,
+                            fieldValue,
+                        )
+                    } else {
+                        logger.info(
+                            "Field {} in output of composite action {} is null, not binding",
+                            field.name,
+                            name,
+                        )
+                    }
+                }
+        }
+        if (outputVarName != null) {
+            logger.debug("Binding output of action {}: {} to {}", name, outputVarName, output)
+            processContext.agentProcess[outputVarName] = output
+        } else {
+            logger.debug("Adding output of action {}: {}", name, output)
+            processContext.agentProcess += output
         }
     }
 
@@ -106,4 +137,34 @@ class MultiTransformationAction<O : Any>(
             fields
         }
     }
+}
+
+private fun calculateOutputs(outputVarName: String?, outputClass: Class<*>): Set<IoBinding> {
+    return if (outputVarName == null) {
+        emptySet()
+    } else {
+        bindingsFrom(outputVarName, outputClass)
+    }
+}
+
+private fun bindingsFrom(outputVarName: String?, outputClass: Class<*>): Set<IoBinding> {
+    if (SomeOf::class.java.isAssignableFrom(outputClass)) {
+        return outputClass.declaredFields
+            .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
+            .map { field ->
+                IoBinding(
+                    // TODO bind to name if requires match
+                    name = IoBinding.DEFAULT_BINDING,//field.name,
+                    type = field.type.name,
+                )
+            }
+            .toSet()
+    }
+
+    return setOf(
+        IoBinding(
+            name = outputVarName,
+            type = outputClass,
+        )
+    )
 }

@@ -16,16 +16,14 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.ActionContext
-import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.api.common.TransformationActionContext
-import com.embabel.agent.api.common.createObject
+import com.embabel.agent.api.common.*
 import com.embabel.agent.api.dsl.*
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.support.Dog
 import com.embabel.common.ai.model.LlmOptions
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -636,4 +634,25 @@ class LocalAgentTest {
     fun done(person: SnakeMeal): SnakeMeal {
         return person
     }
+}
+
+data class FrogOrDog(
+    val frog: Frog? = null,
+    val dog: Dog? = null,
+) : SomeOf
+
+@Agent(description = "thing")
+class UsesFrogOrDogSomeOf {
+
+    @Action
+    fun frogOrDog(): FrogOrDog {
+        return FrogOrDog(frog = Frog("Kermit"))
+    }
+
+    @AchievesGoal(description = "Creating a prince from a frog")
+    @Action
+    fun toPerson(frog: Frog): PersonWithReverseTool {
+        return PersonWithReverseTool(frog.name)
+    }
+
 }

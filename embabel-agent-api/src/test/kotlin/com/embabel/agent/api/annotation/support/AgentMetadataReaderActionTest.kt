@@ -26,6 +26,7 @@ import com.embabel.agent.event.AgenticEventListener.Companion.DevNull
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.support.Dog
 import com.embabel.agent.testing.integration.IntegrationTestUtils
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyPlatformServices
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
@@ -823,6 +824,78 @@ class AgentMetadataReaderActionTest {
             )
             val awaitable = fr as ConfirmationRequest<*>
             assertEquals(PersonWithReverseTool("John Doe"), awaitable.payload)
+        }
+    }
+
+    @Nested
+    inner class SomeOfComposite {
+
+        @Test
+        fun `composition metadata is found`() {
+            val reader = AgentMetadataReader()
+            val metadata =
+                reader.createAgentMetadata(
+                    UsesFrogOrDogSomeOf()
+                )
+            assertNotNull(metadata)
+            assertEquals(2, metadata!!.actions.size)
+            val frogOrDogAction = metadata.actions.find { it.name.contains("frogOrDog") }!!
+            assertEquals(2, frogOrDogAction.outputs.size, "Should have 2 outputs, not ${frogOrDogAction.outputs}")
+            assertEquals(
+                setOf(IoBinding("it", Frog::class), IoBinding("it", Dog::class)),
+                frogOrDogAction.outputs,
+            )
+            val toPerson = metadata.actions.find { it.name.contains("toPerson") }!!
+            assertEquals(Frog::class.java.name, toPerson.inputs.single().type)
+            assertEquals(1, toPerson.outputs.size, "Should have 1 output")
+            assertEquals(
+                PersonWithReverseTool::class.java.name,
+                toPerson.outputs.single().type,
+                "Output name must match",
+            )
+//            assertEquals(2, action.toolGroups.size, "Had ${action.toolGroups} tool groups, expected 1")
+//            assertEquals(setOf("magic", "frogs"), action.toolGroups.map { it.role }.toSet())
+//            val ap = IntegrationTestUtils.dummyAgentPlatform()
+//            val agentProcess =
+//                ap.runAgentFrom(
+//                    metadata as CoreAgent,
+//                    ProcessOptions(),
+//                    mapOf("it" to PersonWithReverseTool("John Doe"))
+//                )
+//            assertEquals(AgentProcessStatusCode.COMPLETED, agentProcess.status)
+//            assertEquals(Frog("John Doe"), agentProcess.lastResult())
+        }
+
+        @Test
+        fun `invoke method compose result`() {
+            val reader = AgentMetadataReader()
+            val metadata =
+                reader.createAgentMetadata(
+                    UsesFrogOrDogSomeOf()
+                )
+            assertNotNull(metadata)
+            assertEquals(2, metadata!!.actions.size)
+            val frogOrDogAction = metadata.actions.find { it.name.contains("frogOrDog") }!!
+
+            val toPerson = metadata.actions.find { it.name.contains("toPerson") }!!
+
+            val ap = IntegrationTestUtils.dummyAgentPlatform()
+            val agent = metadata as CoreAgent
+            println(agent.infoString(true))
+            val agentProcess =
+                ap.runAgentFrom(
+                    agent,
+                    ProcessOptions(),
+                    emptyMap(),
+                )
+            assertEquals(AgentProcessStatusCode.COMPLETED, agentProcess.status)
+            assertEquals(PersonWithReverseTool("Kermit"), agentProcess.lastResult())
+        }
+
+        @Test
+        @Disabled("Not yet implemented")
+        fun `invoke method compose result with RequiresMatch`() {
+
         }
     }
 

@@ -70,10 +70,6 @@ internal class DefaultActionMethodManager(
                 )
             }
             .flatten()
-        method.parameters
-            .filterNot {
-                OperationContext::class.java.isAssignableFrom(it.type)
-            }
 
         return MultiTransformationAction(
             name = nameGenerator.generateName(instance, method.name),

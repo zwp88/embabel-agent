@@ -72,12 +72,12 @@ class IoBindingTest {
         // With explicit name
         val binding1 = IoBinding("document", String::class)
         assertEquals("document", binding1.name)
-        assertEquals("kotlin.String", binding1.type)
+        assertEquals("java.lang.String", binding1.type)
 
         // With default name
         val binding2 = IoBinding(type = Int::class)
         assertEquals(IoBinding.DEFAULT_BINDING, binding2.name)
-        assertEquals("kotlin.Int", binding2.type)
+        assertEquals("int", binding2.type)
     }
 
     @Test

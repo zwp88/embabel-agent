@@ -22,51 +22,6 @@ import com.embabel.plan.goap.EffectSpec
 import com.embabel.plan.goap.GoapAction
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import kotlin.reflect.KClass
-
-/**
- * Binding definition of form name:Type
- * If name is omitted, it is assumed to be 'it'
- * Used to build preconditions from input and output bindings.
- * Default name ("it") has a special meaning. It will be satisfied
- * by an instance of the correct type being bound to "it", but also by
- * the final result of the action having the correct type.
- */
-@JvmInline
-value class IoBinding(val value: String) {
-    init {
-        require(value.isNotBlank()) { "Type definition must not be blank" }
-    }
-
-    constructor(name: String, type: String) : this("$name:$type")
-
-    constructor(name: String? = DEFAULT_BINDING, type: Class<*>) : this("$name:${type.name}")
-    constructor(name: String? = DEFAULT_BINDING, type: KClass<*>) : this("$name:${type.qualifiedName}")
-
-    val type: String
-        get() = if (value.contains(":")) {
-            value.split(":")[1]
-        } else {
-            value
-        }
-
-    val name: String
-        get() =
-            if (value.contains(":")) {
-                value.split(":")[0]
-            } else {
-                DEFAULT_BINDING
-            }
-
-    companion object {
-        /**
-         * The default binding, when it is not otherwise specified.
-         * Consistent with Groovy and Kotlin behavior.
-         */
-        const val DEFAULT_BINDING = "it"
-    }
-
-}
 
 
 /**
