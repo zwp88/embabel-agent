@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.api.common.support
 
+import com.embabel.agent.api.common.Aggregation
 import com.embabel.agent.api.common.Transformation
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
-import com.embabel.agent.domain.special.Aggregation
 import com.embabel.common.core.types.ZeroToOne
 import java.lang.reflect.Modifier
 

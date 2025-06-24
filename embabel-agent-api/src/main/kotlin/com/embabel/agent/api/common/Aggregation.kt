@@ -13,19 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.special
-
-
-/**
- * Tag interface to indicate that an implementing type can be decomposed
- * into its fields.
- * Can be used for input or output.
- */
-interface Megazord
+package com.embabel.agent.api.common
 
 /**
  * Tag interface to indicate that an implementing type should be built from the context from its bound fields.
  * Provides a strongly typed way to wait on combined results.
  * Makes a megazord!
  */
-interface Aggregation : Megazord
+interface Aggregation
