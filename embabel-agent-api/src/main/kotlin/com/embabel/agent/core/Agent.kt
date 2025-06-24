@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
  * @param version The version of the agent. Defaults to 0.1.0
  * @param description A description of the agent. Required
  * @param goals The goals the agent can achieve
- * @param stuckHandler The handler to call when the agent is stuck, provided
+ * @param stuckHandler The handler to call when the agent is stuck, if provided
  * @param conditions Well-known conditions that can be referenced by actions
  * @param actions The actions the agent can use
  * @param schemaTypes Data types used in this agent

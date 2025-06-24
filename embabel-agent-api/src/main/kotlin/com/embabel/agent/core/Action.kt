@@ -89,7 +89,7 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
     override val cost: ZeroToOne get() = 0.0
 
     /**
-     * Can this action be run again if it's already run?
+     * Can this action be run again if it has already run?
      */
     val canRerun: Boolean
 
