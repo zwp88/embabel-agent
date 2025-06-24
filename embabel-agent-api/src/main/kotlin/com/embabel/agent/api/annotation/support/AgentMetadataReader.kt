@@ -22,7 +22,6 @@ import com.embabel.agent.api.common.StuckHandler
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
-import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
 import com.embabel.agent.validation.AgentValidationManager
@@ -262,11 +261,11 @@ class AgentMetadataReader(
             },
             cost = conditionAnnotation.cost,
         )
-        { processContext, condition ->
+        { context, condition ->
             invokeConditionMethod(
                 method = method,
                 instance = instance,
-                processContext = processContext,
+                context = context,
                 condition = condition,
             )
         }
@@ -276,30 +275,26 @@ class AgentMetadataReader(
         method: Method,
         instance: Any,
         condition: CoreCondition,
-        processContext: ProcessContext,
+        context: OperationContext,
     ): Boolean {
         logger.debug("Invoking condition method {} on {}", method.name, instance.javaClass.name)
         val args = mutableListOf<Any>()
-        val operationContext = OperationContext(
-            operation = condition,
-            processContext = processContext,
-            toolGroups = emptySet(),
-        )
+
         for (parameter in method.parameters) {
             when {
                 OperationContext::class.java.isAssignableFrom(parameter.type) -> {
-                    args += operationContext
+                    args += context
                 }
 
                 else -> {
                     val requireNameMatch = parameter.getAnnotation(RequireNameMatch::class.java)
-                    val domainTypes = processContext.agentProcess.agent.domainTypes
+                    val domainTypes = context.processContext.agentProcess.agent.domainTypes
                     val variable = if (requireNameMatch != null) {
                         parameter.name
                     } else {
                         IoBinding.DEFAULT_BINDING
                     }
-                    args += processContext.blackboard.getValue(
+                    args += context.getValue(
                         variable = variable,
                         type = parameter.type.name,
                         domainTypes = domainTypes,
@@ -342,7 +337,7 @@ class AgentMetadataReader(
         } catch (ecpe: EvaluateConditionPromptException) {
             // This is our own exception to get typesafe prompt execution
             // It is not a failure
-            val promptRunner = operationContext.promptRunner(
+            val promptRunner = context.promptRunner(
                 llm = ecpe.llm ?: LlmOptions(),
                 promptContributors = ecpe.promptContributors,
                 contextualPromptContributors = ecpe.contextualPromptContributors,

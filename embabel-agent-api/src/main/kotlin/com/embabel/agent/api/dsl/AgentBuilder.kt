@@ -35,17 +35,9 @@ import org.springframework.ai.tool.ToolCallback
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-/**
- * Context for condition evaluation.
- */
-data class ConditionContext(
-    override val processContext: ProcessContext,
-    override val operation: Operation,
-    override val toolGroups: Set<ToolGroupRequirement> = emptySet(),
-) : OperationContext, Blackboard by processContext.blackboard
 
 typealias ConditionPredicate = (
-    context: ConditionContext,
+    context: OperationContext,
 ) -> Boolean?
 
 /**
@@ -274,13 +266,10 @@ class AgentBuilder(
                 val condition = object : Condition {
                     override val name = it
                     override val cost = cost
-                    override fun evaluate(processContext: ProcessContext): ConditionDetermination =
+                    override fun evaluate(context: OperationContext): ConditionDetermination =
                         ConditionDetermination(
                             block(
-                                ConditionContext(
-                                    processContext = processContext,
-                                    operation = this,
-                                )
+                                context
                             )
                         )
                 }
@@ -297,7 +286,7 @@ class AgentBuilder(
      */
     fun condition(
         name: String? = null,
-        prompt: (processContext: ProcessContext) -> String,
+        prompt: (context: OperationContext) -> String,
         llm: LlmCall = LlmCall(),
     ): ConditionDelegateProvider {
         return ConditionDelegateProvider(

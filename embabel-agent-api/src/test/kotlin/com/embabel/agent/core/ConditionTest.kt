@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,7 +24,7 @@ import org.mockito.Mockito.mock
 
 class ConditionTest {
 
-    private val mockProcessContext = mock<ProcessContext>()
+    private val mockOperationContext = mock<OperationContext>()
 
     // Helper function to create test conditions
     private fun createTestCondition(
@@ -34,7 +35,7 @@ class ConditionTest {
         return object : Condition {
             override val name = name
             override val cost = cost
-            override fun evaluate(processContext: ProcessContext) = result
+            override fun evaluate(context: OperationContext) = result
         }
     }
 
@@ -45,9 +46,9 @@ class ConditionTest {
         val unknownCondition = createTestCondition("Unknown", 0.3, ConditionDetermination.UNKNOWN)
 
         // Test negation
-        assertEquals(ConditionDetermination.FALSE, (!trueCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.TRUE, (!falseCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.UNKNOWN, (!unknownCondition).evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.FALSE, (!trueCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.TRUE, (!falseCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.UNKNOWN, (!unknownCondition).evaluate(mockOperationContext))
 
         // Verify name and cost
         assertEquals("!True", (!trueCondition).name)
@@ -62,22 +63,28 @@ class ConditionTest {
         val unknownCondition = createTestCondition("Unknown", 0.3, ConditionDetermination.UNKNOWN)
 
         // Test OR logic - TRUE cases
-        assertEquals(ConditionDetermination.TRUE, (trueCondition or trueCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.TRUE, (trueCondition or falseCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.TRUE, (trueCondition or unknownCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.TRUE, (falseCondition or trueCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.TRUE, (unknownCondition or trueCondition).evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.TRUE, (trueCondition or trueCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.TRUE, (trueCondition or falseCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.TRUE, (trueCondition or unknownCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.TRUE, (falseCondition or trueCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.TRUE, (unknownCondition or trueCondition).evaluate(mockOperationContext))
 
         // Test OR logic - UNKNOWN cases
-        assertEquals(ConditionDetermination.UNKNOWN, (falseCondition or unknownCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.UNKNOWN, (unknownCondition or falseCondition).evaluate(mockProcessContext))
         assertEquals(
             ConditionDetermination.UNKNOWN,
-            (unknownCondition or unknownCondition).evaluate(mockProcessContext)
+            (falseCondition or unknownCondition).evaluate(mockOperationContext)
+        )
+        assertEquals(
+            ConditionDetermination.UNKNOWN,
+            (unknownCondition or falseCondition).evaluate(mockOperationContext)
+        )
+        assertEquals(
+            ConditionDetermination.UNKNOWN,
+            (unknownCondition or unknownCondition).evaluate(mockOperationContext)
         )
 
         // Test OR logic - FALSE case
-        assertEquals(ConditionDetermination.FALSE, (falseCondition or falseCondition).evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.FALSE, (falseCondition or falseCondition).evaluate(mockOperationContext))
 
         // Verify cost is minimum of the two conditions
         assertEquals(0.1, (trueCondition or falseCondition).cost)
@@ -94,22 +101,28 @@ class ConditionTest {
         val unknownCondition = createTestCondition("Unknown", 0.3, ConditionDetermination.UNKNOWN)
 
         // Test AND logic - FALSE cases
-        assertEquals(ConditionDetermination.FALSE, (falseCondition and falseCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.FALSE, (falseCondition and trueCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.FALSE, (falseCondition and unknownCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.FALSE, (trueCondition and falseCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.FALSE, (unknownCondition and falseCondition).evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.FALSE, (falseCondition and falseCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.FALSE, (falseCondition and trueCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.FALSE, (falseCondition and unknownCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.FALSE, (trueCondition and falseCondition).evaluate(mockOperationContext))
+        assertEquals(ConditionDetermination.FALSE, (unknownCondition and falseCondition).evaluate(mockOperationContext))
 
         // Test AND logic - UNKNOWN cases
-        assertEquals(ConditionDetermination.UNKNOWN, (trueCondition and unknownCondition).evaluate(mockProcessContext))
-        assertEquals(ConditionDetermination.UNKNOWN, (unknownCondition and trueCondition).evaluate(mockProcessContext))
         assertEquals(
             ConditionDetermination.UNKNOWN,
-            (unknownCondition and unknownCondition).evaluate(mockProcessContext)
+            (trueCondition and unknownCondition).evaluate(mockOperationContext)
+        )
+        assertEquals(
+            ConditionDetermination.UNKNOWN,
+            (unknownCondition and trueCondition).evaluate(mockOperationContext)
+        )
+        assertEquals(
+            ConditionDetermination.UNKNOWN,
+            (unknownCondition and unknownCondition).evaluate(mockOperationContext)
         )
 
         // Test AND logic - TRUE case
-        assertEquals(ConditionDetermination.TRUE, (trueCondition and trueCondition).evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.TRUE, (trueCondition and trueCondition).evaluate(mockOperationContext))
 
         // Verify cost is minimum of the two conditions
         assertEquals(0.1, (trueCondition and falseCondition).cost)
@@ -128,20 +141,20 @@ class ConditionTest {
         // Test complex combinations
         // (True OR False) AND Unknown = Unknown
         val complex1 = (trueCondition or falseCondition) and unknownCondition
-        assertEquals(ConditionDetermination.UNKNOWN, complex1.evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.UNKNOWN, complex1.evaluate(mockOperationContext))
 
         // (False AND Unknown) OR True = True
         val complex2 = (falseCondition and unknownCondition) or trueCondition
-        assertEquals(ConditionDetermination.TRUE, complex2.evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.TRUE, complex2.evaluate(mockOperationContext))
 
         // !(True OR Unknown) = False
         val complex3 = !(trueCondition or unknownCondition)
-        assertEquals(ConditionDetermination.FALSE, complex3.evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.FALSE, complex3.evaluate(mockOperationContext))
 
         // Complex nested example
         // !((True AND Unknown) OR (False AND True))
         val complex5 = !((trueCondition and unknownCondition) or (falseCondition and trueCondition))
-        assertEquals(ConditionDetermination.UNKNOWN, complex5.evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.UNKNOWN, complex5.evaluate(mockOperationContext))
     }
 
     @Test
@@ -152,7 +165,7 @@ class ConditionTest {
             cost = 0.5,
             evaluator = { it, condition -> true }
         )
-        assertEquals(ConditionDetermination.TRUE, trueComputedCondition.evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.TRUE, trueComputedCondition.evaluate(mockOperationContext))
 
         // Test condition that evaluates to false
         val falseComputedCondition = ComputedBooleanCondition(
@@ -160,11 +173,11 @@ class ConditionTest {
             cost = 0.3,
             evaluator = { it, condition -> false }
         )
-        assertEquals(ConditionDetermination.FALSE, falseComputedCondition.evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.FALSE, falseComputedCondition.evaluate(mockOperationContext))
 
         // Test combining computed conditions
         val combinedCondition = trueComputedCondition and falseComputedCondition
-        assertEquals(ConditionDetermination.FALSE, combinedCondition.evaluate(mockProcessContext))
+        assertEquals(ConditionDetermination.FALSE, combinedCondition.evaluate(mockOperationContext))
 
         // Test toString()
         assertEquals("ComputedBooleanCondition(name='IsPositive', cost=0.5)", trueComputedCondition.toString())

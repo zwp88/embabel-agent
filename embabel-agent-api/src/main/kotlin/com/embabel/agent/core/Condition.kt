@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.experimental.primitive.PromptCondition
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.ZeroToOne
@@ -47,7 +48,7 @@ interface Condition : Operation, HasInfoString {
      * so there's no urgency to optimize here.
      */
     fun evaluate(
-        processContext: ProcessContext,
+        context: OperationContext,
     ): ConditionDetermination
 
     override fun infoString(verbose: Boolean?): String {
@@ -71,11 +72,11 @@ interface Condition : Operation, HasInfoString {
 class ComputedBooleanCondition(
     override val name: String,
     override val cost: ZeroToOne = 0.0,
-    private val evaluator: (processContext: ProcessContext, condition: Condition) -> Boolean,
+    private val evaluator: (context: OperationContext, condition: Condition) -> Boolean,
 ) : Condition {
 
-    override fun evaluate(processContext: ProcessContext): ConditionDetermination =
-        ConditionDetermination(evaluator(processContext, this))
+    override fun evaluate(context: OperationContext): ConditionDetermination =
+        ConditionDetermination(evaluator(context, this))
 
     override fun toString(): String = "${javaClass.simpleName}(name='$name', cost=$cost)"
 }
@@ -84,7 +85,7 @@ class ComputedBooleanCondition(
 private class NotCondition(private val condition: Condition) : Condition {
     override val name = "!${condition.name}"
     override val cost = condition.cost
-    override fun evaluate(processContext: ProcessContext) = when (condition.evaluate(processContext)) {
+    override fun evaluate(context: OperationContext) = when (condition.evaluate(context)) {
         ConditionDetermination.TRUE -> ConditionDetermination.FALSE
         ConditionDetermination.FALSE -> ConditionDetermination.TRUE
         ConditionDetermination.UNKNOWN -> ConditionDetermination.UNKNOWN
@@ -94,7 +95,7 @@ private class NotCondition(private val condition: Condition) : Condition {
 private class UnknownCondition(private val condition: Condition) : Condition {
     override val name = "!${condition.name}"
     override val cost = condition.cost
-    override fun evaluate(processContext: ProcessContext) = when (condition.evaluate(processContext)) {
+    override fun evaluate(context: OperationContext) = when (condition.evaluate(context)) {
         ConditionDetermination.TRUE -> ConditionDetermination.FALSE
         ConditionDetermination.FALSE -> ConditionDetermination.FALSE
         ConditionDetermination.UNKNOWN -> ConditionDetermination.TRUE
@@ -108,12 +109,12 @@ private class OrCondition(private val a: Condition, private val b: Condition) : 
     // after evaluating the cheaper condition if it's TRUE
     override val cost = minOf(a.cost, b.cost)
 
-    override fun evaluate(processContext: ProcessContext): ConditionDetermination {
-        val aResult = a.evaluate(processContext)
+    override fun evaluate(context: OperationContext): ConditionDetermination {
+        val aResult = a.evaluate(context)
         // Short-circuit if a is TRUE
         if (aResult == ConditionDetermination.TRUE) return ConditionDetermination.TRUE
 
-        val bResult = b.evaluate(processContext)
+        val bResult = b.evaluate(context)
         // If either is TRUE, result is TRUE
         if (bResult == ConditionDetermination.TRUE) return ConditionDetermination.TRUE
 
@@ -133,12 +134,12 @@ private class AndCondition(private val a: Condition, private val b: Condition) :
     // after evaluating the cheaper condition if it's FALSE
     override val cost = minOf(a.cost, b.cost)
 
-    override fun evaluate(processContext: ProcessContext): ConditionDetermination {
-        val aResult = a.evaluate(processContext)
+    override fun evaluate(context: OperationContext): ConditionDetermination {
+        val aResult = a.evaluate(context)
         // Short-circuit if a is FALSE
         if (aResult == ConditionDetermination.FALSE) return ConditionDetermination.FALSE
 
-        val bResult = b.evaluate(processContext)
+        val bResult = b.evaluate(context)
         // If either is FALSE, result is FALSE
         if (bResult == ConditionDetermination.FALSE) return ConditionDetermination.FALSE
 

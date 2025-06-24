@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.plan.goap.ConditionDetermination
 import org.junit.jupiter.api.Assertions.*
@@ -41,7 +42,7 @@ import org.mockito.Mockito.mock
  */
 class ExtendedConditionTest {
 
-    private val mockProcessContext = mock<ProcessContext>()
+    private val mockProcessContext = mock<OperationContext>()
 
     @Test
     fun `test condition inverse operator (not)`() {
@@ -130,7 +131,7 @@ class ExtendedConditionTest {
         val unknownCondition = object : Condition {
             override val name = "unknown"
             override val cost: ZeroToOne = 0.0
-            override fun evaluate(processContext: ProcessContext) = ConditionDetermination.UNKNOWN
+            override fun evaluate(context: OperationContext) = ConditionDetermination.UNKNOWN
         }
 
         assertEquals(ConditionDetermination.UNKNOWN, unknownCondition.evaluate(mockProcessContext))

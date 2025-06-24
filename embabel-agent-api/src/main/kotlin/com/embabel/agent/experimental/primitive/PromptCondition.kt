@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.experimental.primitive
 
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.core.Condition
-import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmInteraction
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory
  */
 data class PromptCondition(
     override val name: String,
-    val prompt: (processContext: ProcessContext) -> String,
+    val prompt: (context: OperationContext) -> String,
     val llm: LlmCall,
 ) : Condition {
 
@@ -48,10 +48,10 @@ data class PromptCondition(
      */
     override val cost: ZeroToOne = 1.0
 
-    override fun evaluate(processContext: ProcessContext): ConditionDetermination {
+    override fun evaluate(context: OperationContext): ConditionDetermination {
         val prompt =
             """
-            Evaluate this condition: ${prompt(processContext)}
+            Evaluate this condition: ${prompt(context)}
             Return "result": whether you think it is true, your confidence level from 0-1,
             and an explanation of what you base this on.
             """.trimIndent()
@@ -60,11 +60,11 @@ data class PromptCondition(
             llm = llm,
             id = InteractionId("condition-$name")
         )
-        val determination = processContext.createObject<Determination>(
+        val determination = context.processContext.platformServices.llmOperations.createObject(
             prompt = prompt,
             interaction = interaction,
             outputClass = Determination::class.java,
-            agentProcess = processContext.agentProcess,
+            agentProcess = context.processContext.agentProcess,
             action = null,
         )
         logger.info(

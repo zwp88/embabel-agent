@@ -15,9 +15,9 @@
  */
 package com.embabel.agent.api.annotation.support
 
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.dsl.Frog
-import com.embabel.agent.core.ProcessContext
-import com.embabel.agent.core.support.InMemoryBlackboard
+import com.embabel.agent.testing.unit.FakeOperationContext
 import com.embabel.plan.goap.ConditionDetermination
 import io.mockk.every
 import io.mockk.mockk
@@ -54,8 +54,8 @@ class AgentMetadataReaderGoalsTest {
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
-        val mockProcessContext = mockk<ProcessContext>()
-        every { mockProcessContext.agentProcess } returns mockk()
+        val mockProcessContext = mockk<OperationContext>()
+        every { mockProcessContext.processContext.agentProcess } returns mockk()
         assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
     }
 
@@ -66,12 +66,8 @@ class AgentMetadataReaderGoalsTest {
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
-        val mockProcessContext = mockk<ProcessContext>()
-        every { mockProcessContext.blackboard } returns InMemoryBlackboard()
-        every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            PersonWithReverseTool::class.java,
-        )
-        assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
+        val fakeOperationContext = FakeOperationContext()
+        assertEquals(ConditionDetermination.FALSE, condition.evaluate(fakeOperationContext))
     }
 
     @Test
@@ -81,14 +77,9 @@ class AgentMetadataReaderGoalsTest {
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
-        val mockProcessContext = mockk<ProcessContext>()
-        val bb = InMemoryBlackboard()
-        bb += PersonWithReverseTool("Rod")
-        every { mockProcessContext.blackboard } returns bb
-        every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            PersonWithReverseTool::class.java,
-        )
-        assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
+        val fakeOperationContext = FakeOperationContext()
+        fakeOperationContext += PersonWithReverseTool("Rod")
+        assertEquals(ConditionDetermination.TRUE, condition.evaluate(fakeOperationContext))
     }
 
     @Test
@@ -99,14 +90,9 @@ class AgentMetadataReaderGoalsTest {
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
         assertEquals("condition1", condition.name)
-        val mockProcessContext = mockk<ProcessContext>()
-        val bb = InMemoryBlackboard()
-        bb += PersonWithReverseTool("Rod")
-        every { mockProcessContext.blackboard } returns bb
-        every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            PersonWithReverseTool::class.java,
-        )
-        assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
+        val fakeOperationContext = FakeOperationContext()
+        fakeOperationContext += PersonWithReverseTool("Rod")
+        assertEquals(ConditionDetermination.TRUE, condition.evaluate(fakeOperationContext))
     }
 
     @Test
@@ -116,14 +102,9 @@ class AgentMetadataReaderGoalsTest {
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
-        val mockProcessContext = mockk<ProcessContext>()
-        val bb = InMemoryBlackboard()
-        bb += PersonWithReverseTool("ted")
-        every { mockProcessContext.blackboard } returns bb
-        every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            PersonWithReverseTool::class.java,
-        )
-        assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
+        val fakeOperationContext = FakeOperationContext()
+        fakeOperationContext += PersonWithReverseTool("ted")
+        assertEquals(ConditionDetermination.FALSE, condition.evaluate(fakeOperationContext))
     }
 
     @Test
@@ -133,14 +114,9 @@ class AgentMetadataReaderGoalsTest {
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
-        val mockProcessContext = mockk<ProcessContext>()
-        val bb = InMemoryBlackboard()
-        bb += PersonWithReverseTool("Rod")
-        every { mockProcessContext.blackboard } returns bb
-        every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            PersonWithReverseTool::class.java, Frog::class.java,
-        )
-        assertEquals(ConditionDetermination.FALSE, condition.evaluate(mockProcessContext))
+        val fakeOperationContext = FakeOperationContext()
+        fakeOperationContext += PersonWithReverseTool("Rod")
+        assertEquals(ConditionDetermination.FALSE, condition.evaluate(fakeOperationContext))
     }
 
     @Test
@@ -150,15 +126,10 @@ class AgentMetadataReaderGoalsTest {
         assertNotNull(metadata)
         assertEquals(1, metadata!!.conditions.size)
         val condition = metadata.conditions.first()
-        val mockProcessContext = mockk<ProcessContext>()
-        val bb = InMemoryBlackboard()
-        bb += PersonWithReverseTool("Rod")
-        bb += Frog("Kermit")
-        every { mockProcessContext.blackboard } returns bb
-        every { mockProcessContext.agentProcess.agent.domainTypes } returns listOf(
-            PersonWithReverseTool::class.java, Frog::class.java,
-        )
-        assertEquals(ConditionDetermination.TRUE, condition.evaluate(mockProcessContext))
+        val fakeOperationContext = FakeOperationContext()
+        fakeOperationContext += PersonWithReverseTool("Rod")
+        fakeOperationContext += Frog("Kermit")
+        assertEquals(ConditionDetermination.TRUE, condition.evaluate(fakeOperationContext))
     }
 
 }

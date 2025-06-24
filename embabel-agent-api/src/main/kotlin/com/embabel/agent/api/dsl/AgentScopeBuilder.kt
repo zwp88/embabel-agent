@@ -216,7 +216,7 @@ fun <A, B, C> aggregate(
     val allCompletedCondition = ComputedBooleanCondition(
         name = "All<${bClass.name}=>${cClass.name}",
         evaluator = { it, condition ->
-            it.blackboard.all(bClass).size == transforms.size
+            it.all(bClass).size == transforms.size
         }
     )
     val actions = mutableListOf<Action>()
@@ -273,7 +273,7 @@ fun <A1, A2, B : Any, C> biAggregate(
     val allCompletedCondition = ComputedBooleanCondition(
         name = "List<${bClass.name}>=>${cClass.name}",
         evaluator = { it, condition ->
-            it.blackboard.all(bClass).size == transforms.size
+            it.all(bClass).size == transforms.size
         }
     )
     val actions = mutableListOf<Action>()
@@ -400,14 +400,14 @@ inline fun <reified A, reified B : Any, reified C> repeatableAggregate(
 fun <C> repeat(
     what: () -> AgentScopeBuilder<C>,
     // TODO gather this
-    until: (c: C, context: ProcessContext) -> Boolean,
+    until: (c: C, context: OperationContext) -> Boolean,
     cClass: Class<C>,
 ): AgentScopeBuilder<C> {
     val conditionName = "repeat-until-${cClass.name}"
     val untilCondition = ComputedBooleanCondition(
         name = conditionName,
         evaluator = { it, condition ->
-            val input = it.blackboard.last(cClass)
+            val input = it.last(cClass)
             if (input == null) {
                 return@ComputedBooleanCondition false
             }
@@ -437,7 +437,7 @@ fun <C> repeat(
 
 inline fun <reified C> repeat(
     noinline what: () -> AgentScopeBuilder<C>,
-    noinline until: (c: C, processContext: ProcessContext) -> Boolean,
+    noinline until: (c: C, context: OperationContext) -> Boolean,
 ): AgentScopeBuilder<C> {
     return repeat(what, until, C::class.java)
 }

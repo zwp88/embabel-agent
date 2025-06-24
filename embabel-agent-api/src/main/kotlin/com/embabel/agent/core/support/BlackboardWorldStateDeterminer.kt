@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.core.Condition
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.satisfiesType
@@ -96,7 +97,13 @@ class BlackboardWorldStateDeterminer(
                     resolveAsAgentCondition(condition) != null -> {
                 val condition = resolveAsAgentCondition(condition)!!
 
-                val determination = condition.evaluate(processContext)
+                val determination = condition.evaluate(
+                    OperationContext(
+                        processContext = processContext,
+                        operation = condition,
+                        toolGroups = emptySet(),
+                    )
+                )
                 logger.debug(
                     "Determined known condition {}={}, bindings={}",
                     condition,
