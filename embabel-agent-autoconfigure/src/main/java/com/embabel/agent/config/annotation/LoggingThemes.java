@@ -23,7 +23,7 @@ public class LoggingThemes {
     /**
      * loggingTheme value for Star Wars themed logging messages.
      */
-    public static final String STAR_WARS = "";
+    public static final String STAR_WARS = "starwars";
 
     /**
      * loggingTheme value for Severance themed logging messages.
