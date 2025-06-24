@@ -62,7 +62,8 @@ class EmbabelEnvironmentPostProcessorTest {
     @Test
     void testNoAnnotations() {
         // Given
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
@@ -77,7 +78,8 @@ class EmbabelEnvironmentPostProcessorTest {
     void testAgentPlatformAnnotation() {
         // Given
         @AgentPlatform("shell")
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
@@ -92,7 +94,8 @@ class EmbabelEnvironmentPostProcessorTest {
     void testEnableAgentsWithLoggingTheme() {
         // Given
         @EnableAgents(loggingTheme = "starwars")
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
@@ -107,30 +110,34 @@ class EmbabelEnvironmentPostProcessorTest {
     void testEnableAgentsWithLocalModels() {
         // Given
         @EnableAgents(localModels = {"ollama", "llamacpp"})
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
         processor.postProcessEnvironment(environment, application);
 
         // Then
-        assertThat(getAddedProfiles()).containsExactlyInAnyOrder("ollama", "llamacpp");
-        assertThat(System.getProperty("spring.profiles.active")).isEqualTo("default,ollama,llamacpp");
+        assertThat(getAddedProfiles()).containsExactlyInAnyOrder("ollama", "llamacpp", "starwars");
+        assertThat(Arrays.stream(System.getProperty("spring.profiles.active").split(",")).collect(Collectors.toSet())
+        ).isEqualTo(Set.of("default", "ollama", "llamacpp", "starwars"));
     }
 
     @Test
     void testEnableAgentsWithMcpClients() {
         // Given
         @EnableAgents(mcpClients = {"filesystem", "github"})
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
         processor.postProcessEnvironment(environment, application);
 
         // Then
-        assertThat(getAddedProfiles()).containsExactlyInAnyOrder("filesystem", "github");
-        assertThat(System.getProperty("spring.profiles.active")).isEqualTo("default,filesystem,github");
+        assertThat(getAddedProfiles()).containsExactlyInAnyOrder("filesystem", "github", "starwars");
+        assertThat(Arrays.stream(System.getProperty("spring.profiles.active").split(",")).collect(Collectors.toSet())
+        ).isEqualTo(Set.of("default", "filesystem", "github", "starwars"));
     }
 
     @Test
@@ -142,7 +149,8 @@ class EmbabelEnvironmentPostProcessorTest {
                 localModels = {"ollama"},
                 mcpClients = {"docker"}
         )
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
@@ -161,7 +169,8 @@ class EmbabelEnvironmentPostProcessorTest {
         System.setProperty("spring.profiles.active", "existing,profiles");
 
         @EnableAgents(loggingTheme = "starwars")
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
@@ -177,7 +186,8 @@ class EmbabelEnvironmentPostProcessorTest {
     void testEmptyEnableAgents() {
         // Given
         @EnableAgents(loggingTheme = "", localModels = {}, mcpClients = {})
-        class TestApp {}
+        class TestApp {
+        }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
 
         // When
