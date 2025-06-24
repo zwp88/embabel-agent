@@ -179,12 +179,12 @@ abstract class AbstractAgentProcess(
                 platformServices.eventListener.onProcessEvent(AgentProcessWaitingEvent(this))
             }
 
-            AgentProcessStatusCode.STUCK -> {
+            AgentProcessStatusCode.PAUSED -> {
                 platformServices.eventListener.onProcessEvent(AgentProcessPausedEvent(this))
                 handleStuck(agent)
             }
 
-            AgentProcessStatusCode.PAUSED -> {
+            AgentProcessStatusCode.STUCK -> {
                 platformServices.eventListener.onProcessEvent(AgentProcessStuckEvent(this))
                 handleStuck(agent)
             }
