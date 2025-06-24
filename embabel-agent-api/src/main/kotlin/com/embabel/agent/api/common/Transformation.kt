@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.support.TransformationAction
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.resultOfType
+import com.embabel.common.core.types.ZeroToOne
 
 fun <I, O : Any> asTransformation(agent: Agent, outputClass: Class<O>) = Transformation<I, O> {
     val childAgentProcess = it.agentPlatform().createChildProcess(
@@ -41,9 +42,6 @@ inline fun <reified I, reified O : Any> Agent.asTransformation() = Transformatio
     childProcessResult.resultOfType()
 }
 
-fun <I, O : Any> asAction(agent: Agent, inputClass: Class<I>, outputClass: Class<O>): Action =
-    agentTransformer(agent, inputClass, outputClass)
-
 
 /**
  * Expose this agent as an action of the given transformation type
@@ -51,48 +49,68 @@ fun <I, O : Any> asAction(agent: Agent, inputClass: Class<I>, outputClass: Class
 inline fun <reified I, reified O : Any> Agent.asAction(): Action =
     agentTransformer<I, O>(this)
 
-fun <I, O : Any> asAction(agentName: String, inputClass: Class<I>, outputClass: Class<O>): Action {
+/**
+ * Expose the named agent as an action of the given transformation type
+ */
+fun <I, O : Any> asAction(
+    agentName: String,
+    inputClass: Class<I>,
+    outputClass: Class<O>,
+    pre: List<String> = emptyList(),
+    post: List<String> = emptyList(),
+    cost: ZeroToOne = 0.0,
+    value: ZeroToOne = 0.0,
+    canRerun: Boolean = false,
+): Action {
     return TransformationAction(
-        name = "@action-${agentName}",
-        description = "@action-${agentName}",
-        pre = emptyList(),
-        post = emptyList(),
-        cost = 0.0,
-        value = 0.0,
-        canRerun = true,
+        name = "@agent-${agentName}",
+        description = "Agent $agentName",
+        pre = pre,
+        post = post,
+        cost = cost,
+        value = value,
+        canRerun = canRerun,
         inputClass = inputClass,
         outputClass = outputClass,
         toolGroups = emptySet(),
-    ) {
-        val agent: Agent = it.processContext.platformServices.agentPlatform.agents().singleOrNull() {
-            it.name == agentName
-        } ?: throw IllegalArgumentException(
-            "Agent '$agentName' not found: Known agents:\n\t${
-                it.processContext.platformServices.agentPlatform.agents().joinToString("\n\t") { it.name }
-            }"
-        )
-        asTransformation<I, O>(agent, outputClass).transform(it)
+    ) { transformationActionContext ->
+        val agent: Agent =
+            transformationActionContext.processContext.platformServices.agentPlatform.agents().singleOrNull() {
+                it.name == agentName
+            } ?: throw IllegalArgumentException(
+                "Agent '$agentName' not found: Known agents:\n\t${
+                    transformationActionContext.processContext.platformServices.agentPlatform.agents()
+                        .joinToString("\n\t") { it.name }
+                }"
+            )
+        asTransformation<I, O>(agent, outputClass).transform(transformationActionContext)
     }
 }
 
 inline fun <reified I, reified O : Any> asAction(agentName: String): Action =
-    asAction<I, O>(agentName, I::class.java, O::class.java)
+    asAction(agentName, I::class.java, O::class.java)
 
 inline fun <reified I, reified O : Any> agentTransformer(agent: Agent): Action =
-    agentTransformer<I, O>(agent, I::class.java, O::class.java)
+    agentTransformer(agent = agent, inputClass = I::class.java, outputClass = O::class.java)
 
 fun <I, O : Any> agentTransformer(
-    agent: Agent, inputClass: Class<I>,
+    agent: Agent,
+    pre: List<String> = emptyList(),
+    post: List<String> = emptyList(),
+    cost: ZeroToOne = 0.0,
+    value: ZeroToOne = 0.0,
+    canRerun: Boolean = false,
+    inputClass: Class<I>,
     outputClass: Class<O>,
 ): Action {
     return TransformationAction(
         name = "@action-${agent.name}",
         description = "@action-${agent.name}",
-        pre = emptyList(),
-        post = emptyList(),
-        cost = 0.0,
-        value = 0.0,
-        canRerun = true,
+        pre = pre,
+        post = post,
+        cost = cost,
+        value = value,
+        canRerun = canRerun,
         inputClass = inputClass,
         outputClass = outputClass,
         toolGroups = emptySet(),
