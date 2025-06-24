@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
+import com.embabel.agent.api.common.StuckHandler
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
@@ -166,6 +167,7 @@ class AgentMetadataReader(
                 conditions = conditions,
                 actions = actions,
                 goals = goals.toSet(),
+                stuckHandler = instance as? StuckHandler,
             )
         } else {
             AgentScope(

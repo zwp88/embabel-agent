@@ -31,6 +31,7 @@ import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.Person
 import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
+import com.embabel.agent.support.Dog
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyPlatformServices
@@ -68,6 +69,42 @@ class AnnotationWaitingAgent {
     }
 }
 
+@com.embabel.agent.api.annotation.Agent(
+    description = "self unsticking agent",
+    scan = false,
+)
+class SelfUnstickingAgent : StuckHandler {
+
+    // Putting this here isn't threadsafe of course, but this is just a test
+    var called = false
+
+    @Action
+    fun fromInput(input: UserInput): LocalPerson {
+        return confirm(
+            LocalPerson(name = input.content),
+            "Is this the right dude?"
+        )
+    }
+
+    // This agent will get stuck as there's no dog to convert to a frog
+    @Action
+    @AchievesGoal(description = "the big goal in the sky")
+    fun toFrog(dog: Dog): Frog {
+        return Frog(dog.name)
+    }
+
+    override fun handleStuck(agentProcess: AgentProcess): StuckHandlerResult {
+        called = true
+        agentProcess.addObject(Dog("Duke"))
+        return StuckHandlerResult(
+            message = "Unsticking myself",
+            handler = this,
+            code = StuckHandlingResultCode.REPLAN,
+            agentProcess = agentProcess,
+        )
+    }
+}
+
 val DslWaitingAgent = agent("Waiter", description = "Simple test agent that waits") {
     transformation<UserInput, LocalPerson>(name = "thing") {
         val person = LocalPerson(name = "Rod")
@@ -83,7 +120,6 @@ val DslWaitingAgent = agent("Waiter", description = "Simple test agent that wait
     transformation<LocalPerson, Frog>(name = "thing2") {
         Frog(name = it.input.name)
     }
-
 
     goal(name = "done", description = "done", satisfiedBy = Frog::class)
 }
@@ -190,6 +226,20 @@ class SimpleAgentProcessTest {
         @Test
         fun `expect unstuck for annotation agent with magic stuck handler`() {
             unstick(AgentMetadataReader().createAgentMetadata(AnnotationWaitingAgent()) as Agent)
+        }
+
+        @Test
+        fun `agent implementing stuck handler unsticks itself`() {
+            val sua = SelfUnstickingAgent()
+            val agent = AgentMetadataReader().createAgentMetadata(sua) as Agent
+            val agentProcess = run(agent)
+            assertTrue(sua.called, "Stuck handler must have been called")
+            assertEquals(AgentProcessStatusCode.COMPLETED, agentProcess.status)
+            val last = agentProcess.lastResult()
+            assertEquals(
+                Frog("Duke"), last,
+                "Last result should be the dog added by the stuck handler. Poor Duke was turned into a frog."
+            )
         }
 
         private fun unstick(agent: Agent) {

@@ -8,6 +8,20 @@ This is the recommended model to use in Java, and remains compelling in Kotlin.
 
 ==== The `@Action` annotation
 
+The `@Action` annotation is used to mark methods that perform actions within an agent.
+
+Action metadata can be specified on the annotation, including:
+
+- `description`: A human-readable description of the action.
+- `pre`: A list of preconditions _additional to the input types_ that must be satisfied before the action can be executed.
+- `post`: A list of postconditions _additional to the output type(s)_ that may be satisfied after the action is executed.
+- `canRerun`: A boolean indicating whether the action can be rerun if it has already been executed.
+Defaults to false.
+- `cost`:Relative cost of the action from 0-1. Defaults to 0.0.
+- `value`: Relative value of performing the action from 0-1. Defaults to 0.0.
+- `toolGroups`: Named tool groups the action requires.
+- `toolGroupRequirements`: Tool group requirements with QoS constraints.
+
 ==== The `@Condition` annotation
 
 ==== Parameters
@@ -33,6 +47,42 @@ Action methods normally return a single domain object.
 
 Nullable return types are allowed.
 
+There is a special case where the return type can essentially be a union type, where the action method can return one of several types.
+This is achieved by a return type implementing the `SomeOf` tag interface.
+Implementations of this interface can have multiple nullable fields.
+Any non-null values will be bound to the blackboard, and the postconditions of the action will include all possible fields of the return type.
+
+For example:
+
+[source,kotlin]
+----
+// Must implement the SomeOf interface
+data class FrogOrDog(
+    val frog: Frog? = null,
+    val dog: Dog? = null,
+) : SomeOf
+
+@Agent(description = "Illustrates use of the SomeOf interface")
+class ReturnsFrogOrDog {
+
+    @Action
+    fun frogOrDog(): FrogOrDog {
+        return FrogOrDog(frog = Frog("Kermit"))
+    }
+
+    // This works because the frog field of the return type was set
+    @AchievesGoal(description = "Create a prince from a frog")
+    @Action
+    fun toPerson(frog: Frog): PersonWithReverseTool {
+        return PersonWithReverseTool(frog.name)
+    }
+}
+----
+
+This enables routing scenarios in an elegant manner.
+Multiple fields of the `SomeOf` instance may be non-null and this is not an error.
+It may enable the most appropriate routing.
+
 ==== Action method implementation
 
 Using PromptRunner etc.
@@ -40,4 +90,39 @@ Using PromptRunner etc.
 ==== The `@AchievesGoal` annotation
 
 The `@AchievesGoal` annotation can be added to an `@Action` method to indicate that the completion of the action achieves a specific goal.
+
+==== Implementing the `StuckHandler` interface
+
+If an annotated agent class implements the `StuckHandler` interface, it can handle situations where an action is stuck itself.
+For example, it can add data to the blackboard.
+
+Example:
+
+[source,kotlin]
+----
+@Agent(
+    description = "self unsticking agent",
+)
+class SelfUnstickingAgent : StuckHandler {
+
+    // The agent will get stuck as there's no dog to convert to a frog
+    @Action
+    @AchievesGoal(description = "the big goal in the sky")
+    fun toFrog(dog: Dog): Frog {
+        return Frog(dog.name)
+    }
+
+    // This method will be called when the agent is stuck
+    override fun handleStuck(agentProcess: AgentProcess): StuckHandlerResult {
+        called = true
+        agentProcess.addObject(Dog("Duke"))
+        return StuckHandlerResult(
+            message = "Unsticking myself",
+            handler = this,
+            code = StuckHandlingResultCode.REPLAN,
+            agentProcess = agentProcess,
+        )
+    }
+}
+----
 

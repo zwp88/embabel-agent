@@ -6,6 +6,7 @@
 include::flow.adoc[]
 include::steps.adoc[]
 include::domain.adoc[]
+include::configuration.adoc[]
 include::annotations.adoc[]
 include::dsl.adoc[]
 include::types.adoc[]
