@@ -29,7 +29,7 @@ import kotlin.test.assertNotNull
 class BlackboardTest {
 
     @Nested
-    inner class Aggregation {
+    inner class AggregationHandling {
         @Test
         fun `empty blackboard`() {
             val bb = InMemoryBlackboard()
