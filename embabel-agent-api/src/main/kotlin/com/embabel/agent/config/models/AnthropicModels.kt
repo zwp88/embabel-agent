@@ -113,10 +113,11 @@ class AnthropicModels(
 
     @Bean
     fun claudeOpus4(
+        @Value("\${ANTHROPIC_BASE_URL}") baseUrl: String,
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm {
         return anthropicModelOf(
-            CLAUDE_40_OPUS, apiKey,
+            CLAUDE_40_OPUS, baseUrl, apiKey,
             knowledgeCutoffDate = LocalDate.of(2025, 3, 31),
             maxTokens = 200000,
         )
@@ -131,10 +132,12 @@ class AnthropicModels(
 
     @Bean
     fun claudeSonnet(
+        @Value("\${ANTHROPIC_BASE_URL}") baseUrl: String,
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm {
         return anthropicModelOf(
-            CLAUDE_37_SONNET, apiKey, knowledgeCutoffDate = LocalDate.of(2024, 10, 31),
+            CLAUDE_37_SONNET, baseUrl, apiKey,
+            knowledgeCutoffDate = LocalDate.of(2024, 10, 31),
             maxTokens = 20000,
         )
             .withFallback(fallbackTo = gpt41, whenError = flipTrigger)
@@ -148,9 +151,10 @@ class AnthropicModels(
 
     @Bean
     fun claudeHaiku(
+        @Value("\${ANTHROPIC_BASE_URL}") baseUrl: String,
         @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
     ): Llm = anthropicModelOf(
-        CLAUDE_35_HAIKU, apiKey,
+        CLAUDE_35_HAIKU, baseUrl, apiKey,
         knowledgeCutoffDate = LocalDate.of(2024, 10, 22),
         maxTokens = 8192,
     )
@@ -164,6 +168,7 @@ class AnthropicModels(
 
     private fun anthropicModelOf(
         name: String,
+        baseUrl: String,
         apiKey: String,
         knowledgeCutoffDate: LocalDate?,
         maxTokens: Int,
@@ -171,11 +176,7 @@ class AnthropicModels(
         // Claude seems to need max tokens
         val chatModel = AnthropicChatModel
             .builder()
-            .anthropicApi(
-                AnthropicApi.builder()
-                    .apiKey(apiKey)
-                    .build()
-            )
+            .anthropicApi(createAnthropicApi(baseUrl, apiKey))
             .retryTemplate(retryTemplate)
             .build()
         return Llm(
@@ -185,6 +186,15 @@ class AnthropicModels(
             optionsConverter = AnthropicOptionsConverter,
             knowledgeCutoffDate = knowledgeCutoffDate,
         )
+    }
+
+    private fun createAnthropicApi(baseUrl: String, apiKey: String): AnthropicApi {
+        val builder = AnthropicApi.builder().apiKey(apiKey)
+        if (baseUrl.isNotBlank()) {
+            logger.info("Using custom Anthropic base URL: $baseUrl")
+            builder.baseUrl(baseUrl)
+        }
+        return builder.build()
     }
 
 
