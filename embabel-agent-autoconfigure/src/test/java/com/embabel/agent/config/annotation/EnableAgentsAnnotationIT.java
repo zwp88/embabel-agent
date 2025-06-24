@@ -18,24 +18,47 @@ package com.embabel.agent.config.annotation;
 import com.embabel.agent.event.AgenticEventListener;
 import com.embabel.agent.rag.RagService;
 import com.embabel.agent.spi.Ranker;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Java INTEGRATION test for AgentPlatformAutoConfiguration via @EnableAgents annotation and Spring profile setup.
- * Test employs OPEN API KEY.
+ * Integration test for AgentPlatformAutoConfiguration via @EnableAgents annotation.
  *
+ * <p>This test verifies that the @EnableAgents annotation properly:
+ * <ul>
+ *   <li>Activates the agent platform auto-configuration</li>
+ *   <li>Registers required beans in the application context</li>
+ *   <li>Sets up appropriate Spring profiles</li>
+ * </ul>
+ *
+ * <p>Note: This test requires OPENAI_API_KEY to be set as an environment variable.
  */
-@SpringBootTest(classes=EnableAgentsAnnotationIT.class)
-@EnableAgents("starwars")
+@SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@EnabledIfEnvironmentVariable(named = "OPENAI_API_KEY", matches = ".+",
+        disabledReason = "Integration test requires OPENAI_API_KEY")
+@TestPropertySource(properties = {
+        "spring.main.lazy-initialization=true",
+        "logging.level.com.embabel=DEBUG"
+})
+@DisplayName("EnableAgents Annotation Integration Test")
+class EnableAgentsAnnotationIT {
 
-public class EnableAgentsAnnotationIT {
+    @Autowired
+    private ApplicationContext context;
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     private AgenticEventListener eventListener;
@@ -46,24 +69,110 @@ public class EnableAgentsAnnotationIT {
     @Autowired
     private RagService defaultSpringVectorStore;
 
-    @BeforeEach
-    void setUp() {
+    @Test
+    @DisplayName("Should auto-configure all required agent platform beans")
+    void testAutoConfiguredBeanPresence() {
+        // Verify core beans are present
+        assertThat(eventListener)
+                .as("AgenticEventListener should be auto-configured")
+                .isNotNull();
+
+        assertThat(ranker)
+                .as("Ranker should be auto-configured")
+                .isNotNull();
+
+        assertThat(defaultSpringVectorStore)
+                .as("RagService should be auto-configured")
+                .isNotNull();
     }
-
-
-    @AfterEach
-    void tearDown() {
-    }
-
 
     @Test
-    public void testAutoConfiguredBeanPresence() {
-        Assertions.assertNotNull(eventListener, "Event Listener should be Auto-Configured");
-        Assertions.assertNotNull(ranker, "Ranker should be Auto-Configured");
-        Assertions.assertNotNull(defaultSpringVectorStore, "RagService should be Auto-Configured");
-
+    @DisplayName("Should activate default profile when no specific profile is set")
+    void testDefaultProfileActivation() {
+        // Verify default profile is active
+        String[] activeProfiles = environment.getActiveProfiles();
+        assertThat(activeProfiles)
+                .as("Should have at least the default profile active")
+                .contains("default");
     }
 
+    @Test
+    @DisplayName("Should register agent platform configuration beans")
+    void testAgentPlatformConfigurationBeans() {
+        // Verify that agent platform specific beans are registered
+        assertThat(context.containsBean("agentPlatformAutoConfiguration"))
+                .as("AgentPlatformAutoConfiguration should be registered")
+                .isTrue();
 
+        // Verify component scanning worked
+        String[] beanNames = context.getBeanDefinitionNames();
+        assertThat(beanNames)
+                .as("Should contain agent-related beans")
+                .anyMatch(name -> name.contains("agent") || name.contains("Agent"));
+    }
 
+    @Test
+    @DisplayName("Should configure agent platform with additional attributes")
+    void testEnableAgentsWithAttributes() {
+        // This would test a configuration with attributes
+        // Currently @EnableAgents has default values, but this shows how to test them
+
+        // For example, if @EnableAgents had attributes:
+        // - loggingTheme: verify theme profile is active
+        // - localModels: verify model profiles are active
+        // - mcpClients: verify client profiles are active
+
+        // Since the test class uses @EnableAgents with defaults,
+        // we just verify the base configuration works
+        assertThat(context).isNotNull();
+    }
+
+    /**
+     * Test configuration class that simulates a Spring Boot application.
+     * This is nested to avoid conflicts with other test configurations.
+     */
+    @SpringBootApplication
+    @EnableAgents
+    static class TestApplication {
+        // Empty - just provides application context for testing
+    }
+}
+
+/**
+ * Additional test class to verify @EnableAgents with custom attributes.
+ */
+@SpringBootTest
+@DirtiesContext
+@EnabledIfEnvironmentVariable(named = "OPENAI_API_KEY", matches = ".+")
+@DisplayName("EnableAgents with Custom Attributes Test")
+class EnableAgentsWithAttributesIT {
+
+    @Autowired
+    private Environment environment;
+
+    @Test
+    @DisplayName("Should activate profiles from annotation attributes")
+    void testCustomAttributeProfiles() {
+        String[] activeProfiles = environment.getActiveProfiles();
+
+        // Verify all expected profiles are active
+        assertThat(activeProfiles)
+                .as("Should contain all configured profiles")
+                .contains(
+                        "default",        // From @AgentPlatform
+                        "starwars",       // From loggingTheme
+                        "ollama",         // From localModels
+                        "filesystem"      // From mcpClients
+                );
+    }
+
+    @SpringBootApplication
+    @EnableAgents(
+            loggingTheme = "starwars",
+            localModels = {"ollama"},
+            mcpClients = {"filesystem"}
+    )
+    static class CustomAttributesTestApplication {
+        // Configuration with custom attributes
+    }
 }

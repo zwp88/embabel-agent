@@ -1,0 +1,264 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.embabel.agent.config.annotation.spi;
+
+import com.embabel.agent.config.annotation.AgentPlatform;
+import com.embabel.agent.config.annotation.EnableAgents;
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.env.ConfigurableEnvironment;
+
+import java.util.*;
+
+/**
+ * Environment post-processor that activates Spring profiles based on Embabel Agent annotations.
+ *
+ * <p>This processor runs very early in the Spring Boot startup sequence and examines
+ * the application's main class for agent-related annotations. It then activates
+ * corresponding Spring profiles to enable platform-specific configurations.
+ *
+ * <h3>Processing Order:</h3>
+ * <ol>
+ *   <li><b>Platform Profiles</b> - From {@code @AgentPlatform} or meta-annotations like {@code @EnableAgentShell}</li>
+ *   <li><b>Logging Theme</b> - From {@code @EnableAgents(loggingTheme="...")}</li>
+ *   <li><b>Local Models</b> - From {@code @EnableAgents(localModels={...})}</li>
+ *   <li><b>MCP Clients</b> - From {@code @EnableAgents(mcpClients={...})}</li>
+ * </ol>
+ *
+ * <h3>Profile Activation:</h3>
+ * <p>Profiles are activated through two mechanisms:
+ * <ul>
+ *   <li>System property: {@code spring.profiles.active} - for compatibility</li>
+ *   <li>Environment API: {@code environment.addActiveProfile()} - for direct activation</li>
+ * </ul>
+ *
+ * <h3>Example:</h3>
+ * <pre>{@code
+ * @SpringBootApplication
+ * @EnableAgentShell  // Activates "shell" profile
+ * @EnableAgents(
+ *     loggingTheme = "starwars",    // Activates "starwars" profile
+ *     localModels = {"ollama"},      // Activates "ollama" profile
+ *     mcpClients = {"filesystem"}    // Activates "filesystem" profile
+ * )
+ * public class MyApp {
+ *     // Result: Profiles "shell", "starwars", "ollama", "filesystem" are active
+ * }
+ * }</pre>
+ *
+ * <h3>Implementation Notes:</h3>
+ * <ul>
+ *   <li>Runs with {@link Ordered#HIGHEST_PRECEDENCE} to ensure early execution</li>
+ *   <li>Preserves existing profiles if already set</li>
+ *   <li>Handles multiple application sources (though typically there's only one)</li>
+ *   <li>Uses both annotation utils for proper meta-annotation support</li>
+ * </ul>
+ *
+ * @see EnableAgents
+ * @see AgentPlatform
+ * @see EnvironmentPostProcessor
+ * @since 1.0
+ * @author Embabel Team
+ */
+public class EmbabelEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
+
+    private final Logger logger = LoggerFactory.getLogger(EmbabelEnvironmentPostProcessor.class);
+
+    private static final String SPRING_PROFILES_ACTIVE = "spring.profiles.active";
+
+    /**
+     * Post-processes the environment to activate profiles based on agent annotations.
+     *
+     * @param environment the environment to post-process
+     * @param application the Spring application
+     */
+    @Override
+    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        // Use LinkedHashSet to maintain order and avoid duplicates
+        var allProfiles = new LinkedHashSet<String>();
+
+        // 1. Get platform profiles from @AgentPlatform
+        var agentProfiles = findPlatformProfiles(application);
+        if (agentProfiles.length > 0) {
+            allProfiles.addAll(Arrays.asList(agentProfiles));
+            logger.debug("Found platform profiles: {}", Arrays.toString(agentProfiles));
+        }
+
+        // 2. Get profile from loggingTheme
+        var themeProfile = findLoggingTheme(application);
+        if (themeProfile != null && !themeProfile.isEmpty()) {
+            allProfiles.add(themeProfile);
+            logger.info("Found loggingTheme '{}' - adding profile: {}", themeProfile, themeProfile);
+        }
+
+        // 3. Get profiles from localModels
+        var localModelsProfiles = findLocalModels(application);
+        if (ArrayUtils.isNotEmpty(localModelsProfiles)) {
+            allProfiles.addAll(Arrays.asList(localModelsProfiles));
+            logger.info("Found localModels - adding profiles: {}", Arrays.toString(localModelsProfiles));
+        }
+
+        // 4. Get profiles from mcpClients
+        var mcpClientsProfiles = findMcpClients(application);
+        if (ArrayUtils.isNotEmpty(mcpClientsProfiles)) {
+            allProfiles.addAll(Arrays.asList(mcpClientsProfiles));
+            logger.info("Found mcpClients - adding profiles: {}", Arrays.toString(mcpClientsProfiles));
+        }
+
+        // Apply all collected profiles
+        if (!allProfiles.isEmpty()) {
+            activateProfiles(environment, allProfiles);
+        }
+    }
+
+    /**
+     * Finds platform profiles from {@code @AgentPlatform} annotations.
+     *
+     * <p>This method handles both direct usage and meta-annotations
+     * (e.g., {@code @EnableAgentShell} which has {@code @AgentPlatform("shell")}).
+     *
+     * @param application the Spring application
+     * @return array of platform profile names, empty if none found
+     */
+    private String[] findPlatformProfiles(SpringApplication application) {
+        // Iterate through all application sources (typically just the main class)
+        for (Object source : application.getAllSources()) {
+            if (source instanceof Class<?> clazz) {
+                // Check for direct @AgentPlatform annotation
+                var agentPlatform = AnnotationUtils.findAnnotation(clazz, AgentPlatform.class);
+
+                // Check for meta-annotations (e.g., @EnableAgentShell)
+                // This handles annotations that are themselves annotated with @AgentPlatform
+                var mergedAttributes = AnnotatedElementUtils.getMergedAnnotationAttributes(
+                        clazz, AgentPlatform.class);
+
+                // Prefer merged attributes (handles meta-annotations properly)
+                if (mergedAttributes != null && !mergedAttributes.isEmpty()) {
+                    return mergedAttributes.getStringArray("value");
+                } else if (agentPlatform != null) {
+                    return agentPlatform.value();
+                }
+            }
+        }
+        return new String[0];
+    }
+
+    /**
+     * Finds the logging theme from {@code @EnableAgents} annotation.
+     *
+     * @param application the Spring application
+     * @return logging theme name, or empty string if not specified
+     */
+    private String findLoggingTheme(SpringApplication application) {
+        EnableAgents enableAgents = findEnableAgentsAnnotation(application);
+        // Return theme or empty string to avoid null handling
+        return enableAgents != null ? enableAgents.loggingTheme() : "";
+    }
+
+    /**
+     * Finds local model profiles from {@code @EnableAgents} annotation.
+     *
+     * @param application the Spring application
+     * @return array of local model names, empty if none specified
+     */
+    private String[] findLocalModels(SpringApplication application) {
+        EnableAgents enableAgents = findEnableAgentsAnnotation(application);
+        // Return array or empty array to avoid null
+        return enableAgents != null ? enableAgents.localModels() : new String[0];
+    }
+
+    /**
+     * Finds MCP client profiles from {@code @EnableAgents} annotation.
+     *
+     * @param application the Spring application
+     * @return array of MCP client names, empty if none specified
+     */
+    private String[] findMcpClients(SpringApplication application) {
+        EnableAgents enableAgents = findEnableAgentsAnnotation(application);
+        // Return array or empty array to avoid null
+        return enableAgents != null ? enableAgents.mcpClients() : new String[0];
+    }
+
+    /**
+     * Finds the {@code @EnableAgents} annotation on the application class.
+     *
+     * @param application the Spring application
+     * @return the annotation instance, or null if not found
+     */
+    private EnableAgents findEnableAgentsAnnotation(SpringApplication application) {
+        // Search through all sources for @EnableAgents
+        for (Object source : application.getAllSources()) {
+            if (source instanceof Class<?> clazz) {
+                // Use AnnotationUtils to handle inheritance and interfaces
+                EnableAgents enableAgents = AnnotationUtils.findAnnotation(clazz, EnableAgents.class);
+                if (enableAgents != null) {
+                    return enableAgents;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Activates the collected profiles in both system properties and the environment.
+     *
+     * @param environment the Spring environment
+     * @param profiles the profiles to activate
+     */
+    private void activateProfiles(ConfigurableEnvironment environment, Set<String> profiles) {
+        // Get existing profiles from system property
+        String existingProfiles = System.getProperty(SPRING_PROFILES_ACTIVE);
+        String newProfiles = String.join(",", profiles);
+
+        if (existingProfiles != null && !existingProfiles.isEmpty()) {
+            // Merge with existing profiles, maintaining uniqueness
+            var mergedProfiles = new LinkedHashSet<String>();
+            // Add existing profiles first to maintain order
+            mergedProfiles.addAll(Arrays.asList(existingProfiles.split(",")));
+            // Add new profiles
+            mergedProfiles.addAll(profiles);
+            // Update system property with merged set
+            System.setProperty(SPRING_PROFILES_ACTIVE, String.join(",", mergedProfiles));
+        } else {
+            // No existing profiles, just set new ones
+            System.setProperty(SPRING_PROFILES_ACTIVE, newProfiles);
+        }
+
+        // Also add profiles directly to Spring environment
+        // This ensures they're active even if system property is overridden
+        profiles.forEach(environment::addActiveProfile);
+
+        // Log the final state for debugging
+        logger.info("Activated Spring profiles: {}", System.getProperty(SPRING_PROFILES_ACTIVE));
+    }
+
+    /**
+     * Returns the order of this post-processor.
+     *
+     * @return {@link Ordered#HIGHEST_PRECEDENCE} to ensure early execution
+     */
+    @Override
+    public int getOrder() {
+        // Run as early as possible to ensure profiles are set before beans are created
+        return Ordered.HIGHEST_PRECEDENCE;
+    }
+}
