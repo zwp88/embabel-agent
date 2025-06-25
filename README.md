@@ -154,6 +154,9 @@ uvx --from git+https://github.com/embabel/project-creator.git project-creator
 Choose Java or Kotlin and specify your project name and package name and you'll have an agent running in under a minute,
 if you already have an `OPENAI_API_KEY` and have Maven installed.
 
+> **📚 For examples and tutorials**, see
+> the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
+
 ## Why Is Embabel Needed?
 
 TL;DR Because the evolution of agent frameworks is early and there's a lot of room for improvement; because an agent
@@ -379,8 +382,8 @@ uvx --from git+https://github.com/embabel/project-creator.git project-creator
 
 ### Example Agents
 
-> **📚 For examples and tutorials**, see the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
-
+> **📚 For examples and tutorials**, see
+> the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
 
 ```bash
 # Clone and run examples
@@ -398,6 +401,7 @@ execute "Lynda is a Scorpio, find news for her" -p -r
 ```
 
 Options:
+
 - `-p` logs prompts
 - `-r` logs LLM responses
 
