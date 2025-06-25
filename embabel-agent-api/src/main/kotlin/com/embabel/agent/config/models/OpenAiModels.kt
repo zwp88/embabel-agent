@@ -38,7 +38,7 @@ import java.time.LocalDate
 @Profile("!test")
 @ExcludeFromJacocoGeneratedReport(reason = "Open AI configuration can't be unit tested")
 class OpenAiModels(
-    @Value("\${OPENAI_BASE_URL}")
+    @Value("\${OPENAI_BASE_URL:}")
     private val baseUrl: String,
     @Value("\${OPENAI_API_KEY}")
     private val apiKey: String,

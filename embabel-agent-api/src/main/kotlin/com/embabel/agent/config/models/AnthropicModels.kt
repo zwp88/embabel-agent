@@ -52,7 +52,7 @@ data class AnthropicProperties(
 @Profile("!test")
 @ExcludeFromJacocoGeneratedReport(reason = "Anthropic configuration can't be unit tested")
 class AnthropicModels(
-    @Value("\${ANTHROPIC_BASE_URL}")
+    @Value("\${ANTHROPIC_BASE_URL:}")
     private val baseUrl: String,
     @Value("\${ANTHROPIC_API_KEY}")
     private val apiKey: String,
