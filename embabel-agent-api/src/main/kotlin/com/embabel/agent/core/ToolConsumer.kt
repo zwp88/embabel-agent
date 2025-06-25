@@ -268,7 +268,7 @@ interface ToolGroup : ToolCallbackPublisher, HasInfoString {
 
     override fun infoString(verbose: Boolean?): String {
         if (toolCallbacks.isEmpty()) {
-            return metadata.infoString(verbose = true) + "\n\t\tNo tools found!!"
+            return metadata.infoString(verbose = true) + "\n\t\t❌ No tools found"
         }
         return when (verbose) {
             true -> metadata.infoString(verbose = true) + "\n\t\t" +
