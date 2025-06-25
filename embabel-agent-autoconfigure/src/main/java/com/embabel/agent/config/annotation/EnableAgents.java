@@ -101,7 +101,7 @@ public @interface EnableAgents {
      *
      * <h4>Example:</h4>
      * <pre>{@code
-     * @EnableAgents(localModels = {"ollama", "docker"})
+     * @EnableAgents(localModels = {LocalModels.OLLAMA, LocalModels.DOCKER"})
      * // Enables both Ollama and Docker-based models
      * }</pre>
      *
@@ -119,15 +119,15 @@ public @interface EnableAgents {
      * <h4>Example:</h4>
      * <pre>{@code
      * @EnableAgents(mcpClients = {"filesystem", "github", "postgres"})
-     * // Enables file system, GitHub, and PostgreSQL MCP clients
+     * // Enables file system, GitHub, and PostgresSQL MCP clients
      * }</pre>
      *
      * <h4>Security Note:</h4>
-     * <p>Each MCP client may require additional configuration and
+     * <p>Each MCP server specified may require additional configuration and
      * authentication. Ensure proper credentials are configured before
      * enabling clients.
      *
-     * @return array of MCP client identifiers to enable
+     * @return array of MCP server identifiers to enable and connect to
      */
-    String[] mcpClients() default {};
+    String[] mcpServers() default {};
 }

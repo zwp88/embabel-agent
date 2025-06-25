@@ -126,7 +126,7 @@ class EmbabelEnvironmentPostProcessorTest {
     @Test
     void testEnableAgentsWithMcpClients() {
         // Given
-        @EnableAgents(mcpClients = {"filesystem", "github"})
+        @EnableAgents(mcpServers = {"filesystem", "github"})
         class TestApp {
         }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
@@ -147,7 +147,7 @@ class EmbabelEnvironmentPostProcessorTest {
         @EnableAgents(
                 loggingTheme = "starwars",
                 localModels = {"ollama"},
-                mcpClients = {"docker"}
+                mcpServers = {"docker"}
         )
         class TestApp {
         }
@@ -185,7 +185,7 @@ class EmbabelEnvironmentPostProcessorTest {
     @Test
     void testEmptyEnableAgents() {
         // Given
-        @EnableAgents(loggingTheme = "", localModels = {}, mcpClients = {})
+        @EnableAgents(loggingTheme = "", localModels = {}, mcpServers = {})
         class TestApp {
         }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));

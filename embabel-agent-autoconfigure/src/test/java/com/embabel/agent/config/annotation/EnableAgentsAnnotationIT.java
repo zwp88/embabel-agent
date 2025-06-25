@@ -170,7 +170,7 @@ class EnableAgentsWithAttributesIT {
     @EnableAgents(
             loggingTheme = "starwars",
             localModels = {"ollama"},
-            mcpClients = {"filesystem"}
+            mcpServers = {"filesystem"}
     )
     static class CustomAttributesTestApplication {
         // Configuration with custom attributes

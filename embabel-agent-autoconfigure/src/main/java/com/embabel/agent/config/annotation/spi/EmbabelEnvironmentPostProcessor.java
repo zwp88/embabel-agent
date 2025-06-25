@@ -27,7 +27,9 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Environment post-processor that activates Spring profiles based on Embabel Agent annotations.
@@ -73,11 +75,11 @@ import java.util.*;
  *   <li>Uses both annotation utils for proper meta-annotation support</li>
  * </ul>
  *
+ * @author Embabel Team
  * @see EnableAgents
  * @see AgentPlatform
  * @see EnvironmentPostProcessor
  * @since 1.0
- * @author Embabel Team
  */
 public class EmbabelEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
@@ -195,7 +197,7 @@ public class EmbabelEnvironmentPostProcessor implements EnvironmentPostProcessor
     private String[] findMcpClients(SpringApplication application) {
         EnableAgents enableAgents = findEnableAgentsAnnotation(application);
         // Return array or empty array to avoid null
-        return enableAgents != null ? enableAgents.mcpClients() : new String[0];
+        return enableAgents != null ? enableAgents.mcpServers() : new String[0];
     }
 
     /**
@@ -222,7 +224,7 @@ public class EmbabelEnvironmentPostProcessor implements EnvironmentPostProcessor
      * Activates the collected profiles in both system properties and the environment.
      *
      * @param environment the Spring environment
-     * @param profiles the profiles to activate
+     * @param profiles    the profiles to activate
      */
     private void activateProfiles(ConfigurableEnvironment environment, Set<String> profiles) {
         // Get existing profiles from system property
