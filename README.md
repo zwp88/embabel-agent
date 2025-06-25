@@ -377,34 +377,33 @@ Create your own agent project with
 uvx --from git+https://github.com/embabel/project-creator.git project-creator
 ```
 
-### Working with this repository
+### Example Agents
 
-The easiest way to run the application using one of the scripts in the
-`scripts` directory. You can start the shell in interactive mode with:
+> **📚 For examples and tutorials**, see the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
+
 
 ```bash
-cd scripts
+# Clone and run examples
+git clone https://github.com/embabel/embabel-agent-examples
+cd embabel-agent-examples/scripts/kotlin
 ./shell.sh
-````
-
-This script will also warn of any missing environment variables.
-
-You can also run the shell under your IDE or from the command line
-using Maven directly:
-
-```bash
-export SPRING_PROFILES_ACTIVE=shell,starwars
-mvn -P agent-examples-kotlin -Dmaven.test.skip=true spring-boot:run
 ```
 
-Note the `agent-examples-kotlin` Maven profile set via `-P`. If this is not set,
-Embabel will not find the example agents, which are outside the main source tree.
+#### Shell Commands
 
-If running in an IDE, you'll need to set this profile also.
-In IntelliJ, activate it by checking the appropriate box
-that appears after going through the menu options _View -> Tool Windows - > Maven_.
+Type `help` to see available commands. Example:
 
-> The export is separate from the mvn command to avoid Spring Shell trying to process the profiles as a command.
+```
+execute "Lynda is a Scorpio, find news for her" -p -r
+```
+
+Options:
+- `-p` logs prompts
+- `-r` logs LLM responses
+
+Use `chat` for interactive conversations with agents.
+
+> **Tip:** Spring Shell supports history - type `!!` to repeat the last command
 
 Type `help` to see the available commands.
 
