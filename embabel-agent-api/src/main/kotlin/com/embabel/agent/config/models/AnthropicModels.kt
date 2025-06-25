@@ -52,6 +52,10 @@ data class AnthropicProperties(
 @Profile("!test")
 @ExcludeFromJacocoGeneratedReport(reason = "Anthropic configuration can't be unit tested")
 class AnthropicModels(
+    @Value("\${ANTHROPIC_BASE_URL}")
+    private val baseUrl: String,
+    @Value("\${ANTHROPIC_API_KEY}")
+    private val apiKey: String,
     llms: List<Llm>,
     private val properties: AnthropicProperties,
 ) {
@@ -112,12 +116,9 @@ class AnthropicModels(
     }
 
     @Bean
-    fun claudeOpus4(
-        @Value("\${ANTHROPIC_BASE_URL}") baseUrl: String,
-        @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm {
+    fun claudeOpus4(): Llm {
         return anthropicModelOf(
-            CLAUDE_40_OPUS, baseUrl, apiKey,
+            CLAUDE_40_OPUS,
             knowledgeCutoffDate = LocalDate.of(2025, 3, 31),
             maxTokens = 200000,
         )
@@ -131,12 +132,9 @@ class AnthropicModels(
     }
 
     @Bean
-    fun claudeSonnet(
-        @Value("\${ANTHROPIC_BASE_URL}") baseUrl: String,
-        @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm {
+    fun claudeSonnet(): Llm {
         return anthropicModelOf(
-            CLAUDE_37_SONNET, baseUrl, apiKey,
+            CLAUDE_37_SONNET,
             knowledgeCutoffDate = LocalDate.of(2024, 10, 31),
             maxTokens = 20000,
         )
@@ -150,11 +148,8 @@ class AnthropicModels(
     }
 
     @Bean
-    fun claudeHaiku(
-        @Value("\${ANTHROPIC_BASE_URL}") baseUrl: String,
-        @Value("\${ANTHROPIC_API_KEY}") apiKey: String,
-    ): Llm = anthropicModelOf(
-        CLAUDE_35_HAIKU, baseUrl, apiKey,
+    fun claudeHaiku(): Llm = anthropicModelOf(
+        CLAUDE_35_HAIKU,
         knowledgeCutoffDate = LocalDate.of(2024, 10, 22),
         maxTokens = 8192,
     )
@@ -168,15 +163,13 @@ class AnthropicModels(
 
     private fun anthropicModelOf(
         name: String,
-        baseUrl: String,
-        apiKey: String,
         knowledgeCutoffDate: LocalDate?,
         maxTokens: Int,
     ): Llm {
         // Claude seems to need max tokens
         val chatModel = AnthropicChatModel
             .builder()
-            .anthropicApi(createAnthropicApi(baseUrl, apiKey))
+            .anthropicApi(createAnthropicApi())
             .retryTemplate(retryTemplate)
             .build()
         return Llm(
@@ -188,7 +181,7 @@ class AnthropicModels(
         )
     }
 
-    private fun createAnthropicApi(baseUrl: String, apiKey: String): AnthropicApi {
+    private fun createAnthropicApi(): AnthropicApi {
         val builder = AnthropicApi.builder().apiKey(apiKey)
         if (baseUrl.isNotBlank()) {
             logger.info("Using custom Anthropic base URL: $baseUrl")
