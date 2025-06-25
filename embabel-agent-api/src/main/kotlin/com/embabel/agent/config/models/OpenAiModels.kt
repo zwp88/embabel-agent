@@ -15,17 +15,14 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.EmbeddingService
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.PerTokenPricingModel
-import com.embabel.common.ai.model.config.OpenAiChatOptionsConverter
-import com.embabel.common.ai.model.config.OpenAiConfiguration
+import com.embabel.common.ai.model.*
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import com.embabel.common.util.loggerFor
 import io.micrometer.observation.ObservationRegistry
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.document.MetadataMode
 import org.springframework.ai.openai.OpenAiChatModel
+import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.OpenAiEmbeddingModel
 import org.springframework.ai.openai.OpenAiEmbeddingOptions
 import org.springframework.ai.openai.api.OpenAiApi
@@ -46,7 +43,7 @@ class OpenAiModels(
     private val observationRegistry: ObservationRegistry,
 ) {
     init {
-        loggerFor<OpenAiConfiguration>().info("OpenAI AI models are available")
+        loggerFor<OpenAiModels>().info("OpenAI AI models are available")
     }
 
     private val openAiApi = OpenAiApi.builder().apiKey(apiKey).build()
@@ -138,4 +135,20 @@ class OpenAiModels(
 
         const val PROVIDER = "OpenAI"
     }
+}
+
+/**
+ * Save default. Some models may not support all options.
+ */
+object OpenAiChatOptionsConverter : OptionsConverter<OpenAiChatOptions> {
+
+    override fun convertOptions(options: LlmOptions): OpenAiChatOptions =
+        OpenAiChatOptions.builder()
+            .temperature(options.temperature)
+            .topP(options.topP)
+            .maxTokens(options.maxTokens)
+            .presencePenalty(options.presencePenalty)
+            .frequencyPenalty(options.frequencyPenalty)
+            .topP(options.topP)
+            .build()
 }

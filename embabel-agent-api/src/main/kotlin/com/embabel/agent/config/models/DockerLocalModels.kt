@@ -17,7 +17,6 @@ package com.embabel.agent.config.models
 
 import com.embabel.agent.common.RetryProperties
 import com.embabel.common.ai.model.*
-import com.embabel.common.ai.model.config.OpenAiChatOptionsConverter
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory

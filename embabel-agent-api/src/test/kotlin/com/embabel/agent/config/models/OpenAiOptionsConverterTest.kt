@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.config.OpenAiChatOptionsConverter
 import org.springframework.ai.openai.OpenAiChatOptions
 
 class OpenAiOptionsConverterTest : OptionsConverterTestSupport<OpenAiChatOptions>(

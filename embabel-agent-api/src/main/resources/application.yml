@@ -57,9 +57,6 @@ logging:
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr([%t]){magenta} %clr(%-5level) %clr(%logger{0}){cyan} %clr(-){faint} %msg%n"
   level:
 
-    # Temporary hack until we resolve BeanPostProcessor warnings
-    # org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
-
     # We deliberately suppress verbose error messages from the Spring AI converter
     # that can be distracting in the console
     # Any unrecoverable errors will still be logged when they propagate up the stack
