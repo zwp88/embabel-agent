@@ -38,6 +38,8 @@ import java.time.LocalDate
 @Profile("!test")
 @ExcludeFromJacocoGeneratedReport(reason = "Open AI configuration can't be unit tested")
 class OpenAiModels(
+    @Value("\${OPENAI_BASE_URL:}")
+    private val baseUrl: String,
     @Value("\${OPENAI_API_KEY}")
     private val apiKey: String,
     private val observationRegistry: ObservationRegistry,
@@ -46,7 +48,16 @@ class OpenAiModels(
         loggerFor<OpenAiModels>().info("OpenAI AI models are available")
     }
 
-    private val openAiApi = OpenAiApi.builder().apiKey(apiKey).build()
+    private val openAiApi = createOpenAiApi()
+
+    private fun createOpenAiApi(): OpenAiApi {
+        val builder = OpenAiApi.builder().apiKey(apiKey)
+        if (baseUrl.isNotBlank()) {
+            loggerFor<OpenAiModels>().info("Using custom OpenAI base URL: $baseUrl")
+            builder.baseUrl(baseUrl)
+        }
+        return builder.build()
+    }
 
     @Bean
     fun gpt41mini(): Llm {
