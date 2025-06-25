@@ -9,24 +9,28 @@
         <module name="embabel-horoscope-example" />
         <module name="embabel-agent-starter-platform" />
         <module name="embabel-agent-shell" />
-        <module name="movie" />
-        <module name="horoscope (2) (com.embabel.agent.example.kotlin)" />
         <module name="embabel-agent-autoconfigure" />
-        <module name="dogfood" />
         <module name="embabel-agent-rag" />
         <module name="embabel-agent-starter" />
         <module name="embabel-agent-api" />
         <module name="embabel-movie-example" />
-        <module name="examples-common" />
         <module name="embabel-agent-test" />
         <module name="embabel-agent-eval" />
-        <module name="horoscope (1) (com.embabel.agent.example.java)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="dogfood" target="21" />
       <module name="embabel-agent-docs" target="21" />
+      <module name="embabel-agent-example-dependencies" target="1.5" />
+      <module name="embabel-agent-example-parent" target="21" />
       <module name="embabel-horoscope-example" target="21" />
       <module name="embabel-movie-example" target="21" />
+      <module name="example-java-parent" target="21" />
+      <module name="example-kotlin-parent" target="21" />
+      <module name="examples-common" target="21" />
+      <module name="horoscope (1) (com.embabel.agent.example.java)" target="21" />
+      <module name="horoscope (2) (com.embabel.agent.example.kotlin)" target="21" />
+      <module name="movie" target="21" />
       <module name="travel" target="21" />
     </bytecodeTargetLevel>
   </component>

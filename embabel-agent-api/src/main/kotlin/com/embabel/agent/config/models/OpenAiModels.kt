@@ -53,7 +53,7 @@ class OpenAiModels(
     private fun createOpenAiApi(): OpenAiApi {
         val builder = OpenAiApi.builder().apiKey(apiKey)
         if (baseUrl.isNotBlank()) {
-            loggerFor<OpenAiModels>().info("Using custom OpenAI base URL: $baseUrl")
+            loggerFor<OpenAiModels>().info("Using custom OpenAI base URL: {}", baseUrl)
             builder.baseUrl(baseUrl)
         }
         return builder.build()
@@ -118,11 +118,11 @@ class OpenAiModels(
             openAiApi,
             MetadataMode.EMBED,
             OpenAiEmbeddingOptions.builder()
-                .model("text-embedding-3-small")
+                .model(DEFAULT_TEXT_EMBEDDING_MODEL)
                 .build(),
         )
         return EmbeddingService(
-            name = "text-embedding-3-small",
+            name = DEFAULT_TEXT_EMBEDDING_MODEL,
             model = model,
             provider = PROVIDER,
         )
@@ -130,6 +130,11 @@ class OpenAiModels(
 
     private fun chatModelOf(model: String): ChatModel {
         return OpenAiChatModel.builder()
+            .defaultOptions(
+                OpenAiChatOptions.builder()
+                    .model(model)
+                    .build()
+            )
             .openAiApi(openAiApi)
             .observationRegistry(
                 observationRegistry
@@ -145,6 +150,10 @@ class OpenAiModels(
         const val GPT_41_NANO = "gpt-4.1-nano"
 
         const val PROVIDER = "OpenAI"
+
+        const val TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small"
+
+        const val DEFAULT_TEXT_EMBEDDING_MODEL = TEXT_EMBEDDING_3_SMALL
     }
 }
 

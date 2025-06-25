@@ -81,16 +81,16 @@ class AnthropicModels(
     val gpt41mini = llms.find { it.name == OpenAiModels.GPT_41_MINI }
 
     init {
-        logger.info("Anthropic models are available: $properties")
+        logger.info("Anthropic models are available: {}", properties)
         if (gpt41 != null) {
-            logger.info("✅ Using ${gpt41!!.name} fallback")
+            logger.info("✅ Using {} fallback", gpt41!!.name)
         } else {
-            logger.info("❌ ${gpt41!!.name} fallback not available")
+            logger.info("❌ {} fallback not available", gpt41!!.name)
         }
         if (gpt41mini != null) {
-            logger.info("✅ Using ${gpt41mini!!.name} fallback")
+            logger.info("✅ Using {} fallback", gpt41mini!!.name)
         } else {
-            logger.info("❌ ${gpt41mini!!.name} fallback not available")
+            logger.info("❌ {} fallback not available", gpt41mini!!.name)
         }
     }
 
@@ -117,10 +117,9 @@ class AnthropicModels(
 
     @Bean
     fun claudeOpus4(): Llm {
-        return anthropicModelOf(
+        return anthropicLlmOf(
             CLAUDE_40_OPUS,
             knowledgeCutoffDate = LocalDate.of(2025, 3, 31),
-            maxTokens = 200000,
         )
             .withFallback(fallbackTo = gpt41, whenError = flipTrigger)
             .copy(
@@ -133,10 +132,9 @@ class AnthropicModels(
 
     @Bean
     fun claudeSonnet(): Llm {
-        return anthropicModelOf(
+        return anthropicLlmOf(
             CLAUDE_37_SONNET,
             knowledgeCutoffDate = LocalDate.of(2024, 10, 31),
-            maxTokens = 20000,
         )
             .withFallback(fallbackTo = gpt41, whenError = flipTrigger)
             .copy(
@@ -148,10 +146,9 @@ class AnthropicModels(
     }
 
     @Bean
-    fun claudeHaiku(): Llm = anthropicModelOf(
+    fun claudeHaiku(): Llm = anthropicLlmOf(
         CLAUDE_35_HAIKU,
         knowledgeCutoffDate = LocalDate.of(2024, 10, 22),
-        maxTokens = 8192,
     )
         .withFallback(fallbackTo = gpt41mini, whenError = flipTrigger)
         .copy(
@@ -161,14 +158,17 @@ class AnthropicModels(
             )
         )
 
-    private fun anthropicModelOf(
+    private fun anthropicLlmOf(
         name: String,
         knowledgeCutoffDate: LocalDate?,
-        maxTokens: Int,
     ): Llm {
-        // Claude seems to need max tokens
         val chatModel = AnthropicChatModel
             .builder()
+            .defaultOptions(
+                AnthropicChatOptions.builder()
+                    .model(name)
+                    .build()
+            )
             .anthropicApi(createAnthropicApi())
             .retryTemplate(retryTemplate)
             .build()
@@ -184,7 +184,7 @@ class AnthropicModels(
     private fun createAnthropicApi(): AnthropicApi {
         val builder = AnthropicApi.builder().apiKey(apiKey)
         if (baseUrl.isNotBlank()) {
-            logger.info("Using custom Anthropic base URL: $baseUrl")
+            logger.info("Using custom Anthropic base URL: {}", baseUrl)
             builder.baseUrl(baseUrl)
         }
         return builder.build()

@@ -17,7 +17,6 @@ package com.embabel.agent.config.models
 
 import com.embabel.common.ai.model.*
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
-import com.embabel.common.util.loggerFor
 import io.micrometer.observation.ObservationRegistry
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
@@ -70,10 +69,6 @@ class BedrockModels(
     private val bedrockRuntimeClient: ObjectProvider<BedrockRuntimeClient>,
     private val bedrockRuntimeAsyncClient: ObjectProvider<BedrockRuntimeAsyncClient>,
 ) {
-    init {
-        loggerFor<BedrockModels>().info("Bedrock models are available")
-    }
-
     private val logger = LoggerFactory.getLogger(BedrockModels::class.java)
 
     @PostConstruct
@@ -146,7 +141,6 @@ class BedrockModels(
     )
 
     private fun chatModelOf(model: String): ChatModel {
-
         val chatModel = BedrockProxyChatModel.builder()
             .credentialsProvider(credentialsProvider)
             .region(regionProvider.region)
