@@ -24,6 +24,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.time.Duration
 import java.time.Instant
 
+/**
+ * History element
+ */
 data class ActionInvocation(
     val actionName: String,
     override val timestamp: Instant = Instant.now(),
@@ -65,7 +68,8 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
     val processContext: ProcessContext
 
     /**
-     * The agent that this process is running for
+     * The agent that this process is running.
+     * Many processes can run the same agent.
      */
     val agent: Agent
 
@@ -91,7 +95,11 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
     /**
      * How long this process has been running
      */
-    override val runningTime get(): Duration = Duration.between(timestamp, Instant.now())
+    override val runningTime
+        get(): Duration = if (status == AgentProcessStatusCode.NOT_STARTED) Duration.ZERO else Duration.between(
+            timestamp,
+            Instant.now(),
+        )
 
     @Suppress("UNCHECKED_CAST")
     fun <O> resultOfType(outputClass: Class<O>): O {
@@ -104,4 +112,7 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
 
 }
 
+/**
+ * Convenience function to get the result of a specific type
+ */
 inline fun <reified O> AgentProcess.resultOfType(): O = resultOfType(O::class.java)

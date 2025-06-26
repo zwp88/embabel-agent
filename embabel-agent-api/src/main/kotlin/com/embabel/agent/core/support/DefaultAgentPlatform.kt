@@ -83,7 +83,7 @@ internal class DefaultAgentPlatform(
 
     fun deploy(resource: Resource): DefaultAgentPlatform {
         logger.info("Loading agent from {}", resource)
-        val agent = yamlObjectMapper.readValue<Agent>(resource.inputStream, Agent::class.java)
+        val agent = yamlObjectMapper.readValue(resource.inputStream, Agent::class.java)
         return deploy(agent)
     }
 

@@ -32,7 +32,8 @@ enum class Delay {
 }
 
 /**
- *  Prevents infinite loops
+ *  Controls Process running.
+ *  Prevents infinite loops, enforces budget limits, and manages delays.
  */
 data class ProcessControl(
     val toolDelay: Delay = Delay.NONE,
