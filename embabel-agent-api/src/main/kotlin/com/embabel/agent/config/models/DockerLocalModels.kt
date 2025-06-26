@@ -133,8 +133,7 @@ class DockerLocalModels(
      * Docker models are open AI compatible
      */
     private fun dockerModelOf(model: Model): AiModel<*> {
-        val configuredEmbeddingModelNames = properties.embeddingServices.values.toSet()
-        return if (configuredEmbeddingModelNames.contains(model.id)) {
+        return if (properties.allWellKnownEmbeddingServiceNames().contains(model.id)) {
             dockerEmbeddingServiceOf(model)
         } else {
             dockerLlmOf(model)

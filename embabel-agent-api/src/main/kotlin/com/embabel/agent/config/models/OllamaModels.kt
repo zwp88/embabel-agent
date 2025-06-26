@@ -103,12 +103,10 @@ class OllamaModels(
             return
         }
 
-        val configuredEmbeddingModelNames = properties.embeddingServices.values.toSet()
-
         models.forEach { model ->
             try {
                 val beanName = "ollamaModel-${model.name}"
-                if (configuredEmbeddingModelNames.contains(model.model)) {
+                if (properties.allWellKnownEmbeddingServiceNames().contains(model.model)) {
                     val embeddingService = ollamaEmbeddingServiceOf(model.model)
                     val embeddingBeanName = "ollamaEmbeddingModel-${model.name}"
                     configurableBeanFactory.registerSingleton(embeddingBeanName, embeddingService)
