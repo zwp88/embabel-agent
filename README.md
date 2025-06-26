@@ -9,8 +9,10 @@
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F.svg?style=for-the-badge&logo=Spring-Boot&logoColor=white)
 ![Apache Tomcat](https://img.shields.io/badge/apache%20tomcat-%23F8DC75.svg?style=for-the-badge&logo=apache-tomcat&logoColor=black)
 ![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white)
+![JUnit](https://img.shields.io/badge/JUnit5-25A162.svg?style=for-the-badge&logo=JUnit5&logoColor=white)
 ![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
 ![Jinja](https://img.shields.io/badge/jinja-white.svg?style=for-the-badge&logo=jinja&logoColor=black)
 ![JSON](https://img.shields.io/badge/JSON-000?logo=json&logoColor=fff)
@@ -18,6 +20,11 @@
 ![SonarQube](https://img.shields.io/badge/SonarQube-black?style=for-the-badge&logo=sonarqube&logoColor=4E9BCD)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
+[![License](https://img.shields.io/github/license/embabel/embabel-agent?style=for-the-badge&logo=apache&color=brightgreen)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Commits](https://img.shields.io/github/commit-activity/m/embabel/embabel-agent.svg?label=commits&style=for-the-badge&logo=git&logoColor=white)](https://github.com/embabel/embabel-agent/pulse)
+
+
+
 
 <img align="left" src="https://github.com/embabel/embabel-agent/blob/main/embabel-agent-api/images/315px-Meister_der_Weltenchronik_001.jpg?raw=true" width="180">
 
@@ -824,7 +831,7 @@ This file also informs coding agent behavior.
   "embabel" also sounds like "enable."
 - Milestone names are Australian animals. Mythical animals such as "bunyip" and "yowie" are used for futures that may or
   not be implemented.
-- README badges come from [here](https://github.com/Ileriayo/markdown-badges).
+- README badges come from [here](https://github.com/Ileriayo/markdown-badges) and [here](https://home.aveek.io/GitHub-Profile-Badges/).
 
 ## Star history
 
