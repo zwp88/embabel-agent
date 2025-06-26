@@ -24,7 +24,7 @@ import com.embabel.common.core.types.ZeroToOne
 fun <I, O : Any> asTransformation(agent: Agent, outputClass: Class<O>) = Transformation<I, O> {
     val childAgentProcess = it.agentPlatform().createChildProcess(
         agent = agent,
-        parentAgentProcess = it.processContext.agentProcess,
+        parentAgentProcess = it.agentProcess,
     )
     val childProcessResult = childAgentProcess.run()
     childProcessResult.resultOfType(outputClass)

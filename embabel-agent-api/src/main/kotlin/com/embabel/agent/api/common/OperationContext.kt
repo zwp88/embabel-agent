@@ -29,7 +29,13 @@ import com.embabel.common.ai.prompt.PromptContributor
  */
 interface OperationContext : Blackboard, ToolGroupConsumer {
 
+    @Deprecated(
+        "Avoid use in user code. Use agentProcess instead.",
+    )
     val processContext: ProcessContext
+
+    val agentProcess: AgentProcess
+        get() = processContext.agentProcess
 
     /**
      * Action or operation that is being executed.

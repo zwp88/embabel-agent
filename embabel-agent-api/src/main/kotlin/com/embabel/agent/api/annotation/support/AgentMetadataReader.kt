@@ -288,7 +288,7 @@ class AgentMetadataReader(
 
                 else -> {
                     val requireNameMatch = parameter.getAnnotation(RequireNameMatch::class.java)
-                    val domainTypes = context.processContext.agentProcess.agent.domainTypes
+                    val domainTypes = context.agentProcess.agent.domainTypes
                     val variable = if (requireNameMatch != null) {
                         parameter.name
                     } else {
