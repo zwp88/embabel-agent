@@ -12,10 +12,10 @@ spring:
         stdio:
           connections:
             # MCP server exposed by Docker Desktop MCP Toolkit extension
+            # Add --verbose to the args to enable verbose logging
             docker-mcp:
               command: docker
               args:
                 - mcp
                 - gateway
                 - run
-                - --verbose
