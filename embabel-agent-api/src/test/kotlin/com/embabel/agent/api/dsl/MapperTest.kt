@@ -22,6 +22,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.system.measureTimeMillis
 
@@ -56,23 +57,25 @@ class MapperTest {
     fun `mapAsync should process items concurrently`() = runBlocking {
         val items = (1..100).toList()
         val counter = AtomicInteger(0)
-        val processingTracker = mutableListOf<Int>()
+        val processingTracker = Collections.synchronizedList(mutableListOf<Int>())
 
         val results = items.mapAsync(context) { item ->
             val currentCount = counter.incrementAndGet()
             processingTracker.add(currentCount)
-            delay(10) // Simulate some work with coroutine-friendly delay
+            delay(10)
             item * 2
         }
 
-        // Verify all items were processed
         assertEquals(items.size, results.size)
         assertEquals(items.map { it * 2 }, results)
 
-        // Verify concurrent processing by checking that some items were processed
-        // while others were still in progress (counter should have jumps)
-        val hasNonSequentialProcessing = processingTracker.zipWithNext().any { (a, b) -> b - a > 1 }
-        assertTrue(hasNonSequentialProcessing, "Processing should be concurrent, not sequential")
+        // Add safety check for empty list
+        if (processingTracker.size >= 2) {
+            val hasNonSequentialProcessing = processingTracker.zipWithNext().any { (a, b) -> b - a > 1 }
+            assertTrue(hasNonSequentialProcessing, "Processing should be concurrent, not sequential")
+        } else {
+            fail("Processing tracker should contain multiple entries for concurrency verification")
+        }
     }
 
     @Test
