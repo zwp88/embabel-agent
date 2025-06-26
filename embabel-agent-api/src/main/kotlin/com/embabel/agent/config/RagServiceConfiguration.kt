@@ -29,6 +29,7 @@ import com.embabel.agent.rag.tools.RagServiceTools
 import com.embabel.common.core.types.Semver
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -37,16 +38,17 @@ import org.springframework.context.annotation.Primary
 class RagServiceConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean(RagService::class)
     @ConditionalOnBean(VectorStore::class)
     fun defaultSpringVectorStore(vectorStore: VectorStore): RagService {
-        return SpringVectorStoreRagService(vectorStore)
+        return SpringVectorStoreRagService(vectorStore, "Default Vector Store RAG Service")
     }
 
     @Bean
     @Primary
     fun consensusRagService(
         ragServices: List<RagService>,
-    ): RagService {
+    ): WritableRagService {
         return ConsensusRagService(ragServices)
     }
 

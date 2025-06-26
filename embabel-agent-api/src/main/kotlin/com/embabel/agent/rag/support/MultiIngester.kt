@@ -24,15 +24,21 @@ import org.springframework.ai.reader.TextReader
 import org.springframework.ai.transformer.splitter.TextSplitter
 import org.springframework.ai.transformer.splitter.TokenTextSplitter
 
+
 /**
  * Write to all RAG services that implement [WritableRagService].
+ * Users can override the [TextSplitter] to control how text is split into documents.
  */
 class MultiIngester(
     override val ragServices: List<WritableRagService>,
-    private val splitter: TextSplitter = TokenTextSplitter.builder().withChunkSize(800).build(),
+    val splitter: TextSplitter = TokenTextSplitter(),
 ) : Ingester {
 
     private val logger = LoggerFactory.getLogger(javaClass)
+
+    init {
+        logger.info("Using text splitter {}", splitter)
+    }
 
     override fun active(): Boolean = ragServices.isNotEmpty()
 

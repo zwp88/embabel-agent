@@ -31,7 +31,7 @@ import org.springframework.ai.vectorstore.VectorStore
  */
 class SpringVectorStoreRagService(
     private val vectorStore: VectorStore,
-    override val description: String = vectorStore.javaClass.name,
+    override val description: String,
 ) : WritableRagService {
 
     private val logger = LoggerFactory.getLogger(javaClass)
