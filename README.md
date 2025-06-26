@@ -695,37 +695,19 @@ Available logging experiences:
 If none of these profiles is chosen, Embabel will use vanilla logging.
 This makes me sad.
 
-## Using Embabel Agent Framework in Your Project
+## Adding Embabel Agent Framework to Your Project
 
 ### Maven
 
-Add Embabel Agent BOM to your `pom.xml`:
+The easiest way is to add the Embabel Spring Boot starter dependency to your `pom.xml`:
 
 ```xml
 
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.embabel.agent</groupId>
-            <artifactId>embabel-agent-dependencies</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>    
-```
-
-Add module(s) of interest such as embabel-agent-api compile dependency to your `pom.xml`
-
-```xml
-
-<dependencies>
-    <dependency>
-        <groupId>com.embabel.agent</groupId>
-        <artifactId>embabel-agent-api</artifactId>
-    </dependency>
-</dependencies>
+<dependency>
+    <groupId>com.embabel.agent</groupId>
+    <artifactId>embabel-agent-starter</artifactId>
+    <version>${embabel-agent.version}</version>
+</dependency>
 ```
 
 ### Gradle (Kotlin DSL)
@@ -749,12 +731,11 @@ repositories {
 }
 ```
 
-Add the Embabel Agent BOM (`embabel-agent-dependencies`) and module(s) of interest such as `embabel-agent-api`:
+Add the Embabel Agent starter:
 
 ```kotlin
 dependencies {
-    implementation(platform("com.embabel.agent:embabel-agent-dependencies:1.0.0-SNAPSHOT"))
-    implementation("com.embabel.agent:embabel-agent-api:1.0.0-SNAPSHOT")
+    implementation('com.embabel.agent:embabel-agent-starter:${embabel-agent.version}')
 }
 ```
 
@@ -779,12 +760,11 @@ repositories {
 }
 ```
 
-Add the Embabel Agent BOM (`embabel-agent-dependencies`) and module(s) of interest such as `embabel-agent-api`:
+Add the Embabel Agent starter:
 
 ```groovy
 dependencies {
-    implementation platform('com.embabel.agent:embabel-agent-dependencies:1.0.0-SNAPSHOT')
-    implementation 'com.embabel.agent:embabel-agent-api:1.0.0-SNAPSHOT'
+    implementation 'com.embabel.agent:embabel-agent-starter:0.1.0-SNAPSHOT'
 }
 ```
 
@@ -831,7 +811,8 @@ This file also informs coding agent behavior.
   "embabel" also sounds like "enable."
 - Milestone names are Australian animals. Mythical animals such as "bunyip" and "yowie" are used for futures that may or
   not be implemented.
-- README badges come from [here](https://github.com/Ileriayo/markdown-badges) and [here](https://home.aveek.io/GitHub-Profile-Badges/).
+- README badges come from [here](https://github.com/Ileriayo/markdown-badges)
+  and [here](https://home.aveek.io/GitHub-Profile-Badges/).
 
 ## Star history
 
