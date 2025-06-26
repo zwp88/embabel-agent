@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.api.common.Asyncer
 import com.embabel.agent.core.*
 import com.embabel.agent.event.AgentDeploymentEvent
 import com.embabel.agent.event.AgentProcessCreationEvent
@@ -47,6 +48,7 @@ internal class DefaultAgentPlatform(
     private val agentProcessRepository: AgentProcessRepository = InMemoryAgentProcessRepository(),
     private val operationScheduler: OperationScheduler = OperationScheduler.PRONTO,
     private val ragService: RagService,
+    private val asyncer: Asyncer,
 ) : AgentPlatform {
 
     private val logger = LoggerFactory.getLogger(DefaultAgentPlatform::class.java)
@@ -61,6 +63,7 @@ internal class DefaultAgentPlatform(
         eventListener = eventListener,
         operationScheduler = operationScheduler,
         ragService = ragService,
+        asyncer = asyncer,
     )
 
     init {

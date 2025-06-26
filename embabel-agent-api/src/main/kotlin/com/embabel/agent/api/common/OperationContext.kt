@@ -74,6 +74,20 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
         llm = LlmOptions(),
     )
 
+    /**
+     * Execute the operations in parallel.
+     */
+    fun <T, R> parallelMap(
+        coll: Collection<T>,
+        transform: (t: T) -> R,
+        maxConcurrency: Int,
+    ): List<R> = processContext.platformServices.asyncer.parallelMap(
+        coll = coll,
+        transform = transform,
+        maxConcurrency = maxConcurrency,
+    )
+
+
     companion object {
         operator fun invoke(
             processContext: ProcessContext,

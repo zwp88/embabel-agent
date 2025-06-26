@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.spi
 
+import com.embabel.agent.api.common.Asyncer
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
@@ -31,5 +32,6 @@ data class PlatformServices(
     val llmOperations: LlmOperations,
     val eventListener: AgenticEventListener,
     val operationScheduler: OperationScheduler,
+    val asyncer: Asyncer,
     val ragService: RagService,
 )

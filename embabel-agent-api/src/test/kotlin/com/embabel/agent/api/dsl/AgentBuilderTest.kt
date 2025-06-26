@@ -24,6 +24,7 @@ import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.core.support.SimpleAgentProcess
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.PlatformServices
+import com.embabel.agent.spi.support.ExecutorAsyncer
 import com.embabel.agent.support.Dog
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.agent.testing.integration.DummyObjectCreatingLlmOperations
@@ -32,6 +33,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.util.concurrent.Executors
 import kotlin.test.assertTrue
 
 val emptyAgent = agent(name = "foo", description = "bar") {}
@@ -111,6 +113,7 @@ class AgentBuilderTest {
                 operationScheduler = mockk(),
                 agentPlatform = mockk(),
                 ragService = mockk(),
+                asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor())
             )
             val processContext = ProcessContext(
                 agentProcess = SimpleAgentProcess(
@@ -146,6 +149,7 @@ class AgentBuilderTest {
                 operationScheduler = mockk(),
                 agentPlatform = mockk(),
                 ragService = RagService.empty(),
+                asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor())
             )
             val processContext = ProcessContext(
                 agentProcess = SimpleAgentProcess(

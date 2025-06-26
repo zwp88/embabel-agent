@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.dsl;
+package com.embabel.agent.api.common;
 
-import org.junit.jupiter.api.Disabled;
+import com.embabel.agent.spi.support.ExecutorAsyncer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.concurrent.Executors;
 
-class JavaMapperTest {
+/**
+ * Check that mapper functionality works as expected in Java.
+ */
+class JavaAsyncerTest {
 
     @Test
-    @Disabled("test not yet implemented")
     void testMappingFromJava() {
+        var executor = Executors.newFixedThreadPool(10);
+
+        var asyncer = new ExecutorAsyncer(executor);
         var things = List.of("a", "b", "c");
-//        parallelMap.thingsToString(things);
+        var mapped = asyncer.parallelMap(things, String::toUpperCase, 10);
+
     }
 
 }
