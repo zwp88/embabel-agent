@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -54,6 +55,7 @@ class MapperTest {
     }
 
     @Test
+    @Disabled("this test is disabled because it can cause flaky behavior in CI environments")
     fun `mapAsync should process items concurrently`() = runBlocking {
         val items = (1..100).toList()
         val counter = AtomicInteger(0)

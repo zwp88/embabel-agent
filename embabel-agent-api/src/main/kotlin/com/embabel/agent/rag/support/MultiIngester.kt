@@ -36,10 +36,10 @@ class MultiIngester(
 
     override fun active(): Boolean = ragServices.isNotEmpty()
 
-    override fun ingest(resourceUrl: String): IngestionResult {
-        val sourceDocs = TextReader(resourceUrl).get()
+    override fun ingest(resourcePath: String): IngestionResult {
+        val sourceDocs = TextReader(resourcePath).get()
         val documents = splitter.split(sourceDocs)
-        logger.info("Split {} into {} documents from {}", sourceDocs.size, documents.size, resourceUrl)
+        logger.info("Split {} into {} documents from {}", sourceDocs.size, documents.size, resourcePath)
         return writeToStores(documents)
     }
 
