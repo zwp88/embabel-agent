@@ -20,12 +20,12 @@ import com.embabel.common.ai.model.*
 import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
+import org.springframework.ai.document.MetadataMode
 import org.springframework.ai.model.NoopApiKey
-import org.springframework.ai.ollama.OllamaEmbeddingModel
-import org.springframework.ai.ollama.api.OllamaApi
-import org.springframework.ai.ollama.api.OllamaOptions
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
+import org.springframework.ai.openai.OpenAiEmbeddingModel
+import org.springframework.ai.openai.OpenAiEmbeddingOptions
 import org.springframework.ai.openai.api.OpenAiApi
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -142,18 +142,16 @@ class DockerLocalModels(
     }
 
     private fun dockerEmbeddingServiceOf(model: Model): EmbeddingService {
-        val springEmbeddingModel = OllamaEmbeddingModel.builder()
-            .ollamaApi(
-                OllamaApi.builder()
-                    .baseUrl(dockerProperties.baseUrl)
-                    .build()
-            )
-            .defaultOptions(
-                OllamaOptions.builder()
-                    .model(model.id)
-                    .build()
-            )
-            .build()
+        val springEmbeddingModel = OpenAiEmbeddingModel(
+            OpenAiApi.Builder()
+                .baseUrl(dockerProperties.baseUrl)
+                .apiKey(NoopApiKey())
+                .build(),
+            MetadataMode.EMBED,
+            OpenAiEmbeddingOptions.builder()
+                .model(model.id)
+                .build(),
+        )
 
         return EmbeddingService(
             name = model.id,
