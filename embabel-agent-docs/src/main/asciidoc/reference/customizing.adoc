@@ -3,6 +3,40 @@
 
 ==== Adding LLMs
 
+You can add custom LLMs as Spring beans of type `Llm`.
+
+Llms are created around Spring AI `ChatModel` instances.
+
+A common requirement is to add an open AI compatible LLM.
+This can be done by extending the `OpenAiCompatibleModelFactory` class as follows:
+
+[source,kotlin]
+-----
+@Configuration
+class CustomOpenAiCompatibleModels(
+    @Value("\${MY_BASE_URL:#{null}}")
+    baseUrl: String?,
+    @Value("\${MY_API_KEY}")
+    apiKey: String,
+    observationRegistry: ObservationRegistry,
+) : OpenAiCompatibleModelFactory(baseUrl = baseUrl, apiKey = apiKey, observationRegistry = observationRegistry) {
+
+    @Bean
+    fun myGreatModel(): Llm {
+        // Call superclass method
+        return openAiCompatibleLlm(
+            model = "my-great-model",
+            provider = "me",
+            knowledgeCutoffDate = LocalDate.of(2025, 1, 1),
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = .40,
+                usdPer1mOutputTokens = 1.6,
+            )
+        )
+    }
+}
+-----
+
 ==== Adding embedding models
 
 ==== Configuration via `application.yml`
