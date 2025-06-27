@@ -15,17 +15,10 @@
  */
 package com.embabel.agent.config.models
 
-import com.embabel.common.ai.model.*
-import com.embabel.common.util.ExcludeFromJacocoGeneratedReport
-import com.embabel.common.util.loggerFor
+import com.embabel.common.ai.model.EmbeddingService
+import com.embabel.common.ai.model.Llm
+import com.embabel.common.ai.model.PerTokenPricingModel
 import io.micrometer.observation.ObservationRegistry
-import org.springframework.ai.chat.model.ChatModel
-import org.springframework.ai.document.MetadataMode
-import org.springframework.ai.openai.OpenAiChatModel
-import org.springframework.ai.openai.OpenAiChatOptions
-import org.springframework.ai.openai.OpenAiEmbeddingModel
-import org.springframework.ai.openai.OpenAiEmbeddingOptions
-import org.springframework.ai.openai.api.OpenAiApi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -33,42 +26,26 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import java.time.LocalDate
 
+/**
+ * Well-known OpenAI models.
+ */
 @Configuration
-@ConditionalOnProperty("OPENAI_API_KEY")
 @Profile("!test")
-@ExcludeFromJacocoGeneratedReport(reason = "Open AI configuration can't be unit tested")
+@ConditionalOnProperty("OPENAI_API_KEY")
 class OpenAiModels(
-    @Value("\${OPENAI_BASE_URL:}")
-    private val baseUrl: String,
+    @Value("\${OPENAI_BASE_URL:#{null}}")
+    baseUrl: String?,
     @Value("\${OPENAI_API_KEY}")
-    private val apiKey: String,
-    private val observationRegistry: ObservationRegistry,
-) {
-    init {
-        loggerFor<OpenAiModels>().info("OpenAI AI models are available")
-    }
-
-    private val openAiApi = createOpenAiApi()
-
-    private fun createOpenAiApi(): OpenAiApi {
-        val builder = OpenAiApi.builder().apiKey(apiKey)
-        if (baseUrl.isNotBlank()) {
-            loggerFor<OpenAiModels>().info("Using custom OpenAI base URL: {}", baseUrl)
-            builder.baseUrl(baseUrl)
-        }
-        return builder.build()
-    }
+    apiKey: String,
+    observationRegistry: ObservationRegistry,
+) : OpenAiCompatibleModelFactory(baseUrl = baseUrl, apiKey = apiKey, observationRegistry = observationRegistry) {
 
     @Bean
     fun gpt41mini(): Llm {
-        val model = GPT_41_MINI
-        return Llm(
-            name = model,
-            model = chatModelOf(model),
+        return openAiCompatibleLlm(
+            model = GPT_41_MINI,
             provider = PROVIDER,
-            optionsConverter = OpenAiChatOptionsConverter,
             knowledgeCutoffDate = LocalDate.of(2024, 7, 18),
-        ).copy(
             pricingModel = PerTokenPricingModel(
                 usdPer1mInputTokens = .40,
                 usdPer1mOutputTokens = 1.6,
@@ -78,67 +55,36 @@ class OpenAiModels(
 
     @Bean
     fun gpt41(): Llm {
-        val model = GPT_41
-        return Llm(
-            name = model,
-            model = chatModelOf(model),
+        return openAiCompatibleLlm(
+            model = GPT_41,
             provider = PROVIDER,
-            optionsConverter = OpenAiChatOptionsConverter,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
-        )
-            .copy(
-                pricingModel = PerTokenPricingModel(
-                    usdPer1mInputTokens = 2.0,
-                    usdPer1mOutputTokens = 8.0,
-                )
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = 2.0,
+                usdPer1mOutputTokens = 8.0,
             )
+        )
     }
 
     @Bean
     fun gpt41nano(): Llm {
-        val model = GPT_41_NANO
-        return Llm(
-            name = model,
-            model = chatModelOf(model),
-            optionsConverter = OpenAiChatOptionsConverter,
+        return openAiCompatibleLlm(
+            model = GPT_41_NANO,
             provider = PROVIDER,
             knowledgeCutoffDate = LocalDate.of(2024, 8, 6),
-        )
-            .copy(
-                pricingModel = PerTokenPricingModel(
-                    usdPer1mInputTokens = .1,
-                    usdPer1mOutputTokens = .4,
-                )
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = .1,
+                usdPer1mOutputTokens = .4,
             )
+        )
     }
 
     @Bean
-    fun embeddingService(): EmbeddingService {
-        val model = OpenAiEmbeddingModel(
-            openAiApi,
-            MetadataMode.EMBED,
-            OpenAiEmbeddingOptions.builder()
-                .model(DEFAULT_TEXT_EMBEDDING_MODEL)
-                .build(),
-        )
-        return EmbeddingService(
-            name = DEFAULT_TEXT_EMBEDDING_MODEL,
-            model = model,
+    fun defaultOpenAiEmbeddingService(): EmbeddingService {
+        return openAiCompatibleEmbeddingService(
+            model = DEFAULT_TEXT_EMBEDDING_MODEL,
             provider = PROVIDER,
         )
-    }
-
-    private fun chatModelOf(model: String): ChatModel {
-        return OpenAiChatModel.builder()
-            .defaultOptions(
-                OpenAiChatOptions.builder()
-                    .model(model)
-                    .build()
-            )
-            .openAiApi(openAiApi)
-            .observationRegistry(
-                observationRegistry
-            ).build()
     }
 
     companion object {
@@ -155,20 +101,4 @@ class OpenAiModels(
 
         const val DEFAULT_TEXT_EMBEDDING_MODEL = TEXT_EMBEDDING_3_SMALL
     }
-}
-
-/**
- * Save default. Some models may not support all options.
- */
-object OpenAiChatOptionsConverter : OptionsConverter<OpenAiChatOptions> {
-
-    override fun convertOptions(options: LlmOptions): OpenAiChatOptions =
-        OpenAiChatOptions.builder()
-            .temperature(options.temperature)
-            .topP(options.topP)
-            .maxTokens(options.maxTokens)
-            .presencePenalty(options.presencePenalty)
-            .frequencyPenalty(options.frequencyPenalty)
-            .topP(options.topP)
-            .build()
 }
