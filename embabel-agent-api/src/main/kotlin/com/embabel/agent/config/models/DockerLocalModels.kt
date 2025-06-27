@@ -48,6 +48,8 @@ data class DockerProperties(
  * Docker local models
  * This class will always be loaded, but models won't be loaded
  * from the Docker endpoint unless the "docker" profile is set.
+ * Model names will be precisely as reported from
+ * http://localhost:12434/engines/v1/models (assuming default port).
  */
 @ExcludeFromJacocoGeneratedReport(reason = "Docker model configuration can't be unit tested")
 @Configuration
@@ -81,10 +83,9 @@ class DockerLocalModels(
                 .retrieve()
                 .body<ModelResponse>()
 
-            response?.data?.mapNotNull { modelDetails ->
-                // Additional validation to ensure model names are valid
+            response?.data?.map { modelDetails ->
                 Model(
-                    id = modelDetails.id.replace(":", "-").lowercase(),
+                    id = modelDetails.id,
                 )
             } ?: emptyList()
         } catch (e: Exception) {
