@@ -59,8 +59,7 @@ fun <A, B : Any> doSplit(
 
 inline fun <reified A, reified B : Any> split(
     noinline splitter: (a: A) -> List<B>,
-
-    ): AgentScopeBuilder<Unit> = doSplit({ splitter(it.input) }, A::class.java, B::class.java)
+): AgentScopeBuilder<Unit> = doSplit({ splitter(it.input) }, A::class.java, B::class.java)
 
 inline infix fun <reified A, reified B, reified C> ((A) -> B).andThenDo(
     crossinline that: (InputActionContext<B>) -> C
@@ -237,7 +236,7 @@ fun <A, B, C> aggregate(
         }
     }
     actions += transformActions
-    val mergeAction = SupplierAction<C>(
+    val mergeAction = SupplierAction(
         name = "List<${bClass.name}>=>${cClass.name}",
         description = "Aggregate list $bClass to $cClass",
         pre = transformActions.map { Rerun.hasRunCondition(it) } + allCompletedCondition.name,
@@ -453,14 +452,6 @@ data class AgentScopeBuilder<O>(
     val goals: Set<Goal> = emptySet(),
     val conditions: Set<Condition> = emptySet(),
 ) {
-    fun parallelize(): AgentScopeBuilder<O> {
-        return this
-    }
-
-    fun errorHandling(): AgentScopeBuilder<O> {
-        return this
-    }
-
     fun build(): AgentScope {
         return AgentScope(
             name = name,
@@ -470,7 +461,11 @@ data class AgentScopeBuilder<O>(
         )
     }
 
-    inline fun <reified O : Any> run(context: TransformationActionContext<*, O>): O {
+    fun <O : Any> asSubProcess(
+        context: ActionContext,
+        outputClass: Class<O>,
+    ): O {
+
         val withExtraGoal = AgentScope(
             name = name,
             actions = actions,
@@ -479,7 +474,7 @@ data class AgentScopeBuilder<O>(
                 description = "description",
                 inputs = setOf(
                     IoBinding(
-                        type = context.outputClass,
+                        type = outputClass,
                         name = IoBinding.DEFAULT_BINDING,
                     ),
                 ),
@@ -487,17 +482,31 @@ data class AgentScopeBuilder<O>(
             conditions = conditions,
         )
         val agent = withExtraGoal.createAgent(
-            name = name,
-            provider = provider,
-            description = name,
+            name = this.name,
+            provider = this.provider,
+            description = this.name,
         )
-        val singleAction = agent.asAction<Any, O>()
+        val singleAction = agentTransformer(
+            agent = agent,
+            inputClass = Unit::class.java,
+            outputClass = outputClass,
+        )
+
         singleAction.execute(
             processContext = context.processContext,
-            action = context.action,
+            action = context.action!!,
         )
-        return context.last<O>() ?: throw IllegalStateException(
-            "No output of type ${O::class.java} found in context"
+        return context.last(outputClass) ?: throw IllegalStateException(
+            "No output of type ${outputClass.name} found in context"
+        )
+    }
+
+    inline fun <reified O : Any> asSubProcess(
+        context: ActionContext
+    ): O {
+        return asSubProcess(
+            context = context,
+            outputClass = O::class.java,
         )
     }
 

@@ -604,20 +604,20 @@ data class NoTools(val x: Int)
 class DefineFlowTest {
 
     @Action
-    fun toPerson(
+    fun toFrog(
         userInput: UserInput,
         context: TransformationActionContext<UserInput, PersonWithReverseTool>
-    ): PersonWithReverseTool {
+    ): Frog {
         return chain<UserInput, PersonWithReverseTool, Frog>(
             { PersonWithReverseTool(it.input.content) },
             { Frog(it.input.name) },
-        ).run(context)
+        ).asSubProcess(context)
     }
 
     @AchievesGoal(description = "Creating a person")
     @Action
-    fun done(person: PersonWithReverseTool): PersonWithReverseTool {
-        return person
+    fun done(frog: Frog): PersonWithReverseTool {
+        return PersonWithReverseTool(frog.name)
     }
 }
 

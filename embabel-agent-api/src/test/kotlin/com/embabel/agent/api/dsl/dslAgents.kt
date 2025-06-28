@@ -51,7 +51,7 @@ fun evenMoreEvilWizard() = agent("EvenMoreEvilWizard", description = "Turn a per
         aggregate<MagicVictim, Frog, SnakeMeal>(
             transforms = listOf({ Frog(it.input.name) }, { Frog("2") }, { Frog("3") }),
             merge = { frogs, _ -> SnakeMeal(frogs) },
-        ).parallelize()
+        )
     }
 
     goal(name = "done", description = "done", satisfiedBy = SnakeMeal::class)

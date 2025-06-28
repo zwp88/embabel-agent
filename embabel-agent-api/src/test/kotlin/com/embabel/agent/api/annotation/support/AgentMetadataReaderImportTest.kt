@@ -33,7 +33,8 @@ class AgentMetadataReaderImportTest {
         val agent = reader.createAgentMetadata(DefineFlowTest()) as Agent
         val ap = IntegrationTestUtils.dummyAgentPlatform()
         val result = ap.runAgentFrom(
-            agent, processOptions = ProcessOptions(),
+            agent = agent,
+            processOptions = ProcessOptions(),
             bindings = mapOf(
                 "it" to UserInput("input"),
             ),

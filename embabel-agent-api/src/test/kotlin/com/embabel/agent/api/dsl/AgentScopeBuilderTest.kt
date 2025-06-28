@@ -117,7 +117,7 @@ class AgentScopeBuilderTest {
             assertEquals(Semver.DEFAULT_VERSION, agent.version.value)
             assertEquals(0, agent.conditions.size, "Should have no conditions")
             assertEquals(2, agent.actions.size, "Should have 2 actions")
-            assertEquals(1, agent.goals.size)
+            assertEquals(1, agent.goals.size, "Should have 2 goals")
         }
 
         @Test
@@ -543,7 +543,7 @@ fun simpleNamer(transformListener: () -> Unit = {}) =
                         rejected = emptyList()
                     )
                 },
-            ).parallelize()
+            )
         }
 
         goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
@@ -606,7 +606,7 @@ fun nestingByName() = agent("nesting test", description = "Nesting test") {
                     rejected = emptyList()
                 )
             },
-        ).parallelize()
+        )
     }
 
     goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
@@ -632,7 +632,7 @@ fun nestingByReference() = agent("nesting test", description = "Nesting test") {
                     rejected = emptyList()
                 )
             },
-        ).parallelize()
+        )
     }
 
     goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)
@@ -655,7 +655,7 @@ fun biAggregate() = agent("biAggregate", description = "Nesting test") {
                     rejected = emptyList()
                 )
             },
-        ).parallelize()
+        )
     }
 
     goal(name = "namingDone", description = "We are satisfied with generated names", satisfiedBy = AllNames::class)

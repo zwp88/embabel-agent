@@ -137,7 +137,7 @@ fun factCheckerAgent(
                     """.trimIndent()
                 )
             },
-        ).parallelize()
+        )
     }
 
     transformation<RationalizedFactualAssertions, FactCheck> { operationContext ->
