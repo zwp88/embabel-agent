@@ -19,6 +19,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 
 /**
  * PromptContributor that defines the expected response format
+ * for text responses
  */
 data class ResponseFormat(
     val format: String,
@@ -34,6 +35,7 @@ data class ResponseFormat(
 
     companion object {
         val MARKDOWN = ResponseFormat("Markdown")
+        val HTML = ResponseFormat("HTML")
 
     }
 }
