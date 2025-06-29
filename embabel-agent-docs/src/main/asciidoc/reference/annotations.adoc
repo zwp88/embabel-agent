@@ -129,3 +129,54 @@ class SelfUnstickingAgent : StuckHandler {
 }
 ----
 
+==== Advanced Usage: Nested processes
+
+An `@Action` method can invoke another agent process.
+This is often done to use a stereotyped process that is composed using the DSL.
+
+Use the `ActionContext.asSubProcess` method to create a sub-process from the action context.
+
+For example:
+
+[source,kotlin]
+----
+@Action
+fun report(
+    reportRequest: ReportRequest,
+    context: ActionContext,
+): ScoredResult<Report, SimpleFeedback> = context.asSubProcess(
+    // Will create an agent sub process with strong typing
+    EvaluatorOptimizer.generateUntilAcceptable(
+        maxIterations = 5,
+        generator = {
+            it.promptRunner().withToolGroup(CoreToolGroups.WEB).create(
+                """
+        Given the topic, generate a detailed report in ${reportRequest.words} words.
+
+        # Topic
+        ${reportRequest.topic}
+
+        # Feedback
+        ${it.input ?: "No feedback provided"}
+                """.trimIndent()
+            )
+        },
+        evaluator = {
+            it.promptRunner().withToolGroup(CoreToolGroups.WEB).create(
+                """
+        Given the topic and word count, evaluate the report and provide feedback
+        Feedback must be a score between 0 and 1, where 1 is perfect.
+
+        # Report
+        ${it.input.report}
+
+        # Report request:
+
+        ${reportRequest.topic}
+        Word count: ${reportRequest.words}
+        """.trimIndent()
+            )
+        },
+    ))
+----
+
