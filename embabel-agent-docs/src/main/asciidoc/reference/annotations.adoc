@@ -24,6 +24,9 @@ Defaults to false.
 
 ==== The `@Condition` annotation
 
+> NOTE: Condition methods should not have side effects--for example, on the blackboard.
+This is important because they may be called multiple times.
+
 ==== Parameters
 
 `@Action` or `@Condition` methods must have at least one parameter.

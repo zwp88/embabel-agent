@@ -16,6 +16,7 @@
 package com.embabel.agent.api.common
 
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
+import com.embabel.agent.api.dsl.AgentScopeBuilder
 import com.embabel.agent.core.*
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.prompt.element.ContextualPromptElement
@@ -157,7 +158,70 @@ interface ActionContext : OperationContext {
      */
     fun domainObjectInstances(): List<Any>
 
+    /**
+     * Run the given agent as a sub-process of this action context.
+     * @param outputClass the class of the output of the agent
+     * @param agentScopeBuilder the builder for the agent scope to run
+     */
+    fun <O : Any> asSubProcess(
+        outputClass: Class<O>,
+        agentScopeBuilder: AgentScopeBuilder<O>,
+    ): O {
+        val agent = agentScopeBuilder.build().createAgent(
+            name = agentScopeBuilder.name,
+            provider = agentScopeBuilder.provider,
+            description = agentScopeBuilder.name,
+        )
+        return asSubProcess(
+            outputClass = outputClass,
+            agent = agent,
+        )
+    }
+
+    /**
+     * Run the given agent as a sub-process of this action context.
+     */
+    fun <O : Any> asSubProcess(
+        outputClass: Class<O>,
+        agent: Agent,
+    ): O {
+        val singleAction = agentTransformer(
+            agent = agent,
+            inputClass = Unit::class.java,
+            outputClass = outputClass,
+        )
+
+        singleAction.execute(
+            processContext = this.processContext,
+            action = action!!,
+        )
+        return last(outputClass) ?: throw IllegalStateException(
+            "No output of type ${outputClass.name} found in context"
+        )
+    }
+
 }
+
+/**
+ * Run the given agent as a sub-process of this action context.
+ */
+inline fun <reified O : Any> ActionContext.asSubProcess(
+    agentScopeBuilder: AgentScopeBuilder<O>,
+): O = asSubProcess(
+    outputClass = O::class.java,
+    agentScopeBuilder = agentScopeBuilder,
+)
+
+/**
+ * Run the given agent as a sub-process of this action context.
+ * @param agent the agent to run
+ */
+inline fun <reified O : Any> ActionContext.asSubProcess(
+    agent: Agent,
+): O = asSubProcess(
+    outputClass = O::class.java,
+    agent = agent,
+)
 
 /**
  * ActionContext with multiple inputs
