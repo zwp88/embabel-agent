@@ -32,7 +32,7 @@ class JavaAsyncerTest {
 
         var asyncer = new ExecutorAsyncer(executor);
         var things = List.of("a", "b", "c");
-        var mapped = asyncer.parallelMap(things, String::toUpperCase, 10);
+        var mapped = asyncer.parallelMap(things, 10, String::toUpperCase);
 
     }
 

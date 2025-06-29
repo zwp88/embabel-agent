@@ -26,8 +26,8 @@ interface Asyncer {
 
     fun <T, R> parallelMap(
         coll: Collection<T>,
-        transform: (t: T) -> R,
         maxConcurrency: Int,
+        transform: (t: T) -> R,
     ): List<R>
 
 }

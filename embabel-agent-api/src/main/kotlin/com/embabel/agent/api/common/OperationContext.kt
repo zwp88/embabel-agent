@@ -83,11 +83,14 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
 
     /**
      * Execute the operations in parallel.
+     * @param coll the collection of elements to process
+     * @param maxConcurrency the maximum number of concurrent operations to run
+     * @param transform the transformation function to apply to each element
      */
     fun <T, R> parallelMap(
         coll: Collection<T>,
-        transform: (t: T) -> R,
         maxConcurrency: Int,
+        transform: (t: T) -> R,
     ): List<R> = processContext.platformServices.asyncer.parallelMap(
         coll = coll,
         transform = transform,
