@@ -30,4 +30,8 @@ data class UserInput(
     @get:JsonPropertyDescription("user input")
     override val content: String,
     override val timestamp: Instant = Instant.now(),
-) : SystemInput, HasContent
+) : SystemInput, HasContent {
+
+    // For Java
+    constructor (content: String) : this(content, Instant.now())
+}
