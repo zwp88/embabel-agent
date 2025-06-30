@@ -20,6 +20,7 @@ import com.embabel.common.core.types.AssetCoordinates
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Semver
 import com.embabel.common.util.loggerFor
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.springframework.ai.tool.ToolCallback
 
 interface ToolGroupDescription {
@@ -73,6 +74,7 @@ enum class ToolGroupPermission {
  * Metadata about a tool group. Interface as platforms
  * may extend it
  */
+@JsonDeserialize(`as` = MinimalToolGroupMetadata::class)
 interface ToolGroupMetadata : ToolGroupDescription, AssetCoordinates, HasInfoString {
 
     /**

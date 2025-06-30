@@ -16,10 +16,7 @@
 package com.embabel.agent.web.rest
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
-import com.embabel.agent.core.ActionMetadata
-import com.embabel.agent.core.AgentMetadata
-import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.core.Goal
+import com.embabel.agent.core.*
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -84,6 +81,29 @@ class PlatformInfoControllerIntegrationTest(
     }
 
     @Test
+    fun `should return models`() {
+        val result = mockMvc.get("/api/v1/platform-info/models")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content = result.response.contentAsString
+        assertTrue(content.contains("LLM"))
+        assertTrue(content.contains("EMBEDDING"))
+    }
+
+    @Test
+    fun `should return tool groups`() {
+        val result = mockMvc.get("/api/v1/platform-info/tool-groups")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content = result.response.contentAsString
+        val retrievedActions = objectMapper.readValue(content, object : TypeReference<List<ToolGroupMetadata>>() {})
+        assertTrue(retrievedActions.isNotEmpty(), "Must have some tool groups in $content")
+    }
+
+
+    @Test
     fun `should return PlatformInfo`() {
         agentPlatform.deploy(evenMoreEvilWizard())
         val result = mockMvc.get("/api/v1/platform-info")
@@ -96,5 +116,7 @@ class PlatformInfoControllerIntegrationTest(
         assertTrue(platformInfo.actionCount > 1)
 //        assertTrue(platformInfo.goalCount > 1)
         assertTrue(platformInfo.domainTypes.isNotEmpty())
+        assertTrue(platformInfo.toolGroups.isNotEmpty(), "Must have some tool groups")
+        assertTrue(platformInfo.models.isNotEmpty(), "Must have some models in $content")
     }
 }

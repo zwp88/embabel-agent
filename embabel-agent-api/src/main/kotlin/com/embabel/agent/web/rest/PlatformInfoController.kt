@@ -16,6 +16,8 @@
 package com.embabel.agent.web.rest
 
 import com.embabel.agent.core.*
+import com.embabel.common.ai.model.ModelMetadata
+import com.embabel.common.ai.model.ModelProvider
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController
 )
 class PlatformInfoController(
     private val agentPlatform: AgentPlatform,
+    private val modelProvider: ModelProvider,
 ) {
     /**
      * Returns a list of all agents deployed on the platform.
@@ -111,6 +114,8 @@ class PlatformInfoController(
         conditionCount = agentPlatform.conditions.size,
         name = agentPlatform.name,
         domainTypes = agentPlatform.domainTypes.map { it.name }.toSet(),
+        models = modelProvider.listModels().sortedBy { it.name },
+        toolGroups = agentPlatform.toolGroupResolver.availableToolGroups(),
     )
 
     /**
@@ -129,6 +134,36 @@ class PlatformInfoController(
         ]
     )
     fun getConditions(): Set<Condition> = agentPlatform.conditions
+
+    /**
+     * Returns a list of all models available on the platform (across all agents).
+     *
+     * @return List of conditions
+     */
+    @GetMapping("/models")
+    @Operation(
+        summary = "Get all models",
+        description = "Returns a list of all models available on the platform (across all agents)."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "List of conditions returned successfully")
+        ]
+    )
+    fun getModels(): List<ModelMetadata> = modelProvider.listModels().sortedBy { it.name }
+
+    @GetMapping("/tool-groups")
+    @Operation(
+        summary = "Get all tools",
+        description = "Returns a list of all tool groups available on the platform (across all agents)."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "List of conditions returned successfully")
+        ]
+    )
+    fun getToolGroups(): List<ToolGroupMetadata> = agentPlatform.toolGroupResolver.availableToolGroups()
+
 }
 
 /**
@@ -142,4 +177,6 @@ data class PlatformInfoSummary(
     val conditionCount: Int,
     val name: String,
     val domainTypes: Set<String>,
+    val models: List<ModelMetadata>,
+    val toolGroups: List<ToolGroupMetadata>,
 )
