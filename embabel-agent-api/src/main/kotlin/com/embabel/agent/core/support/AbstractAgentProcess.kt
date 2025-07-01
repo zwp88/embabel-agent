@@ -32,6 +32,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Abstract implementation of AgentProcess that provides common functionality
@@ -53,9 +54,9 @@ abstract class AbstractAgentProcess(
 
     protected var goalName: String? = null
 
-    protected val _history: MutableList<ActionInvocation> = mutableListOf()
+    private val _history: MutableList<ActionInvocation> = mutableListOf()
 
-    protected var _status: AgentProcessStatusCode = AgentProcessStatusCode.NOT_STARTED
+    private val _status = AtomicReference(AgentProcessStatusCode.NOT_STARTED)
 
     private var _failureInfo: Any? = null
 
@@ -86,13 +87,22 @@ abstract class AbstractAgentProcess(
     protected abstract val planner: Planner<*, *, *>
 
     override val status: AgentProcessStatusCode
-        get() = _status
+        get() = _status.get()
 
     override val history: List<ActionInvocation>
         get() = _history.toList()
 
     override val toolsStats: ToolsStats
         get() = agenticEventListenerToolsStats
+
+    protected fun setStatus(status: AgentProcessStatusCode) {
+        _status.set(status)
+    }
+
+    override fun kill(): ProcessKilledEvent? {
+        setStatus(AgentProcessStatusCode.KILLED)
+        return ProcessKilledEvent(this)
+    }
 
     override fun bind(key: String, value: Any): Bindable {
         blackboard[key] = value
@@ -130,8 +140,27 @@ abstract class AbstractAgentProcess(
         addObject(value)
     }
 
+    private fun makeRunning(): Boolean {
+        val currentStatus = _status.get()
+        return when (currentStatus) {
+            AgentProcessStatusCode.COMPLETED,
+            AgentProcessStatusCode.KILLED, AgentProcessStatusCode.TERMINATED -> {
+                logger.warn("Process {} Cannot be made RUNNING as its status is {}", this.id, status)
+                return false
+            }
+
+            else -> {
+                _status.compareAndSet(currentStatus, AgentProcessStatusCode.RUNNING)
+                true
+            }
+        }
+    }
+
     override fun run(): AgentProcess {
-        _status = AgentProcessStatusCode.RUNNING
+        if (!makeRunning()) {
+            return this
+        }
+
         if (agent.goals.isEmpty()) {
             logger.info("🤔 Process {} has no goals: {}", this.id, agent.goals)
             error("Agent ${agent.name} has no goals: ${agent.infoString(verbose = true)}")
@@ -149,7 +178,7 @@ abstract class AbstractAgentProcess(
                 )
                 platformServices.eventListener.onProcessEvent(earlyTermination)
                 _failureInfo = earlyTermination
-                _status = AgentProcessStatusCode.TERMINATED
+                setStatus(AgentProcessStatusCode.TERMINATED)
                 return this
             }
             tick()
@@ -171,7 +200,7 @@ abstract class AbstractAgentProcess(
                 platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
             }
 
-            AgentProcessStatusCode.TERMINATED -> {
+            AgentProcessStatusCode.TERMINATED, AgentProcessStatusCode.KILLED -> {
                 // Event will have been raised at the point of termination
             }
 
@@ -211,18 +240,22 @@ abstract class AbstractAgentProcess(
         when (result.code) {
             StuckHandlingResultCode.REPLAN -> {
                 logger.info("Process {} unstuck and will replan: {}", this.id, result.message)
-                _status = AgentProcessStatusCode.RUNNING
+                setStatus(AgentProcessStatusCode.RUNNING)
                 run()
             }
 
             StuckHandlingResultCode.NO_RESOLUTION -> {
                 logger.warn("Process {} stuck: {}", this.id, result.message)
-                _status = AgentProcessStatusCode.STUCK
+                setStatus(AgentProcessStatusCode.STUCK)
             }
         }
     }
 
     override fun tick(): AgentProcess {
+        if (!makeRunning()) {
+            return this
+        }
+
         val worldState = worldStateDeterminer.determineWorldState()
         _lastWorldState = worldState
         platformServices.eventListener.onProcessEvent(
@@ -241,6 +274,7 @@ abstract class AbstractAgentProcess(
         // Let subclasses handle the planning and execution
         return formulateAndExecutePlan(worldState)
     }
+
 
     /**
      * Execute the plan based on the current world state
@@ -277,7 +311,16 @@ abstract class AbstractAgentProcess(
             is DelayedActionExecutionSchedule -> {
                 // Delay and move on
                 logger.debug("Process {} delayed action {}: {}", id, action.name, actionExecutionSchedule)
-                Thread.sleep(actionExecutionSchedule.delay.toMillis())
+                try {
+                    Thread.sleep(actionExecutionSchedule.delay.toMillis())
+                } catch (_: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    _status.set(AgentProcessStatusCode.TERMINATED)
+                    return ActionStatus(
+                        runningTime = Duration.between(actionExecutionStartEvent.timestamp, Instant.now()),
+                        status = ActionStatusCode.FAILED,
+                    )
+                }
                 logger.debug("Process {} delayed action {}: done", id, action.name)
             }
 
