@@ -28,6 +28,8 @@ import java.util.*
 sealed interface Retrievable : StableIdentified, HasInfoString {
 
     override fun persistent(): Boolean = true
+
+    val metadata: Map<String, Any?>
 }
 
 /**
@@ -60,6 +62,7 @@ interface Chunk : Retrievable {
 private data class ChunkImpl(
     override val id: String,
     override val text: String,
+    override val metadata: Map<String, Any?> = emptyMap(),
 ) : Chunk
 
 /**
@@ -70,6 +73,7 @@ private data class ChunkImpl(
 data class Fact(
     val assertion: String,
     val authority: String,
+    override val metadata: Map<String, Any?> = emptyMap(),
     override val id: String = UUID.randomUUID().toString(),
 ) : Retrievable {
 
