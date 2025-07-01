@@ -15,74 +15,9 @@
  */
 package com.embabel.agent.rag
 
-import com.embabel.common.core.StableIdentified
-import com.embabel.common.core.types.*
-import io.swagger.v3.oas.annotations.media.Schema
-
-/**
- * A Retrieved object instance is a chunk or an entity
- */
-sealed interface Retrieved : HasInfoString
-
-/**
- * Traditional RAG. Text chunk
- */
-interface Chunk : Retrieved {
-    val text: String
-
-    companion object {
-        operator fun invoke(text: String): Chunk {
-            return ChunkImpl(
-                text = text,
-            )
-        }
-    }
-
-    override fun infoString(verbose: Boolean?): String {
-        return "chunk: $text"
-    }
-}
-
-private data class ChunkImpl(
-    override val text: String,
-) : Chunk
-
-/**
- * Retrieved Entity
- */
-interface EntityData : StableIdentified, Retrieved, Described {
-
-    @get:Schema(
-        description = "description of this entity",
-        example = "A customer",
-        required = true,
-    )
-    override val description: String
-
-    /**
-     * Labels of the entity. In Neo, this might include multiple labels.
-     * In a relational database, this might be a single table name.
-     */
-    @get:Schema(
-        description = "Labels of the entity. In Neo, this might include multiple labels. In a relational database, this might be a single table name.",
-        example = "[\"Person\", \"Customer\"]",
-        required = true,
-    )
-    val labels: Set<String>
-
-    @get:Schema(
-        description = "Properties of this object. Arbitrary key-value pairs, although likely specified in schema. Must filter out embedding",
-        example = "{\"birthYear\": 1854, \"deathYear\": 1930}",
-        required = true,
-    )
-    val properties: Map<String, Any>
-
-    override fun infoString(verbose: Boolean?): String {
-        val labelsString = labels.joinToString(":")
-        return "(${labelsString} id='$id')"
-    }
-
-}
+import com.embabel.common.core.types.SimilarityCutoff
+import com.embabel.common.core.types.SimilarityResult
+import com.embabel.common.core.types.ZeroToOne
 
 /**
  * There can be multiple RAG services.
@@ -94,13 +29,13 @@ interface RagResponse {
      */
     val service: String
 
-    val results: List<SimilarityResult<out Retrieved>>
+    val results: List<SimilarityResult<out Retrievable>>
 
     companion object {
 
         operator fun invoke(
             service: String,
-            results: List<SimilarityResult<out Retrieved>>,
+            results: List<SimilarityResult<out Retrievable>>,
         ): RagResponse {
             return RagResponseImpl(
                 service = service,
@@ -112,7 +47,7 @@ interface RagResponse {
 
 private data class RagResponseImpl(
     override val service: String,
-    override val results: List<SimilarityResult<out Retrieved>>,
+    override val results: List<SimilarityResult<out Retrievable>>,
 ) : RagResponse
 
 

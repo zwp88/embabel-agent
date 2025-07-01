@@ -60,7 +60,7 @@ class MultiIngester(
                 it.name
             }
         return IngestionResult(
-            documentsWritten = documents.size,
+            chunkIds = documents.map { it.id },
             storesWrittenTo = storesWrittenTo.toSet(),
         )
     }
