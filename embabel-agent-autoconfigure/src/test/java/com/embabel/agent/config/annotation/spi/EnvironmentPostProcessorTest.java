@@ -86,7 +86,6 @@ class EnvironmentPostProcessorTest {
 
         // Then
         assertThat(getAddedProfiles()).containsExactly(StartupMode.SHELL);
-        assertThat(System.getProperty("spring.profiles.active")).isEqualTo(StartupMode.SHELL);
     }
 
     @Test
@@ -102,7 +101,6 @@ class EnvironmentPostProcessorTest {
 
         // Then
         assertThat(getAddedProfiles()).containsExactly(LoggingThemes.STAR_WARS);
-        assertThat(System.getProperty("spring.profiles.active")).isEqualTo(LoggingThemes.STAR_WARS);
     }
 
     @Test
@@ -118,8 +116,6 @@ class EnvironmentPostProcessorTest {
 
         // Then
         assertThat(getAddedProfiles()).containsExactlyInAnyOrder(LocalModels.OLLAMA, LocalModels.DOCKER);
-        assertThat(Arrays.stream(System.getProperty("spring.profiles.active").split(",")).collect(Collectors.toSet())
-        ).isEqualTo(Set.of(LocalModels.OLLAMA, LocalModels.DOCKER));
     }
 
     @Test
@@ -135,8 +131,6 @@ class EnvironmentPostProcessorTest {
 
         // Then
         assertThat(getAddedProfiles()).containsExactlyInAnyOrder(McpServers.DOCKER_DESKTOP);
-        assertThat(Arrays.stream(System.getProperty("spring.profiles.active").split(",")).collect(Collectors.toSet())
-        ).isEqualTo(Set.of(McpServers.DOCKER_DESKTOP));
     }
 
     @Test
@@ -158,8 +152,6 @@ class EnvironmentPostProcessorTest {
         // Then
         assertThat(getAddedProfiles())
                 .containsExactlyInAnyOrder(StartupMode.SHELL, LoggingThemes.STAR_WARS, LocalModels.OLLAMA, McpServers.DOCKER_DESKTOP);
-        assertThat(System.getProperty("spring.profiles.active"))
-                .isEqualTo("shell,starwars,ollama,docker-desktop");
     }
 
     @Test
@@ -181,8 +173,6 @@ class EnvironmentPostProcessorTest {
         // Then
         assertThat(getAddedProfiles())
                 .containsExactlyInAnyOrder(StartupMode.SHELL, LoggingThemes.STAR_WARS, LocalModels.OLLAMA, McpServers.DOCKER_DESKTOP);
-        assertThat(System.getProperty("spring.profiles.active"))
-                .isEqualTo("shell,starwars,ollama,docker-desktop");
     }
 
     @Test
@@ -191,6 +181,7 @@ class EnvironmentPostProcessorTest {
         System.setProperty("spring.profiles.active", "existing,profiles");
 
         @EnableAgents(loggingTheme = LoggingThemes.STAR_WARS)
+        @EnableAgentShell
         class TestApp {
         }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
@@ -199,15 +190,28 @@ class EnvironmentPostProcessorTest {
         processor.postProcessEnvironment(environment, application);
 
         // Then
-        assertThat(getAddedProfiles()).containsExactly(LoggingThemes.STAR_WARS);
-        assertThat(System.getProperty("spring.profiles.active"))
-                .isEqualTo("existing,profiles,starwars");
+        assertThat(getAddedProfiles()).containsExactlyInAnyOrder("existing", "profiles", LoggingThemes.STAR_WARS, StartupMode.SHELL);
+
     }
 
     @Test
     void testEmptyEnableAgents() {
         // Given
         @EnableAgents(loggingTheme = "", localModels = {}, mcpServers = {})
+        class TestApp {
+        }
+        when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
+
+        // When
+        processor.postProcessEnvironment(environment, application);
+
+        // Then
+        assertThat(getAddedProfiles()).isEmpty();
+        assertThat(System.getProperty("spring.profiles.active")).isNull();
+    }
+
+    @Test
+    void testEmptyProfiles() {
         class TestApp {
         }
         when(application.getAllSources()).thenReturn(Set.of(TestApp.class));
