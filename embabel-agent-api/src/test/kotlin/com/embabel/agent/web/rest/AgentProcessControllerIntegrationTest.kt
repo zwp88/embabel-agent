@@ -18,6 +18,7 @@ package com.embabel.agent.web.rest
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentProcessStatusCode
+import com.embabel.agent.core.AgentProcessStatusReport
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.UserInput
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -30,6 +31,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import kotlin.test.assertNotNull
@@ -123,6 +125,36 @@ class AgentProcessControllerIntegrationTest(
             val snakeMeal = status.result
             assertTrue(snakeMeal.toString().contains("Hamish"), "Unexpected result: $snakeMeal")
         }
+    }
+
+    @Test
+    fun `kill no such process`() {
+        mockMvc.delete("/api/v1/process/i-made-this-up")
+            .andExpect {
+                status().isNotFound()
+            }.andReturn()
+    }
+
+    @Test
+    fun `should kill existing process`() {
+        val agentProcess = agentPlatform.createAgentProcess(evenMoreEvilWizard(), ProcessOptions(), emptyMap())
+        val result = mockMvc.delete("/api/v1/process/${agentProcess.id}")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content = result.response.contentAsString
+        val retrievedProcess = objectMapper.readValue(content, AgentProcessStatus::class.java)
+        assertEquals(agentProcess.id, retrievedProcess.id)
+        assertEquals(AgentProcessStatusCode.KILLED, retrievedProcess.status)
+
+        val result2 = mockMvc.get("/api/v1/process/${agentProcess.id}")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content2 = result2.response.contentAsString
+        val retrievedProcess2 = objectMapper.readValue(content2, AgentProcessStatusReport::class.java)
+        assertEquals(agentProcess.id, retrievedProcess2.id)
+        assertEquals(AgentProcessStatusCode.KILLED, retrievedProcess2.status)
     }
 
 }
