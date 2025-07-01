@@ -44,6 +44,16 @@ class AgenticEventSerializationTest {
                 }
                 count++
                 loggerFor<AgenticEventSerializationTest>().info("Serialized event: $s")
+                when (event) {
+                    is AgentProcessPlanFormulatedEvent -> {
+                        assertTrue(s.contains("\"plan\""), "Plan is required")
+                        assertTrue(s.contains("\"goal\""), "Goal is required")
+                    }
+
+                    else -> {
+                        // Other events are not required to have a plan or goal
+                    }
+                }
                 assertTrue(s.contains("\"processId\""), "Process id is required")
             }
         }
