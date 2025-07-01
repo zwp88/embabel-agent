@@ -73,5 +73,7 @@ class DocumentSimilarityResult(
     override val score: ZeroToOne,
 ) : SimilarityResult<Chunk> {
 
-    override val match: Chunk = Chunk(document.text!!)
+    override val match: Chunk = Chunk(
+        document.id, document.text!!
+    )
 }

@@ -19,9 +19,11 @@ import com.embabel.common.core.types.HasInfoString
 import org.springframework.ai.document.DocumentWriter
 
 data class IngestionResult(
-    val documentsWritten: Int,
     val storesWrittenTo: Set<String>,
+    val chunkIds: List<String>,
 ) {
+
+    val documentsWritten: Int get() = chunkIds.size
 
     fun success(): Boolean {
         return storesWrittenTo.isNotEmpty()

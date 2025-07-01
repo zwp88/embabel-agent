@@ -51,6 +51,10 @@ object SimpleRagResponseFormatter : RagResponseFormatter {
                     is Chunk -> {
                         "${result.score}: ${match.text}"
                     }
+
+                    is Fact -> {
+                        "${result.score}: fact - ${match.assertion}"
+                    }
                 }
             }
         }
