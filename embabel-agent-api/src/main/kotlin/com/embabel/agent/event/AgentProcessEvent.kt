@@ -250,3 +250,7 @@ class ProgressUpdateEvent(
     override val current: Int,
     override val total: Int,
 ) : AbstractAgentProcessEvent(agentProcess), VisualizableTask
+
+class ProcessKilledEvent(
+    agentProcess: AgentProcess,
+) : AbstractAgentProcessEvent(agentProcess)

@@ -17,16 +17,17 @@ package com.embabel.agent.web.rest
 
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentProcessStatusCode
+import com.embabel.agent.core.AgentProcessStatusReport
 import com.embabel.agent.core.OperationStatus
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.time.Duration
 import java.time.Instant
@@ -61,6 +62,16 @@ class AgentProcessController(
 
     private val logger = LoggerFactory.getLogger(AgentProcessController::class.java)
 
+    @Operation(
+        summary = "Get the status of a process",
+        description = "Returns the status of the process with the given ID, including its current status, running time, and last result.",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Process status returned"),
+            ApiResponse(responseCode = "404", description = "Process not found")
+        ]
+    )
     @GetMapping("/{processId}")
     fun checkProcessStatus(@PathVariable processId: String): AgentProcessStatus {
         val agentProcess = agentPlatform.getAgentProcess(processId)
@@ -73,5 +84,25 @@ class AgentProcessController(
             runningTime = agentProcess.runningTime,
             result = agentProcess.lastResult(),
         )
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(
+        summary = "Kill the given process",
+        description = "Returns the status of a process if it could be killed"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Process status killed successfully"),
+            ApiResponse(responseCode = "404", description = "Process not found")
+        ]
+    )
+    fun killAgentProcess(@PathVariable id: String): AgentProcessStatusReport {
+        val killedProcess = agentPlatform.killAgentProcess(id)
+            ?: throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "No process found with id: $id",
+            )
+        return killedProcess.statusReport()
     }
 }
