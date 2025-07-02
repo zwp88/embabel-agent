@@ -43,15 +43,19 @@ interface Chunk : Retrievable {
     val text: String
 
     companion object {
+
         operator fun invoke(
             id: String,
-            text: String
+            text: String,
+            metadata: Map<String, Any?> = emptyMap(),
         ): Chunk {
             return ChunkImpl(
                 id = id,
                 text = text,
+                metadata = metadata,
             )
         }
+
     }
 
     override fun infoString(verbose: Boolean?): String {
@@ -62,7 +66,7 @@ interface Chunk : Retrievable {
 private data class ChunkImpl(
     override val id: String,
     override val text: String,
-    override val metadata: Map<String, Any?> = emptyMap(),
+    override val metadata: Map<String, Any?>,
 ) : Chunk
 
 /**
