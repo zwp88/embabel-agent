@@ -18,6 +18,7 @@ package com.embabel.agent.web.sse
 import com.embabel.agent.event.AgentProcessEvent
 import com.embabel.agent.event.AgenticEventListener
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -27,14 +28,24 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+@ConfigurationProperties(prefix = "embabel.sse")
+data class SseProperties(
+    var maxBufferSize: Int = 100,
+    var maxProcessBuffers: Int = 1000
+
+)
+
 /**
  * Spring Controller for Server-Sent Events (SSE) streaming of AgentProcessEvents.
  * This controller by being registered as a bean via the [RestController] annotation
  * will automatically listen for [AgentProcessEvent]s because it implements
  * [AgenticEventListener].
+ * Each new listener will receive all events for that process to date.
  */
 @RestController
-class SSEController : AgenticEventListener {
+class SSEController(
+    private val sseProperties: SseProperties,
+) : AgenticEventListener {
 
     private val logger = LoggerFactory.getLogger(SSEController::class.java)
 
@@ -45,10 +56,36 @@ class SSEController : AgenticEventListener {
     // Map from processId to a list of SseEmitters
     private val processEmitters = ConcurrentHashMap<String, MutableList<SseEmitter>>()
 
+    // Buffer recent events per process
+    private val eventBuffer = ConcurrentHashMap<String, MutableList<AgentProcessEvent>>()
+
     override fun onProcessEvent(event: AgentProcessEvent) {
         val processId = event.processId
-        val emitters = processEmitters[processId]
 
+        synchronized(eventBuffer) {
+            // Remove and re-add to move to end (most recently used)
+            val buffer = eventBuffer.remove(processId) ?: Collections.synchronizedList(mutableListOf())
+
+            // Add event to buffer
+            synchronized(buffer) {
+                buffer.add(event)
+                if (buffer.size > sseProperties.maxBufferSize) {
+                    buffer.removeAt(0) // Remove oldest event
+                }
+            }
+
+            // Put buffer back (now at end of LinkedHashMap)
+            eventBuffer[processId] = buffer
+
+            // Evict oldest process buffer if we exceed limit
+            if (eventBuffer.size > sseProperties.maxProcessBuffers) {
+                val oldestProcessId = eventBuffer.keys.first()
+                eventBuffer.remove(oldestProcessId)
+                logger.debug("Evicted oldest process buffer: {}", oldestProcessId)
+            }
+        }
+
+        val emitters = processEmitters[processId]
         emitters?.removeIf { emitter ->
             try {
                 logger.debug("Sending SSE event for process {}: {}", processId, event)
@@ -91,6 +128,14 @@ class SSEController : AgenticEventListener {
         }
 
         try {
+            // Send any earlier events from the buffer
+            eventBuffer[processId]?.let { buffer ->
+                for (event in buffer) {
+                    logger.debug("Catchup: Sending buffered event for process {}: {}", processId, event)
+                    emitter.send(SseEmitter.event().name(SSE_EVENT_NAME).data(event))
+                }
+            }
+
             emitter.send(
                 SseEmitter.event()
                     .name("connected")
