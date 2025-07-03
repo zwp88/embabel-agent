@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.event
 
-import com.embabel.agent.core.Action
-import com.embabel.agent.core.ActionStatus
-import com.embabel.agent.core.AgentProcess
-import com.embabel.agent.core.ToolGroupMetadata
+import com.embabel.agent.core.*
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.support.springai.ChatModelCallEvent
 import com.embabel.common.ai.model.Llm
@@ -54,6 +51,11 @@ abstract class AbstractAgentProcessEvent(
 
     override val processId: String
         get() = agentProcess.id
+
+    val history: List<ActionInvocation>
+        get() = agentProcess.history
+
+    val status: AgentProcessStatusReport get() = agentProcess.statusReport()
 }
 
 class AgentProcessCreationEvent(
