@@ -163,6 +163,9 @@ class LlmRequestEvent<O>(
     val prompt: String,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
+    /**
+     * Return a low level event showing Spring AI prompt details.
+     */
     fun callEvent(springAiPrompt: Prompt): ChatModelCallEvent<O> {
         return ChatModelCallEvent(
             agentProcess = agentProcess,
@@ -176,21 +179,17 @@ class LlmRequestEvent<O>(
 
     fun responseEvent(response: O, runningTime: Duration): LlmResponseEvent<O> {
         return LlmResponseEvent(
-            agentProcess = agentProcess,
-            interaction = interaction,
+            request = this,
             outputClass = outputClass,
-            prompt = prompt,
             response = response,
             runningTime = runningTime
         )
     }
 
     fun maybeResponseEvent(response: Result<O>, runningTime: Duration): LlmResponseEvent<Result<O>> {
-        return LlmResponseEvent<Result<O>>(
-            agentProcess = agentProcess,
+        return LlmResponseEvent(
+            request = this,
             outputClass = outputClass,
-            interaction = interaction,
-            prompt = prompt,
             response = response,
             runningTime = runningTime
         )
@@ -208,16 +207,14 @@ class LlmRequestEvent<O>(
  * in which case it will be Result<O>
  */
 class LlmResponseEvent<O> internal constructor(
-    agentProcess: AgentProcess,
+    val request: LlmRequestEvent<*>,
     val outputClass: Class<*>,
-    val interaction: LlmInteraction,
-    val prompt: String,
     val response: O,
     override val runningTime: Duration,
-) : AbstractAgentProcessEvent(agentProcess), Timed {
+) : AbstractAgentProcessEvent(request.agentProcess), Timed {
 
     override fun toString(): String {
-        return "LlmResponseEvent(outputClass=$outputClass, interaction=$interaction, prompt=$prompt, response=$response, runningTime=$runningTime)"
+        return "LlmResponseEvent(outputClass=$outputClass, request=$request, response=$response, runningTime=$runningTime)"
     }
 }
 

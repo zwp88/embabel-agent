@@ -157,7 +157,7 @@ The standard repository for all knowledge and wisdom in the universe
 
     override fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String =
         """
-        [${e.processId}] received LLM response ${e.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
+        [${e.processId}] received LLM response ${e.request.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
         ${TransformSuccessResponses.random()}
         """.trimIndent()
 
