@@ -16,6 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
+import com.embabel.agent.event.ToolCallRequestEvent
 import com.embabel.agent.event.ToolCallResponseEvent
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentProcessRunning
 import io.mockk.mockk
@@ -31,12 +32,16 @@ class AgenticEventListenerToolsStatsTest {
         isFailure: Boolean = false,
         runningTime: Duration = Duration.ofMillis(100)
     ): ToolCallResponseEvent {
-        return ToolCallResponseEvent(
+        val toolCallRequestEvent = ToolCallRequestEvent(
             agentProcess = dummyAgentProcessRunning(evenMoreEvilWizard()),
             action = null,
             tool = function,
+            toolGroupMetadata = null,
             toolInput = "{}",
-            llmOptions = mockk(),
+            llmOptions = mockk()
+        )
+        return ToolCallResponseEvent(
+            request = toolCallRequestEvent,
             result = if (isFailure) Result.failure(Exception("fail")) else Result.success("ok"),
             runningTime = runningTime
         )

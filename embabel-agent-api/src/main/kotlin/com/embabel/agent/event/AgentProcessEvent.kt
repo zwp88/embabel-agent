@@ -103,6 +103,7 @@ class ActionExecutionResultEvent internal constructor(
 
 /**
  * Call to a function from an LLM
+ * @param correlationId correlation ID for this tool call, useful for UI
  */
 class ToolCallRequestEvent(
     agentProcess: AgentProcess,
@@ -111,15 +112,12 @@ class ToolCallRequestEvent(
     val toolGroupMetadata: ToolGroupMetadata?,
     val toolInput: String,
     val llmOptions: LlmOptions,
+    val correlationId: String = "${agentProcess.id}-$tool-${System.currentTimeMillis()}",
 ) : AbstractAgentProcessEvent(agentProcess) {
 
     fun responseEvent(result: Result<String>, runningTime: Duration): ToolCallResponseEvent {
         return ToolCallResponseEvent(
-            agentProcess = agentProcess,
-            action = action,
-            tool = tool,
-            toolInput = toolInput,
-            llmOptions = llmOptions,
+            request = this,
             result = result,
             runningTime = runningTime
         )
@@ -130,14 +128,10 @@ class ToolCallRequestEvent(
  * Response from a tool call, whether successful or not.
  */
 class ToolCallResponseEvent internal constructor(
-    agentProcess: AgentProcess,
-    val action: Action?,
-    val tool: String,
-    val toolInput: String,
-    val llmOptions: LlmOptions,
+    val request: ToolCallRequestEvent,
     val result: Result<String>,
     override val runningTime: Duration,
-) : AbstractAgentProcessEvent(agentProcess), Timed
+) : AbstractAgentProcessEvent(request.agentProcess), Timed
 
 class AgentProcessFinishedEvent(
     agentProcess: AgentProcess,

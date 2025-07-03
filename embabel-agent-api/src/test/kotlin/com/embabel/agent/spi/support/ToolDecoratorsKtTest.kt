@@ -56,6 +56,7 @@ class ToolDecoratorsKtTest {
         val mockPlatformServices = mockk<PlatformServices>()
         every { mockPlatformServices.eventListener } returns EventSavingAgenticEventListener()
         val agentProcess = mockk<AgentProcess>()
+        every { agentProcess.id } returns "test-process-id"
         every { agentProcess.processContext.platformServices } returns mockPlatformServices
         every { agentProcess.processContext.onProcessEvent(any()) } answers {
             // Do nothing
@@ -79,6 +80,7 @@ class ToolDecoratorsKtTest {
         every { agentProcess.processContext.onProcessEvent(any()) } answers {
             ese.onProcessEvent(firstArg())
         }
+        every { agentProcess.id } returns "test-process-id"
         every { agentProcess.processContext.platformServices } returns mockPlatformServices
         every { mockPlatformServices.operationScheduler } returns OperationScheduler.PRONTO
         val llm = LlmOptions()
@@ -89,9 +91,9 @@ class ToolDecoratorsKtTest {
         val fce = ese.processEvents.filterIsInstance<ToolCallRequestEvent>().single()
         val fre = ese.processEvents.filterIsInstance<ToolCallResponseEvent>().single()
         assertEquals(decorated.toolDefinition.name(), fce.tool)
-        assertEquals(decorated.toolDefinition.name(), fre.tool, decorated.toolDefinition.name())
+        assertEquals(decorated.toolDefinition.name(), fre.request.tool, decorated.toolDefinition.name())
         assertEquals(llm, fce.llmOptions)
-        assertEquals(llm, fre.llmOptions)
+        assertEquals(llm, fre.request.llmOptions)
     }
 
 }
