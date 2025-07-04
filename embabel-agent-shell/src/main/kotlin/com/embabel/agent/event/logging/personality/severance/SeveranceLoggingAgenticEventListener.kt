@@ -149,17 +149,17 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         "[${e.processId}] ${highlight("VERVE")}: (${e.action?.shortName()}) calling tool ${e.tool}(${e.toolInput})"
 
     override fun getToolCallSuccessResponseEventMessage(e: ToolCallResponseEvent, resultToShow: String): String =
-        "[${e.processId}] ${highlight("VISION")}: (${e.request.action?.shortName()}) tool ${e.request.tool} returned $resultToShow in ${e.runningTime.toMillis()}ms with payload ${e.request.toolInput}"
+        "[${e.processId}] ${highlight("VISION")}: (${e.action?.shortName()}) tool ${e.tool} returned $resultToShow in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getToolCallFailureResponseEventMessage(e: ToolCallResponseEvent, throwable: Throwable?): String =
-        "[${e.processId}] ${highlight("WOE")}: (${e.request.action?.shortName()}) tool ${e.request.tool} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.request.toolInput}"
+        "[${e.processId}] ${highlight("WOE")}: (${e.action?.shortName()}) tool ${e.tool} failed ${throwable} in ${e.runningTime.toMillis()}ms with payload ${e.toolInput}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
         "[${e.processId}] \uD83D\uDDA5\uFE0F MACRODATA REFINEMENT: requesting LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm} using ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"
 
     override fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String =
         """
-        [${e.processId}] received LLM response ${e.request.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
+        [${e.processId}] received LLM response ${e.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
         ${TransformSuccessResponses.random()}
         """.trimIndent()
 
