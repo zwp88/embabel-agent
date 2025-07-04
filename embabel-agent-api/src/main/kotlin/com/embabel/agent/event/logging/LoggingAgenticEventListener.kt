@@ -20,7 +20,7 @@ import com.embabel.agent.core.EarlyTermination
 import com.embabel.agent.event.*
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
-import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
+//import com.embabel.agent.event.logging.personality.severance.LumonColorPalette
 import com.embabel.agent.spi.support.springai.ChatModelCallEvent
 import com.embabel.common.util.AnsiColor
 import com.embabel.common.util.color
@@ -208,7 +208,7 @@ open class LoggingAgenticEventListener(
         "[${e.processId}] executed action ${e.action.name} in ${e.actionStatus.runningTime}"
 
     protected open fun getProgressUpdateEventMessage(e: ProgressUpdateEvent): String =
-        "[${e.processId}] progress: ${e.createProgressBar(length = 50).color(LumonColorPalette.MEMBRANE)}"
+        "[${e.processId}] progress: ${e.createProgressBar(length = 50).color(0xbeb780)}"
 
     override fun onProcessEvent(event: AgentProcessEvent) {
         when (event) {
