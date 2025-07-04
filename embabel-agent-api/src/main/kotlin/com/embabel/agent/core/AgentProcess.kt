@@ -66,6 +66,11 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
     val history: List<ActionInvocation>
 
     /**
+     * Goal of this process.
+     */
+    val goal: com.embabel.plan.Goal?
+
+    /**
      * Return a serializable status report for this process.
      */
     fun statusReport(): AgentProcessStatusReport =

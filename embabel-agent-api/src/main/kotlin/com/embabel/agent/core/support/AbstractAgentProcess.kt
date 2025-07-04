@@ -52,7 +52,7 @@ abstract class AbstractAgentProcess(
 
     private var _lastWorldState: WorldState? = null
 
-    protected var goalName: String? = null
+    protected var _goal: com.embabel.plan.Goal? = null
 
     private val _history: MutableList<ActionInvocation> = mutableListOf()
 
@@ -67,6 +67,8 @@ abstract class AbstractAgentProcess(
         get() = _lastWorldState
 
     private val agenticEventListenerToolsStats = AgenticEventListenerToolsStats()
+
+    override val goal: com.embabel.plan.Goal? get() = _goal
 
     override val processContext = ProcessContext(
         platformServices = platformServices.copy(

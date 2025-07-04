@@ -69,13 +69,13 @@ internal class SimpleAgentProcess(
             return this
         }
 
-        if (goalName != null && goalName != plan.goal.name) {
-            logger.info("Process {} goal changed: {} -> {}", this.id, goalName, plan.goal.name)
+        if (goal != null && goal?.name != plan.goal.name) {
+            logger.info("Process {} goal changed: {} -> {}", this.id, goal?.name, plan.goal.name)
             require(processOptions.allowGoalChange) {
-                "Process ${this.id} goal changed from $goalName to ${plan.goal.name}, but allowGoalChange is false"
+                "Process ${this.id} goal changed from ${goal?.name} to ${plan.goal.name}, but allowGoalChange is false"
             }
         }
-        goalName = plan.goal.name
+        _goal = plan.goal
 
         if (plan.isComplete()) {
             logger.debug(
