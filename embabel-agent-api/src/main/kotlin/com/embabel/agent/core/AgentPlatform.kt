@@ -115,6 +115,24 @@ interface AgentPlatform : AgentScope {
     ): AgentProcess
 
     /**
+     * Create an agent process with the given options and bind all arguments.
+     * @param agent the agent to run. Does not need to be deployed to the platform
+     * @param processOptions the options for the process
+     * @param objectsToAdd the objects to add to the blackboard.
+     */
+    fun createAgentProcessFrom(
+        agent: Agent,
+        processOptions: ProcessOptions,
+        vararg objectsToAdd: Any,
+    ): AgentProcess = createAgentProcess(
+        agent,
+        processOptions,
+        emptyMap(),
+    ).apply {
+        objectsToAdd.forEach { addObject(it) }
+    }
+
+    /**
      * Run the given agent process in the background
      */
     fun start(
