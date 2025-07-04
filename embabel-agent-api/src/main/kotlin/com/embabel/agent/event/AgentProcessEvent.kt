@@ -220,19 +220,27 @@ class LlmResponseEvent<O> internal constructor(
     }
 }
 
+interface ObjectBindingEvent : AgentProcessEvent {
+
+    val value: Any
+
+    val type: String
+        get() = value::class.java.name
+}
+
 /**
  * Binding to context
  */
 class ObjectAddedEvent(
     agentProcess: AgentProcess,
-    val value: Any,
-) : AbstractAgentProcessEvent(agentProcess)
+    override val value: Any,
+) : AbstractAgentProcessEvent(agentProcess), ObjectBindingEvent
 
 class ObjectBoundEvent(
     agentProcess: AgentProcess,
     val name: String,
-    val value: Any,
-) : AbstractAgentProcessEvent(agentProcess)
+    override val value: Any,
+) : AbstractAgentProcessEvent(agentProcess), ObjectBindingEvent
 
 /**
  * Progress update
