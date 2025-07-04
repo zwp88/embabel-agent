@@ -17,6 +17,7 @@ package com.embabel.agent.event
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -57,11 +58,16 @@ class AgenticEventSerializationTest {
                 assertTrue(s.contains("\"processId\""), "Process id is required")
             }
         }
-        val ap = dummyAgentPlatform(listener = serializingListener)
+        val saver = EventSavingAgenticEventListener()
+        val ap = dummyAgentPlatform(listener = AgenticEventListener.of(saver, serializingListener))
         // If it doesn't die we're happy
         ap.runAgentWithInput(evenMoreEvilWizard(), input = UserInput("anything at all"))
         assertTrue(serializingListener.count > 0, "Events were serialized")
         assertEquals(0, fails.size, "Untyped events:\n${fails.joinToString(", ")}")
+        assertTrue(
+            saver.processEvents.filterIsInstance<ObjectBindingEvent>().isNotEmpty(),
+            "Object binding events were emitted"
+        )
     }
 
     @Test
