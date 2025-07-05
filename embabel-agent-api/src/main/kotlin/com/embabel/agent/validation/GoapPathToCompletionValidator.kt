@@ -15,13 +15,10 @@
  */
 package com.embabel.agent.validation
 
-import org.springframework.stereotype.Component
 import com.embabel.agent.core.AgentScope
-import com.embabel.plan.goap.AStarGoapPlanner
-import com.embabel.plan.goap.ConditionDetermination
-import com.embabel.plan.goap.GoapAction
-import com.embabel.plan.goap.GoapGoal
-import com.embabel.plan.goap.WorldStateDeterminer
+import com.embabel.agent.core.support.Rerun.HAS_RUN_CONDITION_PREFIX
+import com.embabel.plan.goap.*
+import org.springframework.stereotype.Component
 
 /**
  * Validator that checks whether an agent definition has at least one possible path
@@ -30,7 +27,6 @@ import com.embabel.plan.goap.WorldStateDeterminer
  * Uses the GOAP planner to validate that goals can be achieved through a sequence of actions.
  * Reports specific errors when no such path exists.
  */
-
 @Component
 class GoapPathToCompletionValidator : AgentValidator {
 
@@ -57,8 +53,9 @@ class GoapPathToCompletionValidator : AgentValidator {
         // 2. What data it produces as output (effects)
         // So need to exclude hasRun_ conditions as they are runtime state indicators, not data dependencies.
         agentScope.actions.forEach { action ->
-            val nonHasRunPreconditions = action.preconditions.filterKeys { !it.startsWith("hasRun_") }.keys
-            val nonHasRunEffects = action.effects.filterKeys { !it.startsWith("hasRun_") }.keys
+            val nonHasRunPreconditions =
+                action.preconditions.filterKeys { !it.startsWith(HAS_RUN_CONDITION_PREFIX) }.keys
+            val nonHasRunEffects = action.effects.filterKeys { !it.startsWith(HAS_RUN_CONDITION_PREFIX) }.keys
 
             actionDependencies[action.name] = nonHasRunPreconditions
             actionOutputs[action.name] = nonHasRunEffects
@@ -73,13 +70,13 @@ class GoapPathToCompletionValidator : AgentValidator {
             // 3. All its preconditions are either external inputs or FALSE (self-produced)
             deps.any { dep ->
                 !actionOutputs.values.any { outputs -> outputs.contains(dep) } &&
-                action.preconditions[dep] != ConditionDetermination.FALSE
+                        action.preconditions[dep] != ConditionDetermination.FALSE
             } && deps.all { dep ->
                 // All preconditions must be either:
                 // - Not produced by any action (external input)
                 // - FALSE (self-produced)
                 !actionOutputs.values.any { outputs -> outputs.contains(dep) } ||
-                action.preconditions[dep] == ConditionDetermination.FALSE
+                        action.preconditions[dep] == ConditionDetermination.FALSE
             }
         }
 
@@ -95,11 +92,13 @@ class GoapPathToCompletionValidator : AgentValidator {
         }
 
         if (firstActions.isEmpty()) {
-            errors.add(error(
-                "NO_STARTING_ACTION",
-                "No action found that can start the chain. All actions depend on outputs from other actions.",
-                agentScope
-            ))
+            errors.add(
+                error(
+                    "NO_STARTING_ACTION",
+                    "No action found that can start the chain. All actions depend on outputs from other actions.",
+                    agentScope
+                )
+            )
             return ValidationResult(false, errors)
         }
 
@@ -155,12 +154,14 @@ class GoapPathToCompletionValidator : AgentValidator {
         }
 
         if (!allGoalsAchievable) {
-            errors.add(error(
-                "NO_PATH_TO_GOAL",
-                "No valid path found to achieve goals. " +
-                        "Either no plan exists or the goals' preconditions cannot be achieved through available actions.",
-                agentScope
-            ))
+            errors.add(
+                error(
+                    "NO_PATH_TO_GOAL",
+                    "No valid path found to achieve goals. " +
+                            "Either no plan exists or the goals' preconditions cannot be achieved through available actions.",
+                    agentScope
+                )
+            )
         }
 
         return ValidationResult(errors.isEmpty(), errors)
