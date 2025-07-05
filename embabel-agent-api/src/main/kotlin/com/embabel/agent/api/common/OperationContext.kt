@@ -55,7 +55,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     fun promptRunner(
         llm: LlmOptions = LlmOptions(),
         toolGroups: Set<ToolGroupRequirement> = emptySet(),
-        toolObjects: List<Any> = emptyList(),
+        toolObjects: List<ToolObject> = emptyList(),
         promptContributors: List<PromptContributor> = emptyList(),
         contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
         generateExamples: Boolean = false,
@@ -135,18 +135,20 @@ interface ActionContext : OperationContext {
     override fun promptRunner(
         llm: LlmOptions,
         toolGroups: Set<ToolGroupRequirement>,
-        toolObjects: List<Any>,
+        toolObjects: List<ToolObject>,
         promptContributors: List<PromptContributor>,
         contextualPromptContributors: List<ContextualPromptElement>,
         generateExamples: Boolean,
     ): PromptRunner {
         val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
 
+        val doi = domainObjectInstances()
+        println(doi)
         return OperationContextPromptRunner(
             this,
             llm = llm,
             toolGroups = this.toolGroups + toolGroups,
-            toolObjects = (toolObjects + domainObjectInstances()).distinct(),
+            toolObjects = (toolObjects + doi.map { ToolObject(it) }).distinct(),
             promptContributors = promptContributorsToUse,
             contextualPromptContributors = contextualPromptContributors,
             generateExamples = generateExamples,
@@ -232,8 +234,12 @@ inline fun <reified O : Any> ActionContext.asSubProcess(
 interface InputsActionContext : ActionContext {
     val inputs: List<Any>
 
-    override fun domainObjectInstances(): List<Any> = inputs
-
+    override fun domainObjectInstances(): List<Any> = inputs.flatMap { input ->
+        when (input) {
+            is List<*> -> input.filterNotNull()
+            else -> listOf(input)
+        }.distinct()
+    }
 }
 
 /**

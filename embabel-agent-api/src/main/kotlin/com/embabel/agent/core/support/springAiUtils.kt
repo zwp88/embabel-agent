@@ -15,37 +15,56 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.api.common.ToolObject
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
+import org.springframework.ai.tool.definition.DefaultToolDefinition
+import org.springframework.ai.tool.definition.ToolDefinition
 
 /**
  * ToolCallbacks.from complains if no tools.
  * Also conceal varargs
  */
-fun safelyGetToolCallbacks(instances: Collection<Any>): List<ToolCallback> {
+fun safelyGetToolCallbacks(instances: Collection<ToolObject>): List<ToolCallback> =
+    instances.flatMap { safelyGetToolCallbacksFrom(it) }
+        .distinctBy { it.toolDefinition.name() }
+        .sortedBy { it.toolDefinition.name() }
+
+
+fun safelyGetToolCallbacksFrom(toolObject: ToolObject): List<ToolCallback> {
     val callbacks = mutableListOf<ToolCallback>()
-    instances.forEach {
-        when (it) {
-            is ToolCallback ->
-                callbacks.add(it)
-
-            is List<*> -> {
-                val all = it.filterNotNull().flatMap { e -> safelyGetToolCallbacksFrom(e) }
-                callbacks.addAll(all)
-            }
-
-            else -> try {
-                callbacks.addAll(ToolCallbacks.from(it).toList())
-            } catch (_: IllegalStateException) {
-                // Ignore this exception from Spring AI.
-                // Passing in object without @Tool annotations is not a problem:
-                // it should simply be ignored
+    try {
+        when (toolObject.obj) {
+            is ToolCallback -> callbacks.add(toolObject.obj)
+            else ->
+                callbacks.addAll(ToolCallbacks.from(toolObject.obj).toList())
+        }
+    } catch (_: IllegalStateException) {
+        // Ignore this exception from Spring AI.
+        // Passing in object without @Tool annotations is not a problem:
+        // it should simply be ignored
+    }
+    return callbacks
+        .filter { toolObject.filter(it.toolDefinition.name()) }
+        .map {
+            val newName = toolObject.namingStrategy.transform(it.toolDefinition.name())
+            if (newName != it.toolDefinition.name()) {
+                RenamedToolCallback(it, newName)
+            } else {
+                it
             }
         }
-    }
-
-    return callbacks
+        .distinctBy { it.toolDefinition.name() }
+        .sortedBy { it.toolDefinition.name() }
 }
 
-fun safelyGetToolCallbacksFrom(instance: Any): List<ToolCallback> =
-    safelyGetToolCallbacks(listOf(instance))
+class RenamedToolCallback(
+    private val delegate: ToolCallback,
+    private val newName: String,
+) : ToolCallback {
+
+    override fun getToolDefinition(): ToolDefinition =
+        DefaultToolDefinition(newName, delegate.toolDefinition.description(), delegate.toolDefinition.inputSchema())
+
+    override fun call(toolInput: String): String = delegate.call(toolInput)
+}

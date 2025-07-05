@@ -17,6 +17,7 @@ package com.embabel.agent.api.annotation
 
 import com.embabel.agent.api.annotation.support.MethodReturnPromptRunner
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
@@ -37,7 +38,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 fun using(
     llm: LlmOptions? = null,
     toolGroups: Set<ToolGroupRequirement> = emptySet(),
-    toolObjects: List<Any> = emptyList(),
+    toolObjects: List<ToolObject> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
     contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
     generateExamples: Boolean? = null,
@@ -66,7 +67,7 @@ fun using(
 fun usingModel(
     model: String,
     toolGroups: Set<ToolGroupRequirement> = emptySet(),
-    toolObjects: List<Any> = emptyList(),
+    toolObjects: List<ToolObject> = emptyList(),
     promptContributors: List<PromptContributor> = emptyList(),
     contextualPromptContributors: List<ContextualPromptElement> = emptyList(),
     generateExamples: Boolean? = null,

@@ -24,6 +24,7 @@ import com.embabel.agent.spi.LlmUse
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.util.StringTransformer
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -72,6 +73,52 @@ interface PromptRunnerOperations {
 
 }
 
+/**
+ * Holds an annotated tool object.
+ * Adds a naming strategy and a filter to the object.
+ * @param obj the object the tool annotations are on
+ * @param namingStrategy the naming strategy to use for the tool object's methods
+ * @param filter a filter to apply to the tool object's methods
+ */
+data class ToolObject(
+    val obj: Any,
+    val namingStrategy: StringTransformer = StringTransformer.IDENTITY,
+    val filter: (String) -> Boolean = { true },
+) {
+
+    init {
+        if (obj is Iterable<*>) {
+            throw IllegalArgumentException("Internal error: ToolObject cannot be an Iterable. Offending object: $obj")
+        }
+    }
+
+    constructor (
+        obj: Any,
+    ) : this(
+        obj = obj,
+        namingStrategy = StringTransformer.IDENTITY,
+        filter = { true },
+    )
+
+    fun withNamingStrategy(
+        namingStrategy: StringTransformer,
+    ): ToolObject = copy(namingStrategy = namingStrategy)
+
+    fun withFilter(
+        filter: (String) -> Boolean,
+    ): ToolObject = copy(filter = filter)
+
+    companion object {
+
+        fun from(o: Any): ToolObject = o as? ToolObject
+            ?: ToolObject(
+                obj = o,
+                namingStrategy = StringTransformer.IDENTITY,
+                filter = { true },
+            )
+
+    }
+}
 
 /**
  * User code should always use this interface to execute prompts.
@@ -86,7 +133,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     /**
      * Additional objects with @Tool annotation for use in this PromptRunner
      */
-    val toolObjects: List<Any>
+    val toolObjects: List<ToolObject>
 
 
     /**
@@ -113,7 +160,20 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      * This is not an error
      * @return PromptRunner instance with the added tool object
      */
-    fun withToolObject(toolObject: Any?): PromptRunner
+    fun withToolObject(toolObject: Any?): PromptRunner =
+        if (toolObject == null) {
+            this
+        } else {
+            withToolObject(ToolObject.from(toolObject))
+        }
+
+    /**
+     * Add a tool object
+     * @param toolObject the object to add.
+     */
+    fun withToolObject(
+        toolObject: ToolObject,
+    ): PromptRunner
 
     /**
      * Add a prompt contributor
@@ -191,7 +251,7 @@ sealed class ExecutePromptException(
     override val llm: LlmOptions? = null,
     override val outputClass: Class<*>,
     override val toolCallbacks: List<ToolCallback>,
-    val toolObjects: List<Any>,
+    val toolObjects: List<ToolObject>,
     override val promptContributors: List<PromptContributor>,
     override val contextualPromptContributors: List<ContextualPromptElement>,
     override val generateExamples: Boolean?,
@@ -209,7 +269,7 @@ class CreateObjectPromptException(
     outputClass: Class<*>,
     override val toolGroups: Set<ToolGroupRequirement>,
     toolCallbacks: List<ToolCallback>,
-    toolObjects: List<Any>,
+    toolObjects: List<ToolObject>,
     promptContributors: List<PromptContributor>,
     contextualPromptContributors: List<ContextualPromptElement>,
     generateExamples: Boolean? = null,
@@ -231,7 +291,7 @@ class EvaluateConditionPromptException(
     requireResult: Boolean,
     llm: LlmOptions? = null,
     override val toolGroups: Set<ToolGroupRequirement>,
-    toolObjects: List<Any>,
+    toolObjects: List<ToolObject>,
     toolCallbacks: List<ToolCallback>,
     promptContributors: List<PromptContributor>,
     contextualPromptContributors: List<ContextualPromptElement>,

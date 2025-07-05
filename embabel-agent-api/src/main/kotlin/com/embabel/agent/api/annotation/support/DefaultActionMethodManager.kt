@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.annotation.RequireNameMatch
 import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.OperationContext
+import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.support.MultiTransformationAction
 import com.embabel.agent.api.common.support.expandInputBindings
@@ -155,7 +156,8 @@ internal class DefaultActionMethodManager(
                 llm = cope.llm ?: LlmOptions(),
                 // Remember to add tool groups from the context to those the exception specified at the call site
                 toolGroups = cope.toolGroups + actionContext.toolGroups,
-                toolObjects = (cope.toolObjects + actionContext.domainObjectInstances()).distinct(),
+                toolObjects = (cope.toolObjects + actionContext.domainObjectInstances()
+                    .map { ToolObject.from(it) }).distinct(),
                 promptContributors = promptContributors,
                 contextualPromptContributors = cope.contextualPromptContributors,
                 generateExamples = cope.generateExamples == true,

@@ -16,6 +16,7 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.api.annotation.support.PersonWithReverseTool
+import com.embabel.agent.api.common.ToolObject
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,13 +34,17 @@ class SpringAiUtilsKtTest {
 
     @Test
     fun `safelyGetTools from single instance in set`() {
-        val result = safelyGetToolCallbacks(setOf(PersonWithReverseTool("John Doe")))
+        val result = safelyGetToolCallbacks(
+            setOf(
+                ToolObject(PersonWithReverseTool("John Doe"))
+            )
+        )
         assertEquals(1, result.size)
     }
 
     @Test
     fun `safelyGetTools from single instance in ArrayList`() {
-        val result = safelyGetToolCallbacks(arrayListOf(PersonWithReverseTool("John Doe")))
+        val result = safelyGetToolCallbacks(arrayListOf(ToolObject.from(PersonWithReverseTool("John Doe"))))
         assertEquals(1, result.size)
     }
 
@@ -47,9 +52,9 @@ class SpringAiUtilsKtTest {
     fun `safelyGetTools from single instance and tool callback`() {
         val tc = mockk<ToolCallback>()
         every { tc.toolDefinition.name() } returns "test"
-        val result = safelyGetToolCallbacks(setOf(tc, PersonWithReverseTool("John Doe")))
+        val result = safelyGetToolCallbacks(setOf(tc, PersonWithReverseTool("John Doe")).map { ToolObject.from(it) })
         assertEquals(2, result.size)
-        assertEquals("test", result[0].toolDefinition.name())
+        assertEquals("test", result[1].toolDefinition.name())
     }
 
 }
