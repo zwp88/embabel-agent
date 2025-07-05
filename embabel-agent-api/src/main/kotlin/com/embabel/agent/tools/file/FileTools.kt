@@ -17,6 +17,7 @@ package com.embabel.agent.tools.file
 
 import com.embabel.agent.api.common.support.SelfToolCallbackPublisher
 import com.embabel.agent.tools.DirectoryBased
+import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
@@ -31,30 +32,6 @@ import java.nio.file.Paths
 import java.util.zip.ZipInputStream
 
 /**
- * Function that can edit a file. Functions can be changed.
- */
-fun interface FileContentTransformer {
-
-    fun transform(raw: String): String
-
-    companion object {
-
-        /**
-         * Apply transformers in order
-         */
-        fun transform(raw: String, transformers: List<FileContentTransformer>): String {
-            var transformedContent = raw
-
-            // Run all sanitizers over the content in order
-            for (transformer in transformers) {
-                transformedContent = transformer.transform(transformedContent)
-            }
-            return transformedContent
-        }
-    }
-}
-
-/**
  * Read and Write file tools. Extend FileReadTools for safe read only use
  */
 interface FileTools : FileReadTools, FileWriteTools {
@@ -66,11 +43,11 @@ interface FileTools : FileReadTools, FileWriteTools {
          */
         fun readOnly(
             root: String,
-            fileContentTransformers: List<FileContentTransformer> = emptyList(),
+            fileContentTransformers: List<StringTransformer> = emptyList(),
         ): FileReadTools {
             return object : FileReadTools {
                 override val root: String = root
-                override val fileContentTransformers: List<FileContentTransformer> = emptyList()
+                override val fileContentTransformers: List<StringTransformer> = emptyList()
             }
         }
 
@@ -79,11 +56,11 @@ interface FileTools : FileReadTools, FileWriteTools {
          */
         fun readWrite(
             root: String,
-            fileContentTransformers: List<FileContentTransformer> = emptyList(),
+            fileContentTransformers: List<StringTransformer> = emptyList(),
         ): FileTools {
             return object : FileTools {
                 override val root: String = root
-                override val fileContentTransformers: List<FileContentTransformer> = emptyList()
+                override val fileContentTransformers: List<StringTransformer> = emptyList()
             }
         }
     }
@@ -100,7 +77,7 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
      * They must be sure not to change any content that may need to be replaced
      * as this will break editing if editing is done in the same session.
      */
-    val fileContentTransformers: List<FileContentTransformer>
+    val fileContentTransformers: List<StringTransformer>
 
     /**
      * Does this file exist?
@@ -151,7 +128,7 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
         val resolvedPath = resolveAndValidateFile(path)
         val rawContent = Files.readString(resolvedPath)
         val transformedContent =
-            FileContentTransformer.transform(rawContent, fileContentTransformers)
+            StringTransformer.transform(rawContent, fileContentTransformers)
 
         loggerFor<FileReadTools>().debug(
             "Transformed {} content with {} sanitizers: Length went from {} to {}",

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.tools.file
 
+import com.embabel.common.util.StringTransformer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -39,7 +40,7 @@ class FileReadToolsTest {
         rootPath = tempDir.toString()
         fileReadTools = object : FileReadTools {
             override val root: String = rootPath
-            override val fileContentTransformers: List<FileContentTransformer> = emptyList()
+            override val fileContentTransformers: List<StringTransformer> = emptyList()
         }
     }
 

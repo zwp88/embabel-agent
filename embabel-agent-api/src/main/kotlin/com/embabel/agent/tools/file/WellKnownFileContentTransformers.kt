@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.tools.file
 
+import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 
 /**
@@ -30,7 +31,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes Apache License headers commonly found at the top of source files.
      */
-    val removeApacheLicenseHeader: FileContentTransformer = FileContentTransformer { content ->
+    val removeApacheLicenseHeader: StringTransformer = StringTransformer { content ->
         val apacheLicensePattern = Regex(
             "/\\*\\s*\\n" +
                     " \\* Copyright .*?\\n" +
@@ -48,7 +49,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes documentation comments (/** ... */) from the code.
      */
-    val removeDocComments: FileContentTransformer = FileContentTransformer { content ->
+    val removeDocComments: StringTransformer = StringTransformer { content ->
         val docCommentPattern = Regex(
             "/\\*\\*\\s*\\n" +
                     "(?:.|\\n)*?" +  // Non-greedy match for any characters including newlines
@@ -64,7 +65,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes single-line comments (// ...) from the code.
      */
-    val removeSingleLineComments: FileContentTransformer = FileContentTransformer { content ->
+    val removeSingleLineComments: StringTransformer = StringTransformer { content ->
         val singleLineCommentPattern = Regex("\\s*//.*$", RegexOption.MULTILINE)
 
         val result = singleLineCommentPattern.replace(content, "")
@@ -75,7 +76,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes import statements from the code.
      */
-    val removeImports: FileContentTransformer = FileContentTransformer { content ->
+    val removeImports: StringTransformer = StringTransformer { content ->
         val importPattern = Regex("import .*$\\n", RegexOption.MULTILINE)
 
         val result = importPattern.replace(content, "")
@@ -86,7 +87,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes empty lines from file content
      */
-    val removeEmptyLines: FileContentTransformer = FileContentTransformer { content ->
+    val removeEmptyLines: StringTransformer = StringTransformer { content ->
         val emptyLinePattern = Regex("^\\s*$\\n", RegexOption.MULTILINE)
 
         val result = emptyLinePattern.replace(content, "")
@@ -97,7 +98,7 @@ object WellKnownFileContentTransformers {
     /**
      * Removes excessive whitespace from file content
      */
-    val compressWhitespace: FileContentTransformer = FileContentTransformer { content ->
+    val compressWhitespace: StringTransformer = StringTransformer { content ->
         // Replace multiple spaces with a single space
         val multipleSpacesPattern = Regex("[ \\t]+")
         // Replace multiple consecutive empty lines with a single empty line
@@ -114,7 +115,7 @@ object WellKnownFileContentTransformers {
      * Returns all available sanitizers in a sensible order for maximum content reduction.
      * The order is important to ensure proper sanitization.
      */
-    fun allSanitizers(): List<FileContentTransformer> {
+    fun allSanitizers(): List<StringTransformer> {
         logger.debug("Creating all sanitizers list")
         return listOf(
             removeApacheLicenseHeader,
@@ -130,7 +131,7 @@ object WellKnownFileContentTransformers {
      * Returns a minimal set of sanitizers that preserve code structure
      * while still reducing file size.
      */
-    fun minimalSanitizers(): List<FileContentTransformer> {
+    fun minimalSanitizers(): List<StringTransformer> {
         logger.debug("Creating minimal sanitizers list")
         return listOf(
             removeApacheLicenseHeader,
@@ -142,7 +143,7 @@ object WellKnownFileContentTransformers {
     /**
      * Returns sanitizers focused on comment removal only.
      */
-    fun commentRemovalSanitizers(): List<FileContentTransformer> {
+    fun commentRemovalSanitizers(): List<StringTransformer> {
         logger.debug("Creating comment removal sanitizers list")
         return listOf(
             removeApacheLicenseHeader,
@@ -154,7 +155,7 @@ object WellKnownFileContentTransformers {
     /**
      * Returns sanitizers focused on whitespace cleanup only.
      */
-    fun whitespaceCleanupSanitizers(): List<FileContentTransformer> {
+    fun whitespaceCleanupSanitizers(): List<StringTransformer> {
         logger.debug("Creating whitespace cleanup sanitizers list")
         return listOf(
             removeEmptyLines,

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.tools.file
 
+import com.embabel.common.util.StringTransformer
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -79,7 +80,7 @@ class WellKnownFileContentTransformersTest {
             notTheres.forEach {
                 assertEquals(
                     it,
-                    FileContentTransformer.transform(it, WellKnownFileContentTransformers.allSanitizers())
+                    StringTransformer.transform(it, WellKnownFileContentTransformers.allSanitizers())
                 )
             }
         }
@@ -106,7 +107,7 @@ class WellKnownFileContentTransformersTest {
             """.trimIndent()
             assertEquals(
                 "class Foo",
-                FileContentTransformer.transform(it, WellKnownFileContentTransformers.allSanitizers())
+                StringTransformer.transform(it, WellKnownFileContentTransformers.allSanitizers())
             )
         }
     }
