@@ -28,6 +28,7 @@ import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.embabel.common.textio.template.TemplateRenderer
+import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 import io.micrometer.observation.ObservationRegistry
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -64,8 +65,9 @@ import org.springframework.web.client.RestTemplate
             observationRegistry,
         )
         return DefaultToolDecorator(
-            toolGroupResolver,
-            observationRegistry,
+            toolGroupResolver = toolGroupResolver,
+            observationRegistry = observationRegistry,
+            outputTransformer = StringTransformer(),
         )
     }
 

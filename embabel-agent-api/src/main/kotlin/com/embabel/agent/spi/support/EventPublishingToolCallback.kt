@@ -18,44 +18,11 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.ToolCallRequestEvent
-import com.embabel.agent.spi.ToolDecorator
-import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.time
-import io.micrometer.observation.ObservationRegistry
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 import java.time.Duration
-
-/**
- * Decorate tools with metadata and publish events.
- */
-class DefaultToolDecorator(
-    private val toolGroupResolver: ToolGroupResolver? = null,
-    private val observationRegistry: ObservationRegistry? = null,
-) : ToolDecorator {
-
-    override fun decorate(
-        tool: ToolCallback,
-        agentProcess: AgentProcess,
-        action: Action?,
-        llmOptions: LlmOptions,
-    ): ToolCallback {
-        val toolGroup = toolGroupResolver?.findToolGroupForTool(toolName = tool.toolDefinition.name())
-        return ObservabilityToolCallback(
-            delegate = MetadataEnrichedToolCallback(
-                toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
-                delegate = tool,
-            )
-                .withEventPublication(
-                    agentProcess = agentProcess,
-                    action = action,
-                    llmOptions = llmOptions,
-                ),
-            observationRegistry = observationRegistry,
-        )
-    }
-}
 
 /**
  * HOF to decorate a ToolCallback to time the call and emit events.
