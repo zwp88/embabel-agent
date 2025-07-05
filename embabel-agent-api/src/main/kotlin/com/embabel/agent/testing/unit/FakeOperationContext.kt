@@ -17,6 +17,7 @@ package com.embabel.agent.testing.unit
 
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.common.Constants.EMBABEL_PROVIDER
 import com.embabel.agent.core.*
 import com.embabel.agent.prompt.element.ContextualPromptElement
@@ -73,7 +74,7 @@ class FakeOperationContext(
     override fun promptRunner(
         llm: LlmOptions,
         toolGroups: Set<ToolGroupRequirement>,
-        toolObjects: List<Any>,
+        toolObjects: List<ToolObject>,
         promptContributors: List<PromptContributor>,
         contextualPromptContributors: List<ContextualPromptElement>,
         generateExamples: Boolean

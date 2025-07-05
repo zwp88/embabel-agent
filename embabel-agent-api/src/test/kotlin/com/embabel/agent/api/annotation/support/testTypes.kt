@@ -515,7 +515,7 @@ class FromPersonUsesObjectToolsViaUsing {
     fun fromPerson(
         person: PersonWithReverseTool
     ): UserInput {
-        return using(toolObjects = listOf(FunnyTool())).createObject("Create a UserInput")
+        return using(toolObjects = listOf(ToolObject(FunnyTool()))).createObject("Create a UserInput")
     }
 }
 
@@ -527,7 +527,7 @@ class FromPersonUsesObjectToolsViaContext {
         person: PersonWithReverseTool,
         context: ActionContext,
     ): UserInput {
-        return context.promptRunner(toolObjects = listOf(FunnyTool())).createObject("Create a UserInput")
+        return context.promptRunner(toolObjects = listOf(ToolObject(FunnyTool()))).createObject("Create a UserInput")
     }
 }
 

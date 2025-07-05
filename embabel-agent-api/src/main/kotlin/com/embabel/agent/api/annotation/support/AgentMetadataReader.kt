@@ -19,6 +19,7 @@ import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.StuckHandler
+import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.IoBinding
@@ -135,7 +136,7 @@ class AgentMetadataReader(
         val actionMethods = findActionMethods(agenticInfo.type)
         val conditionMethods = findConditionMethods(agenticInfo.type)
 
-        val toolCallbacksOnInstance = safelyGetToolCallbacksFrom(instance)
+        val toolCallbacksOnInstance = safelyGetToolCallbacksFrom(ToolObject.from(instance))
 
         val conditions = conditionMethods.map { createCondition(it, instance) }.toSet()
         val (actions, actionGoals) = actionMethods.map { actionMethod ->

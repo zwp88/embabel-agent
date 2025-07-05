@@ -17,6 +17,7 @@ package com.embabel.agent.testing.unit
 
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.prompt.element.ContextualPromptElement
@@ -26,6 +27,7 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.util.StringTransformer
 import org.slf4j.LoggerFactory
 
 enum class Method {
@@ -43,7 +45,7 @@ data class LlmInvocation(
 data class FakePromptRunner(
     override val llm: LlmOptions?,
     override val toolGroups: Set<ToolGroupRequirement>,
-    override val toolObjects: List<Any>,
+    override val toolObjects: List<ToolObject>,
     override val promptContributors: List<PromptContributor>,
     private val contextualPromptContributors: List<ContextualPromptElement>,
     override val generateExamples: Boolean?,
@@ -139,8 +141,13 @@ data class FakePromptRunner(
     override fun withToolGroup(toolGroup: ToolGroupRequirement): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
-    override fun withToolObject(toolObject: Any?): PromptRunner =
-        copy(toolObjects = (this.toolObjects + toolObject).filterNotNull())
+    override fun withToolObject(
+        toolObject: Any,
+        namingStrategy: StringTransformer,
+        filter: ((String) -> Boolean),
+    ): PromptRunner = copy(
+        toolObjects = (this.toolObjects + ToolObject(toolObject, namingStrategy, filter)).filterNotNull()
+    )
 
     override fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner =
         copy(promptContributors = this.promptContributors + promptContributors)

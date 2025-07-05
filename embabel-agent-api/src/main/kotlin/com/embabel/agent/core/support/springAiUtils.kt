@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core.support
 
+import com.embabel.agent.api.common.ToolObject
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.ToolCallbacks
 
@@ -22,30 +23,25 @@ import org.springframework.ai.tool.ToolCallbacks
  * ToolCallbacks.from complains if no tools.
  * Also conceal varargs
  */
-fun safelyGetToolCallbacks(instances: Collection<Any>): List<ToolCallback> {
+fun safelyGetToolCallbacks(instances: Collection<ToolObject>): List<ToolCallback> {
     val callbacks = mutableListOf<ToolCallback>()
     instances.forEach {
-        when (it) {
-            is ToolCallback ->
-                callbacks.add(it)
-
-            is List<*> -> {
-                val all = it.filterNotNull().flatMap { e -> safelyGetToolCallbacksFrom(e) }
-                callbacks.addAll(all)
+        try {
+            when (it.obj) {
+                is ToolCallback -> callbacks.add(it.obj)
+                else ->
+                    callbacks.addAll(ToolCallbacks.from(it.obj).toList())
             }
-
-            else -> try {
-                callbacks.addAll(ToolCallbacks.from(it).toList())
-            } catch (_: IllegalStateException) {
-                // Ignore this exception from Spring AI.
-                // Passing in object without @Tool annotations is not a problem:
-                // it should simply be ignored
-            }
+        } catch (_: IllegalStateException) {
+            // Ignore this exception from Spring AI.
+            // Passing in object without @Tool annotations is not a problem:
+            // it should simply be ignored
         }
     }
 
-    return callbacks
+    return callbacks.distinctBy { it.toolDefinition.name() }
+        .sortedBy { it.toolDefinition.name() }
 }
 
-fun safelyGetToolCallbacksFrom(instance: Any): List<ToolCallback> =
+fun safelyGetToolCallbacksFrom(instance: ToolObject): List<ToolCallback> =
     safelyGetToolCallbacks(listOf(instance))
