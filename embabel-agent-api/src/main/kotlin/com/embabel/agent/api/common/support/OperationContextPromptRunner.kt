@@ -28,7 +28,6 @@ import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
-import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 
 /**
@@ -144,13 +143,8 @@ internal data class OperationContextPromptRunner(
     override fun withToolGroup(toolGroup: ToolGroupRequirement): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
-    override fun withToolObject(
-        toolObject: Any,
-        namingStrategy: StringTransformer,
-        filter: ((String) -> Boolean),
-    ): PromptRunner = copy(
-        toolObjects = (this.toolObjects + ToolObject(toolObject, namingStrategy, filter)).filterNotNull()
-    )
+    override fun withToolObject(toolObject: ToolObject): PromptRunner =
+        copy(toolObjects = this.toolObjects + toolObject)
 
     override fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner =
         copy(promptContributors = this.promptContributors + promptContributors)

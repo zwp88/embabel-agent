@@ -520,6 +520,37 @@ class FromPersonUsesObjectToolsViaUsing {
 }
 
 @AgentCapabilities
+class FromPersonUsesObjectToolsViaUsingWithRenaming {
+
+    @Action
+    fun fromPerson(
+        person: PersonWithReverseTool
+    ): UserInput {
+        return using()
+            .withToolObject(
+                ToolObject(
+                    FunnyTool(),
+                    namingStrategy = { "_$it" },
+                )
+            ).createObject("Create a UserInput")
+    }
+}
+
+@AgentCapabilities
+class FromPersonUsesObjectToolsViaUsingWithFilter {
+
+    @Action
+    fun fromPerson(
+        person: PersonWithReverseTool
+    ): UserInput {
+        return using()
+            .withToolObject(
+                ToolObject(FunnyTool()).withNamingStrategy { "_$it" }.withFilter { false },
+            ).createObject("Create a UserInput")
+    }
+}
+
+@AgentCapabilities
 class FromPersonUsesObjectToolsViaContext {
 
     @Action
@@ -528,6 +559,22 @@ class FromPersonUsesObjectToolsViaContext {
         context: ActionContext,
     ): UserInput {
         return context.promptRunner(toolObjects = listOf(ToolObject(FunnyTool()))).createObject("Create a UserInput")
+    }
+}
+
+@AgentCapabilities
+class FromPersonUsesObjectToolsViaContextWithRenaming {
+
+    @Action
+    fun fromPerson(
+        person: PersonWithReverseTool,
+        context: ActionContext,
+    ): UserInput {
+        return context.promptRunner().withToolObject(
+            ToolObject(
+                FunnyTool(),
+                namingStrategy = { "_$it" }),
+        ).createObject("Create a UserInput")
     }
 }
 

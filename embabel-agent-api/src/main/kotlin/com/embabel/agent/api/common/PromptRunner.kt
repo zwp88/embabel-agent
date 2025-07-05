@@ -92,6 +92,22 @@ data class ToolObject(
         }
     }
 
+    constructor (
+        obj: Any,
+    ) : this(
+        obj = obj,
+        namingStrategy = StringTransformer.IDENTITY,
+        filter = { true },
+    )
+
+    fun withNamingStrategy(
+        namingStrategy: StringTransformer,
+    ): ToolObject = copy(namingStrategy = namingStrategy)
+
+    fun withFilter(
+        filter: (String) -> Boolean,
+    ): ToolObject = copy(filter = filter)
+
     companion object {
 
         fun from(o: Any): ToolObject = o as? ToolObject
@@ -148,19 +164,15 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
         if (toolObject == null) {
             this
         } else {
-            withToolObject(
-                toolObject,
-                namingStrategy = StringTransformer.IDENTITY,
-            )
+            withToolObject(ToolObject.from(toolObject))
         }
 
     /**
      * Add a tool object
+     * @param toolObject the object to add.
      */
     fun withToolObject(
-        toolObject: Any,
-        namingStrategy: StringTransformer,
-        filter: ((String) -> Boolean) = { true },
+        toolObject: ToolObject,
     ): PromptRunner
 
     /**
