@@ -164,6 +164,9 @@ if you already have an `OPENAI_API_KEY` and have Maven installed.
 > **📚 For examples and tutorials**, see
 > the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
 
+> **🚗 For a realistic example application**, see the [Tripper travel planner agent](https://github.com/embabel/tripper)
+
+
 ## Why Is Embabel Needed?
 
 TL;DR Because the evolution of agent frameworks is early and there's a lot of room for improvement; because an agent
