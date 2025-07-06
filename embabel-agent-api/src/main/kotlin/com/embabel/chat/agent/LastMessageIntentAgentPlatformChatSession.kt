@@ -15,11 +15,9 @@
  */
 package com.embabel.chat.agent
 
-import com.embabel.agent.api.common.autonomy.Autonomy
-import com.embabel.agent.api.common.autonomy.GoalChoiceApprover
-import com.embabel.agent.api.common.autonomy.GoalNotApproved
-import com.embabel.agent.api.common.autonomy.NoGoalFound
+import com.embabel.agent.api.common.autonomy.*
 import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.shell.TerminalServices
 import com.embabel.chat.*
 
 /**
@@ -32,6 +30,7 @@ class LastMessageIntentAgentPlatformChatSession(
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
     override val conversation: Conversation = InMemoryConversation(),
+    private val terminalServices: TerminalServices,
 ) : ChatSession {
 
     override fun send(message: UserMessage, additionalListener: MessageListener?) {
@@ -53,6 +52,8 @@ class LastMessageIntentAgentPlatformChatSession(
                 agentProcessExecution = dynamicExecutionResult,
                 content = result.toString(),
             )
+        } catch (pwe: ProcessWaitingException) {
+            return handleProcessWaitingException(pwe, message.content)
         } catch (_: NoGoalFound) {
             return AssistantMessage(
                 content = """|
@@ -66,6 +67,30 @@ class LastMessageIntentAgentPlatformChatSession(
             return AssistantMessage(
                 content = "I obey. That action will not be executed.",
             )
+        }
+    }
+
+    private fun handleProcessWaitingException(pwe: ProcessWaitingException, basis: Any): AssistantMessage {
+        val awaitableResponse = terminalServices.handleProcessWaitingException(pwe)
+        if (awaitableResponse == null) {
+            return AssistantMessage("Operation cancelled.")
+        }
+        pwe.awaitable.onResponse(
+            response = awaitableResponse,
+            processContext = pwe.agentProcess!!.processContext
+        )
+        try {
+            pwe.agentProcess.run()
+            val ape = AgentProcessExecution.fromProcessStatus(
+                basis = basis,
+                agentProcess = pwe.agentProcess
+            )
+            return AgenticResultAssistantMessage(
+                agentProcessExecution = ape,
+                content = ape.output.toString(),
+            )
+        } catch (e: ProcessWaitingException) {
+            return handleProcessWaitingException(e, basis)
         }
     }
 }

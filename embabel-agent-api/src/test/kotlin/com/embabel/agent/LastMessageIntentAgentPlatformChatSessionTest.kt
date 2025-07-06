@@ -46,6 +46,7 @@ class LastMessageIntentAgentPlatformChatSessionTest {
             mockAutonomy,
             GoalChoiceApprover.Companion.APPROVE_ALL,
             messageListener = {},
+            terminalServices = mockk(),
         )
         val userMessage = UserMessage("Hello, world!")
         val l = MessageSavingMessageListener()

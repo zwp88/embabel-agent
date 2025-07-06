@@ -119,6 +119,7 @@ class ShellCommands(
             autonomy = autonomy,
             processOptions = processOptions,
             goalChoiceApprover = terminalServices,
+            terminalServices = terminalServices,
         )
         return terminalServices.chat(chatSession, colorPalette)
     }
