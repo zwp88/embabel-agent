@@ -10,7 +10,7 @@ Agent processes can be configured with `ProcessOptions`.
 
 `ProcessOptions` controls:
 
-* `contextId`: An ientifier of any existing context in which the agent is running.
+* `contextId`: An identifier of any existing context in which the agent is running.
 * `blackboard`: The blackboard to use for the agent.
 Allows starting from a particular state.
 * `test`: Whether the agent is running in test mode.

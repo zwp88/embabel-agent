@@ -2,6 +2,9 @@
  * A dark theme for AsciiDoctor HTML output
  */
 
+/* Import modern fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
 /* Import the default AsciiDoctor stylesheet first */
 @import "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
 
@@ -30,6 +33,10 @@
 html, body {
     background-color: var(--bg-color) !important;
     color: var(--text-color) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
 }
 
 /* Links */
@@ -45,11 +52,17 @@ a:hover, a:focus {
 /* Document title and top-most header - make it white */
 h1, #header h1, #header > h1:first-child, #toctitle, .sidebarblock > .content > .title {
     color: #ffffff !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 /* Other headings keep the blue tint */
 h2, h3, h4, h5, h6 {
     color: var(--heading-color) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600;
+    letter-spacing: -0.015em;
 }
 
 /* Code blocks - more specific targeting */
@@ -57,13 +70,21 @@ pre {
     background-color: var(--code-bg-color) !important;
     color: var(--code-text-color) !important;
     border: 1px solid #444 !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+    font-weight: 400;
+    font-size: 0.9em;
+    line-height: 1.5;
+    border-radius: 6px;
 }
 
 code {
     background-color: var(--code-bg-color) !important;
     color: var(--code-text-color) !important;
-    padding: 2px 4px !important;
-    border-radius: 3px !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+    font-weight: 400;
+    font-size: 0.9em;
 }
 
 /* Listing blocks (most common code blocks in AsciiDoc) */
@@ -76,7 +97,11 @@ code {
     background-color: var(--code-bg-color) !important;
     color: var(--code-text-color) !important;
     border: 1px solid #444 !important;
-    padding: 1em !important;
+    padding: 1.2em !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+    font-weight: 400;
+    line-height: 1.5;
+    border-radius: 6px;
 }
 
 /* Source blocks */
@@ -84,6 +109,7 @@ code {
 .sourceblock .content pre {
     background-color: var(--code-bg-color) !important;
     color: var(--code-text-color) !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace !important;
 }
 
 /* Override any syntax highlighting that might interfere */
@@ -97,31 +123,60 @@ code {
 table {
     background-color: transparent !important;
     border-color: var(--table-border-color) !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 table thead, table tfoot {
     background-color: var(--table-header-bg) !important;
+    font-weight: 600;
 }
 
 table tr.even, table tr.alt, table tr:nth-of-type(even) {
     background-color: var(--table-alt-bg) !important;
 }
 
+table td, table th {
+    border-color: var(--table-border-color) !important;
+}
+
 /* Blockquotes */
 blockquote, .quoteblock {
     background-color: var(--quote-bg-color) !important;
     border-left: 4px solid var(--quote-border-color) !important;
+    font-style: italic;
+    position: relative;
+    padding: 1.5em !important;
+    border-radius: 0 6px 6px 0;
+}
+
+blockquote::before {
+    content: '"';
+    font-size: 4em;
+    color: var(--quote-border-color);
+    position: absolute;
+    top: -0.5em;
+    left: 0.2em;
+    font-family: Georgia, serif;
+    opacity: 0.3;
 }
 
 /* Sidebars and panels */
 .sidebarblock {
     background-color: #252525 !important;
     border: 1px solid #444 !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .exampleblock > .content {
     background-color: #252525 !important;
     border: 1px solid #444 !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Admonition blocks */
@@ -170,10 +225,13 @@ blockquote, .quoteblock {
 #toc, #toc.toc, #content #toc, #toc.toc2, #header .details, .sidebarblock, .listingblock, .literalblock, .imageblock, .tableblock {
     background-color: #252525 !important;
     border: 1px solid #444 !important;
+    border-radius: 8px;
 }
 
 #toc a, #toc.toc a, #content #toc a, #toc.toc2 a {
     color: var(--link-color) !important;
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 #toc a:hover, #toc.toc a:hover, #content #toc a:hover, #toc.toc2 a:hover {
@@ -185,6 +243,7 @@ blockquote, .quoteblock {
     background-color: #1a1a1a !important;
     border-right: 1px solid #444 !important;
     color: var(--text-color) !important;
+    backdrop-filter: blur(10px);
 }
 
 body.toc2 {
@@ -193,6 +252,8 @@ body.toc2 {
 
 #toc.toc2 #toctitle {
     color: var(--heading-color) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600;
 }
 
 /* TOC list items */
@@ -244,11 +305,102 @@ kbd {
 /* Source code highlighting - basic overrides */
 .hljs {
     background-color: var(--code-bg-color) !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace !important;
 }
 
 /* Override any specific syntax highlighting themes */
 .hljs, .hljs-subst {
     color: var(--code-text-color) !important;
+}
+
+/* Java-specific syntax highlighting fixes */
+.hljs-annotation,
+.hljs-meta {
+    color: #ffb86c !important; /* Orange for annotations like @Override */
+}
+
+.hljs-keyword {
+    color: #ff79c6 !important; /* Pink for keywords */
+}
+
+.hljs-string {
+    color: #f1fa8c !important; /* Yellow for strings */
+}
+
+.hljs-comment {
+    color: #6272a4 !important; /* Blue-gray for comments */
+    font-style: italic;
+}
+
+.hljs-number {
+    color: #bd93f9 !important; /* Purple for numbers */
+}
+
+.hljs-class .hljs-title,
+.hljs-type {
+    color: #8be9fd !important; /* Cyan for class names and types */
+}
+
+.hljs-function .hljs-title {
+    color: #50fa7b !important; /* Green for function names */
+}
+
+.hljs-variable,
+.hljs-name {
+    color: #f8f8f2 !important; /* Light gray for variables */
+}
+
+.hljs-attr {
+    color: #50fa7b !important; /* Green for attributes */
+}
+
+.hljs-symbol,
+.hljs-bullet {
+    color: #8be9fd !important; /* Cyan for symbols */
+}
+
+.hljs-built_in,
+.hljs-builtin-name {
+    color: #8be9fd !important; /* Cyan for built-ins */
+}
+
+.hljs-literal {
+    color: #bd93f9 !important; /* Purple for literals */
+}
+
+.hljs-params {
+    color: #ffb86c !important; /* Orange for parameters */
+}
+
+/* Generic syntax highlighting for non-hljs code */
+.token.annotation,
+.token.meta {
+    color: #ffb86c !important;
+}
+
+.token.keyword {
+    color: #ff79c6 !important;
+}
+
+.token.string {
+    color: #f1fa8c !important;
+}
+
+.token.comment {
+    color: #6272a4 !important;
+    font-style: italic;
+}
+
+.token.number {
+    color: #bd93f9 !important;
+}
+
+.token.class-name {
+    color: #8be9fd !important;
+}
+
+.token.function {
+    color: #50fa7b !important;
 }
 
 /* Callouts */

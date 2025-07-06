@@ -2,3 +2,6 @@
 === Why do we need an Agent Framework?
 
 Agent frameworks break complex tasks into smaller, manageable components, offering greater control and predictability.
+
+Agent frameworks offer "code agency" as well as "LLM agency." This division is well described in this
+https://research.nvidia.com/labs/lpr/slm-agents/[paper from NVIDIA Research].

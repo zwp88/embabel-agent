@@ -11,7 +11,7 @@ A common requirement is to add an open AI compatible LLM.
 This can be done by extending the `OpenAiCompatibleModelFactory` class as follows:
 
 [source,kotlin]
------
+----
 @Configuration
 class CustomOpenAiCompatibleModels(
     @Value("\${MY_BASE_URL:#{null}}")
@@ -35,7 +35,7 @@ class CustomOpenAiCompatibleModels(
         )
     }
 }
------
+----
 
 ==== Adding embedding models
 
