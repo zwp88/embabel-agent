@@ -7,239 +7,273 @@
 
 /* Base color variables */
 :root {
-  --bg-color: #1e1e1e;
-  --text-color: #e0e0e0;
-  --link-color: #4da6ff;
-  --link-hover-color: #80bfff;
-  --heading-color: #63c0f5;
-  --code-bg-color: #2d2d2d;
-  --code-text-color: #f8f8f2;
-  --quote-bg-color: #2a2a2a;
-  --quote-border-color: #444444;
-  --table-header-bg: #2d2d2d;
-  --table-border-color: #444444;
-  --table-alt-bg: #292929;
-  --admonition-note-bg: #264f78;
-  --admonition-tip-bg: #2d632d;
-  --admonition-important-bg: #663c00;
-  --admonition-warning-bg: #7a3300;
-  --admonition-caution-bg: #7a0000;
+    --bg-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --link-color: #4da6ff;
+    --link-hover-color: #80bfff;
+    --heading-color: #63c0f5;
+    --code-bg-color: #2d2d2d;
+    --code-text-color: #f8f8f2;
+    --quote-bg-color: #2a2a2a;
+    --quote-border-color: #444444;
+    --table-header-bg: #2d2d2d;
+    --table-border-color: #444444;
+    --table-alt-bg: #292929;
+    --admonition-note-bg: #264f78;
+    --admonition-tip-bg: #2d632d;
+    --admonition-important-bg: #663c00;
+    --admonition-warning-bg: #7a3300;
+    --admonition-caution-bg: #7a0000;
 }
 
 /* Basic elements */
 html, body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
 }
 
 /* Links */
 a, a:hover, a:focus {
-  color: var(--link-color);
+    color: var(--link-color) !important;
 }
 
 a:hover, a:focus {
-  color: var(--link-hover-color);
-  text-decoration: underline;
+    color: var(--link-hover-color) !important;
+    text-decoration: underline;
 }
 
 /* Document title and top-most header - make it white */
 h1, #header h1, #header > h1:first-child, #toctitle, .sidebarblock > .content > .title {
-  color: #ffffff;
+    color: #ffffff !important;
 }
 
 /* Other headings keep the blue tint */
 h2, h3, h4, h5, h6 {
-  color: var(--heading-color);
+    color: var(--heading-color) !important;
 }
 
-/* Code blocks */
-pre, code {
-  background-color: var(--code-bg-color);
-  color: var(--code-text-color);
-  border: none;
+/* Code blocks - more specific targeting */
+pre {
+    background-color: var(--code-bg-color) !important;
+    color: var(--code-text-color) !important;
+    border: 1px solid #444 !important;
 }
 
-.literalblock pre, .literalblock pre[class], .listingblock pre, .listingblock pre[class] {
-  background-color: var(--code-bg-color);
-  border: 1px solid #444;
+code {
+    background-color: var(--code-bg-color) !important;
+    color: var(--code-text-color) !important;
+    padding: 2px 4px !important;
+    border-radius: 3px !important;
+}
+
+/* Listing blocks (most common code blocks in AsciiDoc) */
+.listingblock pre,
+.listingblock pre[class],
+.listingblock .content pre,
+.literalblock pre,
+.literalblock pre[class],
+.literalblock .content pre {
+    background-color: var(--code-bg-color) !important;
+    color: var(--code-text-color) !important;
+    border: 1px solid #444 !important;
+    padding: 1em !important;
+}
+
+/* Source blocks */
+.sourceblock pre,
+.sourceblock .content pre {
+    background-color: var(--code-bg-color) !important;
+    color: var(--code-text-color) !important;
+}
+
+/* Override any syntax highlighting that might interfere */
+.listingblock .content,
+.literalblock .content,
+.sourceblock .content {
+    background-color: var(--code-bg-color) !important;
 }
 
 /* Tables */
 table {
-  background-color: transparent;
-  border-color: var(--table-border-color);
+    background-color: transparent !important;
+    border-color: var(--table-border-color) !important;
 }
 
 table thead, table tfoot {
-  background-color: var(--table-header-bg);
+    background-color: var(--table-header-bg) !important;
 }
 
 table tr.even, table tr.alt, table tr:nth-of-type(even) {
-  background-color: var(--table-alt-bg);
+    background-color: var(--table-alt-bg) !important;
 }
 
 /* Blockquotes */
 blockquote, .quoteblock {
-  background-color: var(--quote-bg-color);
-  border-left: 4px solid var(--quote-border-color);
+    background-color: var(--quote-bg-color) !important;
+    border-left: 4px solid var(--quote-border-color) !important;
 }
 
 /* Sidebars and panels */
 .sidebarblock {
-  background-color: #252525;
-  border: 1px solid #444;
+    background-color: #252525 !important;
+    border: 1px solid #444 !important;
 }
 
 .exampleblock > .content {
-  background-color: #252525;
-  border: 1px solid #444;
+    background-color: #252525 !important;
+    border: 1px solid #444 !important;
 }
 
 /* Admonition blocks */
 .admonitionblock > table td.icon {
-  text-align: center;
-  width: 80px;
+    text-align: center;
+    width: 80px;
 }
 
 .admonitionblock > table td.icon img {
-  max-width: none;
+    max-width: none;
 }
 
 .admonitionblock > table td.icon .title {
-  font-weight: bold;
-  text-transform: uppercase;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .admonitionblock > table td.content {
-  padding-left: 1.125em;
-  padding-right: 1.25em;
-  border-left: 1px solid #444;
-  color: #e0e0e0;
+    padding-left: 1.125em;
+    padding-right: 1.25em;
+    border-left: 1px solid #444;
+    color: #e0e0e0 !important;
 }
 
 .admonitionblock.note > table td.icon {
-  background-color: var(--admonition-note-bg);
+    background-color: var(--admonition-note-bg) !important;
 }
 
 .admonitionblock.tip > table td.icon {
-  background-color: var(--admonition-tip-bg);
+    background-color: var(--admonition-tip-bg) !important;
 }
 
 .admonitionblock.important > table td.icon {
-  background-color: var(--admonition-important-bg);
+    background-color: var(--admonition-important-bg) !important;
 }
 
 .admonitionblock.warning > table td.icon {
-  background-color: var(--admonition-warning-bg);
+    background-color: var(--admonition-warning-bg) !important;
 }
 
 .admonitionblock.caution > table td.icon {
-  background-color: var(--admonition-caution-bg);
+    background-color: var(--admonition-caution-bg) !important;
 }
 
 /* TOC - standard and left panel */
 #toc, #toc.toc, #content #toc, #toc.toc2, #header .details, .sidebarblock, .listingblock, .literalblock, .imageblock, .tableblock {
-  background-color: #252525;
-  border: 1px solid #444;
+    background-color: #252525 !important;
+    border: 1px solid #444 !important;
 }
 
 #toc a, #toc.toc a, #content #toc a, #toc.toc2 a {
-  color: var(--link-color);
+    color: var(--link-color) !important;
 }
 
 #toc a:hover, #toc.toc a:hover, #content #toc a:hover, #toc.toc2 a:hover {
-  color: var(--link-hover-color);
+    color: var(--link-hover-color) !important;
 }
 
 /* Left sidebar TOC */
 .toc2 {
-  background-color: #1a1a1a;
-  border-right: 1px solid #444;
-  color: var(--text-color);
+    background-color: #1a1a1a !important;
+    border-right: 1px solid #444 !important;
+    color: var(--text-color) !important;
 }
 
 body.toc2 {
-  background-color: var(--bg-color);
+    background-color: var(--bg-color) !important;
 }
 
 #toc.toc2 #toctitle {
-  color: var(--heading-color);
+    color: var(--heading-color) !important;
 }
 
 /* TOC list items */
 #toc.toc2 ul.sectlevel0 > li > a, #toc.toc2 ul.sectlevel1 > li > a {
-  color: var(--link-color);
+    color: var(--link-color) !important;
 }
 
 #toc.toc2 ul.sectlevel0 > li > a:hover, #toc.toc2 ul.sectlevel1 > li > a:hover {
-  color: var(--link-hover-color);
+    color: var(--link-hover-color) !important;
 }
 
 /* Current selection in TOC */
 #toc.toc2 ul.sectlevel0 > li.active > a, #toc.toc2 ul.sectlevel1 > li.active > a {
-  font-weight: bold;
-  color: var(--heading-color);
+    font-weight: bold;
+    color: var(--heading-color) !important;
 }
 
 /* Footer */
 #footer, #footer-text {
-  color: #888;
+    color: #888 !important;
 }
 
 /* Horizontal rule */
 hr {
-  border-top: 1px solid #444;
+    border-top: 1px solid #444 !important;
 }
 
 /* Mark the floating header anchors */
 .anchor {
-  color: var(--heading-color);
+    color: var(--heading-color) !important;
 }
 
 /* Footnotes */
 .footnote, .footnotes ol li {
-  color: #bbb;
+    color: #bbb !important;
 }
 
 /* Keyboard/button shortcuts */
 .keyseq {
-  color: #ddd;
+    color: #ddd !important;
 }
 
 kbd {
-  background-color: #333;
-  border: 1px solid #555;
-  color: #ddd;
+    background-color: #333 !important;
+    border: 1px solid #555 !important;
+    color: #ddd !important;
 }
 
 /* Source code highlighting - basic overrides */
 .hljs {
-  background-color: var(--code-bg-color) !important;
+    background-color: var(--code-bg-color) !important;
+}
+
+/* Override any specific syntax highlighting themes */
+.hljs, .hljs-subst {
+    color: var(--code-text-color) !important;
 }
 
 /* Callouts */
 .conum[data-value] {
-  background-color: rgba(80, 160, 250, 0.8);
-  color: #fff;
+    background-color: rgba(80, 160, 250, 0.8) !important;
+    color: #fff !important;
 }
 
 .conum[data-value] * {
-  color: #fff !important;
+    color: #fff !important;
 }
 
 /* Image borders */
 .imageblock img, .image img {
-  border: 1px solid #444;
+    border: 1px solid #444 !important;
 }
 
 /* Print styles - ensure dark theme also works in print */
 @media print {
-  body {
-    background-color: var(--bg-color) !important;
-    color: var(--text-color) !important;
-  }
-  
-  a, a:visited {
-    color: var(--link-color) !important;
-  }
+    body {
+        background-color: var(--bg-color) !important;
+        color: var(--text-color) !important;
+    }
+
+    a, a:visited {
+        color: var(--link-color) !important;
+    }
 }
