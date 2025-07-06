@@ -818,6 +818,11 @@ This file also informs coding agent behavior.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=embabel/embabel-agent&type=Date)](https://star-history.com/#embabel/embabel-agent&Date)
 
+## Contributors
+
+[![Embabel contributors](https://contrib.rocks/image?repo=embabel/embabel-agent)](https://github.com/embabel/embabel-agent/graphs/contributors)
+
+
 
 --------------------
 (c) Embabel Software Inc 2024-2025.
