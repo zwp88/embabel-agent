@@ -31,6 +31,11 @@ interface Conversation : StableIdentified {
 
     fun withMessage(message: Message): Conversation
 
+    fun promptContributor(
+        conversationFormatter: ConversationFormatter = WindowingConversationFormatter()
+    ) = PromptContributor.dynamic({ "Conversation so far:\n" + conversationFormatter.format(this) })
+
+
 }
 
 data class InMemoryConversation(
@@ -69,12 +74,22 @@ sealed class Message(
     override val timestamp: Instant = Instant.now(),
 ) : Timestamped
 
+/**
+ * Message sent by the user.
+ * @param content Content of the message
+ * @param name Name of the user, if available
+ */
 class UserMessage(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
 ) : Message(Role.USER, content, name, timestamp)
 
+/**
+ * Message sent by the assistant.
+ * @param content Content of the message
+ * @param name Name of the assistant, if available
+ */
 open class AssistantMessage(
     content: String,
     name: String? = null,
@@ -82,17 +97,10 @@ open class AssistantMessage(
 ) : Message(Role.ASSISTANT, content, name, timestamp)
 
 /**
- * Assistant message that result from an agentic execution
+ * Assistant message resulting from an agentic execution
  */
 class AgenticResultAssistantMessage(
     val agentProcessExecution: AgentProcessExecution,
     content: String,
     name: String? = null,
 ) : AssistantMessage(content = content, name = name)
-
-
-fun Conversation.promptContributor(
-    conversationFormatter: ConversationFormatter = WindowingConversationFormatter()
-) = PromptContributor.fixed(
-    content = "Conversation so far:\n" + conversationFormatter.format(this),
-)

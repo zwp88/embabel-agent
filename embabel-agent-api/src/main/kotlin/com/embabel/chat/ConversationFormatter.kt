@@ -31,11 +31,14 @@ object SimpleMessageFormatter : MessageFormatter {
         else "${message.role}: ${message.content}"
 }
 
+/**
+ * Conversation formatter that shows the last `windowSize` messages
+ */
 class WindowingConversationFormatter(
     private val messageFormatter: MessageFormatter = SimpleMessageFormatter,
     private val windowSize: Int = 100,
-) :
-    ConversationFormatter {
+) : ConversationFormatter {
+
     override fun format(conversation: Conversation): String =
         conversation.messages
             .takeLast(windowSize)
