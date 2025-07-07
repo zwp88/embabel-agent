@@ -93,7 +93,15 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
     }
 
     @Tool(description = "Find files using glob patterns. Return absolute paths")
-    fun findFiles(glob: String): List<String> {
+    fun findFiles(glob: String): List<String> = findFiles(glob, findHighest = false)
+
+    /**
+     * Find files using glob patterns.
+     * @param glob the glob pattern to match files against
+     * @param findHighest if true, only the highest matching file in the directory tree will be returned
+     * For example, if you want to find all Maven projects by looking for pom.xml files.
+     */
+    fun findFiles(glob: String, findHighest: Boolean): List<String> {
         val basePath = Paths.get(root).toAbsolutePath().normalize()
 
         // Prepare glob pattern - ensure it uses the correct syntax
@@ -106,12 +114,20 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
         val matcher = FileSystems.getDefault().getPathMatcher(syntaxAndPattern)
 
         val results = mutableListOf<String>()
+        val excludedPaths = mutableSetOf<String>()
         Files.walk(basePath).use { paths ->
             paths.forEach { path ->
+                if (findHighest && excludedPaths.any { excludedPath ->
+                        path.toAbsolutePath().toString().contains(excludedPath)
+                    }) {
+                    // Skip paths that are already excluded
+                    return@forEach
+                }
                 // Match against the relative path (from base) to properly work with glob patterns
                 val relPath = basePath.relativize(path)
                 if (matcher.matches(relPath)) {
                     results.add(path.toAbsolutePath().toString())
+                    excludedPaths.add(path.parent.toAbsolutePath().toString())
                 }
             }
         }

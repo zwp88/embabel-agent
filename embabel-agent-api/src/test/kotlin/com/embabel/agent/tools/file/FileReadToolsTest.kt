@@ -105,10 +105,44 @@ class FileReadToolsTest {
 
             assertTrue(result.isEmpty())
         }
+
+        @Test
+        fun `should not exclude under`() {
+            Files.createDirectories(tempDir.resolve("thing"))
+            Files.createDirectories(tempDir.resolve("thing/foo"))
+            Files.writeString(tempDir.resolve("thing/pom.xml"), "maven stuff")
+            Files.writeString(tempDir.resolve("thing/foo/pom.xml"), "maven stuff")
+            val result = fileReadTools.findFiles("**/pom.xml")
+            assertEquals(2, result.size, "Should not exclude under directories by default")
+        }
+
+        @Test
+        fun `should exclude under when requested`() {
+            Files.createDirectories(tempDir.resolve("thing"))
+            Files.createDirectories(tempDir.resolve("thing/foo"))
+            Files.writeString(tempDir.resolve("thing/pom.xml"), "maven stuff")
+            Files.writeString(tempDir.resolve("thing/foo/pom.xml"), "maven stuff")
+            val result = fileReadTools.findFiles("**/pom.xml", findHighest = true)
+            assertEquals(1, result.size, "Should only find highest level pom.xml")
+            assertTrue(result[0].endsWith("thing/pom.xml"), "Should exclude under directories when requested")
+        }
+
+        @Test
+        fun `should not exclude under when parallel`() {
+            Files.createDirectories(tempDir.resolve("thing"))
+            Files.createDirectories(tempDir.resolve("thing/foo"))
+            Files.createDirectories(tempDir.resolve("that"))
+            Files.createDirectories(tempDir.resolve("that/foo"))
+            Files.writeString(tempDir.resolve("thing/pom.xml"), "maven stuff")
+            // Not parallel
+            Files.writeString(tempDir.resolve("that/foo/pom.xml"), "maven stuff")
+            val result = fileReadTools.findFiles("**/pom.xml")
+            assertEquals(2, result.size, "Should not exclude when not nested")
+        }
     }
 
     @Nested
-    inner class `readFile` {
+    inner class ReadFile {
 
         private val testContent = "test content"
         private lateinit var testFile: Path
