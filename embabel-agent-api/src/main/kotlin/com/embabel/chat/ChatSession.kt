@@ -36,5 +36,5 @@ interface ChatSession {
      * @param additionalListener any additional listener to send the message to,
      * in addition to the messageListener
      */
-    fun send(message: UserMessage, additionalListener: MessageListener? = null)
+    fun respond(message: UserMessage, additionalListener: MessageListener? = null)
 }

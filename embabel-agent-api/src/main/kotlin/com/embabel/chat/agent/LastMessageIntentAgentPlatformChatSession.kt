@@ -17,26 +17,35 @@ package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.autonomy.*
 import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.shell.ShellConfig
 import com.embabel.agent.shell.TerminalServices
 import com.embabel.chat.*
 
 /**
  * Uses last message as intent.
  * Wholly delegates handling to agent platform.
+ * Can bind conversation to the blackboard if so configured.
  */
 class LastMessageIntentAgentPlatformChatSession(
     private val autonomy: Autonomy,
     private val goalChoiceApprover: GoalChoiceApprover,
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
-    override val conversation: Conversation = InMemoryConversation(),
     private val terminalServices: TerminalServices,
+    private val config: ShellConfig.ChatConfig,
 ) : ChatSession {
 
-    override fun send(message: UserMessage, additionalListener: MessageListener?) {
-        val m = generateResponse(message)
-        messageListener.onMessage(m)
-        additionalListener?.onMessage(m)
+    private var _conversation: Conversation = InMemoryConversation()
+
+    override val conversation: Conversation
+        get() = _conversation
+
+    override fun respond(message: UserMessage, additionalListener: MessageListener?) {
+        _conversation = conversation.withMessage(message)
+        val asssistantMessage = generateResponse(message)
+        _conversation = conversation.withMessage(asssistantMessage)
+        messageListener.onMessage(asssistantMessage)
+        additionalListener?.onMessage(asssistantMessage)
     }
 
     private fun generateResponse(message: UserMessage): AssistantMessage {
@@ -46,6 +55,9 @@ class LastMessageIntentAgentPlatformChatSession(
                 processOptions = processOptions,
                 goalChoiceApprover = goalChoiceApprover,
                 agentScope = autonomy.agentPlatform,
+                additionalBindings = if (config.bindConversation)
+                    mapOf("conversation" to conversation)
+                else emptyMap()
             )
             val result = dynamicExecutionResult.output
             return AgenticResultAssistantMessage(

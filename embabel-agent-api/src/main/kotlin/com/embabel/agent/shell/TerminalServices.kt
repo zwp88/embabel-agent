@@ -68,7 +68,7 @@ class TerminalServices(
                 break
             }
             val userMessage = UserMessage(userInput)
-            chatSession.send(userMessage) {
+            chatSession.respond(userMessage) {
                 when (it) {
                     is UserMessage -> error("User message should not be sent by the assistant")
                     is AgenticResultAssistantMessage -> {

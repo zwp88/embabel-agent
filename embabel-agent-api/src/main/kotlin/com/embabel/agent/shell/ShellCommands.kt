@@ -37,10 +37,23 @@ import org.springframework.shell.standard.ShellOption
 import java.util.concurrent.CompletableFuture
 import kotlin.system.exitProcess
 
+
 @ConfigurationProperties(prefix = "embabel.shell")
 data class ShellConfig(
     val lineLength: Int = 140,
-)
+    val chat: ChatConfig = ChatConfig(),
+) {
+
+    /**
+     * Configuration for the chat session
+     * @param confirmGoals Whether to confirm goals with the user before proceeding
+     * @param bindConversation Whether to bind the conversation to the chat session
+     */
+    data class ChatConfig(
+        val confirmGoals: Boolean = true,
+        val bindConversation: Boolean = false,
+    )
+}
 
 /**
  * Main shell entry point
@@ -118,8 +131,9 @@ class ShellCommands(
             messageListener = { },
             autonomy = autonomy,
             processOptions = processOptions,
-            goalChoiceApprover = terminalServices,
+            goalChoiceApprover = if (shellConfig.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL,
             terminalServices = terminalServices,
+            config = shellConfig.chat,
         )
         return terminalServices.chat(chatSession, colorPalette)
     }

@@ -28,6 +28,9 @@ import java.time.Instant
 interface Conversation : StableIdentified {
 
     val messages: List<Message>
+
+    fun withMessage(message: Message): Conversation
+
 }
 
 data class InMemoryConversation(
@@ -35,6 +38,12 @@ data class InMemoryConversation(
     override val messages: List<Message> = emptyList(),
     private val persistent: Boolean = false,
 ) : Conversation {
+
+    override fun withMessage(message: Message): Conversation {
+        return copy(
+            messages = messages + message,
+        )
+    }
 
     override fun persistent(): Boolean = persistent
 }

@@ -69,6 +69,7 @@ class Autonomy(
      * @param processOptions process options
      * @param goalChoiceApprover goal choice approver allowing goal choice to be rejected
      * @param agentScope scope to look for the agent
+     * @param additionalBindings any additional bindings to pass to the agent process
      */
     @Throws(ProcessExecutionException::class)
     fun chooseAndAccomplishGoal(
@@ -76,6 +77,7 @@ class Autonomy(
         processOptions: ProcessOptions = ProcessOptions(),
         goalChoiceApprover: GoalChoiceApprover,
         agentScope: AgentScope,
+        additionalBindings: Map<String, Any> = emptyMap(),
     ): AgentProcessExecution {
         val userInput = UserInput(intent)
         val goalRun = createGoalSeeker(
@@ -90,7 +92,7 @@ class Autonomy(
             agent = goalRun.agent,
             bindings = mapOf(
                 IoBinding.DEFAULT_BINDING to userInput
-            )
+            ) + additionalBindings
         )
 
         return AgentProcessExecution.fromProcessStatus(

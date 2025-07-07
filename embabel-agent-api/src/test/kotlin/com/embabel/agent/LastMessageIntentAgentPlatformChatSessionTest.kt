@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.GoalChoiceApprover
 import com.embabel.agent.core.support.LocalPerson
+import com.embabel.agent.shell.ShellConfig
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.MessageSavingMessageListener
 import com.embabel.chat.UserMessage
@@ -47,10 +48,11 @@ class LastMessageIntentAgentPlatformChatSessionTest {
             GoalChoiceApprover.Companion.APPROVE_ALL,
             messageListener = {},
             terminalServices = mockk(),
+            config = ShellConfig.ChatConfig(),
         )
         val userMessage = UserMessage("Hello, world!")
         val l = MessageSavingMessageListener()
-        chatSession.send(userMessage, l)
+        chatSession.respond(userMessage, l)
         assertEquals(1, l.messages().size)
         Assertions.assertTrue(l.messages()[0] is AssistantMessage)
         Assertions.assertTrue(
