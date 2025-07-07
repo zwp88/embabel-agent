@@ -17,6 +17,7 @@ package com.embabel.agent.tools.file
 
 import com.embabel.agent.api.common.support.SelfToolCallbackPublisher
 import com.embabel.agent.tools.DirectoryBased
+import com.embabel.agent.tools.file.FileWriteTools.FileModification
 import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 import org.slf4j.LoggerFactory
@@ -64,21 +65,12 @@ interface FileTools : FileReadTools, FileWriteTools {
 private class DefaultFileTools(
     override val root: String,
     override val fileContentTransformers: List<StringTransformer> = emptyList(),
-) : FileTools {
+) : FileTools, FileChangeLog by DefaultFileChangeLog()
 
-    private val fileModifications = mutableListOf<FileWriteTools.FileModification>()
-
-    override fun flushChanges() {
-        fileModifications.clear()
-    }
-
-    override fun recordChange(c: FileWriteTools.FileModification) {
-        fileModifications.add(c)
-        loggerFor<DefaultFileTools>().debug("Recorded file change: {}", c)
-    }
-
-    override fun getChanges(): List<FileWriteTools.FileModification> = fileModifications.toList()
-}
+data class ChangeLog(
+    val changes: List<FileWriteTools.FileModification>,
+    val root: String,
+)
 
 /**
  * LLM-ready ToolCallbacks and convenience methods for file operations.
@@ -181,16 +173,55 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
         return resolveAndValidateFile(root, path)
     }
 
-    companion object {
-        private val logger = LoggerFactory.getLogger(FileReadTools::class.java)
+}
 
+interface FileChangeLog {
+
+    fun flushChanges()
+
+    fun recordChange(c: FileModification)
+
+    fun getChanges(): List<FileModification>
+}
+
+/**
+ * Convenient file change log implementation that stores changes in memory
+ * and correctly handles duplicates.
+ */
+class DefaultFileChangeLog(
+    private val changes: MutableList<FileModification> = mutableListOf(),
+) : FileChangeLog {
+
+    override fun flushChanges() {
+        changes.clear()
+        loggerFor<FileWriteTools>().debug("Flushed file changes")
+        changes.clear()
     }
+
+    override fun recordChange(c: FileModification) {
+        val existingChange = changes.find { it.path == c.path }
+        if (existingChange != null) {
+            if (existingChange.type == c.type) {
+                // If the same change is already recorded, do not add it again
+                loggerFor<FileWriteTools>().debug("Change already recorded: {}", c)
+            } else {
+                // If a different type of change is recorded, update it
+                changes.remove(existingChange)
+                changes.add(c)
+            }
+        } else {
+            changes.add(c)
+        }
+        loggerFor<FileWriteTools>().debug("Recorded file change: {}", c)
+    }
+
+    override fun getChanges(): List<FileModification> = changes.toList()
 }
 
 /**
  * All file modifications must go through this interface.
  */
-interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
+interface FileWriteTools : DirectoryBased, FileChangeLog, SelfToolCallbackPublisher {
 
     enum class FileModificationType {
         CREATE, EDIT, DELETE, APPEND, CREATE_DIRECTORY
@@ -200,13 +231,6 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
         val path: String,
         val type: FileModificationType,
     )
-
-    fun flushChanges()
-
-    fun recordChange(c: FileModification)
-
-    fun getChanges(): List<FileModification>
-
 
     @Tool(description = "Create a file with the given content")
     fun createFile(path: String, content: String): String {

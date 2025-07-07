@@ -477,6 +477,7 @@ class FileWriteToolsTest {
             assertFalse(zipFile.exists())
         }
     }
+
     @Nested
     inner class FlushChanges {
 
@@ -516,5 +517,48 @@ class FileWriteToolsTest {
             val change = fileWriteTools.getChanges().first()
             assertEquals(path2, change.path, "Change should be for the second file")
         }
+    }
+
+    @Nested
+    inner class ChangLogDoesNotDuplicate {
+
+        @Test
+        fun `should not duplicate add`() {
+            val ft = FileTools.readWrite(rootPath)
+            ft.recordChange(
+                FileWriteTools.FileModification(
+                    type = FileWriteTools.FileModificationType.CREATE,
+                    path = "test.txt",
+                )
+            )
+            assertEquals(1, ft.getChanges().size, "Should have one change after first add")
+            ft.recordChange(
+                FileWriteTools.FileModification(
+                    type = FileWriteTools.FileModificationType.CREATE,
+                    path = "test.txt",
+                )
+            )
+            assertEquals(1, ft.getChanges().size, "Should still have one change after duplicate add")
+        }
+
+        @Test
+        fun `should not duplicate add and modify`() {
+            val ft = FileTools.readWrite(rootPath)
+            ft.recordChange(
+                FileWriteTools.FileModification(
+                    type = FileWriteTools.FileModificationType.CREATE,
+                    path = "test.txt",
+                )
+            )
+            assertEquals(1, ft.getChanges().size, "Should have one change after first add")
+            ft.recordChange(
+                FileWriteTools.FileModification(
+                    type = FileWriteTools.FileModificationType.EDIT,
+                    path = "test.txt",
+                )
+            )
+            assertEquals(1, ft.getChanges().size, "Should still have one change after add and modify")
+        }
+
     }
 }
