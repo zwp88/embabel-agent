@@ -26,10 +26,12 @@ import org.springframework.ai.tool.annotation.ToolParam
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import java.util.zip.ZipInputStream
 
 /**
@@ -103,32 +105,46 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
      */
     fun findFiles(glob: String, findHighest: Boolean): List<String> {
         val basePath = Paths.get(root).toAbsolutePath().normalize()
+        val syntaxAndPattern = if (glob.startsWith("glob:") || glob.startsWith("regex:")) glob else "glob:$glob"
+        val matcher = FileSystems.getDefault().getPathMatcher(syntaxAndPattern)
+        val results = mutableListOf<String>()
 
-        // Prepare glob pattern - ensure it uses the correct syntax
-        val syntaxAndPattern = if (glob.startsWith("glob:") || glob.startsWith("regex:")) {
-            glob
-        } else {
-            "glob:$glob"
+        if (!findHighest) {
+            return Files.walk(basePath).use { paths ->
+                paths.filter { matcher.matches(basePath.relativize(it)) }
+                    .map { it.toAbsolutePath().toString() }
+                    .toList()
+            }
         }
 
-        val matcher = FileSystems.getDefault().getPathMatcher(syntaxAndPattern)
-
-        val results = mutableListOf<String>()
+        // We cannot rely on Files.walk with findHighest because it works depth first
         val excludedPaths = mutableSetOf<String>()
-        Files.walk(basePath).use { paths ->
-            paths.forEach { path ->
-                if (findHighest && excludedPaths.any { excludedPath ->
-                        path.toAbsolutePath().toString().contains(excludedPath)
-                    }) {
-                    // Skip paths that are already excluded
-                    return@forEach
+        val queue = ArrayDeque<Path>().apply { offer(basePath) }
+
+        while (queue.isNotEmpty()) {
+            val path = queue.poll()
+            val pathStr = path.toAbsolutePath().toString()
+
+            if (excludedPaths.any { pathStr.startsWith("$it${File.separator}") }) continue
+
+            if (matcher.matches(basePath.relativize(path))) {
+                results.add(pathStr)
+                excludedPaths.add(path.parent.toAbsolutePath().toString())
+                continue
+            }
+
+            try {
+                Files.newDirectoryStream(path).use { stream ->
+                    stream.forEach { subPath ->
+                        if (Files.isDirectory(subPath)) {
+                            queue.offer(subPath)
+                        } else if (matcher.matches(basePath.relativize(subPath))) {
+                            results.add(subPath.toAbsolutePath().toString())
+                            excludedPaths.add(subPath.parent.toAbsolutePath().toString())
+                        }
+                    }
                 }
-                // Match against the relative path (from base) to properly work with glob patterns
-                val relPath = basePath.relativize(path)
-                if (matcher.matches(relPath)) {
-                    results.add(path.toAbsolutePath().toString())
-                    excludedPaths.add(path.parent.toAbsolutePath().toString())
-                }
+            } catch (_: IOException) { /* Skip unreadable directories */
             }
         }
 
