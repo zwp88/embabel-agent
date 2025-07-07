@@ -57,6 +57,30 @@ class FileWriteToolsTest {
         }
 
         @Test
+        fun `should create file and track changes`() {
+            val path = "tracked-test.txt"
+            val content = "test content"
+
+            // Clear any existing changes
+            fileWriteTools.flushChanges()
+
+            val result = fileWriteTools.createFile(path, content)
+
+            assertEquals("file created", result)
+            assertEquals(1, fileWriteTools.getChanges().size, "Should track one change")
+            val change = fileWriteTools.getChanges().first()
+            assertEquals(
+                FileWriteTools.FileModificationType.CREATE, change.type,
+                "Change type should be CREATE"
+            )
+            assertEquals(
+                path,
+                change.path,
+                "Change path should match created file path"
+            )
+        }
+
+        @Test
         fun `should create file in subdirectory`() {
             val path = "subdir/test.txt"
             val content = "test content"
@@ -133,6 +157,32 @@ class FileWriteToolsTest {
         }
 
         @Test
+        fun `should edit file and track changes`() {
+            val oldContent = "original content"
+            val newContent = "modified content"
+            val fullContent = "This is the $oldContent"
+            Files.writeString(file.toPath(), fullContent)
+
+            // Clear any existing changes
+            fileWriteTools.flushChanges()
+
+            val result = fileWriteTools.editFile(path, oldContent, newContent)
+
+            assertEquals("file edited", result)
+            assertEquals(1, fileWriteTools.getChanges().size, "Should track one change")
+            val change = fileWriteTools.getChanges().first()
+            assertEquals(
+                FileWriteTools.FileModificationType.EDIT, change.type,
+                "Change type should be EDIT"
+            )
+            assertEquals(
+                path,
+                change.path,
+                "Change path should match edited file path"
+            )
+        }
+
+        @Test
         fun `should throw exception when file does not exist`() {
             assertThrows<IllegalArgumentException> {
                 fileWriteTools.editFile("nonexistent.txt", "old", "new")
@@ -153,6 +203,29 @@ class FileWriteToolsTest {
             val dir = File(tempDir, path)
             assertTrue(dir.exists())
             assertTrue(dir.isDirectory)
+        }
+
+        @Test
+        fun `should create directory and track changes`() {
+            val path = "tracked-newdir"
+
+            // Clear any existing changes
+            fileWriteTools.flushChanges()
+
+            val result = fileWriteTools.createDirectory(path)
+
+            assertEquals("directory created", result)
+            assertEquals(1, fileWriteTools.getChanges().size, "Should track one change")
+            val change = fileWriteTools.getChanges().first()
+            assertEquals(
+                FileWriteTools.FileModificationType.CREATE_DIRECTORY, change.type,
+                "Change type should be CREATE_DIRECTORY"
+            )
+            assertEquals(
+                path,
+                change.path,
+                "Change path should match created directory path"
+            )
         }
 
         @Test
@@ -210,8 +283,12 @@ class FileWriteToolsTest {
         }
 
         @Test
-        fun `should append content to file and track`() {
+        fun `should append content to file and track changes`() {
             val appendedContent = "Appended content"
+
+            // Clear any existing changes
+            fileWriteTools.flushChanges()
+
             val result = fileWriteTools.appendFile(path, appendedContent)
             assertEquals("content appended to file", result)
             assertEquals(originalContent + appendedContent, Files.readString(file.toPath()))
@@ -219,12 +296,12 @@ class FileWriteToolsTest {
             val change = fileWriteTools.getChanges().first()
             assertEquals(
                 FileWriteTools.FileModificationType.APPEND, change.type,
-                "Change content should match appended content"
+                "Change type should be APPEND"
             )
             assertEquals(
                 path,
                 change.path,
-                "Change content should match appended content"
+                "Change path should match appended file path"
             )
         }
 
@@ -283,6 +360,27 @@ class FileWriteToolsTest {
 
             assertEquals("file deleted", result)
             assertFalse(file.exists())
+        }
+
+        @Test
+        fun `should delete file and track changes`() {
+            // Clear any existing changes
+            fileWriteTools.flushChanges()
+
+            val result = fileWriteTools.delete(path)
+
+            assertEquals("file deleted", result)
+            assertEquals(1, fileWriteTools.getChanges().size, "Should track one change")
+            val change = fileWriteTools.getChanges().first()
+            assertEquals(
+                FileWriteTools.FileModificationType.DELETE, change.type,
+                "Change type should be DELETE"
+            )
+            assertEquals(
+                path,
+                change.path,
+                "Change path should match deleted file path"
+            )
         }
 
         @Test
@@ -377,6 +475,46 @@ class FileWriteToolsTest {
         fun `should delete zip file when delete is true`() {
             FileWriteTools.extractZipFile(zipFile, extractDir, true)
             assertFalse(zipFile.exists())
+        }
+    }
+    @Nested
+    inner class FlushChanges {
+
+        @Test
+        fun `should clear tracked changes`() {
+            // Create a file to generate a change
+            val path = "flush-test.txt"
+            val content = "test content"
+            fileWriteTools.createFile(path, content)
+
+            // Verify change was tracked
+            assertEquals(1, fileWriteTools.getChanges().size, "Should have one change before flush")
+
+            // Flush changes
+            fileWriteTools.flushChanges()
+
+            // Verify changes were cleared
+            assertEquals(0, fileWriteTools.getChanges().size, "Should have no changes after flush")
+        }
+
+        @Test
+        fun `should track new changes after flush`() {
+            // Create a file to generate a change
+            val path1 = "flush-test1.txt"
+            val content = "test content"
+            fileWriteTools.createFile(path1, content)
+
+            // Flush changes
+            fileWriteTools.flushChanges()
+
+            // Create another file
+            val path2 = "flush-test2.txt"
+            fileWriteTools.createFile(path2, content)
+
+            // Verify only the new change is tracked
+            assertEquals(1, fileWriteTools.getChanges().size, "Should have one change after flush")
+            val change = fileWriteTools.getChanges().first()
+            assertEquals(path2, change.path, "Change should be for the second file")
         }
     }
 }

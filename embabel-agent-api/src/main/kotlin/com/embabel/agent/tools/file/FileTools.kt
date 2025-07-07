@@ -211,6 +211,7 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
     @Tool(description = "Create a file with the given content")
     fun createFile(path: String, content: String): String {
         createFile(path, content, overwrite = false)
+        recordChange(FileModification(path, FileModificationType.CREATE))
         return "file created"
     }
 
@@ -250,6 +251,7 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
         } else {
             Files.writeString(resolvedPath, newFileContent)
             logger.info("Edited file at {}", path)
+            recordChange(FileModification(path, FileModificationType.EDIT))
             return "file edited"
         }
     }
@@ -268,6 +270,7 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
 
         Files.createDirectories(resolvedPath)
         logger.info("Created directory at path: $path")
+        recordChange(FileModification(path, FileModificationType.CREATE_DIRECTORY))
         return "directory created"
     }
 
@@ -302,6 +305,7 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
         val resolvedPath = resolveAndValidateFile(root = root, path = path)
         Files.delete(resolvedPath)
         logger.info("Deleted file at path: $path")
+        recordChange(FileModification(path, FileModificationType.DELETE))
         return "file deleted"
     }
 
