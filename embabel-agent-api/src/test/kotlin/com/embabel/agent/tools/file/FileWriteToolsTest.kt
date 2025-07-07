@@ -32,9 +32,7 @@ class FileWriteToolsTest {
     fun setUp() {
         tempDir = FileWriteTools.createTempDir("file-write-tools-test")
         rootPath = tempDir.absolutePath
-        fileWriteTools = object : FileWriteTools {
-            override val root: String = rootPath
-        }
+        fileWriteTools = FileTools.readWrite(rootPath)
     }
 
     @AfterEach
@@ -209,6 +207,25 @@ class FileWriteToolsTest {
             val result = fileWriteTools.appendFile(path, appendedContent)
             assertEquals("content appended to file", result)
             assertEquals(originalContent + appendedContent, Files.readString(file.toPath()))
+        }
+
+        @Test
+        fun `should append content to file and track`() {
+            val appendedContent = "Appended content"
+            val result = fileWriteTools.appendFile(path, appendedContent)
+            assertEquals("content appended to file", result)
+            assertEquals(originalContent + appendedContent, Files.readString(file.toPath()))
+            assertEquals(1, fileWriteTools.getChanges().size, "Should track one change")
+            val change = fileWriteTools.getChanges().first()
+            assertEquals(
+                FileWriteTools.FileModificationType.APPEND, change.type,
+                "Change content should match appended content"
+            )
+            assertEquals(
+                path,
+                change.path,
+                "Change content should match appended content"
+            )
         }
 
         @Test

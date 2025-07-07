@@ -57,13 +57,27 @@ interface FileTools : FileReadTools, FileWriteTools {
         fun readWrite(
             root: String,
             fileContentTransformers: List<StringTransformer> = emptyList(),
-        ): FileTools {
-            return object : FileTools {
-                override val root: String = root
-                override val fileContentTransformers: List<StringTransformer> = emptyList()
-            }
-        }
+        ): FileTools = DefaultFileTools(root, fileContentTransformers)
     }
+}
+
+private class DefaultFileTools(
+    override val root: String,
+    override val fileContentTransformers: List<StringTransformer> = emptyList(),
+) : FileTools {
+
+    private val fileModifications = mutableListOf<FileWriteTools.FileModification>()
+
+    override fun flushChanges() {
+        fileModifications.clear()
+    }
+
+    override fun recordChange(c: FileWriteTools.FileModification) {
+        fileModifications.add(c)
+        loggerFor<DefaultFileTools>().debug("Recorded file change: {}", c)
+    }
+
+    override fun getChanges(): List<FileWriteTools.FileModification> = fileModifications.toList()
 }
 
 /**
@@ -173,7 +187,25 @@ interface FileReadTools : DirectoryBased, SelfToolCallbackPublisher {
     }
 }
 
+/**
+ * All file modifications must go through this interface.
+ */
 interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
+
+    enum class FileModificationType {
+        CREATE, EDIT, DELETE, APPEND, CREATE_DIRECTORY
+    }
+
+    data class FileModification(
+        val path: String,
+        val type: FileModificationType,
+    )
+
+    fun flushChanges()
+
+    fun recordChange(c: FileModification)
+
+    fun getChanges(): List<FileModification>
 
 
     @Tool(description = "Create a file with the given content")
@@ -244,6 +276,7 @@ interface FileWriteTools : DirectoryBased, SelfToolCallbackPublisher {
         val resolvedPath = resolveAndValidateFile(root = root, path = path)
         Files.write(resolvedPath, content.toByteArray(), java.nio.file.StandardOpenOption.APPEND)
         logger.info("Appended content to file at path: $path")
+        recordChange(FileModification(path, FileModificationType.APPEND))
         return "content appended to file"
     }
 
