@@ -131,7 +131,7 @@ import org.springframework.web.client.RestTemplate
      * might create get injected here
      */
     @Bean
-    @DependsOn("ollamaModels", "dockerLocalModels", "bedrockModels")
+    @DependsOn("ollamaModels", "dockerLocalModels")
     fun modelProvider(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,
