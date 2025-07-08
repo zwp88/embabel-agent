@@ -7,22 +7,28 @@
         <artifactId>embabel-agent-parent</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>embabel-agent-test</artifactId>
+    <artifactId>embabel-agent-mcpserver</artifactId>
     <packaging>jar</packaging>
-    <name>Embabel Agent Test</name>
-    <description>Test Support Framework for Agent API(s)</description>
+    <name>Embabel Agent MCP Server</name>
+    <description>Discover and Export available Agent(s) as an MCP Servers</description>
 
-    <dependencies>
+    <dependencies>        
         <!-- Main Dependencies -->
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-api</artifactId>
         </dependency>
-
-        <!-- Unit and Integration Testing -->
+        
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <groupId>com.embabel.common</groupId>
+            <artifactId>embabel-common-core</artifactId>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>com.embabel.agent</groupId>
+            <artifactId>embabel-agent-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -37,6 +43,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
+
         </plugins>
     </build>
 
