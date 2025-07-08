@@ -35,10 +35,19 @@ Ordering of parameters is not important.
 Parameters fall in two categories:
 
 * _Domain objects_.
-These are the usual inputs.
+These are the normal inputs for action methods.
+They are backed by the blackboard and will be used as inputs to the action method.
+A nullable domain object parameter will be populated if it is non-null on the blackboard.
+This enables nice-to-have parameters that are not required for the action to run.
 
 * _Infrastructure objects_. `OperationContext` parameters may be passed to action or condition methods.
-Actions may use the `ActionContext` subclass.
+
+The `ActionContext` subtype can be used in action methods.
+It adds `asSubProcess` methods that can be used to run other agents in subprocesses.
+This is an important element of composition.
+
+> Use the least specific type possible for parameters.
+Use `OperationContext` unles you are creating a subprocess.
 
 ==== Binding by name
 

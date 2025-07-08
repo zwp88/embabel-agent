@@ -38,6 +38,8 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     val agentProcess: AgentProcess
         get() = processContext.agentProcess
 
+    fun agentPlatform() = processContext.platformServices.agentPlatform
+
     /**
      * Action or operation that is being executed.
      */
@@ -143,7 +145,6 @@ interface ActionContext : OperationContext {
         val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
 
         val doi = domainObjectInstances()
-        println(doi)
         return OperationContextPromptRunner(
             this,
             llm = llm,
@@ -154,8 +155,6 @@ interface ActionContext : OperationContext {
             generateExamples = generateExamples,
         )
     }
-
-    fun agentPlatform() = processContext.platformServices.agentPlatform
 
     /**
      * Return the domain object instances that are relevant for this action context.
