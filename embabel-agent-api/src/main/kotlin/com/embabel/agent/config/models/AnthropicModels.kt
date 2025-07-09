@@ -33,12 +33,12 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import java.time.LocalDate
 
-@ConfigurationProperties(prefix = "anthropic")
+@ConfigurationProperties(prefix = "embabel.anthropic")
 data class AnthropicProperties(
     override val maxAttempts: Int = 10,
-    override val backoffMillis: Long,
-    override val backoffMultiplier: Double,
-    override val backoffMaxInterval: Long,
+    override val backoffMillis: Long = 2000L,
+    override val backoffMultiplier: Double = 5.0,
+    override val backoffMaxInterval: Long = 180000L,
 ) : RetryProperties
 
 
@@ -47,9 +47,9 @@ data class AnthropicProperties(
 @Profile("!test")
 @ExcludeFromJacocoGeneratedReport(reason = "Anthropic configuration can't be unit tested")
 class AnthropicModels(
-    @field:Value("\${ANTHROPIC_BASE_URL:}")
+    @param:Value("\${ANTHROPIC_BASE_URL:}")
     private val baseUrl: String,
-    @field:Value("\${ANTHROPIC_API_KEY}")
+    @param:Value("\${ANTHROPIC_API_KEY}")
     private val apiKey: String,
     private val properties: AnthropicProperties,
 ) {
