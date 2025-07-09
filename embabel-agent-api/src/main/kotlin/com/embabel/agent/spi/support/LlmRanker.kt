@@ -54,7 +54,7 @@ internal class LlmRanker(
         if (rankables.isEmpty()) {
             return Rankings(emptyList())
         }
-        return rankingProperties.retryTemplate().execute<Rankings<T>, Exception> {
+        return rankingProperties.retryTemplate("ranker").execute<Rankings<T>, Exception> {
             rankThingsInternal(
                 description = description,
                 userInput = userInput,

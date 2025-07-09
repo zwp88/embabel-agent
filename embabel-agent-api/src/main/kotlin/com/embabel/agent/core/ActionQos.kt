@@ -15,18 +15,15 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.agent.common.RetryTemplateProvider
-import org.springframework.retry.support.RetryTemplate
-import org.springframework.retry.support.RetryTemplateBuilder
+import com.embabel.agent.common.RetryProperties
 
 /**
  * Quality of service requirements for an action
  */
 data class ActionQos(
-    override val maxAttempts: Int = 3,
+    override val maxAttempts: Int = 5,
+    override val backoffMillis: Long = 10000,
+    override val backoffMultiplier: Double = 5.0,
+    override val backoffMaxInterval: Long = 60000,
     val idempotent: Boolean = false,
-) : RetryTemplateProvider {
-
-    override fun retryTemplate(): RetryTemplate =
-        RetryTemplateBuilder().maxAttempts(maxAttempts).fixedBackoff(1000).build()
-}
+) : RetryProperties

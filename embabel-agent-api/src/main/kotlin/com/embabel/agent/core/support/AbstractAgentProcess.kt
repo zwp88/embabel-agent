@@ -335,7 +335,7 @@ abstract class AbstractAgentProcess(
         }
 
         val timestamp = Instant.now()
-        val actionStatus = action.qos.retryTemplate().execute<ActionStatus, Exception> {
+        val actionStatus = action.qos.retryTemplate("Action-${action.name}").execute<ActionStatus, Throwable> {
             action.execute(
                 processContext = processContext,
                 action = action,

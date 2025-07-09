@@ -35,7 +35,7 @@ data class LlmDataBindingProperties(
 ) : RetryTemplateProvider {
     private val logger = LoggerFactory.getLogger(LlmDataBindingProperties::class.java)
 
-    override fun retryTemplate(): RetryTemplate {
+    override fun retryTemplate(name: String): RetryTemplate {
         return RetryTemplate.builder()
             .maxAttempts(maxAttempts)
             .fixedBackoff(Duration.ofMillis(fixedBackoffMillis))
@@ -46,7 +46,8 @@ data class LlmDataBindingProperties(
                     throwable: Throwable
                 ) {
                     logger.info(
-                        "Retry attempt {} of {} due to: {}",
+                        "LLM invocation {}: Retry attempt {} of {} due to: {}",
+                        name,
                         context.retryCount,
                         maxAttempts,
                         throwable.message ?: "Unknown error"

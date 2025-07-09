@@ -173,7 +173,7 @@ class DockerLocalModels(
                     .model(model.id)
                     .build()
             )
-            .retryTemplate(dockerProperties.retryTemplate())
+            .retryTemplate(dockerProperties.retryTemplate("docker-${model.id}"))
             .build()
         return Llm(
             name = model.id,

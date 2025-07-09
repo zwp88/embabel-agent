@@ -15,46 +15,103 @@
  */
 package com.embabel.agent.common
 
-import com.embabel.agent.config.models.DockerLocalModels
 import com.embabel.common.util.loggerFor
+import org.springframework.ai.retry.NonTransientAiException
 import org.springframework.ai.retry.TransientAiException
 import org.springframework.retry.RetryCallback
 import org.springframework.retry.RetryContext
 import org.springframework.retry.RetryListener
+import org.springframework.retry.RetryPolicy
+import org.springframework.retry.context.RetryContextSupport
 import org.springframework.retry.support.RetryTemplate
 import java.time.Duration
 
 interface RetryTemplateProvider {
     val maxAttempts: Int
-    fun retryTemplate(): RetryTemplate
+    fun retryTemplate(name: String): RetryTemplate
 }
 
 /**
- * Extended by configuration that needs retry.
+ * Extended by configuration that needs retry regarding Spring AI.
  */
 interface RetryProperties : RetryTemplateProvider {
     val backoffMillis: Long
     val backoffMultiplier: Double
     val backoffMaxInterval: Long
 
-    override fun retryTemplate(): RetryTemplate {
+    val retryPolicy: RetryPolicy get() = SpringAiRetryPolicy(maxAttempts)
+
+    override fun retryTemplate(name: String): RetryTemplate {
         return RetryTemplate.builder()
-            .maxAttempts(maxAttempts)
-            .retryOn(TransientAiException::class.java)
             .exponentialBackoff(
                 Duration.ofMillis(backoffMillis),
                 backoffMultiplier,
                 Duration.ofMillis(backoffMaxInterval)
             )
+            .customPolicy(retryPolicy)
             .withListener(object : RetryListener {
                 override fun <T, E : Throwable> onError(
                     context: RetryContext,
                     callback: RetryCallback<T, E>,
                     throwable: Throwable
                 ) {
-                    loggerFor<DockerLocalModels>().debug("Retry error. Retry count: ${context.retryCount}", throwable)
+                    loggerFor<RetryProperties>().info(
+                        "Operation $name: Retry error. Retry count: ${context.retryCount}",
+                        throwable,
+                    )
                 }
             })
             .build()
+    }
+}
+
+/**
+ * Retry policy for Spring AI operations.
+ */
+private class SpringAiRetryPolicy(
+    private val maxAttempts: Int,
+    private val rateLimitPhrases: Set<String> = setOf("rate limit", "rate-limit"),
+) : RetryPolicy {
+
+    override fun open(parent: RetryContext?): RetryContext {
+        return RetryContextSupport(parent)
+    }
+
+    override fun close(context: RetryContext?) {
+        // No cleanup needed for this implementation
+    }
+
+    override fun registerThrowable(context: RetryContext?, throwable: Throwable?) {
+        if (context is RetryContextSupport && throwable != null) {
+            context.registerThrowable(throwable)
+        }
+    }
+
+    override fun canRetry(context: RetryContext): Boolean {
+        if (context.retryCount == 0) {
+            // First attempt, always retry
+            return true
+        }
+        if (context.retryCount >= maxAttempts) {
+            return false
+        }
+
+        return when (val lastException = context.lastThrowable) {
+            is TransientAiException -> true
+            is NonTransientAiException -> {
+                val m = lastException.message ?: return false
+                rateLimitPhrases.any { phrase ->
+                    m.contains(phrase, ignoreCase = true)
+                }
+            }
+
+            is IllegalArgumentException -> false
+
+            is IllegalStateException -> false
+
+            is UnsupportedOperationException -> false
+
+            else -> true
+        }
     }
 }

@@ -36,7 +36,7 @@ import java.time.LocalDate
 @ConfigurationProperties(prefix = "embabel.anthropic")
 data class AnthropicProperties(
     override val maxAttempts: Int = 10,
-    override val backoffMillis: Long = 2000L,
+    override val backoffMillis: Long = 5000L,
     override val backoffMultiplier: Double = 5.0,
     override val backoffMaxInterval: Long = 180000L,
 ) : RetryProperties
@@ -111,7 +111,7 @@ class AnthropicModels(
                     .build()
             )
             .anthropicApi(createAnthropicApi())
-            .retryTemplate(properties.retryTemplate())
+            .retryTemplate(properties.retryTemplate("anthropic-$name"))
             .build()
         return Llm(
             name = name,
