@@ -15,16 +15,26 @@
  */
 package com.embabel.agent.config.models
 
+import com.embabel.agent.common.RetryProperties
 import com.embabel.common.ai.model.EmbeddingService
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.PerTokenPricingModel
 import io.micrometer.observation.ObservationRegistry
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import java.time.LocalDate
+
+@ConfigurationProperties(prefix = "embabel.openai")
+data class OpenAiProperties(
+    override val maxAttempts: Int = 10,
+    override val backoffMillis: Long = 5000L,
+    override val backoffMultiplier: Double = 5.0,
+    override val backoffMaxInterval: Long = 180000L,
+) : RetryProperties
 
 /**
  * Well-known OpenAI models.
@@ -38,6 +48,7 @@ class OpenAiModels(
     @Value("\${OPENAI_API_KEY}")
     apiKey: String,
     observationRegistry: ObservationRegistry,
+    private val properties: OpenAiProperties,
 ) : OpenAiCompatibleModelFactory(baseUrl = baseUrl, apiKey = apiKey, observationRegistry = observationRegistry) {
 
     @Bean
@@ -49,7 +60,8 @@ class OpenAiModels(
             pricingModel = PerTokenPricingModel(
                 usdPer1mInputTokens = .40,
                 usdPer1mOutputTokens = 1.6,
-            )
+            ),
+            retryTemplate = properties.retryTemplate(GPT_41_MINI),
         )
     }
 
@@ -62,7 +74,8 @@ class OpenAiModels(
             pricingModel = PerTokenPricingModel(
                 usdPer1mInputTokens = 2.0,
                 usdPer1mOutputTokens = 8.0,
-            )
+            ),
+            retryTemplate = properties.retryTemplate(GPT_41),
         )
     }
 
@@ -75,7 +88,8 @@ class OpenAiModels(
             pricingModel = PerTokenPricingModel(
                 usdPer1mInputTokens = .1,
                 usdPer1mOutputTokens = .4,
-            )
+            ),
+            retryTemplate = properties.retryTemplate(GPT_41_NANO),
         )
     }
 

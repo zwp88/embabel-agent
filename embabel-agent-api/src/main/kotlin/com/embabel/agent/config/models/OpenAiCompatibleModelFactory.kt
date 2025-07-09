@@ -29,6 +29,8 @@ import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.OpenAiEmbeddingModel
 import org.springframework.ai.openai.OpenAiEmbeddingOptions
 import org.springframework.ai.openai.api.OpenAiApi
+import org.springframework.ai.retry.RetryUtils
+import org.springframework.retry.support.RetryTemplate
 import java.time.LocalDate
 
 /**
@@ -72,10 +74,11 @@ open class OpenAiCompatibleModelFactory(
         provider: String,
         knowledgeCutoffDate: LocalDate?,
         optionsConverter: OptionsConverter<*> = OpenAiChatOptionsConverter,
+        retryTemplate: RetryTemplate = RetryUtils.DEFAULT_RETRY_TEMPLATE,
     ): Llm {
         return Llm(
             name = model,
-            model = chatModelOf(model),
+            model = chatModelOf(model, retryTemplate),
             provider = provider,
             optionsConverter = optionsConverter,
             pricingModel = pricingModel,
@@ -101,7 +104,10 @@ open class OpenAiCompatibleModelFactory(
         )
     }
 
-    protected fun chatModelOf(model: String): ChatModel {
+    protected fun chatModelOf(
+        model: String,
+        retryTemplate: RetryTemplate,
+    ): ChatModel {
         return OpenAiChatModel.builder()
             .defaultOptions(
                 OpenAiChatOptions.builder()
@@ -109,6 +115,7 @@ open class OpenAiCompatibleModelFactory(
                     .build()
             )
             .openAiApi(openAiApi)
+            .retryTemplate(retryTemplate)
             .observationRegistry(
                 observationRegistry
             ).build()
