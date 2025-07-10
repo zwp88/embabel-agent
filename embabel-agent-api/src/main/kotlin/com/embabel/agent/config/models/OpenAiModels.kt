@@ -51,6 +51,10 @@ class OpenAiModels(
     private val properties: OpenAiProperties,
 ) : OpenAiCompatibleModelFactory(baseUrl = baseUrl, apiKey = apiKey, observationRegistry = observationRegistry) {
 
+    init {
+        logger.info("Open AI models are available: {}", properties)
+    }
+
     @Bean
     fun gpt41mini(): Llm {
         return openAiCompatibleLlm(

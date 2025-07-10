@@ -47,9 +47,10 @@ open class OpenAiCompatibleModelFactory(
 
     protected val logger: Logger = LoggerFactory.getLogger(javaClass)
 
+    // Subclasses should add their own more specific logging
     init {
-        loggerFor<OpenAiModels>().info(
-            "OpenAI AI compatible models are available at {}. API key is {}",
+        logger.info(
+            "Open AI compatible models are available at {}. API key is {}",
             baseUrl ?: "default OpenAI location",
             if (apiKey == null) "not set" else "set",
         )
