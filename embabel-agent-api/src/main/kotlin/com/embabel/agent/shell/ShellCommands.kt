@@ -198,29 +198,6 @@ class ShellCommands(
         """.trimIndent()
     }
 
-    // Saves typing during test iterations
-    @ShellMethod("Run a demo command")
-    fun demo(): String {
-        val intent = "Lynda is a scorpio. Find news for her"
-        logger.info("Demo executing intent: '$intent'")
-        val verbosity = Verbosity(
-            debug = false,
-            showPrompts = true,
-            showLlmResponses = false,
-            showPlanning = true,
-        )
-        val output = executeIntent(
-            intent = intent,
-            processOptions = ProcessOptions(
-                test = false,
-                verbosity = verbosity,
-            )
-        )
-        logger.info("Execute your own intent via the 'execute' command. Enclose the intent in quotes. For example:")
-        logger.info("execute \"$intent\"".color(loggingPersonality.colorPalette.color2))
-        return output
-    }
-
     @ShellMethod(
         "Show last blackboard: The final state of a previous operation",
         key = ["blackboard", "bb"],
@@ -339,7 +316,7 @@ class ShellCommands(
     }
 
     @ShellMethod(
-        "Execute a task. Put the task in double quotes. For example:\n\tx \"Lynda is a scorpio. Find news for her\" -p",
+        "Execute a task. Put the task in double quotes. For example:\n\tx \"Tell me a story about golden retrievers\" -p",
         key = ["execute", "x"],
     )
     fun execute(
