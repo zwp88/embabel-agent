@@ -23,6 +23,12 @@
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-mcpserver</artifactId>
         </dependency>
+
+        <!-- Move this one to a dedicted starter once ready-->
+        <dependency>
+            <groupId>com.embabel.agent</groupId>
+            <artifactId>embabel-agent-shell</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
