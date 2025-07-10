@@ -13,34 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.event.logging.personality.montypython
+package com.embabel.agent.event.logging.personality.colossus
 
 import com.embabel.agent.event.logging.personality.ColorPalette
-import com.embabel.agent.shell.MessageGeneratorPromptProvider
-import com.embabel.common.util.RandomFromFileMessageGenerator
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("montypython")
-object MontyPythonColorPalette : ColorPalette {
-    // Holy Grail-inspired colors
-    const val BRIGHT_RED = 0xE50000     // Knight who says Ni! red
-    const val ROYAL_BLUE = 0x0038A8     // King Arthur's blue
+@Profile("colossus")
+object ColossusColorPalette : ColorPalette {
+    const val CAVE_SHADOW: Int = 0x2d2d30
+    const val BRONZE_FIRE: Int = 0xcd7f32
+    const val ANCIENT_STONE: Int = 0x8b7d6b
+    const val TITAN_GOLD: Int = 0xffd700
+    const val PANEL: Int = 0x84a396
+    const val ACCENT_GREEN: Int = 0xacb366
 
     override val highlight: Int
-        get() = BRIGHT_RED
+        get() = TITAN_GOLD
     override val color2: Int
-        get() = ROYAL_BLUE
+        get() = BRONZE_FIRE
 }
-
-
-@Component
-@Profile("montypython")
-class MontyPythonPromptProvider : MessageGeneratorPromptProvider(
-    color = MontyPythonColorPalette.BRIGHT_RED,
-    prompt = "pythons",
-    messageGenerator = RandomFromFileMessageGenerator(
-        url = "logging/montypython.txt"
-    ),
-)

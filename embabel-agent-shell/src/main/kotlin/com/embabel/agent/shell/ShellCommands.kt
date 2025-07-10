@@ -21,7 +21,7 @@ import com.embabel.agent.core.*
 import com.embabel.agent.event.logging.LoggingPersonality
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.rag.Ingester
-import com.embabel.chat.agent.LastMessageIntentAgentPlatformChatSession
+import com.embabel.chat.agent.shell.LastMessageIntentAgentPlatformChatSession
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
@@ -130,7 +130,7 @@ class ShellCommands(
         )
         blackboard = processOptions.blackboard
         // Create shell module's own ChatConfig instance
-        val shellChatConfig = ShellConfig.ChatConfig(
+        val shellChatConfig = ShellProperties.ChatConfig(
             confirmGoals = shellProperties.chat.confirmGoals,
             bindConversation = shellProperties.chat.bindConversation
         )
@@ -206,28 +206,6 @@ class ShellCommands(
         """.trimIndent()
     }
 
-    // Saves typing during test iterations
-    @ShellMethod("Run a demo command")
-    fun demo(): String {
-        val intent = "Lynda is a scorpio. Find news for her"
-        logger.info("Demo executing intent: '$intent'")
-        val verbosity = Verbosity(
-            debug = false,
-            showPrompts = true,
-            showLlmResponses = false,
-            showPlanning = true,
-        )
-        val output = executeIntent(
-            intent = intent,
-            processOptions = ProcessOptions(
-                test = false,
-                verbosity = verbosity,
-            )
-        )
-        logger.info("Execute your own intent via the 'execute' command. Enclose the intent in quotes. For example:")
-        logger.info("execute \"$intent\"".color(loggingPersonality.colorPalette.color2))
-        return output
-    }
 
     @ShellMethod(
         "Show last blackboard: The final state of a previous operation",

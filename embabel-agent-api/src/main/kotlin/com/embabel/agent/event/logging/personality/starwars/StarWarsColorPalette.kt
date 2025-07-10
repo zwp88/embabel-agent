@@ -16,30 +16,22 @@
 package com.embabel.agent.event.logging.personality.starwars
 
 import com.embabel.agent.event.logging.personality.ColorPalette
-import com.embabel.agent.shell.MessageGeneratorPromptProvider
-import com.embabel.common.util.RandomFromFileMessageGenerator
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
 @Profile("starwars")
 object StarWarsColorPalette : ColorPalette {
+    const val LIGHTSABER_BLUE: Int = 0x00bfff
+    const val LIGHTSABER_GREEN: Int = 0x00ff00
+    const val LIGHTSABER_RED: Int = 0xff0000
+    const val IMPERIAL_GRAY: Int = 0x2f4f4f
+    const val REPUBLIC_GOLD: Int = 0xffd700
     const val YELLOW_ACCENT: Int = 0xFFD100
     const val TATOOINE_ORANGE: Int = 0xAD7D37
 
     override val highlight: Int
-        get() = YELLOW_ACCENT
+        get() = LIGHTSABER_BLUE
     override val color2: Int
-        get() = TATOOINE_ORANGE
+        get() = LIGHTSABER_GREEN
 }
-
-
-@Component
-@Profile("starwars")
-class StarWarsPromptProvider : MessageGeneratorPromptProvider(
-    color = StarWarsColorPalette.YELLOW_ACCENT,
-    prompt = "starwars",
-    messageGenerator = RandomFromFileMessageGenerator(
-        url = "logging/starwars.txt"
-    ),
-)
