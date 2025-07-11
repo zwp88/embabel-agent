@@ -78,7 +78,7 @@
                             <attributes>
                                 <doctype>book</doctype>
                                 <docinfo>shared</docinfo>
-                                <source-highlighter>coderay</source-highlighter>
+                                <source-highlighter>rouge</source-highlighter>
                                 <icons>font</icons>
                                 <pagenums/>
                                 <toc/>
@@ -98,7 +98,7 @@
                             <attributes>
                                 <doctype>book</doctype>
                                 <docinfo>shared</docinfo>
-                                <source-highlighter>coderay</source-highlighter>
+                                <source-highlighter>rouge</source-highlighter>
                                 <icons>font</icons>
                                 <pagenums/>
                                 <toc>left</toc>
