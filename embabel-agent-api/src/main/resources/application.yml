@@ -47,9 +47,9 @@ embabel:
     #    embedding-services:
     #      best: text-embedding-3-small
     #      cheapest: text-embedding-3-small
-    llms:
-      best: gpt-4.1
-      cheapest: gpt-4.1-nano
+#    llms:
+#      best: gpt-4.1
+#      cheapest: gpt-4.1-nano
 
 
 logging:
