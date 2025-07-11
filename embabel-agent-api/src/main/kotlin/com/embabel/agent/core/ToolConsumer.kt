@@ -41,10 +41,20 @@ interface ToolGroupDescription {
     val role: String
 
     companion object {
+
         operator fun invoke(
             description: String,
             role: String,
         ): ToolGroupDescription = ToolGroupDescriptionImpl(
+            description = description,
+            role = role,
+        )
+
+        @JvmStatic
+        fun create(
+            description: String,
+            role: String,
+        ): ToolGroupDescription = invoke(
             description = description,
             role = role,
         )
