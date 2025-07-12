@@ -9,7 +9,7 @@ Whereas the `@Agent` annotation causes a class to be picked up immediately by Sp
 
 Any bean of `Agent` type results in auto registration.
 
-[source]
+[source,kotlin]
 ----
 @Configuration
 class FactCheckerAgentConfiguration {
