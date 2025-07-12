@@ -54,6 +54,10 @@ interface Bindable {
      */
     fun addObject(value: Any): Bindable
 
+    fun addAll(objects: List<Any>) {
+        objects.forEach { this += it }
+    }
+
     operator fun plusAssign(value: Any)
 
     operator fun plusAssign(pair: Pair<String, Any>)
@@ -133,6 +137,17 @@ interface Blackboard : Bindable, MayHaveLastResult, HasInfoString {
         return objects.lastOrNull { satisfiesType(boundInstance = it, type) }
     }
 
+    fun <T> count(clazz: Class<T>): Int {
+        return objects.filterIsInstance(clazz).size
+    }
+
+    /**
+     * Last entry of the given type, if there is one
+     */
+    fun <T> last(clazz: Class<T>): T? {
+        return objects.filterIsInstance(clazz).lastOrNull()
+    }
+
     /**
      * Entries in the order they were added.
      * The default instance of any type is the last one
@@ -186,40 +201,29 @@ fun <T> Blackboard.all(clazz: Class<T>): List<T> {
  * Return all entries of a specific type
  */
 inline fun <reified T> Blackboard.all(): List<T> {
-    return all<T>(T::class.java)
+    return all(T::class.java)
 }
 
 /**
  * Count entries of the given type
  */
 inline fun <reified T> Blackboard.count(): Int {
-    return objects.filterIsInstance<T>().size
+    return count(T::class.java)
 }
 
 /**
  * Last entry of the given type, if there is one
  */
 inline fun <reified T> Blackboard.last(): T? {
-    return objects.filterIsInstance<T>().lastOrNull()
+    return last(T::class.java)
 }
 
 inline fun <reified T> Blackboard.lastOrNull(predicate: (t: T) -> Boolean): T? {
     return objects.filterIsInstance<T>().lastOrNull { predicate(it) }
 }
 
-/**
- * Last entry of the given type, if there is one
- */
-fun <T> Blackboard.last(clazz: Class<T>): T? {
-    return objects.filterIsInstance<T>(clazz).lastOrNull()
-}
-
 fun <T> Blackboard.lastOrNull(clazz: Class<T>, predicate: (t: T) -> Boolean): T? {
     return objects.filterIsInstance<T>(clazz).lastOrNull { predicate(it) }
-}
-
-infix fun Blackboard.addAll(objects: List<Any>) {
-    objects.forEach { this += it }
 }
 
 /**

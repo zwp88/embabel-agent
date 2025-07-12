@@ -49,7 +49,7 @@ fun <A, B : Any> doSplit(
         toolGroups = emptySet(),
     ) {
         val list = splitter(it)
-        it addAll list
+        it.addAll(list)
     }
     return AgentScopeBuilder(
         name = a.name,
