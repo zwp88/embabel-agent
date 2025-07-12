@@ -104,11 +104,11 @@ class FakeConfig {
     ]
 )
 class AgentPlatformIntegrationTest(
-    @Autowired
+    @param:Autowired
     private val autonomy: Autonomy,
-    @Autowired
+    @param:Autowired
     private val agentMetadataReader: AgentMetadataReader,
-    @Autowired
+    @param:Autowired
     private val horoscopeService: TestHoroscopeService,
 ) {
 

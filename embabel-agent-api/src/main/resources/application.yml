@@ -25,7 +25,7 @@ embabel:
       annotation: true
       bean: true
     ranking:
-      llm: gpt-4.1-mini
+      #      llm: gpt-4.1-mini
       max-attempts: 5
 
 

@@ -18,6 +18,8 @@ package com.embabel.agent.spi.support
 import com.embabel.agent.common.RetryProperties
 import com.embabel.agent.spi.*
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.embabel.common.ai.model.ModelSelectionCriteria.Companion.byName
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.fasterxml.jackson.annotation.JsonClassDescription
@@ -25,9 +27,17 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 
+/**
+ * Properties for the ranking service. Optional LLM selection, plus normal retry properties.
+ * @param llm name of the LLM to use for ranking, or null to use auto selection
+ * @param maxAttempts maximum number of attempts to retry ranking
+ * @param backoffMillis initial backoff time in milliseconds
+ * @param backoffMultiplier multiplier for backoff time
+ * @param backoffMaxInterval maximum backoff time in milliseconds
+ */
 @ConfigurationProperties("embabel.agent-platform.ranking")
 data class RankingProperties(
-    val llm: String,
+    val llm: String? = null,
     override val maxAttempts: Int = 5,
     override val backoffMillis: Long = 100L,
     override val backoffMultiplier: Double = 5.0,
@@ -44,7 +54,16 @@ internal class LlmRanker(
 
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
-    private val llm = LlmOptions(rankingProperties.llm)
+    private val llm = LlmOptions(
+        criteria =
+            if (rankingProperties.llm != null) {
+                logger.info("Using LLM '{}' for ranking", rankingProperties.llm)
+                byName(rankingProperties.llm)
+            } else {
+                logger.info("Using auto LLM for ranking")
+                ModelSelectionCriteria.Auto
+            }
+    )
 
     override fun <T> rank(
         description: String,
