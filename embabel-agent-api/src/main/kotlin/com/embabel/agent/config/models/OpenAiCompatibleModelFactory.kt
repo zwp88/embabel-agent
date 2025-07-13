@@ -42,6 +42,8 @@ import java.time.LocalDate
 open class OpenAiCompatibleModelFactory(
     val baseUrl: String?,
     private val apiKey: String?,
+    private val completionsPath: String?,
+    private val embeddingsPath: String?,
     private val observationRegistry: ObservationRegistry,
 ) {
 
@@ -64,6 +66,14 @@ open class OpenAiCompatibleModelFactory(
         if (baseUrl != null) {
             loggerFor<OpenAiModels>().info("Using custom OpenAI base URL: {}", baseUrl)
             builder.baseUrl(baseUrl)
+        }
+        if (completionsPath != null) {
+            loggerFor<OpenAiModels>().info("Using custom OpenAI completions path: {}", completionsPath)
+            builder.completionsPath(completionsPath)
+        }
+        if (embeddingsPath != null) {
+            loggerFor<OpenAiModels>().info("Using custom OpenAI embeddings path: {}", embeddingsPath)
+            builder.embeddingsPath(embeddingsPath)
         }
         return builder.build()
     }

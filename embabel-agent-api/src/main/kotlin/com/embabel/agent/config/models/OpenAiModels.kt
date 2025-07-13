@@ -47,9 +47,13 @@ class OpenAiModels(
     baseUrl: String?,
     @Value("\${OPENAI_API_KEY}")
     apiKey: String,
+    @Value("\${OPENAI_COMPLETIONS_PATH:#{null}}")
+    completionsPath: String?,
+    @Value("\${OPENAI_EMBEDDINGS_PATH:#{null}}")
+    embeddingsPath: String?,
     observationRegistry: ObservationRegistry,
     private val properties: OpenAiProperties,
-) : OpenAiCompatibleModelFactory(baseUrl = baseUrl, apiKey = apiKey, observationRegistry = observationRegistry) {
+) : OpenAiCompatibleModelFactory(baseUrl = baseUrl, apiKey = apiKey, completionsPath = completionsPath, embeddingsPath = embeddingsPath, observationRegistry = observationRegistry) {
 
     init {
         logger.info("Open AI models are available: {}", properties)
