@@ -87,13 +87,14 @@ class Autonomy(
             agentScope = agentScope,
             emitEvents = true,
         )
-        val agentProcess = agentPlatform.runAgentFrom(
+        val agentProcess = agentPlatform.createAgentProcess(
             processOptions = processOptions,
             agent = goalRun.agent,
             bindings = mapOf(
                 IoBinding.DEFAULT_BINDING to userInput
             ) + additionalBindings
         )
+        agentProcess.run()
 
         return AgentProcessExecution.fromProcessStatus(
             basis = userInput,

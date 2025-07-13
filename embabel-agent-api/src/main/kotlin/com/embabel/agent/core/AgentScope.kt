@@ -36,7 +36,8 @@ interface ActionSource {
 }
 
 /**
- * Defines the scope of an agent: What goals, conditions and actions it knows about.
+ * Defines the scope of an agent or agents: Goals, conditions and actions.
+ * Both Agents and AgentPlatforms are AgentScopes.
  */
 interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSource, DataDictionary, HasInfoString {
 

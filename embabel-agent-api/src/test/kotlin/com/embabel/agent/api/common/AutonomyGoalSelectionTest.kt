@@ -134,12 +134,13 @@ class AutonomyGoalSelectionTest {
         // Mock platform to return our test process
         val agentPlatform = mockk<AgentPlatform>()
         every {
-            agentPlatform.runAgentFrom(
+            agentPlatform.createAgentProcess(
                 processOptions = any(),
                 agent = any(),
                 bindings = any<Map<String, Any>>()
             )
         } returns testProcess
+        every { testProcess.run() } returns testProcess
 
         // Create a more realistic ranker that returns varied confidence scores
         // This better tests the score comparison logic
@@ -204,11 +205,12 @@ class AutonomyGoalSelectionTest {
             realAgent.withSingleGoal(testGoal)
 
             // Verify that the chosen agent was executed
-            agentPlatform.runAgentFrom(
+            agentPlatform.createAgentProcess(
                 processOptions = any(),
                 agent = any(),
                 bindings = any()
             )
+            testProcess.run()
 
             // Verify process status was checked
             testProcess.status
