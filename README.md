@@ -167,7 +167,6 @@ if you already have an `OPENAI_API_KEY` and have Maven installed.
 
 > **🚗 For a realistic example application**, see the [Tripper travel planner agent](https://github.com/embabel/tripper)
 
-
 ## Why Is Embabel Needed?
 
 TL;DR Because the evolution of agent frameworks is early and there's a lot of room for improvement; because an agent
@@ -540,10 +539,7 @@ with the Spring AI `@Tool` annotation.
 ## Using Embabel as an MCP server
 
 You can use the Embabel agent platform as an MCP server from a
-UI like Claude Desktop.
-
-Because Claude only presently works over stdio, and we rightly ignore stdio in favor of SSE, you will need
-to use a [layer in between](https://makhlevich.substack.com/p/converting-an-mcp-server-from-sse).
+UI like Claude Desktop. The Embabel MCP server is available over SSE.
 
 *Note:* This feature is presently immature.
 
