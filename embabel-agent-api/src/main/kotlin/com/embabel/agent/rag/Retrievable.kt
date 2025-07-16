@@ -15,7 +15,6 @@
  */
 package com.embabel.agent.rag
 
-import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.HasInfoString
 import io.swagger.v3.oas.annotations.media.Schema
@@ -25,11 +24,18 @@ import java.util.*
  * A Retrievable object instance is a chunk or an entity
  * It has a stable id.
  */
-sealed interface Retrievable : StableIdentified, HasInfoString {
+sealed interface Retrievable : HasInfoString {
 
-    override fun persistent(): Boolean = true
+    val id: String
 
     val metadata: Map<String, Any?>
+
+    /**
+     * Neighbors of this retrievable object.
+     * Allows navigation of a graph
+     */
+    val neighbors: Map<String, Collection<Retrievable>> get() = mapOf()
+
 }
 
 /**
@@ -120,4 +126,20 @@ interface EntityData : Retrievable, Described {
         return "(${labelsString} id='$id')"
     }
 
+}
+
+/**
+ * Entity mapped with JPA or another persistence tool. Will be a JVM object.
+ * What it exposes beyond EntityData methods is a matter for the RagService in the application.
+ * MappedEntity objects have their own distinct types and there can expose
+ * @Tool methods for LLMs.
+ */
+interface MappedEntity : EntityData
+
+interface MutableMappedEntity : MappedEntity {
+
+    /**
+     * Save this entity to the persistence store.
+     */
+    fun save(): MappedEntity
 }

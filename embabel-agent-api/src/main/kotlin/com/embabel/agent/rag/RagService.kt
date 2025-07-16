@@ -18,6 +18,7 @@ package com.embabel.agent.rag
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.HasInfoString
 
+
 /**
  * Central interface for Retrieval-Augmented Generation (RAG) services.
  * Returns entities as well as text chunks.
@@ -51,6 +52,29 @@ interface RagService : Described, HasInfoString {
             )
         }
     }
+}
+
+sealed interface ExplorationRequest
+
+data class DepthExplorationRequest(
+    val depth: Int,
+) : ExplorationRequest
+
+data class PathsExplorationRequest(
+    val paths: List<String>,
+) : ExplorationRequest
+
+/**
+ * Rag service that supports navigation in a graph of retrievable objects.
+ * This may not be supported by all RAG services.
+ * It need not be a graph but could be implemented by a relational database or other structure.
+ */
+interface NavigableRagService : RagService {
+
+    /**
+     * Explore the graph of retrievable objects around the given retrievable object.
+     */
+    fun explore(retrievable: Retrievable, explorationRequest: ExplorationRequest): Retrievable
 }
 
 private data class EmptyRagService(
