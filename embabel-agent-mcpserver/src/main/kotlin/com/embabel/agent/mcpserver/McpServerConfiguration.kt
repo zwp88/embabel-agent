@@ -44,11 +44,10 @@ interface McpToolExportCallbackPublisher : ToolCallbackPublisher, HasInfoString
 class BannerTool {
 
     @Tool(
-        name = "Embabel Hello Banner",
         description = "Display a welcome banner with server information"
     )
-    fun getHelloBanner(): String {
-        val separator = "~".repeat(HELLO_BANNER_WIDTH )
+    fun helloBanner(): String {
+        val separator = "~".repeat(HELLO_BANNER_WIDTH)
         return "\n${separator}\n" +
                 "Embabel Agent MCP server\n" +
                 "Server info: ${ServerInfo.getServerInfo()}\n" +

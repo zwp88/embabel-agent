@@ -541,6 +541,25 @@ with the Spring AI `@Tool` annotation.
 You can use the Embabel agent platform as an MCP server from a
 UI like Claude Desktop. The Embabel MCP server is available over SSE.
 
+Configure it as follows in your `claude-desktop.yml`:
+
+```json
+{
+  "mcpServers": {
+    "embabel": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "http://localhost:8080/sse"
+      ]
+    }
+  }
+}
+
+
+```
+
 *Note:* This feature is presently immature.
 
 ## Consuming MCP Servers
