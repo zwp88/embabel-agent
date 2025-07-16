@@ -3,6 +3,10 @@
 :sectids:
 :sectanchors:
 
-How to contribute
+We welcome contributions to the Embabel project!
 
-Join the Embabel community on Discord at https://discord.gg/Sy3XSc6f.
+How to contribute:
+
+- Familiarize yourself with the project by reading the documentation.
+- Familiarize yourself with the issue tracker
+- Join the Embabel community on Discord at https://discord.gg/t6bjkyj93q.
