@@ -29,6 +29,8 @@ class OpenAiCompatibleModelFactoryTest {
         val mf = OpenAiCompatibleModelFactory(
             baseUrl = null,
             apiKey = null,
+            completionsPath = null,
+            embeddingsPath = null,
             observationRegistry = mockk(),
         )
         val llm = mf.openAiCompatibleLlm(
@@ -45,6 +47,8 @@ class OpenAiCompatibleModelFactoryTest {
         val mf = OpenAiCompatibleModelFactory(
             baseUrl = "foobar",
             apiKey = null,
+            completionsPath = null,
+            embeddingsPath = null,
             observationRegistry = mockk(),
         )
         val llm = mf.openAiCompatibleLlm(
