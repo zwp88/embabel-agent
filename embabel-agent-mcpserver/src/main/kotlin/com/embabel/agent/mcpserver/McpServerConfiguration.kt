@@ -105,14 +105,12 @@ class McpServerConfiguration(
             ) { "${it.toolDefinition.name()}: ${it.toolDefinition.description()}" }
         )
 
-        // add tool callbacks to MCP server
-        val agentTools = McpToolUtils
-            .toSyncToolSpecification(allToolCallbacks)
+        val agentTools = McpToolUtils.toSyncToolSpecification(allToolCallbacks)
 
+        val mcpSyncServer = applicationContext.getBean(McpSyncServer::class.java)
         for (agentTool in agentTools) {
-            applicationContext.getBean(McpSyncServer::class.java).addTool(agentTool);
+            mcpSyncServer.addTool(agentTool);
         }
-
     }
 
 }
