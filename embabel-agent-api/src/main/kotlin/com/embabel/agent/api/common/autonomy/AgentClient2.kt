@@ -13,148 +13,120 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.embabel.agent.api.common.autonomy
 
 import com.embabel.agent.core.*
-import org.springframework.stereotype.Controller
 import java.util.concurrent.CompletableFuture
 
 interface AgentClient2 {
 
-    fun input(obj: Any, vararg objs: Any): RunnableAgentClient
+    fun input(obj: Any, vararg objs: Any): InvocableAgentClient
 
-    fun input(inputMapping: Map<String, *>): RunnableAgentClient
+    fun input(inputMapping: Map<String, *>): InvocableAgentClient
 
 
-    interface RunnableAgentClient {
+    interface InvocableAgentClient {
 
-        fun <T> run(resultType: Class<T>): T
+        fun <T> invoke(resultType: Class<T>): T
 
-        fun <T> runAsync(resultType: Class<T>): CompletableFuture<T>
-
-        fun startProcess(): AgentProcess
-
-        fun startProcessAsync(): CompletableFuture<AgentProcess>
-
-        fun options(processOptions: ProcessOptions): RunnableAgentClient
-
-        fun options(): ProcessOptionsSpec
+        fun <T> invokeAsync(resultType: Class<T>): CompletableFuture<T>
 
     }
-
-    interface ProcessOptionsSpec {
-
-        fun contextId(contextId: ContextId): RunnableAgentClient
-
-        fun blackboard(blackboard: Blackboard): RunnableAgentClient
-
-        fun test(test: Boolean): RunnableAgentClient
-
-        fun verbosity(): VerbositySpec
-
-        fun verbosity(verbosity: Verbosity): RunnableAgentClient
-
-        fun allowGoalChange(allowGoalChange: Boolean): RunnableAgentClient
-
-        fun budget(): BudgetSpec
-
-        fun budget(budget: Budget): RunnableAgentClient
-
-        fun control(processControl: ProcessControl): RunnableAgentClient
-    }
-
-    interface VerbositySpec {
-        fun showPrompts(showPrompts: Boolean): RunnableAgentClient
-
-        fun showLlmResponses(showLlmResponses: Boolean): RunnableAgentClient
-
-        fun debug(debug: Boolean): RunnableAgentClient
-
-        fun showPlanning(showPlanning: Boolean): RunnableAgentClient
-    }
-
-    interface BudgetSpec {
-        fun cost(cost: Double): RunnableAgentClient
-
-        fun actions(actions: Int): RunnableAgentClient
-
-        fun tokens(tokens: Int): RunnableAgentClient
-    }
-
 
 
     companion object {
 
-        fun of(agentPlatform: AgentPlatform): AgentClient2 {
+        @JvmStatic
+        fun createClient(agentPlatform: AgentPlatform): AgentClient2 {
+            return builder(agentPlatform).buildClient()
+        }
+
+        @JvmStatic
+        fun <T> createInvocation(agentPlatform: AgentPlatform, resultType: Class<T>): AgentInvocation<T> {
+            return builder(agentPlatform).buildInvocation(resultType)
+        }
+
+        inline fun <reified T: Any> createInvocation(agentPlatform: AgentPlatform): AgentInvocation<T> {
+            return builder(agentPlatform).buildInvocation()
+        }
+
+        @JvmStatic
+        fun builder(agentPlatform: AgentPlatform): AgentClient2Builder {
             TODO()
         }
+
     }
 
 }
 
-inline fun <reified T : Any> AgentClient2.RunnableAgentClient.run(): T =
+inline fun <reified T : Any> AgentClient2.InvocableAgentClient.invoke(): T =
     TODO()
 
-inline fun <reified T: Any> AgentClient2.RunnableAgentClient.runAsync(): CompletableFuture<T> =
+inline fun <reified T: Any> AgentClient2.InvocableAgentClient.invokeAsync(): CompletableFuture<T> =
     TODO()
 
+interface AgentInvocation<T> {
 
+    fun invoke(obj: Any, vararg objs: Any): T
 
+    fun invoke(map: Map<String, *>): T
 
-@Controller
-class UsageController(val agentPlatform: AgentPlatform) {
+    fun invokeAsync(obj: Any, vararg objs: Any): CompletableFuture<T>
 
-    val agentClient: AgentClient2 = AgentClient2.of(agentPlatform)
-
-    fun planJourney() {
-        val travelBrief = JourneyTravelBrief()
-        val travelers = Travelers()
-
-        // basic Kotlin
-        val travelPlanKotlin: TravelPlan = agentClient
-            .input(travelBrief, travelers) // varargs
-            .run()
-
-        // basic Java
-        val travelPlanJava: TravelPlan = agentClient
-            .input(travelBrief, travelers) // varargs
-            .run(TravelPlan::class.java)
-
-        // options with ProcessOptions and named params, for use in Kotlin
-        val travelPlanOptionsKotlin: TravelPlan = agentClient
-            .input(travelBrief, travelers) // varargs
-            .options(processOptions = ProcessOptions(
-                verbosity = Verbosity(
-                    showPrompts = true,
-                    showLlmResponses = true,
-                ),
-                budget = Budget(
-                    tokens = Budget.DEFAULT_TOKEN_LIMIT * 3,
-                )
-            ))
-            .run();
-
-        // options with builder, for use in Kotlin/Java
-        val travelPlanOptionsJava: TravelPlan = agentClient
-            .input(travelBrief, travelers) // varargs
-            .options().verbosity().showPrompts(true)
-            .options().verbosity().showLlmResponses(true)
-            .options().budget().tokens(Budget.DEFAULT_TOKEN_LIMIT * 3)
-            .run();
-
-        // async, with map input
-        val asyncTravelPlan: CompletableFuture<TravelPlan> = agentClient
-            .input(mapOf("id" to travelBrief, "travelers" to travelers)) // map
-            .runAsync() // or runAsync(TravelPlan.class) in Java
-
-        // process
-        val agentProcess: AgentProcess = agentClient
-            .input(travelBrief, travelers)
-            .startProcess()
-    }
+    fun invokeAsync(map: Map<String, *>): CompletableFuture<T>
 }
 
-class JourneyTravelBrief
-class Travelers
-class TravelPlan
+
+interface AgentClient2Builder {
+
+    fun options(processOptions: ProcessOptions): AgentClient2Builder
+
+    fun options(): ProcessOptionsBuilder
+
+    fun buildClient(): AgentClient2
+
+    fun <T> buildInvocation(resultType: Class<T>): AgentInvocation<T>
+
+    interface ProcessOptionsBuilder {
+
+        fun contextId(contextId: ContextId): AgentClient2Builder
+
+        fun blackboard(blackboard: Blackboard): AgentClient2Builder
+
+        fun test(test: Boolean): AgentClient2Builder
+
+        fun verbosity(): VerbosityBuilder
+
+        fun verbosity(verbosity: Verbosity): AgentClient2Builder
+
+        fun allowGoalChange(allowGoalChange: Boolean): AgentClient2Builder
+
+        fun budget(): BudgetBuilder
+
+        fun budget(budget: Budget): AgentClient2Builder
+
+        fun control(processControl: ProcessControl): AgentClient2Builder
+    }
+
+    interface VerbosityBuilder {
+        fun showPrompts(showPrompts: Boolean): AgentClient2Builder
+
+        fun showLlmResponses(showLlmResponses: Boolean): AgentClient2Builder
+
+        fun debug(debug: Boolean): AgentClient2Builder
+
+        fun showPlanning(showPlanning: Boolean): AgentClient2Builder
+    }
+
+    interface BudgetBuilder {
+        fun cost(cost: Double): AgentClient2Builder
+
+        fun actions(actions: Int): AgentClient2Builder
+
+        fun tokens(tokens: Int): AgentClient2Builder
+    }
+
+}
+
+inline fun <reified T : Any> AgentClient2Builder.buildInvocation(): AgentInvocation<T> =
+    TODO()
