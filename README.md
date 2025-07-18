@@ -560,7 +560,14 @@ Configure it as follows in your `claude-desktop.yml`:
 
 ```
 
-*Note:* This feature is presently immature.
+The [MCP Inspector](https://github.com/modelcontextprotocol/inspector) is a helpful tool for interacting to your Embabel SSE server.
+You can start it with:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+*Note:* The MCP server feature is presently immature.
 
 ## Consuming MCP Servers
 
