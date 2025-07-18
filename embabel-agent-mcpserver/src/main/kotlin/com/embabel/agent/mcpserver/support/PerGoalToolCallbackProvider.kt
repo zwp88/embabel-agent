@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.mcpserver
+package com.embabel.agent.mcpserver.support
 
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.Goal
@@ -21,6 +21,7 @@ import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
+import com.embabel.agent.mcpserver.McpToolExportCallbackPublisher
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -73,7 +74,7 @@ class PerGoalToolCallbackProvider(
 
             override fun call(
                 toolInput: String,
-                tooContext: ToolContext?
+                tooContext: ToolContext?,
             ): String {
                 return call(toolInput)
             }
@@ -101,6 +102,7 @@ class PerGoalToolCallbackProvider(
                     is HasInfoString -> {
                         output.infoString(verbose = true)
                     }
+
                     is HasContent -> output.content
                     else -> output.toString()
                 }

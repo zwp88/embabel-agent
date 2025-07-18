@@ -16,6 +16,7 @@
 package com.embabel.agent.mcpserver
 
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.mcpserver.support.McpPromptFactory
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import io.mockk.mockk

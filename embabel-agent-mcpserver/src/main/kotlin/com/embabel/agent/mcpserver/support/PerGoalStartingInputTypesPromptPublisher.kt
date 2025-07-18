@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.mcpserver
+package com.embabel.agent.mcpserver.support
 
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.Goal
+import com.embabel.agent.mcpserver.McpPromptPublisher
 import io.modelcontextprotocol.server.McpServerFeatures
 import org.springframework.stereotype.Service
 
+/**
+ * Publish MCP prompts for each goal's starting input types, if specified.
+ * This allows the MCP server to provide prompts based on the specific input types required by each goal.
+ */
 @Service
 class PerGoalStartingInputTypesPromptPublisher(
     private val autonomy: Autonomy,
@@ -42,7 +47,7 @@ class PerGoalStartingInputTypesPromptPublisher(
     }
 
     override fun infoString(verbose: Boolean?): String {
-        return "PerGoalStartingInputTypesPromptPublisher(prompts=${prompts().size})"
+        return "${javaClass.simpleName}(prompts=${prompts().size})"
     }
 
 }

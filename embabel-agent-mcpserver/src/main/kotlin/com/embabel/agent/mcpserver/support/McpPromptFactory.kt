@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.mcpserver
+package com.embabel.agent.mcpserver.support
 
 import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
@@ -22,7 +22,7 @@ import com.embabel.common.util.NameUtils
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import io.modelcontextprotocol.server.McpServerFeatures
 import io.modelcontextprotocol.spec.McpSchema
-import org.springframework.util.ReflectionUtils.doWithFields
+import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Method
 
 /**
@@ -84,7 +84,7 @@ class McpPromptFactory(
             it.methods.toList()
         }
         val args = mutableListOf<McpSchema.PromptArgument>()
-        doWithFields(type) { field ->
+        ReflectionUtils.doWithFields(type) { field ->
             if (field.isSynthetic) {
                 return@doWithFields
             }
