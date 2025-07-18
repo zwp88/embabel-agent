@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.mcpserver
+package com.embabel.agent.mcpserver.support
 
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.Goal
+import com.embabel.agent.mcpserver.McpPromptPublisher
 import io.modelcontextprotocol.server.McpServerFeatures
 import org.springframework.stereotype.Service
 

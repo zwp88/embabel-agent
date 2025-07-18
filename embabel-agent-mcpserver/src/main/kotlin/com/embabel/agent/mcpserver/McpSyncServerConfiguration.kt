@@ -69,15 +69,15 @@ class BannerTool {
 
 
 /**
- * Configures MCP server. Exposes a limited number of tools.
+ * Configures MCP sync server. Exposes a limited number of tools.
  */
 @Configuration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.ANY)
-class McpServerConfiguration(
+class McpSyncServerConfiguration(
     private val applicationContext: ConfigurableApplicationContext,
 ) {
 
-    private val logger = LoggerFactory.getLogger(McpServerConfiguration::class.java)
+    private val logger = LoggerFactory.getLogger(McpSyncServerConfiguration::class.java)
 
     /**
      * Currently MCP Server is configured by AutoConfiguration, which requires
