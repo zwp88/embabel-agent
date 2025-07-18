@@ -19,9 +19,10 @@ import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.event.logging.LoggingPersonality.Companion.BANNER_WIDTH
 import com.embabel.agent.spi.support.AgentScanningBeanPostProcessorEvent
 import com.embabel.common.core.types.HasInfoString
-import com.embabel.common.util.loggerFor
+import io.modelcontextprotocol.server.McpServerFeatures
 import io.modelcontextprotocol.server.McpSyncServer
 import org.apache.catalina.util.ServerInfo
+import org.slf4j.LoggerFactory
 import org.springframework.ai.mcp.McpToolUtils
 import org.springframework.ai.tool.ToolCallbackProvider
 import org.springframework.ai.tool.annotation.Tool
@@ -37,6 +38,12 @@ import org.springframework.context.event.EventListener
  * that identifies tool callbacks that our MCP server exposes.
  */
 interface McpToolExportCallbackPublisher : ToolCallbackPublisher, HasInfoString
+
+interface McpPromptPublisher : HasInfoString {
+
+    fun prompts(): List<McpServerFeatures.SyncPromptSpecification>
+
+}
 
 /**
  * Provides a hello banner for the MCP server.
@@ -70,6 +77,8 @@ class McpServerConfiguration(
     private val applicationContext: ConfigurableApplicationContext,
 ) {
 
+    private val logger = LoggerFactory.getLogger(McpServerConfiguration::class.java)
+
     /**
      * Currently MCP Server is configured by AutoConfiguration, which requires
      * at least one ToolCallbackProvider bean to be present in the context in order
@@ -83,19 +92,25 @@ class McpServerConfiguration(
     }
 
     /**
-     * Configures and initializes MCP server tool callbacks when the agent scanning process completes.
+     * Configures and initializes MCP server tool callbacks, prompts and resources when the agent scanning process completes.
      *
      * This event-driven approach ensures that all tool callbacks are properly registered only after
      * the application context is fully initialized and all agent beans have been processed and deployed.
      * Without this synchronization, the MCP server might start without access to all available tools.
      */
     @EventListener(AgentScanningBeanPostProcessorEvent::class)
-    fun callbacks() {
+    fun exposeMcpFunctionality() {
+        val mcpSyncServer = applicationContext.getBean(McpSyncServer::class.java)
+        exposeMcpTools(mcpSyncServer)
+        exposeMcpPrompts(mcpSyncServer)
+    }
+
+    private fun exposeMcpTools(mcpSyncServer: McpSyncServer) {
         val mcpToolExportCallbackPublishers: List<McpToolExportCallbackPublisher> =
             applicationContext.getBeansOfType(McpToolExportCallbackPublisher::class.java).values.toList()
         val allToolCallbacks = mcpToolExportCallbackPublishers.flatMap { it.toolCallbacks }
         val separator = "~".repeat(BANNER_WIDTH)
-        loggerFor<McpServerConfiguration>().info(
+        logger.info(
             "\n${separator}\n{} MCP tool exporters: {}\nExposing a total of {} MCP server tools:\n\t{}\n${separator}",
             mcpToolExportCallbackPublishers.size,
             mcpToolExportCallbackPublishers.map { it.infoString(verbose = true) },
@@ -106,10 +121,22 @@ class McpServerConfiguration(
         )
 
         val agentTools = McpToolUtils.toSyncToolSpecification(allToolCallbacks)
-
-        val mcpSyncServer = applicationContext.getBean(McpSyncServer::class.java)
         for (agentTool in agentTools) {
             mcpSyncServer.addTool(agentTool);
+        }
+    }
+
+    private fun exposeMcpPrompts(mcpSyncServer: McpSyncServer) {
+        val mcpPromptPublishers =
+            applicationContext.getBeansOfType(McpPromptPublisher::class.java).values.toList()
+        val allPrompts = mcpPromptPublishers.flatMap { it.prompts() }
+        logger.info(
+            "Exposing a total of {} MCP server prompts:\n\t{}",
+            allPrompts.size,
+            allPrompts.joinToString("\n\t") { "${it.prompt.name}: ${it.prompt.description}" }
+        )
+        for (prompts in allPrompts) {
+            mcpSyncServer.addPrompt(prompts)
         }
     }
 
