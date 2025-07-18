@@ -45,6 +45,12 @@ interface McpPromptPublisher : HasInfoString {
 
 }
 
+interface McpResourcePublisher : HasInfoString {
+
+    fun resources(): List<McpServerFeatures.SyncResourceSpecification>
+
+}
+
 /**
  * Provides a hello banner for the MCP server.
  */
@@ -103,10 +109,25 @@ class McpSyncServerConfiguration(
         val mcpSyncServer = applicationContext.getBean(McpSyncServer::class.java)
         exposeMcpTools(mcpSyncServer)
         exposeMcpPrompts(mcpSyncServer)
+        exposeMcpResources(mcpSyncServer)
+    }
+
+    private fun exposeMcpResources(mcpSyncServer: McpSyncServer) {
+        val mcpResourcePublishers =
+            applicationContext.getBeansOfType(McpResourcePublisher::class.java).values.toList()
+        val allResources = mcpResourcePublishers.flatMap { it.resources() }
+        logger.info(
+            "Exposing a total of {} MCP server resources:\n\t{}",
+            allResources.size,
+            allResources.joinToString("\n\t") { "${it.resource.name}: ${it.resource.description}" }
+        )
+        for (resource in allResources) {
+            mcpSyncServer.addResource(resource)
+        }
     }
 
     private fun exposeMcpTools(mcpSyncServer: McpSyncServer) {
-        val mcpToolExportCallbackPublishers: List<McpToolExportCallbackPublisher> =
+        val mcpToolExportCallbackPublishers =
             applicationContext.getBeansOfType(McpToolExportCallbackPublisher::class.java).values.toList()
         val allToolCallbacks = mcpToolExportCallbackPublishers.flatMap { it.toolCallbacks }
         val separator = "~".repeat(BANNER_WIDTH)

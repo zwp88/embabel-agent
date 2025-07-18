@@ -74,7 +74,7 @@ class PerGoalToolCallbackProvider(
 
             override fun call(
                 toolInput: String,
-                tooContext: ToolContext?
+                tooContext: ToolContext?,
             ): String {
                 return call(toolInput)
             }
