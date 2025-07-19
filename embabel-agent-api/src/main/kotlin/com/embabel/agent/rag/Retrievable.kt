@@ -20,6 +20,17 @@ import com.embabel.common.core.types.HasInfoString
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.*
 
+typealias Embedding = FloatArray
+
+/**
+ * Embedded object instance.
+ */
+interface Embedded {
+
+    val embedding: Embedding?
+
+}
+
 /**
  * A Retrievable object instance is a chunk or an entity
  * It has a stable id.
@@ -29,6 +40,11 @@ sealed interface Retrievable : HasInfoString {
     val id: String
 
     val metadata: Map<String, Any?>
+
+    /**
+     * Embedding value of this retrievable object.
+     */
+    fun embeddableValue(): String
 
     /**
      * Neighbors of this retrievable object.
@@ -47,6 +63,8 @@ interface Chunk : Retrievable {
      * Text content
      */
     val text: String
+
+    override fun embeddableValue(): String = text
 
     companion object {
 
@@ -86,6 +104,8 @@ data class Fact(
     override val metadata: Map<String, Any?> = emptyMap(),
     override val id: String = UUID.randomUUID().toString(),
 ) : Retrievable {
+
+    override fun embeddableValue(): String = assertion
 
     override fun infoString(verbose: Boolean?): String =
         "Fact $id from $authority: $assertion"
