@@ -129,17 +129,9 @@ interface EntityData : Retrievable, Described {
 }
 
 /**
- * Entity mapped with JPA or another persistence tool. Will be a JVM object.
+ * Entity mapped with JPA, Neo OGM or another persistence tool. Will be a JVM object.
  * What it exposes beyond EntityData methods is a matter for the RagService in the application.
- * MappedEntity objects have their own distinct types and there can expose
+ * MappedEntity objects have their own distinct types and can expose
  * @Tool methods for LLMs.
  */
 interface MappedEntity : EntityData
-
-interface MutableMappedEntity : MappedEntity {
-
-    /**
-     * Save this entity to the persistence store.
-     */
-    fun save(): MappedEntity
-}
