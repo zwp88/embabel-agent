@@ -74,12 +74,14 @@ class PerGoalToolCallbackProvider(
 
             override fun call(
                 toolInput: String,
-                tooContext: ToolContext?,
             ): String {
-                return call(toolInput)
+                return call(toolInput, null)
             }
 
-            override fun call(toolInput: String): String {
+            override fun call(
+                toolInput: String,
+                toolContext: ToolContext?,
+            ): String {
                 val verbosity = Verbosity(
                     showPrompts = true,
                 )

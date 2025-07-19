@@ -26,6 +26,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import kotlin.test.assertFalse
 
 class PerGoalToolCallbackProviderTest {
 
@@ -38,15 +39,16 @@ class PerGoalToolCallbackProviderTest {
 
         val provider = PerGoalToolCallbackProvider(autonomy, jacksonObjectMapper())
 
-        // Act
         val toolCallbacks = provider.toolCallbacks
 
-        // Assert
         assertNotNull(toolCallbacks)
         assertEquals(autonomy.agentPlatform.goals.size, toolCallbacks.size, "Should have one tool callback per goal")
 
-        // Check that each tool callback corresponds to a goal
         for (toolCallback in toolCallbacks) {
+            assertFalse(
+                toolCallback.toolDefinition.inputSchema().contains("timestamp"),
+                "Tool callback should not have timestamp in input schema: ${toolCallback.toolDefinition.inputSchema()}"
+            )
             val toolDefinition = toolCallback.toolDefinition
             val goalName = toolDefinition.name()
             val goal = autonomy.agentPlatform.goals.find { it.name == goalName }
