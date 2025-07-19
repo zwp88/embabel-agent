@@ -24,7 +24,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 /**
  * Agent platform goal. Exposes GOAP metadata.
  * @param name name of the goal
- * @param description description of the goal. This should be sufficiently detailed to enable goal choice by an LLM
+ * @param description description of the goal. This should be sufficiently detailed to enable goal choice by an LLM.
+ * The goal description may also be exposed to MCP clients as a hint for the goal's purpose,
+ * so ensure that it is clear and unambiguous.
  * @param pre preconditions for the goal, as a set of strings. These are the conditions that must be true before the goal can be achieved.
  * @param inputs inputs required for the goal, as a set of IoBinding objects. These are the inputs that must be provided to achieve the goal.
  * @param value value of the goal, as a ZeroToOne. This is the value of achieving the goal.

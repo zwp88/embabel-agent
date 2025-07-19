@@ -20,6 +20,8 @@ import java.lang.annotation.*;
 /**
  * Annotation that can be added to an @Action method
  * to indicate that its execution achieves a goal
+ * See {@link com.embabel.agent.core.Goal} for more details.
+ * A Goal object will be created for each method annotated with this annotation.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -27,7 +29,9 @@ import java.lang.annotation.*;
 public @interface AchievesGoal {
 
     /**
-     * Description of the goal. The name will be auto-generated
+     * Description of the goal.
+     * Take care in writing this description as it will be used
+     * to choose a goal based on user input.
      */
     String description();
 
