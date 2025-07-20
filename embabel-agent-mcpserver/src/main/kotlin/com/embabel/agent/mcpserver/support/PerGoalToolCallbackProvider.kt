@@ -42,8 +42,6 @@ class PerGoalToolCallbackProvider(
     private val objectMapper: ObjectMapper,
 ) : McpToolExportCallbackPublisher {
 
-    private val logger = LoggerFactory.getLogger(PerGoalToolCallbackProvider::class.java)
-
     override val toolCallbacks: List<ToolCallback>
         get() {
             return autonomy.agentPlatform.goals.map { goal ->
@@ -51,69 +49,83 @@ class PerGoalToolCallbackProvider(
             }
         }
 
+    /**
+     * Create a tool callback for the given goal.
+     */
     fun toolForGoal(goal: Goal): ToolCallback {
-        class GoalToolCallback : ToolCallback {
-            override fun getToolDefinition(): ToolDefinition {
-                return object : ToolDefinition {
-                    override fun name(): String {
-                        val parts: List<String> = goal.name.split(".")
-                        return parts.takeLast(2).joinToString("_")
-                    }
-
-                    override fun description(): String {
-                        return goal.description
-                    }
-
-                    override fun inputSchema(): String {
-                        val js = JsonSchemaGenerator.generateForType(UserInput::class.java)
-                        loggerFor<PerGoalToolCallbackProvider>().debug("Generated schema for ${goal.name}: $js")
-                        return js
-                    }
-                }
-            }
-
-            override fun call(
-                toolInput: String,
-            ): String {
-                return call(toolInput, null)
-            }
-
-            override fun call(
-                toolInput: String,
-                toolContext: ToolContext?,
-            ): String {
-                val verbosity = Verbosity(
-                    showPrompts = true,
-                )
-                val userInput = objectMapper.readValue(toolInput, UserInput::class.java)
-                val processOptions = ProcessOptions(verbosity = verbosity)
-                val agent = autonomy.createGoalAgent(
-                    userInput = userInput,
-                    goal = goal,
-                    agentScope = autonomy.agentPlatform,
-                )
-                val dynamicExecutionResult = autonomy.runAgent(
-                    userInput = UserInput(toolInput),
-                    processOptions = processOptions,
-                    agent = agent,
-                )
-                logger.info("Goal response: {}", dynamicExecutionResult)
-
-                return when (val output = dynamicExecutionResult.output) {
-                    is String -> output
-                    is HasInfoString -> {
-                        output.infoString(verbose = true)
-                    }
-
-                    is HasContent -> output.content
-                    else -> output.toString()
-                }
-            }
-        }
-        return GoalToolCallback()
+        return GoalToolCallback(goal, autonomy, objectMapper)
     }
 
     override fun infoString(verbose: Boolean?): String {
         return "${javaClass.name} with ${toolCallbacks.size} tools"
+    }
+}
+
+/**
+ * Spring AI ToolCallback implementation for a specific goal.
+ */
+internal class GoalToolCallback(
+    private val goal: Goal,
+    private val autonomy: Autonomy,
+    private val objectMapper: ObjectMapper,
+) : ToolCallback {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    override fun getToolDefinition(): ToolDefinition {
+        return object : ToolDefinition {
+            override fun name(): String {
+                val parts: List<String> = goal.name.split(".")
+                return parts.takeLast(2).joinToString("_")
+            }
+
+            override fun description(): String {
+                return goal.description
+            }
+
+            override fun inputSchema(): String {
+                val js = JsonSchemaGenerator.generateForType(UserInput::class.java)
+                loggerFor<PerGoalToolCallbackProvider>().debug("Generated schema for ${goal.name}: $js")
+                return js
+            }
+        }
+    }
+
+    override fun call(
+        toolInput: String,
+    ): String {
+        return call(toolInput, null)
+    }
+
+    override fun call(
+        toolInput: String,
+        toolContext: ToolContext?,
+    ): String {
+        val verbosity = Verbosity(
+            showPrompts = true,
+        )
+        val userInput = objectMapper.readValue(toolInput, UserInput::class.java)
+        val processOptions = ProcessOptions(verbosity = verbosity)
+        val agent = autonomy.createGoalAgent(
+            userInput = userInput,
+            goal = goal,
+            agentScope = autonomy.agentPlatform,
+        )
+        val dynamicExecutionResult = autonomy.runAgent(
+            userInput = UserInput(toolInput),
+            processOptions = processOptions,
+            agent = agent,
+        )
+        logger.info("Goal response: {}", dynamicExecutionResult)
+
+        return when (val output = dynamicExecutionResult.output) {
+            is String -> output
+            is HasInfoString -> {
+                output.infoString(verbose = true)
+            }
+
+            is HasContent -> output.content
+            else -> output.toString()
+        }
     }
 }
