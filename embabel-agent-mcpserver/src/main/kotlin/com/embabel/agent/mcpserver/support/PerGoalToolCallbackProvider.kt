@@ -16,15 +16,18 @@
 package com.embabel.agent.mcpserver.support
 
 import com.embabel.agent.api.common.autonomy.Autonomy
+import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
+import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.mcpserver.McpToolExportCallbackPublisher
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.modelcontextprotocol.server.McpSyncServerExchange
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
 import org.springframework.ai.tool.ToolCallback
@@ -101,6 +104,7 @@ internal class GoalToolCallback(
         toolInput: String,
         toolContext: ToolContext?,
     ): String {
+        val exchange = toolContext?.context["exchange"] as? McpSyncServerExchange
         val verbosity = Verbosity(
             showPrompts = true,
         )
@@ -110,22 +114,41 @@ internal class GoalToolCallback(
             userInput = userInput,
             goal = goal,
             agentScope = autonomy.agentPlatform,
+            // TODO Bug workaround
+            prune = false,
         )
-        val dynamicExecutionResult = autonomy.runAgent(
-            userInput = UserInput(toolInput),
-            processOptions = processOptions,
-            agent = agent,
-        )
-        logger.info("Goal response: {}", dynamicExecutionResult)
+        try {
+            val dynamicExecutionResult = autonomy.runAgent(
+                userInput = UserInput(toolInput),
+                processOptions = processOptions,
+                agent = agent,
+            )
+            logger.info("Goal response: {}", dynamicExecutionResult)
 
-        return when (val output = dynamicExecutionResult.output) {
-            is String -> output
-            is HasInfoString -> {
-                output.infoString(verbose = true)
+            return when (val output = dynamicExecutionResult.output) {
+                is String -> output
+                is HasInfoString -> {
+                    output.infoString(verbose = true)
+                }
+
+                is HasContent -> output.content
+                else -> output.toString()
             }
-
-            is HasContent -> output.content
-            else -> output.toString()
+        } catch (pwe: ProcessWaitingException) {
+//            require(exchange != null) {
+//                "ProcessWaitingException requires an exchange to handle waiting for user input."
+//            }
+//            exchange.createMessage()
+            val formBindingRequest = pwe.awaitable as FormBindingRequest<*>
+            val response = """
+                You must invoke the 'continue' tool to proceed with the goal "${goal.name}".
+                The arguments will be
+                processId: ${pwe.agentProcess!!.id},
+                You must provide the following structure:
+                ${formBindingRequest.toString()}
+            """.trimIndent()
+            logger.info("Returning waiting response:\n$response")
+            return response
         }
     }
 }

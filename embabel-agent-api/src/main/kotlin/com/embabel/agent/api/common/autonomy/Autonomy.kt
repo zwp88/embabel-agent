@@ -58,6 +58,8 @@ class Autonomy(
     val properties: AutonomyProperties,
 ) {
 
+    private val logger = loggerFor<Autonomy>()
+
     private val eventListener = agentPlatform.platformServices.eventListener
 
     /**
@@ -158,7 +160,7 @@ class Autonomy(
             throw NoAgentFound(agentRankings = agentRankings, basis = userInput)
         }
 
-        loggerFor<AgentPlatform>().debug(
+        logger.debug(
             "Agent choice {} with confidence {} for user intent {}: Choices were {}",
             agentChoice.match.name,
             agentChoice.score,
@@ -264,7 +266,7 @@ class Autonomy(
             throw NoGoalFound(goalRankings = goalRankings, basis = userInput)
         }
 
-        loggerFor<AgentPlatform>().debug(
+        logger.debug(
             "Goal choice {} with confidence {} for user intent {}: Choices were {}",
             goalChoice.match.name,
             goalChoice.score,
@@ -309,25 +311,38 @@ class Autonomy(
         return GoalSeeker(agent = goalAgent, rankings = goalRankings)
     }
 
+    /**
+     * Create an agent to accomplish this goal from the given user input
+     * @param userInput
+     * @param agentScope scope to look for the agent
+     * @param goal the goal to accomplish
+     * @param prune whether to prune the agent to only relevant actions
+     */
     fun createGoalAgent(
         userInput: UserInput,
         agentScope: AgentScope,
-        goal: Goal
+        goal: Goal,
+        prune: Boolean = true,
     ): Agent {
-        return agentScope.createAgent(
+        val agent = agentScope.createAgent(
             name = "goal-${goal.name}",
             provider = Constants.EMBABEL_PROVIDER,
             description = goal.description,
         )
             .withSingleGoal(goal)
-            .prune(userInput)
+
+        return if (prune) {
+            agent.prune(userInput)
+        } else {
+            agent
+        }
     }
 
     /**
      * Agent with only relevant actions
      */
     private fun Agent.prune(userInput: UserInput): Agent {
-        loggerFor<Autonomy>().debug(
+        logger.debug(
             "Raw agent: {}",
             infoString(),
         )
@@ -335,17 +350,19 @@ class Autonomy(
         for (condition in this.planningSystem.knownConditions()) {
             map[condition] = ConditionDetermination.FALSE
         }
-        loggerFor<Autonomy>().info("Pruning agent instance from {}", map)
+        logger.info("Pruning agent instance from {}", map)
         map += ("it:${userInput::class.qualifiedName}" to ConditionDetermination.TRUE)
 
         val planner = AStarGoapPlanner(
-            WorldStateDeterminer.fromMap(
-                map
-            ),
+            WorldStateDeterminer.fromMap(map),
         )
+
         val pruned = planner.prune(planningSystem)
-        loggerFor<Autonomy>().info(
-            "Pruned planning system: {}",
+        val prunedActions = planningSystem.actions.subtract(pruned.actions)
+        logger.info(
+            "Pruned planning system removed {} actions - {}: \n\t{}",
+            prunedActions.size,
+            prunedActions.map { it.name },
             pruned.infoString(),
         )
         return pruneTo(pruned)
