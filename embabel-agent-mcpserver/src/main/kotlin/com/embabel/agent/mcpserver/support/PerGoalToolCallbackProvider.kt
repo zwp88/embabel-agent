@@ -41,6 +41,7 @@ import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.definition.ToolDefinition
 import org.springframework.ai.util.json.schema.JsonSchemaGenerator
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 const val FORM_SUBMIT_TOOL_NAME = "submitFormAndResumeProcess"
@@ -54,6 +55,10 @@ class PerGoalToolCallbackProvider(
     private val autonomy: Autonomy,
     private val objectMapper: ObjectMapper,
     private val llmOperations: LlmOperations,
+    @Value("\${spring.application.name}") applicationName: String,
+    private val goalToolNamingStrategy: GoalToolNamingStrategy = ApplicationNameGoalToolNamingStrategy(
+        applicationName
+    ),
 ) : McpToolExportCallbackPublisher {
 
     private val logger = LoggerFactory.getLogger(PerGoalToolCallbackProvider::class.java)
@@ -99,8 +104,8 @@ class PerGoalToolCallbackProvider(
         }
         // Resume the agent process with the form data
         agentProcess.run()
-        val dp = AgentProcessExecution.fromProcessStatus(formData, agentProcess)
-        return toResponseString(dp)
+        val ape = AgentProcessExecution.fromProcessStatus(formData, agentProcess)
+        return toResponseString(ape)
     }
 
     private fun toResponseString(agentProcessExecution: AgentProcessExecution): String {
@@ -136,10 +141,7 @@ class PerGoalToolCallbackProvider(
 
         override fun getToolDefinition(): ToolDefinition {
             return object : ToolDefinition {
-                override fun name(): String {
-                    val parts: List<String> = goal.name.split(".")
-                    return parts.takeLast(2).joinToString("_")
-                }
+                override fun name(): String = goalToolNamingStrategy.nameForGoal(goal)
 
                 override fun description(): String {
                     return goal.description

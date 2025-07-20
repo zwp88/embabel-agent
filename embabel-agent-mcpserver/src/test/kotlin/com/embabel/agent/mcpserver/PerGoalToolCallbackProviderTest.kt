@@ -38,7 +38,7 @@ class PerGoalToolCallbackProviderTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackProvider(autonomy, jacksonObjectMapper(), mockk())
+        val provider = PerGoalToolCallbackProvider(autonomy, jacksonObjectMapper(), mockk(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks
 
