@@ -23,6 +23,7 @@ import com.embabel.agent.test.dsl.userInputToFrogOrPersonBranch
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.agent.testing.integration.RandomRanker
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.mockk.mockk
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -37,7 +38,7 @@ class PerGoalToolCallbackProviderTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackProvider(autonomy, jacksonObjectMapper())
+        val provider = PerGoalToolCallbackProvider(autonomy, jacksonObjectMapper(), mockk())
 
         val toolCallbacks = provider.toolCallbacks
 

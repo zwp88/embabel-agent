@@ -38,6 +38,8 @@ class FormBindingRequest<O : Any>(
     persistent = persistent,
 ) {
 
+    private val logger = loggerFor<FormBindingRequest<O>>()
+
     override fun onResponse(
         response: FormResponse,
         agentProcess: AgentProcess,
@@ -48,8 +50,11 @@ class FormBindingRequest<O : Any>(
         }
         val formBinder = FormBinder(outputClass)
         val boundInstance = formBinder.bind(formSubmissionResult)
-        loggerFor<FormBindingRequest<*>>()
-            .info("Bound form submission to {}", boundInstance)
+        return bind(boundInstance, agentProcess)
+    }
+
+    fun bind(boundInstance: O, agentProcess: AgentProcess): ResponseImpact {
+        logger.info("Bound form submission to {}", boundInstance)
         agentProcess += boundInstance
         return ResponseImpact.UPDATED
     }
