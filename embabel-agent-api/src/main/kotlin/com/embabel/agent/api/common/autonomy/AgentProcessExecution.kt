@@ -51,6 +51,13 @@ class AgentProcessExecution private constructor(
 
     companion object {
 
+        @Throws(
+            ProcessExecutionException::class,
+            ProcessExecutionStuckException::class,
+            ProcessExecutionFailedException::class,
+            ProcessWaitingException::class,
+            ProcessExecutionTerminatedException::class,
+        )
         @Suppress("UNCHECKED_CAST")
         fun fromProcessStatus(
             basis: Any,

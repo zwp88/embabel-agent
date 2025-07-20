@@ -130,7 +130,7 @@ class McpSyncServerConfiguration(
         val mcpToolExportCallbackPublishers =
             applicationContext.getBeansOfType(McpToolExportCallbackPublisher::class.java).values.toList()
         val allToolCallbacks = mcpToolExportCallbackPublishers.flatMap { it.toolCallbacks }
-        val separator = "~".repeat(BANNER_WIDTH)
+        val separator = "~ MCP " + "~".repeat(BANNER_WIDTH - 6)
         logger.info(
             "\n${separator}\n{} MCP tool exporters: {}\nExposing a total of {} MCP server tools:\n\t{}\n${separator}",
             mcpToolExportCallbackPublishers.size,
