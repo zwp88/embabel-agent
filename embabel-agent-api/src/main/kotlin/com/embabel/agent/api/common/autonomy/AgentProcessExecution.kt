@@ -46,8 +46,13 @@ class AgentProcessExecution private constructor(
 ) : HasInfoString {
 
     override fun infoString(verbose: Boolean?): String {
-        return "DynamicExecutionResult(basis=$basis, output=$output, agentProcess=${agentProcess.infoString(verbose)})"
+        if (verbose == true) {
+            return "${javaClass.simpleName}(basis=$basis, output=$output, agentProcess=${agentProcess.infoString(verbose)})"
+        }
+        return "${javaClass.simpleName}(basis=$basis, output=${output::class.simpleName}, agentProcess=${agentProcess.id})"
     }
+
+    override fun toString(): String = infoString(verbose = false)
 
     companion object {
 
