@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.mcpserver
+package com.embabel.agent.tools.agent
 
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.AutonomyProperties
-import com.embabel.agent.mcpserver.support.PerGoalToolCallbackProvider
-import com.embabel.agent.test.dsl.evenMoreEvilWizard
-import com.embabel.agent.test.dsl.userInputToFrogOrPersonBranch
-import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
+import com.embabel.agent.api.dsl.evenMoreEvilWizard
+import com.embabel.agent.api.dsl.userInputToFrogOrPersonBranch
+import com.embabel.agent.testing.integration.IntegrationTestUtils
 import com.embabel.agent.testing.integration.RandomRanker
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.mockk
 import org.junit.Test
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import kotlin.test.assertFalse
+import org.junit.jupiter.api.Assertions.*
+
 
 class PerGoalToolCallbackProviderTest {
 
     @Test
     fun `test function per goal`() {
-        val agentPlatform = dummyAgentPlatform()
+        val agentPlatform = IntegrationTestUtils.dummyAgentPlatform()
         agentPlatform.deploy(evenMoreEvilWizard())
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())

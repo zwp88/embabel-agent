@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.mcpserver.support
+package com.embabel.agent.tools.agent
 
 import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.core.hitl.ResponseImpact
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
-import com.embabel.agent.mcpserver.McpToolExportCallbackPublisher
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.common.ai.model.LlmOptions
@@ -47,6 +47,8 @@ import org.springframework.stereotype.Service
 const val FORM_SUBMIT_TOOL_NAME = "submitFormAndResumeProcess"
 
 /**
+ * Generic tool callback provider that publishes a tool callback for each goal.
+ * Tools can be exposed to actions or via an MCP server etc.
  * Return a tool callback for each goal.
  * These will be exposed via the MCP server.
  */
@@ -59,7 +61,7 @@ class PerGoalToolCallbackProvider(
     private val goalToolNamingStrategy: GoalToolNamingStrategy = ApplicationNameGoalToolNamingStrategy(
         applicationName
     ),
-) : McpToolExportCallbackPublisher {
+) : ToolCallbackPublisher {
 
     private val logger = LoggerFactory.getLogger(PerGoalToolCallbackProvider::class.java)
 
@@ -126,11 +128,6 @@ class PerGoalToolCallbackProvider(
     fun toolForGoal(goal: Goal): ToolCallback {
         return GoalToolCallback(goal)
     }
-
-    override fun infoString(verbose: Boolean?): String {
-        return "${javaClass.name} with ${toolCallbacks.size} tools"
-    }
-
 
     /**
      * Spring AI ToolCallback implementation for a specific goal.

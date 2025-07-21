@@ -15,11 +15,8 @@
  */
 package com.embabel.agent.mcpserver
 
-import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.event.logging.LoggingPersonality.Companion.BANNER_WIDTH
 import com.embabel.agent.spi.support.AgentScanningBeanPostProcessorEvent
-import com.embabel.common.core.types.HasInfoString
-import io.modelcontextprotocol.server.McpServerFeatures
 import io.modelcontextprotocol.server.McpSyncServer
 import org.apache.catalina.util.ServerInfo
 import org.slf4j.LoggerFactory
@@ -33,28 +30,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
 
-/**
- * Tag interface extending Spring AI ToolCallbackProvider
- * that identifies tool callbacks that our MCP server exposes.
- */
-interface McpToolExportCallbackPublisher : ToolCallbackPublisher, HasInfoString
-
-interface McpPromptPublisher : HasInfoString {
-
-    fun prompts(): List<McpServerFeatures.SyncPromptSpecification>
-
-}
-
-interface McpResourcePublisher : HasInfoString {
-
-    fun resources(): List<McpServerFeatures.SyncResourceSpecification>
-
-}
 
 /**
  * Provides a hello banner for the MCP server.
  */
-class BannerTool {
+internal class BannerTool {
 
     @Tool(
         description = "Display a welcome banner with server information"
