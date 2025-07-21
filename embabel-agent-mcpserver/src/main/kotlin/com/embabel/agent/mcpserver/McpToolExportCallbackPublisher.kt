@@ -16,7 +16,7 @@
 package com.embabel.agent.mcpserver
 
 import com.embabel.agent.core.ToolCallbackPublisher
-import com.embabel.agent.tools.agent.PerGoalToolCallbackProvider
+import com.embabel.agent.tools.agent.PerGoalToolCallbackPublisher
 import com.embabel.common.core.types.HasInfoString
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.stereotype.Service
@@ -29,11 +29,11 @@ interface McpToolExportCallbackPublisher : ToolCallbackPublisher, HasInfoString
 
 /**
  * Implementation of [McpToolExportCallbackPublisher] that delegates to
- * a [PerGoalToolCallbackProvider].
+ * a [PerGoalToolCallbackPublisher].
  */
 @Service
 class PerGoalMcpToolExportCallbackPublisher(
-    private val delegate: PerGoalToolCallbackProvider,
+    private val delegate: PerGoalToolCallbackPublisher,
 ) : McpToolExportCallbackPublisher {
 
     override val toolCallbacks: List<ToolCallback> get() = delegate.toolCallbacks

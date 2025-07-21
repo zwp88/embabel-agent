@@ -27,7 +27,7 @@ import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
 
 
-class PerGoalToolCallbackProviderTest {
+class PerGoalToolCallbackPublisherTest {
 
     @Test
     fun `test function per goal`() {
@@ -36,7 +36,7 @@ class PerGoalToolCallbackProviderTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackProvider(autonomy, jacksonObjectMapper(), mockk(), "testApp")
+        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), mockk(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks
 

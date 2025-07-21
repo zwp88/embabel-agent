@@ -53,7 +53,7 @@ const val FORM_SUBMIT_TOOL_NAME = "submitFormAndResumeProcess"
  * These will be exposed via the MCP server.
  */
 @Service
-class PerGoalToolCallbackProvider(
+class PerGoalToolCallbackPublisher(
     private val autonomy: Autonomy,
     private val objectMapper: ObjectMapper,
     private val llmOperations: LlmOperations,
@@ -63,7 +63,7 @@ class PerGoalToolCallbackProvider(
     ),
 ) : ToolCallbackPublisher {
 
-    private val logger = LoggerFactory.getLogger(PerGoalToolCallbackProvider::class.java)
+    private val logger = LoggerFactory.getLogger(PerGoalToolCallbackPublisher::class.java)
 
     override val toolCallbacks: List<ToolCallback>
         get() {
@@ -146,7 +146,7 @@ class PerGoalToolCallbackProvider(
 
                 override fun inputSchema(): String {
                     val js = JsonSchemaGenerator.generateForType(UserInput::class.java)
-                    loggerFor<PerGoalToolCallbackProvider>().debug("Generated schema for ${goal.name}: $js")
+                    loggerFor<PerGoalToolCallbackPublisher>().debug("Generated schema for ${goal.name}: $js")
                     return js
                 }
             }
@@ -184,10 +184,6 @@ class PerGoalToolCallbackProvider(
                 logger.info("Goal response: {}", agentProcessExecution)
                 return toResponseString(agentProcessExecution)
             } catch (pwe: ProcessWaitingException) {
-//            require(exchange != null) {
-//                "ProcessWaitingException requires an exchange to handle waiting for user input."
-//            }
-//            exchange.createMessage()
                 val formBindingRequest = pwe.awaitable as FormBindingRequest<*>
                 val response = """
                 You must invoke the $FORM_SUBMIT_TOOL_NAME tool to proceed with the goal "${goal.name}".
