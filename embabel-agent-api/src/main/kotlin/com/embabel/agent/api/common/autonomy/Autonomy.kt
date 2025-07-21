@@ -300,7 +300,11 @@ class Autonomy(
             throw goalNotApproved
         }
 
-        val goalAgent = createGoalAgent(userInput = userInput, agentScope = agentScope, goal = goalChoice.match)
+        val goalAgent = createGoalAgent(
+            inputObject = userInput,
+            agentScope = agentScope,
+            goal = goalChoice.match,
+        )
         if (emitEvents) eventListener.onPlatformEvent(
             DynamicAgentCreationEvent(
                 agent = goalAgent,
@@ -313,13 +317,13 @@ class Autonomy(
 
     /**
      * Create an agent to accomplish this goal from the given user input
-     * @param userInput
+     * @param inputObject any input object
      * @param agentScope scope to look for the agent
      * @param goal the goal to accomplish
      * @param prune whether to prune the agent to only relevant actions
      */
     fun createGoalAgent(
-        userInput: UserInput,
+        inputObject: Any,
         agentScope: AgentScope,
         goal: Goal,
         prune: Boolean = true,
@@ -331,8 +335,9 @@ class Autonomy(
         )
             .withSingleGoal(goal)
 
-        return if (prune) {
-            agent.prune(userInput)
+        return if (prune && inputObject is UserInput) {
+            // TODO generalize this to any input type
+            agent.prune(inputObject)
         } else {
             agent
         }
