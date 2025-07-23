@@ -19,16 +19,9 @@ import com.embabel.common.core.types.Described
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
- * Retrieved Entity
+ * Any retrievable entity, whether mapped or generic.
  */
-interface EntityData : Retrievable, Described {
-
-    @get:Schema(
-        description = "description of this entity",
-        example = "A customer of Acme Industries named Melissa Bell",
-        required = true,
-    )
-    override val description: String
+interface RetrievableEntity : Retrievable {
 
     /**
      * Labels of the entity. In Neo, this might include multiple labels.
@@ -40,6 +33,26 @@ interface EntityData : Retrievable, Described {
         required = true,
     )
     val labels: Set<String>
+
+    /**
+     * EmbeddableValue defaults to infoString
+     */
+    override fun embeddableValue(): String {
+        return infoString(verbose = true)
+    }
+}
+
+/**
+ * Generic retrieved entity
+ */
+interface EntityData : RetrievableEntity, Described {
+
+    @get:Schema(
+        description = "description of this entity",
+        example = "A customer of Acme Industries named Melissa Bell",
+        required = true,
+    )
+    override val description: String
 
     @get:Schema(
         description = "Properties of this object. Arbitrary key-value pairs, although likely specified in schema. Must filter out embedding",
@@ -57,8 +70,8 @@ interface EntityData : Retrievable, Described {
 
 /**
  * Entity mapped with JPA, Neo OGM or another persistence tool. Will be a JVM object.
- * What it exposes beyond EntityData methods is a matter for the RagService in the application.
+ * What it exposes beyond RetrievableEntity methods is a matter for the RagService in the application.
  * MappedEntity objects have their own distinct types and can expose
  * @Tool methods for LLMs.
  */
-interface MappedEntity : EntityData
+interface MappedEntity : RetrievableEntity
