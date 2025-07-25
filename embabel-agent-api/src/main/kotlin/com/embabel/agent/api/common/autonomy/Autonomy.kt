@@ -82,7 +82,7 @@ class Autonomy(
         additionalBindings: Map<String, Any> = emptyMap(),
     ): AgentProcessExecution {
         val userInput = UserInput(intent)
-        val goalRun = createGoalSeeker(
+        val goalSeeker = createGoalSeeker(
             userInput = userInput,
             processOptions = processOptions,
             goalChoiceApprover = goalChoiceApprover,
@@ -91,7 +91,7 @@ class Autonomy(
         )
         val agentProcess = agentPlatform.createAgentProcess(
             processOptions = processOptions,
-            agent = goalRun.agent,
+            agent = goalSeeker.agent,
             bindings = mapOf(
                 IoBinding.DEFAULT_BINDING to userInput
             ) + additionalBindings
@@ -304,6 +304,7 @@ class Autonomy(
             inputObject = userInput,
             agentScope = agentScope,
             goal = goalChoice.match,
+            prune = processOptions.prune,
         )
         if (emitEvents) eventListener.onPlatformEvent(
             DynamicAgentCreationEvent(
@@ -326,7 +327,7 @@ class Autonomy(
         inputObject: Any,
         agentScope: AgentScope,
         goal: Goal,
-        prune: Boolean = true,
+        prune: Boolean,
     ): Agent {
         val agent = agentScope.createAgent(
             name = "goal-${goal.name}",
