@@ -66,12 +66,30 @@ class PerGoalToolCallbackPublisher(
 
     private val logger = LoggerFactory.getLogger(PerGoalToolCallbackPublisher::class.java)
 
+    private val platformTools = ToolCallbacks.from(this)
+
     override val toolCallbacks: List<ToolCallback>
-        get() {
-            return autonomy.agentPlatform.goals.flatMap { goal ->
+        get() = toolCallbacks(remoteOnly = false)
+
+    /**
+     * If remote is true, include only remote tools.
+     */
+    fun toolCallbacks(remoteOnly: Boolean): List<ToolCallback> {
+        val goalTools = autonomy.agentPlatform.goals
+            .filter { it.export.local }
+            .filter { !remoteOnly || it.export.remote }
+            .flatMap { goal ->
                 toolsForGoal(goal)
-            } + ToolCallbacks.from(this)
+            }
+        if (goalTools.isEmpty()) {
+            logger.info("No goals found in agent platform, no tool callbacks will be published")
+            return emptyList()
         }
+        logger.info("{} goal tools found in agent platform: {}", goalTools.size, goalTools)
+        val allTools = goalTools + platformTools
+        assert(allTools.size == goalTools.size + platformTools.size)
+        return allTools
+    }
 
     @Tool(
         name = FORM_SUBMISSION_TOOL_NAME,
@@ -127,16 +145,17 @@ class PerGoalToolCallbackPublisher(
      * Create a tool callback for the given goal.
      */
     fun toolsForGoal(goal: Goal): List<ToolCallback> {
+        val goalName = goal.export.name ?: goalToolNamingStrategy.nameForGoal(goal)
         return listOf(
             GoalToolCallback(
-                name = "text_" + goalToolNamingStrategy.nameForGoal(goal),
+                name = "text_$goalName",
                 description = goal.description,
                 goal = goal,
                 inputType = UserInput::class.java,
             )
         ) + goal.startingInputTypes.map { inputType ->
             GoalToolCallback(
-                name = inputType.simpleName + "_" + goalToolNamingStrategy.nameForGoal(goal),
+                name = "${inputType.simpleName}_$goalName",
                 description = goal.description,
                 goal = goal,
                 inputType = inputType,

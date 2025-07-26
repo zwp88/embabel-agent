@@ -48,6 +48,7 @@ data class Goal(
     val tags: Set<String> = emptySet(),
     val examples: Set<String> = emptySet(),
     val startingInputTypes: Set<Class<*>> = emptySet(),
+    val export: Export = Export(),
 ) : GoapGoal, AgentSystemStep {
 
     // These methods are for Java, to obviate the builder antipattern
@@ -132,3 +133,9 @@ data class Goal(
     }
 
 }
+
+data class Export(
+    val name: String? = null,
+    val remote: Boolean = false,
+    val local: Boolean = true,
+)
