@@ -46,7 +46,7 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
         get() = actions.flatMap { it.domainTypes }.distinct()
 
     override fun infoString(verbose: Boolean?): String =
-        "%s\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdata types: %s".format(
+        "%s\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdomain types: %s\n\tschema types: %s".format(
             name,
             goals.sortedBy { it.name }
                 .joinToString("\n\t\t") { it.infoString(verbose = verbose) },
@@ -54,6 +54,8 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
                 .joinToString("\n\t\t") { it.infoString(verbose = verbose) },
             conditions.map { it.name }.sorted(),
             domainTypes.map { it.simpleName }.distinct().sorted(),
+            schemaTypes.map { it }
+                .sortedBy { it.name },
         )
 
     /**
