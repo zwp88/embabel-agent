@@ -34,4 +34,11 @@ public @interface Export {
      */
     boolean exposeTextInput() default true;
 
+    /**
+     * Any starting input types for the goal we might want to prompt for
+     */
+    // This annotation is implemented in Java because the following is impossible in Kotlin:
+    Class<?>[] startingInputTypes() default {};
+
+
 }

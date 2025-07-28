@@ -157,7 +157,7 @@ class PerGoalToolCallbackPublisher(
                     )
                 )
             }
-            goal.startingInputTypes.map { inputType ->
+            goal.export.startingInputTypes.map { inputType ->
                 GoalToolCallback(
                     name = "${inputType.simpleName}_$goalName",
                     description = goal.description,
