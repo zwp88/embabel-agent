@@ -24,7 +24,6 @@ import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.core.hitl.ResponseImpact
-import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
@@ -146,25 +145,13 @@ class PerGoalToolCallbackPublisher(
      */
     fun toolsForGoal(goal: Goal): List<ToolCallback> {
         val goalName = goal.export.name ?: goalToolNamingStrategy.nameForGoal(goal)
-        return buildList {
-            if (goal.export.exposeTextInput) {
-                add(
-                    GoalToolCallback(
-                        name = "text_$goalName",
-                        description = goal.description,
-                        goal = goal,
-                        inputType = UserInput::class.java,
-                    )
-                )
-            }
-            goal.export.startingInputTypes.map { inputType ->
-                GoalToolCallback(
-                    name = "${inputType.simpleName}_$goalName",
-                    description = goal.description,
-                    goal = goal,
-                    inputType = inputType,
-                )
-            }.forEach { add(it) }
+        return goal.export.startingInputTypes.map { inputType ->
+            GoalToolCallback(
+                name = "${inputType.simpleName}_$goalName",
+                description = goal.description,
+                goal = goal,
+                inputType = inputType,
+            )
         }
     }
 

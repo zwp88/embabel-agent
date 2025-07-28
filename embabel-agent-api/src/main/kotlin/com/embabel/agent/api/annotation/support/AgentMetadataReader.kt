@@ -382,7 +382,6 @@ class AgentMetadataReader(
                 local = goalAnnotation.export.local,
                 remote = goalAnnotation.export.remote,
                 name = goalAnnotation.export.name.ifBlank { null },
-                exposeTextInput = goalAnnotation.export.exposeTextInput,
                 startingInputTypes = goalAnnotation.export.startingInputTypes.map { it.java }.toSet(),
             )
         )
