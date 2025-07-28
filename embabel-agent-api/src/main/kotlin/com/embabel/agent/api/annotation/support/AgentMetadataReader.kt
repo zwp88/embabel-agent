@@ -383,6 +383,7 @@ class AgentMetadataReader(
                 local = goalAnnotation.export.local,
                 remote = goalAnnotation.export.remote,
                 name = goalAnnotation.export.name.ifBlank { null },
+                exposeTextInput = goalAnnotation.export.exposeTextInput,
             )
         )
     }

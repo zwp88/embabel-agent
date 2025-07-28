@@ -146,20 +146,25 @@ class PerGoalToolCallbackPublisher(
      */
     fun toolsForGoal(goal: Goal): List<ToolCallback> {
         val goalName = goal.export.name ?: goalToolNamingStrategy.nameForGoal(goal)
-        return listOf(
-            GoalToolCallback(
-                name = "text_$goalName",
-                description = goal.description,
-                goal = goal,
-                inputType = UserInput::class.java,
-            )
-        ) + goal.startingInputTypes.map { inputType ->
-            GoalToolCallback(
-                name = "${inputType.simpleName}_$goalName",
-                description = goal.description,
-                goal = goal,
-                inputType = inputType,
-            )
+        return buildList {
+            if (goal.export.exposeTextInput) {
+                add(
+                    GoalToolCallback(
+                        name = "text_$goalName",
+                        description = goal.description,
+                        goal = goal,
+                        inputType = UserInput::class.java,
+                    )
+                )
+            }
+            goal.startingInputTypes.map { inputType ->
+                GoalToolCallback(
+                    name = "${inputType.simpleName}_$goalName",
+                    description = goal.description,
+                    goal = goal,
+                    inputType = inputType,
+                )
+            }.forEach { add(it) }
         }
     }
 
@@ -191,10 +196,20 @@ class PerGoalToolCallbackPublisher(
             toolInput: String,
             toolContext: ToolContext?,
         ): String {
+            logger.info("Calling tool {} with input {}", this.name, toolInput)
             val verbosity = Verbosity(
                 showPrompts = true,
             )
-            val inputObject = objectMapper.readValue(toolInput, inputType)
+            val inputObject = try {
+                val o = objectMapper.readValue(toolInput, inputType)
+                logger.info("Successfully parsed tool input to an instance of {}:\n{}", o::class.java.name, o)
+                o
+            } catch (e: Exception) {
+                val errorReturn =
+                    "BAD INPUT ERROR parsing tool input: ${e.message}: Try again and see if you can get the format right"
+                logger.warn("Error $errorReturn parsing tool input: $toolInput", e)
+                return errorReturn
+            }
             val processOptions = ProcessOptions(verbosity = verbosity)
             val agent = autonomy.createGoalAgent(
                 inputObject = inputObject,
@@ -205,7 +220,7 @@ class PerGoalToolCallbackPublisher(
             )
             try {
                 val agentProcessExecution = autonomy.runAgent(
-                    userInput = UserInput(toolInput),
+                    inputObject = inputObject,
                     processOptions = processOptions,
                     agent = agent,
                 )

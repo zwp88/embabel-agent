@@ -29,4 +29,9 @@ public @interface Export {
 
     boolean local() default true;
 
+    /**
+     * If this is true, the goal will be exposed as a text input
+     */
+    boolean exposeTextInput() default true;
+
 }
