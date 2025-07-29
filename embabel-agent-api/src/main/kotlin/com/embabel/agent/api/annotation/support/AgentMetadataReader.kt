@@ -22,6 +22,7 @@ import com.embabel.agent.api.common.StuckHandler
 import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.core.AgentScope
 import com.embabel.agent.core.ComputedBooleanCondition
+import com.embabel.agent.core.Export
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.core.support.safelyGetToolCallbacksFrom
@@ -377,7 +378,12 @@ class AgentMetadataReader(
             value = goalAnnotation.value,
             // Add precondition of the action having run
             pre = setOf(Rerun.hasRunCondition(action)) + action.preconditions.keys.toSet(),
-            startingInputTypes = goalAnnotation.startingInputTypes.map { it.java }.toSet(),
+            export = Export(
+                local = goalAnnotation.export.local,
+                remote = goalAnnotation.export.remote,
+                name = goalAnnotation.export.name.ifBlank { null },
+                startingInputTypes = goalAnnotation.export.startingInputTypes.map { it.java }.toSet(),
+            )
         )
     }
 }

@@ -21,6 +21,7 @@ import com.embabel.agent.rag.RagResponse
 import com.embabel.agent.rag.WritableRagService
 import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.util.trim
 import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
@@ -76,4 +77,14 @@ class DocumentSimilarityResult(
     override val match: Chunk = Chunk(
         document.id, document.text!!
     )
+
+    override fun toString(): String {
+        return "${javaClass.simpleName}(id=${document.id}, score=$score, text=${
+            trim(
+                s = document.text,
+                max = 120,
+                keepRight = 5
+            )
+        })"
+    }
 }

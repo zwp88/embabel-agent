@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common.autonomy
 
+import com.embabel.agent.api.common.support.destructureAndBindIfNecessary
 import com.embabel.agent.common.Constants
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
@@ -82,7 +83,7 @@ class Autonomy(
         additionalBindings: Map<String, Any> = emptyMap(),
     ): AgentProcessExecution {
         val userInput = UserInput(intent)
-        val goalRun = createGoalSeeker(
+        val goalSeeker = createGoalSeeker(
             userInput = userInput,
             processOptions = processOptions,
             goalChoiceApprover = goalChoiceApprover,
@@ -91,7 +92,7 @@ class Autonomy(
         )
         val agentProcess = agentPlatform.createAgentProcess(
             processOptions = processOptions,
-            agent = goalRun.agent,
+            agent = goalSeeker.agent,
             bindings = mapOf(
                 IoBinding.DEFAULT_BINDING to userInput
             ) + additionalBindings
@@ -186,19 +187,22 @@ class Autonomy(
     }
 
     fun runAgent(
-        userInput: UserInput,
+        inputObject: Any,
         processOptions: ProcessOptions,
         agent: Agent
     ): AgentProcessExecution {
-        val agentProcess = agentPlatform.runAgentFrom(
+        val agentProcess = agentPlatform.createAgentProcess(
             processOptions = processOptions,
             agent = agent,
             bindings = mapOf(
-                IoBinding.DEFAULT_BINDING to userInput
+                IoBinding.DEFAULT_BINDING to inputObject
             )
         )
+        // We treat the inputObject specially, and destructure it if it's a SomeOf composite
+        destructureAndBindIfNecessary(inputObject, "input", agentProcess, logger)
+        agentProcess.run()
         return AgentProcessExecution.fromProcessStatus(
-            basis = userInput,
+            basis = inputObject,
             agentProcess = agentProcess,
         )
     }
@@ -304,6 +308,7 @@ class Autonomy(
             inputObject = userInput,
             agentScope = agentScope,
             goal = goalChoice.match,
+            prune = processOptions.prune,
         )
         if (emitEvents) eventListener.onPlatformEvent(
             DynamicAgentCreationEvent(
@@ -326,7 +331,7 @@ class Autonomy(
         inputObject: Any,
         agentScope: AgentScope,
         goal: Goal,
-        prune: Boolean = true,
+        prune: Boolean,
     ): Agent {
         val agent = agentScope.createAgent(
             name = "goal-${goal.name}",
