@@ -44,10 +44,13 @@ interface Awaitable<P : Any, R : AwaitableResponse> : StableIdentified, Timestam
 
 }
 
+/**
+ * Response to an [Awaitable]
+ */
 interface AwaitableResponse : StableIdentified, Timestamped {
 
     /**
-     * Id of the Awaitable that this relates to
+     * ID of the Awaitable that this relates to
      */
     val awaitableId: String
 

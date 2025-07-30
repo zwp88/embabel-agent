@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.util.*
 
 /**
- * Form that can be represented in a data-independent way
+ * UX-independent form definition. Controls, not data.
  */
 data class Form(
     val title: String,
