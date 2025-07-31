@@ -21,6 +21,7 @@ import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
 import com.embabel.common.core.types.Semver
 import com.embabel.common.util.ComputerSaysNoSerializer
+import com.embabel.common.util.indentLines
 import com.embabel.plan.goap.GoapPlanningSystem
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import org.slf4j.LoggerFactory
@@ -100,11 +101,17 @@ data class Agent(
             return GoapPlanningSystem(actions, goals)
         }
 
-    override fun infoString(verbose: Boolean?): String {
-        return "description: ${description}\n\tprovider: $provider\n\tversion: $version\n\tname: " + super.infoString(
-            verbose
-        )
-    }
+    override fun infoString(
+        verbose: Boolean?,
+        indent: Int,
+    ): String =
+        """|description: $description
+           |provider: $provider
+           |version: $version
+           |${super.infoString(verbose, indent)}
+           |"""
+            .trimMargin()
+            .indentLines(indent)
 
     companion object {
 
@@ -117,7 +124,7 @@ data class Agent(
         fun mergeSchemaTypes(
             agentName: String,
             defaultDataTypes: List<SchemaType>,
-            actions: List<Action>
+            actions: List<Action>,
         ): List<SchemaType> {
             // Merge properties from multiple type references
             for (action in actions) {
@@ -173,7 +180,7 @@ data class AgentMetadata(
     override val description: String,
     val goals: Set<Goal>,
     val actions: List<ActionMetadata>,
-    val conditions: Set<String>
+    val conditions: Set<String>,
 ) : Named, Described, AssetCoordinates {
 
     /**

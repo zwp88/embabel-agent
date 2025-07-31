@@ -16,6 +16,8 @@
 package com.embabel.agent.core
 
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.util.indent
+import com.embabel.common.util.indentLines
 import com.embabel.plan.goap.ConditionDetermination
 import com.embabel.plan.goap.EffectSpec
 import com.embabel.plan.goap.GoapGoal
@@ -66,10 +68,23 @@ data class Goal(
             conditions
         }
 
-    override fun infoString(verbose: Boolean?): String {
-        val separator = if (verbose == true) "\n\t\t" else " - "
-        return "$description: $name${separator}pre=${preconditions} value=${value}"
-    }
+    override fun infoString(
+        verbose: Boolean?,
+        indent: Int,
+    ): String =
+        if (verbose == true)
+            """|"$description" $name
+               |preconditions:
+               |${
+                preconditions.map { it.key to "${it.key}: ${it.value}" }.sortedBy { it.first }
+                    .joinToString("\n") { it.second.indent(1) }
+            }
+               |value: $value
+               |"""
+                .trimMargin()
+                .indentLines(indent)
+        else
+            "$description: $name - pre=${preconditions} value=${value}"
 
     companion object {
 
