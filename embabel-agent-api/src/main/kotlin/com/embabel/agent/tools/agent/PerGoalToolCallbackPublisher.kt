@@ -28,7 +28,6 @@ import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.core.hitl.ResponseImpact
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.spi.LlmInteraction
-import com.embabel.agent.spi.LlmOperations
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
 import com.embabel.common.core.types.HasInfoString
@@ -75,7 +74,6 @@ interface AwaitableCommunicator {
 class PerGoalToolCallbackPublisher(
     private val autonomy: Autonomy,
     private val objectMapper: ObjectMapper,
-    private val llmOperations: LlmOperations,
     applicationName: String,
     private val awaitableCommunicator: AwaitableCommunicator = PromptedAwaitableCommunicator,
     private val goalToolNamingStrategy: GoalToolNamingStrategy = ApplicationNameGoalToolNamingStrategy(
@@ -132,7 +130,7 @@ class PerGoalToolCallbackPublisher(
             # Content
             $formData
         """.trimIndent()
-        val formDataObject = llmOperations.doTransform(
+        val formDataObject = autonomy.agentPlatform.platformServices.llmOperations.doTransform(
             prompt = prompt,
             LlmInteraction.using(LlmOptions(criteria = ModelSelectionCriteria.Auto)),
             outputClass = formBindingRequest.outputClass,

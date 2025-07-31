@@ -24,7 +24,6 @@ import com.embabel.agent.api.dsl.userInputToFrogOrPersonBranch
 import com.embabel.agent.testing.integration.IntegrationTestUtils
 import com.embabel.agent.testing.integration.RandomRanker
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.mockk
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -38,7 +37,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), mockk(), "testApp")
+        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks
         assertEquals(
@@ -54,7 +53,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), mockk(), "testApp")
+        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = true)
         assertEquals(
@@ -71,7 +70,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), mockk(), "testApp")
+        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = true)
         assertEquals(
@@ -88,7 +87,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), mockk(), "testApp")
+        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks
 
@@ -124,7 +123,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(evenMoreEvilWizardWithStructuredInput())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), mockk(), "testApp")
+        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
         val toolCallbacks = provider.toolCallbacks
 
         assertNotNull(toolCallbacks)
