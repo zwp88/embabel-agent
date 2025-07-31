@@ -26,7 +26,7 @@ import org.neo4j.ogm.annotation.Id
 abstract class OgmMappedEntity(
     @Id
     override val id: String,
-): MappedEntity {
+) : MappedEntity {
 
     // TODO what about inheritance?
     override val labels: Set<String>
@@ -35,15 +35,15 @@ abstract class OgmMappedEntity(
     override val metadata: Map<String, Any?>
         get() = emptyMap()
 
-    override fun toString() = infoString(verbose=false)
+    override fun toString() = infoString(verbose = false)
 }
 
 abstract class OgmMappedNamedEntity(
     override val name: String,
     id: String,
-    ): OgmMappedEntity(id), Named, Described {
+) : OgmMappedEntity(id), Named, Described {
 
-    override fun infoString(verbose: Boolean?): String {
+    override fun infoString(verbose: Boolean?, indent: Int): String {
         return "${javaClass.simpleName}: name=$name, description=$description, id=$id"
     }
 

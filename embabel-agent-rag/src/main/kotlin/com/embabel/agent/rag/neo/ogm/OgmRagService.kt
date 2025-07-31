@@ -129,7 +129,7 @@ class OgmRagService(
         }
     }
 
-    override fun infoString(verbose: Boolean?): String {
+    override fun infoString(verbose: Boolean?, indent: Int): String {
         return "OgmRagService: name=$name, description=$description, embeddingService=${
             embeddingService.infoString(
                 verbose

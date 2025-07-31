@@ -37,7 +37,7 @@ data class EntityDefinition(
 
     val type get() = labels.firstOrNull() ?: ENTITY_LABEL
 
-    override fun infoString(verbose: Boolean?): String {
+    override fun infoString(verbose: Boolean?, indent: Int): String {
         return """
             EntityDefinition(type='$type', description='$description', labels=$labels, properties=${properties.size})
         """.trimIndent()
@@ -60,7 +60,7 @@ data class RelationshipDefinition(
     val cardinality: Cardinality = Cardinality.ONE,
 ) : HasInfoString {
 
-    override fun infoString(verbose: Boolean?): String {
+    override fun infoString(verbose: Boolean?, indent: Int): String {
         return """
             RelationshipDefinition(sourceEntity='$sourceLabel', targetEntity='$targetLabel', type='$type', cardinality=$cardinality, description='$description')
         """.trimIndent()
@@ -85,7 +85,7 @@ data class KnowledgeGraphSchema(
         }
     }
 
-    override fun infoString(verbose: Boolean?): String {
+    override fun infoString(verbose: Boolean?, indent: Int): String {
         return """
             |Schema with ${entities.size} entities and ${relationships.size} relationships:
             |Entities:
