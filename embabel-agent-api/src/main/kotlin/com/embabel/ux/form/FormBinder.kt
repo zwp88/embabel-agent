@@ -107,6 +107,7 @@ class FormBinder<T : Any>(private val targetClass: KClass<T>) {
 
         return try {
             val constructor = javaClass.declaredConstructors.first()
+            constructor.trySetAccessible()
             constructor.newInstance(*parameterValues.toTypedArray()) as T
         } catch (e: Exception) {
             throw FormBindingException("Failed to construct Java record ${javaClass.simpleName}: ${e.message}")
