@@ -26,6 +26,7 @@ import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.integration.FakeRanker
 import com.embabel.agent.testing.integration.RandomRanker
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.util.indent
 import com.embabel.common.util.loggerFor
 import com.embabel.plan.goap.AStarGoapPlanner
 import com.embabel.plan.goap.ConditionDetermination
@@ -189,7 +190,7 @@ class Autonomy(
     fun runAgent(
         inputObject: Any,
         processOptions: ProcessOptions,
-        agent: Agent
+        agent: Agent,
     ): AgentProcessExecution {
         val agentProcess = agentPlatform.createAgentProcess(
             processOptions = processOptions,
@@ -360,7 +361,12 @@ class Autonomy(
         for (condition in this.planningSystem.knownConditions()) {
             map[condition] = ConditionDetermination.FALSE
         }
-        logger.info("Pruning agent instance from {}", map)
+        logger.info(
+            "Pruning agent instance from:\n{}",
+            map.map { it.key to "${it.key}: ${it.value}".indent(1) }
+                .sortedBy { it.first }
+                .joinToString("\n") { it.second }
+        )
         map += ("it:${userInput::class.qualifiedName}" to ConditionDetermination.TRUE)
 
         val planner = AStarGoapPlanner(
@@ -370,10 +376,10 @@ class Autonomy(
         val pruned = planner.prune(planningSystem)
         val prunedActions = planningSystem.actions.subtract(pruned.actions)
         logger.info(
-            "Pruned planning system removed {} actions - {}: \n\t{}",
+            "Pruned planning system removed {} actions:\n{} \nPruned:\n{}",
             prunedActions.size,
-            prunedActions.map { it.name },
-            pruned.infoString(),
+            prunedActions.toList().sortedBy { it.name }.joinToString("\n") { it.name.indent(1) },
+            pruned.infoString(true, 1),
         )
         return pruneTo(pruned)
     }

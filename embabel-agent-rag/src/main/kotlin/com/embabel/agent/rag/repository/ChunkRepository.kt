@@ -13,28 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.ux.form;
+package com.embabel.agent.rag.repository
 
-public class JavaPersonBean {
-
-    String name;
-
-    int age;
+import com.embabel.agent.rag.Chunk
 
 
-    public String getName() {
-        return name;
-    }
+interface ChunkRepository {
 
-    public int getAge() {
-        return age;
-    }
+    fun findChunksById(chunkIds: List<String>): List<Chunk>
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
+    fun findAll(): List<Chunk>
 }

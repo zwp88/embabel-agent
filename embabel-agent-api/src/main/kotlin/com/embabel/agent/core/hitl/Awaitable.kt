@@ -19,6 +19,7 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timestamped
+import com.embabel.common.util.indent
 import java.time.Instant
 import java.util.*
 
@@ -38,16 +39,22 @@ interface Awaitable<P : Any, R : AwaitableResponse> : StableIdentified, Timestam
         agentProcess: AgentProcess,
     ): ResponseImpact
 
-    override fun infoString(verbose: Boolean?): String {
-        return "${javaClass.name}(id=$id, payload=$payload, form='$payload')"
+    override fun infoString(
+        verbose: Boolean?,
+        indent: Int,
+    ): String {
+        return "${javaClass.name}(id=$id, payload=$payload, form='$payload')".indent(indent)
     }
 
 }
 
+/**
+ * Response to an [Awaitable]
+ */
 interface AwaitableResponse : StableIdentified, Timestamped {
 
     /**
-     * Id of the Awaitable that this relates to
+     * ID of the Awaitable that this relates to
      */
     val awaitableId: String
 

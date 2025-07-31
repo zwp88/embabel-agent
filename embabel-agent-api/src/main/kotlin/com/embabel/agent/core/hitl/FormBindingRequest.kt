@@ -24,6 +24,8 @@ import com.embabel.ux.form.FormSubmission
 import java.time.Instant
 import java.util.*
 
+interface ValidationError
+
 /**
  * Present the user with a form
  * and bind it to the given class
@@ -32,6 +34,8 @@ import java.util.*
 class FormBindingRequest<O : Any>(
     form: Form,
     val outputClass: Class<O>,
+    val population: O? = null,
+    val validationErrors: List<ValidationError> = emptyList(),
     persistent: Boolean = false,
 ) : AbstractAwaitable<Form, FormResponse>(
     payload = form,

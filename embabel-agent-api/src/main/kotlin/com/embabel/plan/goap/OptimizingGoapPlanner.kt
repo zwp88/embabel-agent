@@ -65,9 +65,11 @@ abstract class OptimizingGoapPlanner(
     override fun prune(planningSystem: GoapPlanningSystem): GoapPlanningSystem {
         val allPlans = plansToGoals(planningSystem)
         loggerFor<OptimizingGoapPlanner>().info(
-            "{} plans to consider in pruning:\n\t{}",
-            allPlans.size,
-            allPlans.joinToString("\n\t") { it.infoString(false) }
+            "${allPlans.size} plan(s) to consider in pruning{}",
+            if (allPlans.isEmpty())
+                ""
+            else
+                ":" + allPlans.joinToString("\n") { it.infoString(true, 1) }
         )
         return planningSystem.copy(
             actions = planningSystem.actions.filter { action ->
