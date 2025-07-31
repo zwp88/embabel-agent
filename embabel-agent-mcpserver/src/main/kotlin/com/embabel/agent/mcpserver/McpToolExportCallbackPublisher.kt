@@ -15,11 +15,15 @@
  */
 package com.embabel.agent.mcpserver
 
+import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.tools.agent.PerGoalToolCallbackPublisher
+import com.embabel.agent.tools.agent.PromptedAwaitableCommunicator
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.indent
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.ai.tool.ToolCallback
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 /**
@@ -35,8 +39,18 @@ interface McpToolExportCallbackPublisher : ToolCallbackPublisher, HasInfoString
  */
 @Service
 class PerGoalMcpToolExportCallbackPublisher(
-    private val delegate: PerGoalToolCallbackPublisher,
+    autonomy: Autonomy,
+    objectMapper: ObjectMapper,
+    @Value("\${spring.application.name:agent-api}") applicationName: String,
 ) : McpToolExportCallbackPublisher {
+
+    private val delegate = PerGoalToolCallbackPublisher(
+        autonomy = autonomy,
+        objectMapper = objectMapper,
+        llmOperations = autonomy.agentPlatform.platformServices.llmOperations,
+        applicationName = applicationName,
+        awaitableCommunicator = PromptedAwaitableCommunicator,
+    )
 
     override val toolCallbacks: List<ToolCallback> get() = delegate.toolCallbacks(remoteOnly = true)
 

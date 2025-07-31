@@ -40,8 +40,6 @@ import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.definition.ToolDefinition
 import org.springframework.ai.util.json.schema.JsonSchemaGenerator
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
 
 const val CONFIRMATION_TOOL_NAME = "_confirm"
 
@@ -53,49 +51,20 @@ const val FORM_SUBMISSION_TOOL_NAME = "submitFormAndResumeProcess"
  */
 interface AwaitableCommunicator {
 
-    fun toResponseString(goal: Goal, pwe: ProcessWaitingException): String
+    /**
+     * Produce a response string for the given goal and ProcessWaitingException.
+     */
+    fun toResponseString(
+        goal: Goal,
+        pwe: ProcessWaitingException,
+    ): String
 
-}
-
-object SimpleAwaitableCommunicator : AwaitableCommunicator {
-
-    override fun toResponseString(goal: Goal, pwe: ProcessWaitingException): String {
-        return when (pwe.awaitable) {
-            is FormBindingRequest<*> -> """
-                You must invoke the $FORM_SUBMISSION_TOOL_NAME tool to proceed with the goal "${goal.name}".
-                The arguments will be
-                - processId: ${pwe.agentProcess.id},
-                - formData: English text describing the form data to submit. See below
-
-                Before invoking this, you must obtain information from the user
-                as described in this form structure.
-                ${pwe.awaitable.toString()}
-                """.trimIndent()
-
-            is ConfirmationRequest<*> ->
-                """
-                Please ask the user to confirm before proceeding with the goal "${goal.name}".
-                The confirmation request is as follows:
-                '${pwe.awaitable.message}'
-                Use your judgment to determine how to ask the user for confirmation
-                and what confirmation will be acceptable.
-
-                Once the user has responded, you must invoke the $CONFIRMATION_TOOL_NAME tool
-                with the following arguments:
-                - awaitableId: ${pwe.agentProcess.id}
-                - confirmed: true if the user confirmed, false if they rejected the request.
-                """.trimIndent()
-
-            else -> {
-                TODO("HITL error: Unsupported Awaitable type: ${pwe.awaitable.infoString(verbose = true)}")
-            }
-        }
-
-    }
 }
 
 /**
  * Generic tool callback provider that publishes a tool callback for each goal.
+ * Multiple instances of this class can be created, each with different configuration,
+ * for different purposes.
  * Tools can be exposed to actions or via an MCP server etc.
  * Return a tool callback for each goal taking user input.
  * If the goal specifies startingInputTypes,
@@ -103,22 +72,24 @@ object SimpleAwaitableCommunicator : AwaitableCommunicator {
  * Add a continue tool for any process that requires user input
  * and is waiting for a form submission.
  */
-@Service
 class PerGoalToolCallbackPublisher(
     private val autonomy: Autonomy,
     private val objectMapper: ObjectMapper,
     private val llmOperations: LlmOperations,
-    @Value("\${spring.application.name}") applicationName: String,
+    applicationName: String,
+    private val awaitableCommunicator: AwaitableCommunicator = PromptedAwaitableCommunicator,
     private val goalToolNamingStrategy: GoalToolNamingStrategy = ApplicationNameGoalToolNamingStrategy(
         applicationName
     ),
-    private val awaitableCommunicator: AwaitableCommunicator = SimpleAwaitableCommunicator,
 ) : ToolCallbackPublisher {
 
     private val logger = LoggerFactory.getLogger(PerGoalToolCallbackPublisher::class.java)
 
     private val platformTools = ToolCallbacks.from(this)
 
+    /**
+     * Return all tool callbacks for the agent platform.
+     */
     override val toolCallbacks: List<ToolCallback>
         get() = toolCallbacks(remoteOnly = false)
 
