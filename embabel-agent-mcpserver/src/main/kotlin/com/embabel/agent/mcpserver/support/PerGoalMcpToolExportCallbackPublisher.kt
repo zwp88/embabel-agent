@@ -18,7 +18,7 @@ package com.embabel.agent.mcpserver.support
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.mcpserver.McpToolExportCallbackPublisher
 import com.embabel.agent.tools.agent.PerGoalToolCallbackPublisher
-import com.embabel.agent.tools.agent.PromptedAwaitableCommunicator
+import com.embabel.agent.tools.agent.PromptedTextCommunicator
 import com.embabel.common.util.indent
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.ai.tool.ToolCallback
@@ -40,7 +40,7 @@ class PerGoalMcpToolExportCallbackPublisher(
         autonomy = autonomy,
         objectMapper = objectMapper,
         applicationName = applicationName,
-        awaitableCommunicator = PromptedAwaitableCommunicator,
+        textCommunicator = PromptedTextCommunicator,
     )
 
     override val toolCallbacks: List<ToolCallback> get() = delegate.toolCallbacks(remoteOnly = true)

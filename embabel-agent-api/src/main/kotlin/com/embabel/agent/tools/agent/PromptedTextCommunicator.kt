@@ -15,17 +15,32 @@
  */
 package com.embabel.agent.tools.agent
 
+import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.hitl.FormBindingRequest
+import com.embabel.agent.domain.library.HasContent
+import com.embabel.common.core.types.HasInfoString
 
 /**
  * Prompted awaitable communicator
  */
-object PromptedAwaitableCommunicator : AwaitableCommunicator {
+object PromptedTextCommunicator : TextCommunicator {
 
-    override fun toResponseString(
+    override fun communicateResult(agentProcessExecution: AgentProcessExecution): String {
+        return when (val output = agentProcessExecution.output) {
+            is String -> output
+            is HasInfoString -> {
+                output.infoString(verbose = true)
+            }
+
+            is HasContent -> output.content
+            else -> output.toString()
+        }
+    }
+
+    override fun communicateAwaitable(
         goal: Goal,
         pwe: ProcessWaitingException,
     ): String {
@@ -59,6 +74,5 @@ object PromptedAwaitableCommunicator : AwaitableCommunicator {
                 TODO("HITL error: Unsupported Awaitable type: ${pwe.awaitable.infoString(verbose = true)}")
             }
         }
-
     }
 }

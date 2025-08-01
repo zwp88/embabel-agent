@@ -26,11 +26,9 @@ import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.hitl.ConfirmationResponse
 import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.core.hitl.ResponseImpact
-import com.embabel.agent.domain.library.HasContent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelSelectionCriteria
-import com.embabel.common.core.types.HasInfoString
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
@@ -48,14 +46,21 @@ const val FORM_SUBMISSION_TOOL_NAME = "submitFormAndResumeProcess"
 /**
  * Communicator for awaiting user input.
  */
-interface AwaitableCommunicator {
+interface TextCommunicator {
 
     /**
      * Produce a response string for the given goal and ProcessWaitingException.
      */
-    fun toResponseString(
+    fun communicateAwaitable(
         goal: Goal,
         pwe: ProcessWaitingException,
+    ): String
+
+    /**
+     * Communicate the result of an agent process execution.
+     */
+    fun communicateResult(
+        agentProcessExecution: AgentProcessExecution,
     ): String
 
 }
@@ -75,7 +80,7 @@ class PerGoalToolCallbackPublisher(
     private val autonomy: Autonomy,
     private val objectMapper: ObjectMapper,
     applicationName: String,
-    private val awaitableCommunicator: AwaitableCommunicator = PromptedAwaitableCommunicator,
+    private val textCommunicator: TextCommunicator = PromptedTextCommunicator,
     private val goalToolNamingStrategy: GoalToolNamingStrategy = ApplicationNameGoalToolNamingStrategy(
         applicationName
     ),
@@ -146,7 +151,7 @@ class PerGoalToolCallbackPublisher(
         // Resume the agent process with the form data
         agentProcess.run()
         val ape = AgentProcessExecution.fromProcessStatus(formData, agentProcess)
-        return toResponseString(ape)
+        return textCommunicator.communicateResult(ape)
     }
 
     @Tool(
@@ -176,19 +181,7 @@ class PerGoalToolCallbackPublisher(
         // Resume the agent process with the form data
         agentProcess.run()
         val ape = AgentProcessExecution.fromProcessStatus(confirmationRequest.payload, agentProcess)
-        return toResponseString(ape)
-    }
-
-    private fun toResponseString(agentProcessExecution: AgentProcessExecution): String {
-        return when (val output = agentProcessExecution.output) {
-            is String -> output
-            is HasInfoString -> {
-                output.infoString(verbose = true)
-            }
-
-            is HasContent -> output.content
-            else -> output.toString()
-        }
+        return textCommunicator.communicateResult(ape)
     }
 
     /**
@@ -264,9 +257,9 @@ class PerGoalToolCallbackPublisher(
                     agent = agent,
                 )
                 logger.info("Goal response: {}", agentProcessExecution)
-                return toResponseString(agentProcessExecution)
+                return textCommunicator.communicateResult(agentProcessExecution)
             } catch (pwe: ProcessWaitingException) {
-                val response = awaitableCommunicator.toResponseString(goal, pwe)
+                val response = textCommunicator.communicateAwaitable(goal, pwe)
                 logger.info("Returning waiting response:\n$response")
                 return response
             }
