@@ -152,11 +152,11 @@ internal data class OperationContextPromptRunner(
     override fun withToolObject(toolObject: ToolObject): PromptRunner =
         copy(toolObjects = this.toolObjects + toolObject)
 
-    override fun withHandoffs(vararg inputTypes: Class<*>): PromptRunner {
+    override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         val handoffs = Handoffs(
             autonomy = context.agentPlatform().platformServices.autonomy(),
             objectMapper = context.agentPlatform().platformServices.objectMapper,
-            inputTypes = inputTypes.toList(),
+            outputTypes = outputTypes.toList(),
             applicationName = context.agentPlatform().name,
         )
         return copy(

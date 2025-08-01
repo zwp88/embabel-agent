@@ -94,7 +94,7 @@ internal data class MethodReturnPromptRunner(
         )
     }
 
-    override fun withHandoffs(vararg inputTypes: Class<*>): PromptRunner {
+    override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         TODO("Probably won't be implemented as this class is likely to be deprecated")
     }
 

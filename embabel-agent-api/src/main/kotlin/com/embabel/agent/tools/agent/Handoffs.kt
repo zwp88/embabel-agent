@@ -26,7 +26,7 @@ import org.springframework.ai.tool.ToolCallback
 class Handoffs(
     autonomy: Autonomy,
     objectMapper: ObjectMapper,
-    val inputTypes: List<Class<*>>,
+    val outputTypes: List<Class<*>>,
     applicationName: String,
 ) : ToolCallbackPublisher {
 
@@ -40,8 +40,9 @@ class Handoffs(
     override val toolCallbacks: List<ToolCallback>
         get() = goalToolCallbackPublisher.goalTools(remoteOnly = false)
             .filter { goalToolCallback ->
-                inputTypes.any { inputType ->
-                    goalToolCallback.goal.export.startingInputTypes.any { it.isAssignableFrom(inputType) }
+                outputTypes.any { outputType ->
+                    goalToolCallback.goal.outputClass?.isAssignableFrom(outputType) == true
                 }
             }
+
 }

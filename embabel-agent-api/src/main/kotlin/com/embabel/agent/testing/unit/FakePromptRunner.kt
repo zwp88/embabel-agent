@@ -171,7 +171,7 @@ data class FakePromptRunner(
             generateExamples = generateExamples,
         )
 
-    override fun withHandoffs(vararg inputTypes: Class<*>): PromptRunner {
+    override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         TODO("Implement handoff support")
     }
 }

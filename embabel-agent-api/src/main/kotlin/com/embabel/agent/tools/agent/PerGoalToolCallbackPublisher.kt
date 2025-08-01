@@ -22,19 +22,11 @@ import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.core.Verbosity
-import com.embabel.agent.core.hitl.ConfirmationRequest
-import com.embabel.agent.core.hitl.ConfirmationResponse
-import com.embabel.agent.core.hitl.FormBindingRequest
-import com.embabel.agent.core.hitl.ResponseImpact
-import com.embabel.agent.spi.LlmInteraction
-import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelSelectionCriteria
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
 import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.definition.ToolDefinition
 import org.springframework.ai.util.json.schema.JsonSchemaGenerator
 
@@ -91,7 +83,12 @@ class PerGoalToolCallbackPublisher(
     /**
      * Generic tools
      */
-    val platformTools: List<ToolCallback> = ToolCallbacks.from(this).toList()
+    val platformTools: List<ToolCallback> = ToolCallbacks.from(
+        DefaultProcessCallbackTools(
+            autonomy = autonomy,
+            textCommunicator = textCommunicator,
+        )
+    ).toList()
 
     /**
      * Return all tool callbacks for the agent platform.
@@ -127,73 +124,6 @@ class PerGoalToolCallbackPublisher(
         return allTools
     }
 
-    @Tool(
-        name = FORM_SUBMISSION_TOOL_NAME,
-        description = "Resume a process by providing the process ID and form content",
-    )
-    fun submitFormAndResumeProcess(
-        processId: String,
-        formData: String,
-    ): String {
-        logger.info("Form submission tool called with processId: {}, form input: {}", processId, formData)
-        val agentProcess = autonomy.agentPlatform.getAgentProcess(processId)
-            ?: return "No process found with ID $processId"
-        val formBindingRequest = agentProcess.lastResult() as? FormBindingRequest<Any>
-            ?: return "No form binding request found for process $processId"
-        val prompt = """
-            Given the content below, return the given object
-
-            # Content
-            $formData
-        """.trimIndent()
-        val formDataObject = autonomy.agentPlatform.platformServices.llmOperations.doTransform(
-            prompt = prompt,
-            LlmInteraction.using(LlmOptions(criteria = ModelSelectionCriteria.Auto)),
-            outputClass = formBindingRequest.outputClass,
-            null,
-        )
-        val responseImpact = formBindingRequest.bind(
-            boundInstance = formDataObject,
-            agentProcess
-        )
-        if (responseImpact != ResponseImpact.UPDATED) {
-            TODO("Handle unchanged response impact")
-        }
-        // Resume the agent process with the form data
-        agentProcess.run()
-        val ape = AgentProcessExecution.fromProcessStatus(formData, agentProcess)
-        return textCommunicator.communicateResult(ape)
-    }
-
-    @Tool(
-        name = CONFIRMATION_TOOL_NAME,
-        description = "Resume a process by providing the process ID and form content",
-    )
-    fun confirmation(
-        processId: String,
-        confirmed: Boolean,
-    ): String {
-        logger.info("Confirmation tool called with processId: {}, confirmed: {}", processId, confirmed)
-        val agentProcess = autonomy.agentPlatform.getAgentProcess(processId)
-            ?: return "No process found with ID $processId"
-        val confirmationRequest = agentProcess.lastResult() as? ConfirmationRequest<Any>
-            ?: return "No confirmation binding request found for process $processId"
-        val confirmationResponse = ConfirmationResponse(
-            awaitableId = confirmationRequest.id,
-            accepted = confirmed,
-        )
-        if (confirmationResponse.accepted) {
-            agentProcess += confirmationRequest.payload
-        } else {
-            logger.info("Confirmation request rejected: {}", confirmationRequest.payload)
-            // If the confirmation is rejected, we do not update the agent process
-            return "Confirmation request rejected: ${confirmationRequest.payload}"
-        }
-        // Resume the agent process with the form data
-        agentProcess.run()
-        val ape = AgentProcessExecution.fromProcessStatus(confirmationRequest.payload, agentProcess)
-        return textCommunicator.communicateResult(ape)
-    }
 
     /**
      * Create tool callbacks for the given goal.

@@ -177,9 +177,10 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
 
     /**
      * Add a list of handoffs to agents on this platform
+     * @param outputTypes the types of objects that can result from output flow
      */
     fun withHandoffs(
-        vararg inputTypes: Class<*>,
+        vararg outputTypes: Class<*>,
     ): PromptRunner
 
     /**
