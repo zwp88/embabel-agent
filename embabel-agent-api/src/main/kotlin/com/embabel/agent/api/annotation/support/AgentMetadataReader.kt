@@ -86,7 +86,7 @@ class AgentMetadataReader(
     private val actionMethodManager: ActionMethodManager = DefaultActionMethodManager(),
     private val nameGenerator: MethodDefinedOperationNameGenerator = MethodDefinedOperationNameGenerator(),
     private val agentStructureValidator: AgentStructureValidator,
-    private val goapPathToCompletionValidator: GoapPathToCompletionValidator
+    private val goapPathToCompletionValidator: GoapPathToCompletionValidator,
 ) {
     // test-friendly constructor
     constructor() : this(
@@ -389,6 +389,7 @@ class AgentMetadataReader(
             name = nameGenerator.generateName(instance, method.name),
             description = goalAnnotation.description,
             inputs = setOf(inputBinding),
+            outputClass = method.returnType,
             value = goalAnnotation.value,
             // Add precondition of the action having run
             pre = setOf(Rerun.hasRunCondition(action)) + action.preconditions.keys.toSet(),

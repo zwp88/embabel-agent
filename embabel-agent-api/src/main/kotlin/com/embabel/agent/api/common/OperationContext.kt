@@ -30,9 +30,6 @@ import com.embabel.common.ai.prompt.PromptContributor
  */
 interface OperationContext : Blackboard, ToolGroupConsumer {
 
-    @Deprecated(
-        "Avoid use in user code. Use agentProcess instead.",
-    )
     val processContext: ProcessContext
 
     val agentProcess: AgentProcess
@@ -64,7 +61,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     ): PromptRunner {
         val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
         return OperationContextPromptRunner(
-            this,
+            context = this,
             llm = llm,
             toolGroups = toolGroups,
             toolObjects = toolObjects,

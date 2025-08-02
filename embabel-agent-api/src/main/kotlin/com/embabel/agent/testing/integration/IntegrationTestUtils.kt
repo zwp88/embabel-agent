@@ -28,6 +28,7 @@ import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.ExecutorAsyncer
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.concurrent.Executors
 
 object IntegrationTestUtils {
@@ -55,7 +56,8 @@ object IntegrationTestUtils {
             ragService = ragService ?: RagService.Companion.empty(),
             name = "dummy-agent-platform",
             description = "Dummy Agent Platform for Integration Testing",
-            asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor())
+            asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor()),
+            objectMapper = jacksonObjectMapper(),
         )
     }
 
@@ -66,21 +68,26 @@ object IntegrationTestUtils {
             agentPlatform = dummyAgentPlatform(),
             llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum,
             eventListener = eventListener ?: EventSavingAgenticEventListener(),
-            operationScheduler = OperationScheduler.Companion.PRONTO,
-            ragService = RagService.Companion.empty(),
-            asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor())
+            operationScheduler = OperationScheduler.PRONTO,
+            ragService = RagService.empty(),
+            asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor()),
+            objectMapper = jacksonObjectMapper(),
+            applicationContext = null,
         )
     }
 
     @JvmStatic
-    fun dummyAgentProcessRunning(agent: Agent): AgentProcess {
+    fun dummyAgentProcessRunning(
+        agent: Agent,
+        platformServices: PlatformServices? = null,
+    ): AgentProcess {
         return SimpleAgentProcess(
             id = "dummy-agent-process",
             parentId = null,
             agent = agent,
             blackboard = InMemoryBlackboard(),
             processOptions = ProcessOptions(),
-            platformServices = dummyPlatformServices(),
+            platformServices = platformServices ?: dummyPlatformServices(),
         )
     }
 

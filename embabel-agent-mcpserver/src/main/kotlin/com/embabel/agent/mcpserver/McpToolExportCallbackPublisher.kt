@@ -16,11 +16,7 @@
 package com.embabel.agent.mcpserver
 
 import com.embabel.agent.core.ToolCallbackPublisher
-import com.embabel.agent.tools.agent.PerGoalToolCallbackPublisher
 import com.embabel.common.core.types.HasInfoString
-import com.embabel.common.util.indent
-import org.springframework.ai.tool.ToolCallback
-import org.springframework.stereotype.Service
 
 /**
  * Tag interface extending Spring AI ToolCallbackProvider
@@ -28,20 +24,3 @@ import org.springframework.stereotype.Service
  * Will only export tools with Export(remote = true) defined.
  */
 interface McpToolExportCallbackPublisher : ToolCallbackPublisher, HasInfoString
-
-/**
- * Implementation of [McpToolExportCallbackPublisher] that delegates to
- * a [PerGoalToolCallbackPublisher].
- */
-@Service
-class PerGoalMcpToolExportCallbackPublisher(
-    private val delegate: PerGoalToolCallbackPublisher,
-) : McpToolExportCallbackPublisher {
-
-    override val toolCallbacks: List<ToolCallback> get() = delegate.toolCallbacks(remoteOnly = true)
-
-    override fun infoString(
-        verbose: Boolean?,
-        indent: Int,
-    ): String = "Default MCP Tool Export Callback Publisher: $delegate".indent(indent)
-}

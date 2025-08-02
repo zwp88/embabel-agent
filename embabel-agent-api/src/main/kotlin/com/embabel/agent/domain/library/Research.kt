@@ -19,6 +19,7 @@ import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.util.indentLines
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import java.time.Instant
 
 @JsonClassDescription("topic to research")
 data class ResearchTopic(
@@ -31,16 +32,19 @@ data class ResearchTopics(
 )
 
 /**
- * Reusable domain object for a research report
+ * Reusable domain object for a research report.
+ * Open as subclasses can be created to hold additional information.
  */
 @JsonClassDescription("Research report, containing a text field and links")
-data class ResearchReport(
+open class ResearchReport(
     @get:JsonPropertyDescription(
         "The text of the research report",
     )
     override val content: String,
     override val links: List<InternetResource>,
-) : HasContent, InternetResources, HasInfoString {
+) : InternetResources, HasInfoString, ContentAsset {
+
+    override val timestamp: Instant = Instant.now()
 
     override fun infoString(
         verbose: Boolean?,
