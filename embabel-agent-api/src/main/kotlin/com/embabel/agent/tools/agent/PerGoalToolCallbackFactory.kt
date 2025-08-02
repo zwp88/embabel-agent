@@ -143,88 +143,101 @@ class PerGoalToolCallbackFactory(
         val goalName = goal.export.name ?: goalToolNamingStrategy.nameForGoal(goal)
         return goal.export.startingInputTypes.map { inputType ->
             GoalToolCallback(
+                autonomy = autonomy,
                 name = "${inputType.simpleName}_$goalName",
                 description = goal.description,
                 goal = goal,
                 inputType = inputType,
                 listeners = listeners,
+                textCommunicator = textCommunicator,
+                objectMapper = objectMapper,
             )
         }
     }
 
-    /**
-     * Spring AI ToolCallback implementation for a specific goal.
-     */
-    inner class GoalToolCallback<I : Any>(
-        val name: String,
-        val description: String,
-        val goal: Goal,
-        val inputType: Class<I>,
-        val listeners: List<AgenticEventListener>,
-    ) : ToolCallback {
+}
 
-        override fun getToolDefinition(): ToolDefinition {
-            return TypeWrappingToolDefinition(
-                name = name,
-                description = description,
-                type = inputType,
-            )
+/**
+ * Spring AI ToolCallback implementation for a specific goal.
+ */
+data class GoalToolCallback<I : Any>(
+    val autonomy: Autonomy,
+    val textCommunicator: TextCommunicator,
+    val objectMapper: ObjectMapper,
+    val name: String,
+    val description: String,
+    val goal: Goal,
+    val inputType: Class<I>,
+    val listeners: List<AgenticEventListener>,
+) : ToolCallback {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    fun withListener(listener: AgenticEventListener) = copy(
+        listeners = listeners + listener,
+    )
+
+    override fun getToolDefinition(): ToolDefinition {
+        return TypeWrappingToolDefinition(
+            name = name,
+            description = description,
+            type = inputType,
+        )
+    }
+
+    override fun call(
+        toolInput: String,
+    ): String {
+        return call(toolInput, null)
+    }
+
+    override fun call(
+        toolInput: String,
+        toolContext: ToolContext?,
+    ): String {
+        logger.info("Calling tool {} with input {}", this.name, toolInput)
+        val verbosity = Verbosity(
+            showPrompts = true,
+        )
+        val inputObject = try {
+            val o = objectMapper.readValue(toolInput, inputType)
+            logger.info("Successfully parsed tool input to an instance of {}:\n{}", o::class.java.name, o)
+            o
+        } catch (e: Exception) {
+            val errorReturn =
+                "BAD INPUT ERROR parsing tool input: ${e.message}: Try again and see if you can get the format right"
+            logger.warn("Error $errorReturn parsing tool input: $toolInput", e)
+            return errorReturn
         }
-
-        override fun call(
-            toolInput: String,
-        ): String {
-            return call(toolInput, null)
-        }
-
-        override fun call(
-            toolInput: String,
-            toolContext: ToolContext?,
-        ): String {
-            logger.info("Calling tool {} with input {}", this.name, toolInput)
-            val verbosity = Verbosity(
-                showPrompts = true,
-            )
-            val inputObject = try {
-                val o = objectMapper.readValue(toolInput, inputType)
-                logger.info("Successfully parsed tool input to an instance of {}:\n{}", o::class.java.name, o)
-                o
-            } catch (e: Exception) {
-                val errorReturn =
-                    "BAD INPUT ERROR parsing tool input: ${e.message}: Try again and see if you can get the format right"
-                logger.warn("Error $errorReturn parsing tool input: $toolInput", e)
-                return errorReturn
-            }
-            val processOptions = ProcessOptions(
-                verbosity = verbosity,
-                listeners = listeners,
-            )
-            val agent = autonomy.createGoalAgent(
+        val processOptions = ProcessOptions(
+            verbosity = verbosity,
+            listeners = listeners,
+        )
+        val agent = autonomy.createGoalAgent(
+            inputObject = inputObject,
+            goal = goal,
+            agentScope = autonomy.agentPlatform,
+            // TODO Bug workaround
+            prune = false,
+        )
+        try {
+            val agentProcessExecution = autonomy.runAgent(
                 inputObject = inputObject,
-                goal = goal,
-                agentScope = autonomy.agentPlatform,
-                // TODO Bug workaround
-                prune = false,
+                processOptions = processOptions,
+                agent = agent,
             )
-            try {
-                val agentProcessExecution = autonomy.runAgent(
-                    inputObject = inputObject,
-                    processOptions = processOptions,
-                    agent = agent,
-                )
-                logger.info("Goal response: {}", agentProcessExecution)
-                return textCommunicator.communicateResult(agentProcessExecution)
-            } catch (pwe: ProcessWaitingException) {
-                val response = textCommunicator.communicateAwaitable(goal, pwe)
-                logger.info("Returning waiting response:\n$response")
-                return response
-            }
+            logger.info("Goal response: {}", agentProcessExecution)
+            return textCommunicator.communicateResult(agentProcessExecution)
+        } catch (pwe: ProcessWaitingException) {
+            val response = textCommunicator.communicateAwaitable(goal, pwe)
+            logger.info("Returning waiting response:\n$response")
+            return response
         }
-
-        override fun toString() =
-            "${javaClass.simpleName}(goal=${goal.name}, description=${goal.description})"
-
     }
+
+    override fun toString() =
+        "${javaClass.simpleName}(goal=${goal.name}, description=${goal.description})"
+
 }
 
 private data class TypeWrappingToolDefinition(
