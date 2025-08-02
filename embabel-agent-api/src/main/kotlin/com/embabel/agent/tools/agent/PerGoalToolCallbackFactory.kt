@@ -89,11 +89,6 @@ class PerGoalToolCallbackFactory(
         )
     ).toList()
 
-    /**
-     * Return all tool callbacks for the agent platform.
-     */
-    val toolCallbacks: List<ToolCallback>
-        get() = toolCallbacks(remoteOnly = false)
 
     /**
      * Tools associated with goals.
@@ -118,9 +113,12 @@ class PerGoalToolCallbackFactory(
      */
     fun toolCallbacks(remoteOnly: Boolean): List<ToolCallback> {
         val goalTools = goalTools(remoteOnly)
-        val allTools = goalTools + platformTools
-        assert(allTools.size == goalTools.size + platformTools.size)
-        return allTools
+        return if (goalTools.isEmpty()) {
+            logger.warn("No goal tools found, no tool callbacks will be published")
+            return emptyList()
+        } else {
+            goalTools + platformTools
+        }
     }
 
 

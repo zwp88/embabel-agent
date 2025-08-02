@@ -28,7 +28,7 @@ import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
 
 
-class PerGoalToolCallbackPublisherTest {
+class PerGoalToolFactoryTest {
 
     @Test
     fun `test local export by default`() {
@@ -39,10 +39,10 @@ class PerGoalToolCallbackPublisherTest {
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
-        val toolCallbacks = provider.toolCallbacks
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = false)
         assertEquals(
             3, toolCallbacks.size,
-            "Should not have 1 tool callback with no export defined"
+            "Should not have 1 tool callback with no export defined: have ${toolCallbacks.map { it.toolDefinition.name() }}"
         )
     }
 
@@ -74,9 +74,9 @@ class PerGoalToolCallbackPublisherTest {
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = true)
         assertEquals(
-            2,
+            3,
             toolCallbacks.size,
-            "Should not have tool callbacks with export defined: ${toolCallbacks.map { it.toolDefinition.name() }}"
+            "Should have tool callbacks with export defined: ${toolCallbacks.map { it.toolDefinition.name() }}"
         )
     }
 
@@ -89,7 +89,7 @@ class PerGoalToolCallbackPublisherTest {
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
-        val toolCallbacks = provider.toolCallbacks
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = false)
 
         assertNotNull(toolCallbacks)
         assertEquals(
@@ -104,8 +104,11 @@ class PerGoalToolCallbackPublisherTest {
                 "Tool callback should not have timestamp in input schema: ${toolCallback.toolDefinition.inputSchema()}"
             )
             val toolDefinition = toolCallback.toolDefinition
-            if (toolDefinition.name().contains(FORM_SUBMISSION_TOOL_NAME)) {
-                // This is the form submission tool, which is a special case
+            if (toolCallback.toolDefinition.name()
+                    .contains(FORM_SUBMISSION_TOOL_NAME) || toolCallback.toolDefinition.name()
+                    .contains(CONFIRMATION_TOOL_NAME)
+            ) {
+                // This is a special case
                 break
             }
             val goal = autonomy.agentPlatform.goals.find { toolCallback.toolDefinition.name().contains(it.name) }
@@ -124,7 +127,7 @@ class PerGoalToolCallbackPublisherTest {
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
-        val toolCallbacks = provider.toolCallbacks
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = false)
 
         assertNotNull(toolCallbacks)
         assertEquals(
@@ -142,8 +145,11 @@ class PerGoalToolCallbackPublisherTest {
         )
 
         for (toolCallback in toolCallbacks) {
-            if (toolCallback.toolDefinition.name().contains(FORM_SUBMISSION_TOOL_NAME)) {
-                // This is the form submission tool, which is a special case
+            if (toolCallback.toolDefinition.name()
+                    .contains(FORM_SUBMISSION_TOOL_NAME) || toolCallback.toolDefinition.name()
+                    .contains(CONFIRMATION_TOOL_NAME)
+            ) {
+                // This is a special case
                 break
             }
 
