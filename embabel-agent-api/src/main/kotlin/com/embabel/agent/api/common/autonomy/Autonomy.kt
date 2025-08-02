@@ -130,7 +130,7 @@ class Autonomy(
             ranker
         }
 
-        val agentChoiceEvent = RankingChoiceRequestEvent<Agent>(
+        val agentChoiceEvent = RankingChoiceRequestEvent(
             agentPlatform = agentPlatform,
             type = Agent::class.java,
             basis = userInput,
@@ -262,7 +262,7 @@ class Autonomy(
             eventListener.onPlatformEvent(
                 goalChoiceEvent.noDeterminationEvent(
                     rankings = goalRankings,
-                    confidenceCutoff = properties.goalConfidenceCutOff
+                    confidenceCutoff = properties.goalConfidenceCutOff,
                 )
             )
             throw NoGoalFound(goalRankings = goalRankings, basis = userInput)

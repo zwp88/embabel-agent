@@ -48,14 +48,17 @@ abstract class AgentPlatformChatSession(
     }
 
     protected fun generateResponse(message: UserMessage): AssistantMessage {
+        val bindings = buildMap {
+            put("userInput", UserInput(message.content))
+            if (shouldBindConversation())
+                put("conversation", conversation)
+        }
         try {
             val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
                 processOptions = processOptions,
                 goalChoiceApprover = goalChoiceApprover,
                 agentScope = autonomy.agentPlatform,
-                bindings = (if (shouldBindConversation())
-                    mapOf("conversation" to conversation)
-                else emptyMap()) + mapOf("userInput" to UserInput(message.content)),
+                bindings = bindings,
             )
             val result = dynamicExecutionResult.output
             return AgenticResultAssistantMessage(
