@@ -36,17 +36,21 @@ class PerGoalMcpToolExportCallbackPublisher(
     @Value("\${spring.application.name:agent-api}") applicationName: String,
 ) : McpToolExportCallbackPublisher {
 
-    private val delegate = PerGoalToolCallbackFactory(
+    private val perGoalToolCallbackFactory = PerGoalToolCallbackFactory(
         autonomy = autonomy,
         objectMapper = objectMapper,
         applicationName = applicationName,
         textCommunicator = PromptedTextCommunicator,
     )
 
-    override val toolCallbacks: List<ToolCallback> get() = delegate.toolCallbacks(remoteOnly = true)
+    override val toolCallbacks: List<ToolCallback>
+        get() = perGoalToolCallbackFactory.toolCallbacks(
+            remoteOnly = true,
+            listeners = emptyList(),
+        )
 
     override fun infoString(
         verbose: Boolean?,
         indent: Int,
-    ): String = "Default MCP Tool Export Callback Publisher: $delegate".indent(indent)
+    ): String = "Default MCP Tool Export Callback Publisher: $perGoalToolCallbackFactory".indent(indent)
 }

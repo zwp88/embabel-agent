@@ -38,7 +38,7 @@ class Handoffs(
     )
 
     override val toolCallbacks: List<ToolCallback>
-        get() = goalToolCallbackPublisher.goalTools(remoteOnly = false)
+        get() = goalToolCallbackPublisher.goalTools(remoteOnly = false, listeners = emptyList())
             .filter { goalToolCallback ->
                 outputTypes.any { outputType ->
                     goalToolCallback.goal.outputClass?.isAssignableFrom(outputType) == true

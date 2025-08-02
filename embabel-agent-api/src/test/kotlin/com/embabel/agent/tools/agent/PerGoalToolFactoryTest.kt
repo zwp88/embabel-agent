@@ -39,7 +39,7 @@ class PerGoalToolFactoryTest {
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
-        val toolCallbacks = provider.toolCallbacks(remoteOnly = false)
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = false, listeners = emptyList())
         assertEquals(
             3, toolCallbacks.size,
             "Should not have 1 tool callback with no export defined: have ${toolCallbacks.map { it.toolDefinition.name() }}"
@@ -55,7 +55,7 @@ class PerGoalToolFactoryTest {
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
-        val toolCallbacks = provider.toolCallbacks(remoteOnly = true)
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = true, listeners = emptyList())
         assertEquals(
             0,
             toolCallbacks.size,
@@ -72,7 +72,7 @@ class PerGoalToolFactoryTest {
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
-        val toolCallbacks = provider.toolCallbacks(remoteOnly = true)
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = true, listeners = emptyList())
         assertEquals(
             3,
             toolCallbacks.size,
@@ -89,7 +89,7 @@ class PerGoalToolFactoryTest {
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
-        val toolCallbacks = provider.toolCallbacks(remoteOnly = false)
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = false, listeners = emptyList())
 
         assertNotNull(toolCallbacks)
         assertEquals(
@@ -127,7 +127,7 @@ class PerGoalToolFactoryTest {
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
         val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
-        val toolCallbacks = provider.toolCallbacks(remoteOnly = false)
+        val toolCallbacks = provider.toolCallbacks(remoteOnly = false, listeners = emptyList())
 
         assertNotNull(toolCallbacks)
         assertEquals(

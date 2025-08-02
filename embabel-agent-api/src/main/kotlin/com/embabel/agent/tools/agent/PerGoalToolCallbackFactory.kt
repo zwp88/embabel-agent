@@ -21,6 +21,7 @@ import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
+import com.embabel.agent.event.AgenticEventListener
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
@@ -58,6 +59,7 @@ interface TextCommunicator {
 
 /**
  * Generic tool callback provider that publishes a tool callback for each goal.
+ * Each invocation will result in a distinct AgentProcess being executed.
  * Multiple instances of this class can be created, each with different configuration,
  * for different purposes.
  * Tools can be exposed to actions or via an MCP server etc.
@@ -92,13 +94,18 @@ class PerGoalToolCallbackFactory(
 
     /**
      * Tools associated with goals.
+     * @param remoteOnly if true, only include tools that are remote.
+     * @param listeners additional listeners to be notified of events relating to the created process
      */
-    fun goalTools(remoteOnly: Boolean): List<GoalToolCallback<*>> {
+    fun goalTools(
+        remoteOnly: Boolean,
+        listeners: List<AgenticEventListener>,
+    ): List<GoalToolCallback<*>> {
         val goalTools = autonomy.agentPlatform.goals
             .filter { it.export.local }
             .filter { !remoteOnly || it.export.remote }
             .flatMap { goal ->
-                toolsForGoal(goal)
+                toolsForGoal(goal, listeners)
             }
         if (goalTools.isEmpty()) {
             logger.info("No goals found in agent platform, no tool callbacks will be published")
@@ -111,8 +118,11 @@ class PerGoalToolCallbackFactory(
     /**
      * If remote is true, include only remote tools.
      */
-    fun toolCallbacks(remoteOnly: Boolean): List<ToolCallback> {
-        val goalTools = goalTools(remoteOnly)
+    fun toolCallbacks(
+        remoteOnly: Boolean,
+        listeners: List<AgenticEventListener>,
+    ): List<ToolCallback> {
+        val goalTools = goalTools(remoteOnly, listeners)
         return if (goalTools.isEmpty()) {
             logger.warn("No goal tools found, no tool callbacks will be published")
             return emptyList()
@@ -126,7 +136,10 @@ class PerGoalToolCallbackFactory(
      * Create tool callbacks for the given goal.
      * There will be one tool callback for each starting input type of the goal.
      */
-    fun toolsForGoal(goal: Goal): List<GoalToolCallback<*>> {
+    fun toolsForGoal(
+        goal: Goal,
+        listeners: List<AgenticEventListener>,
+    ): List<GoalToolCallback<*>> {
         val goalName = goal.export.name ?: goalToolNamingStrategy.nameForGoal(goal)
         return goal.export.startingInputTypes.map { inputType ->
             GoalToolCallback(
@@ -134,6 +147,7 @@ class PerGoalToolCallbackFactory(
                 description = goal.description,
                 goal = goal,
                 inputType = inputType,
+                listeners = listeners,
             )
         }
     }
@@ -146,6 +160,7 @@ class PerGoalToolCallbackFactory(
         val description: String,
         val goal: Goal,
         val inputType: Class<I>,
+        val listeners: List<AgenticEventListener>,
     ) : ToolCallback {
 
         override fun getToolDefinition(): ToolDefinition {
@@ -180,7 +195,10 @@ class PerGoalToolCallbackFactory(
                 logger.warn("Error $errorReturn parsing tool input: $toolInput", e)
                 return errorReturn
             }
-            val processOptions = ProcessOptions(verbosity = verbosity)
+            val processOptions = ProcessOptions(
+                verbosity = verbosity,
+                listeners = listeners,
+            )
             val agent = autonomy.createGoalAgent(
                 inputObject = inputObject,
                 goal = goal,
