@@ -77,14 +77,17 @@ object IntegrationTestUtils {
     }
 
     @JvmStatic
-    fun dummyAgentProcessRunning(agent: Agent): AgentProcess {
+    fun dummyAgentProcessRunning(
+        agent: Agent,
+        platformServices: PlatformServices? = null,
+    ): AgentProcess {
         return SimpleAgentProcess(
             id = "dummy-agent-process",
             parentId = null,
             agent = agent,
             blackboard = InMemoryBlackboard(),
             processOptions = ProcessOptions(),
-            platformServices = dummyPlatformServices(),
+            platformServices = platformServices ?: dummyPlatformServices(),
         )
     }
 

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.event.AgenticEventListener
 import java.util.function.Consumer
 
 /**
@@ -231,6 +232,7 @@ data class Budget(
  * will not use any external resources such as LLMs, and will not persist any state.
  * @param verbosity detailed verbosity settings for logging etc.
  * @param prune whether to prune the agent to only relevant actions
+ * @param listeners additional listeners (beyond platform event listeners) to receive events from this process.
  */
 data class ProcessOptions(
     val contextId: ContextId? = null,
@@ -245,6 +247,7 @@ data class ProcessOptions(
         earlyTerminationPolicy = budget.earlyTerminationPolicy(),
     ),
     val prune: Boolean = false,
+    val listeners: List<AgenticEventListener> = emptyList(),
 ) {
 
     companion object {
