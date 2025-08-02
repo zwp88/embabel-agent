@@ -18,6 +18,7 @@ package com.embabel.agent.mcpserver.support
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.event.AgentProcessEvent
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.event.ObjectAddedEvent
 import com.embabel.agent.event.ObjectBoundEvent
 import com.embabel.agent.mcpserver.McpToolExportCallbackPublisher
 import com.embabel.agent.tools.agent.GoalToolCallback
@@ -96,7 +97,6 @@ class McpAwareToolCallback(
         val delegateToCall = if (exchange != null) delegate.withListener(
             McpResourceUpdatingListener(
                 mcpSyncServer,
-                exchange
             )
         ) else delegate
         val result = delegateToCall.call(toolInput, toolContext)
@@ -112,24 +112,47 @@ class McpAwareToolCallback(
 
 class McpResourceUpdatingListener(
     private val mcpSyncServer: McpSyncServer,
-    private val exchange: McpSyncServerExchange,
 ) : AgenticEventListener {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     override fun onProcessEvent(event: AgentProcessEvent) {
         when {
 
             event is ObjectBoundEvent -> {
+//                val uri = "embabel://agent/${event.value.javaClass.simpleName}/${event.name}"
+//                logger.info("MCP Tool Export Callback Publisher adding bound resource {}", uri)
 //                mcpSyncServer.addResource(
 //                    syncResourceSpecification(
-//                        uri = "foo",
-//                        name = "",
-//                        description = "",
-//                        resourceLoader = { exchange -> "" },
+//                        uri = uri,
+//                        name = event.name,
+//                        description = event.name,
+//                        resourceLoader = { exchange ->
+//                            event.value.toString()
+//                        },
 //                    )
 //                )
+//                mcpSyncServer.notifyResourcesListChanged()
             }
 
-            else -> { // Do nothing }
+            event is ObjectAddedEvent -> {
+//                val uri = "embabel://agent/${event.value.javaClass.simpleName}/it"
+//                logger.info("MCP Tool Export Callback Publisher adding resource {}", uri)
+//                mcpSyncServer.addResource(
+//                    syncResourceSpecification(
+//                        uri = uri,
+//                        name = event.value.javaClass.simpleName,
+//                        description = "Object added",
+//                        resourceLoader = { exchange ->
+//                            event.value.toString()
+//                        },
+//                    )
+//                )
+                // TODO isn't this inefficient? All clients??
+//                mcpSyncServer.notifyResourcesListChanged()
+            }
+
+            else -> { // Do nothing
             }
         }
     }
