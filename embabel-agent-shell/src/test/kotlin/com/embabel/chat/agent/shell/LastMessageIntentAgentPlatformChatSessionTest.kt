@@ -49,11 +49,12 @@ class LastMessageIntentAgentPlatformChatSessionTest {
                 goalChoiceApprover = any(),
                 agentScope = any(),
                 processOptions = any(),
+                goalSelectionOptions = any(),
             )
         } returns der
         val chatSession = LastMessageIntentAgentPlatformChatSession(
             mockAutonomy,
-            GoalChoiceApprover.Companion.APPROVE_ALL,
+            GoalChoiceApprover.APPROVE_ALL,
             messageListener = {},
             terminalServices = mockk(),
             config = ShellProperties.ChatConfig(),

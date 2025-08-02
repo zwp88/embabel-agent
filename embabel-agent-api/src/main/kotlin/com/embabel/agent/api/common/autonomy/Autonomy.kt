@@ -22,6 +22,7 @@ import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.DynamicAgentCreationEvent
 import com.embabel.agent.event.RankingChoiceRequestEvent
 import com.embabel.agent.spi.Ranker
+import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.integration.FakeRanker
 import com.embabel.agent.testing.integration.RandomRanker
@@ -49,6 +50,18 @@ data class AutonomyProperties(
 )
 
 /**
+ * Can override platform-wide AutonomyProperties
+ * @param goalConfidenceCutOff Goal confidence cut-off, between 0 and 1 if we want to override the platform-wide setting.
+ * @param agentConfidenceCutOff Agent confidence cut-off, between 0 and 1 if we want to override the platform-wide setting.
+ * @param multiGoal Whether to allow multiple goals to be selected and accomplished.
+ */
+data class GoalSelectionOptions(
+    val goalConfidenceCutOff: ZeroToOne? = null,
+    val agentConfidenceCutOff: ZeroToOne? = null,
+    val multiGoal: Boolean = false,
+)
+
+/**
  * Adds autonomy to an AgentPlatform, with the ability to choose
  * goals and agents dynamically, given user input.
  * Then calls the AgentPlatform to execute.
@@ -73,6 +86,8 @@ class Autonomy(
      * @param goalChoiceApprover goal choice approver allowing goal choice to be rejected
      * @param agentScope scope to look for the agent
      * @param bindings any additional bindings to pass to the agent process
+     * @param goalSelectionOptions options for goal selection, such as confidence cut-off and multi-goal selection,
+     * if we want customization.
      */
     @Throws(ProcessExecutionException::class)
     fun chooseAndAccomplishGoal(
@@ -80,6 +95,7 @@ class Autonomy(
         goalChoiceApprover: GoalChoiceApprover,
         agentScope: AgentScope,
         bindings: Map<String, Any>,
+        goalSelectionOptions: GoalSelectionOptions = GoalSelectionOptions(),
     ): AgentProcessExecution {
         val goalSeeker = createGoalSeeker(
             processOptions = processOptions,
@@ -87,6 +103,7 @@ class Autonomy(
             goalChoiceApprover = goalChoiceApprover,
             agentScope = agentScope,
             emitEvents = true,
+            goalSelectionOptions = goalSelectionOptions,
         )
         val agentProcess = agentPlatform.createAgentProcess(
             processOptions = processOptions,
@@ -211,12 +228,14 @@ class Autonomy(
         intent: String,
         goalChoiceApprover: GoalChoiceApprover,
         agentScope: AgentScope,
+        goalSelectionOptions: GoalSelectionOptions,
     ): GoalSeeker = createGoalSeeker(
         bindings = mapOf(IoBinding.DEFAULT_BINDING to UserInput(intent)),
         processOptions = ProcessOptions(),
         goalChoiceApprover = goalChoiceApprover,
         emitEvents = false,
         agentScope = agentScope,
+        goalSelectionOptions = goalSelectionOptions,
     )
 
     /**
@@ -230,6 +249,7 @@ class Autonomy(
         goalChoiceApprover: GoalChoiceApprover,
         emitEvents: Boolean,
         agentScope: AgentScope,
+        goalSelectionOptions: GoalSelectionOptions,
     ): GoalSeeker {
         // Use a fake goal ranker if we are in test mode and don't already have a fake one
         // Enables running under integration tests and in test mode otherwise with production config
@@ -256,8 +276,20 @@ class Autonomy(
             )
         val credibleGoals = goalRankings
             .rankings()
-            .filter { it.score > properties.goalConfidenceCutOff }
-        val goalChoice = credibleGoals.firstOrNull()
+            .filter { it.score > (goalSelectionOptions.goalConfidenceCutOff ?: properties.goalConfidenceCutOff) }
+        val goalChoice = if (goalSelectionOptions.multiGoal) {
+            // TODO need to refine this
+            val ultimate = credibleGoals.firstOrNull()
+            if (ultimate == null) {
+                null
+            } else {
+                val multigoal = ultimate.match.withPreconditions(*credibleGoals.drop(1).map { it.match }.toTypedArray())
+                logger.info("Creating composite goal {} from credible goals: {}", multigoal, credibleGoals)
+                Ranking(match = multigoal, ultimate.score)
+            }
+        } else {
+            credibleGoals.firstOrNull()
+        }
         if (goalChoice == null) {
             eventListener.onPlatformEvent(
                 goalChoiceEvent.noDeterminationEvent(

@@ -59,6 +59,9 @@ abstract class AgentPlatformChatSession(
                 goalChoiceApprover = goalChoiceApprover,
                 agentScope = autonomy.agentPlatform,
                 bindings = bindings,
+                goalSelectionOptions = GoalSelectionOptions(
+                    multiGoal = true,
+                ),
             )
             val result = dynamicExecutionResult.output
             return AgenticResultAssistantMessage(

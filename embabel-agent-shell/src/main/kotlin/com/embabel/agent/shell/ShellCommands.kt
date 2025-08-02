@@ -190,6 +190,7 @@ class ShellCommands(
                 intent = intent,
                 agentScope = agentPlatform,
                 goalChoiceApprover = GoalChoiceApprover approveWithScoreOver .8,
+                goalSelectionOptions = GoalSelectionOptions(),
             )
             val fmt = goalSeeker.rankings.rankings().joinToString("\n") {
                 it.infoString(verbose = true)
@@ -405,7 +406,8 @@ class ShellCommands(
                     processOptions = processOptions,
                     goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
                     agentScope = agentPlatform,
-                    bindings = mapOf(IoBinding.DEFAULT_BINDING to UserInput(intent))
+                    bindings = mapOf(IoBinding.DEFAULT_BINDING to UserInput(intent)),
+                    goalSelectionOptions = GoalSelectionOptions(),
                 )
             } else {
                 logger.info("Executing in closed mode: Trying to find appropriate agent")
