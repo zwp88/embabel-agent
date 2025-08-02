@@ -20,7 +20,6 @@ import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.core.ToolCallbackPublisher
 import com.embabel.agent.core.Verbosity
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
@@ -68,7 +67,7 @@ interface TextCommunicator {
  * Add a continue tool for any process that requires user input
  * and is waiting for a form submission.
  */
-class PerGoalToolCallbackPublisher(
+class PerGoalToolCallbackFactory(
     private val autonomy: Autonomy,
     private val objectMapper: ObjectMapper,
     applicationName: String,
@@ -76,9 +75,9 @@ class PerGoalToolCallbackPublisher(
     private val goalToolNamingStrategy: GoalToolNamingStrategy = ApplicationNameGoalToolNamingStrategy(
         applicationName
     ),
-) : ToolCallbackPublisher {
+) {
 
-    private val logger = LoggerFactory.getLogger(PerGoalToolCallbackPublisher::class.java)
+    private val logger = LoggerFactory.getLogger(PerGoalToolCallbackFactory::class.java)
 
     /**
      * Generic tools
@@ -93,7 +92,7 @@ class PerGoalToolCallbackPublisher(
     /**
      * Return all tool callbacks for the agent platform.
      */
-    override val toolCallbacks: List<ToolCallback>
+    val toolCallbacks: List<ToolCallback>
         get() = toolCallbacks(remoteOnly = false)
 
     /**

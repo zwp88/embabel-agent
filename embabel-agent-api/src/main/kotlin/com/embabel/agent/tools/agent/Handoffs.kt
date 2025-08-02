@@ -30,7 +30,7 @@ class Handoffs(
     applicationName: String,
 ) : ToolCallbackPublisher {
 
-    private val goalToolCallbackPublisher = PerGoalToolCallbackPublisher(
+    private val goalToolCallbackPublisher = PerGoalToolCallbackFactory(
         autonomy = autonomy,
         objectMapper = objectMapper,
         applicationName = applicationName,

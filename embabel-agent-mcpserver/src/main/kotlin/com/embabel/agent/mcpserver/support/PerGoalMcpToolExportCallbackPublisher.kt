@@ -17,7 +17,7 @@ package com.embabel.agent.mcpserver.support
 
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.mcpserver.McpToolExportCallbackPublisher
-import com.embabel.agent.tools.agent.PerGoalToolCallbackPublisher
+import com.embabel.agent.tools.agent.PerGoalToolCallbackFactory
 import com.embabel.agent.tools.agent.PromptedTextCommunicator
 import com.embabel.common.util.indent
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service
 
 /**
  * Implementation of [com.embabel.agent.mcpserver.McpToolExportCallbackPublisher] that delegates to
- * a [com.embabel.agent.tools.agent.PerGoalToolCallbackPublisher].
+ * a [com.embabel.agent.tools.agent.PerGoalToolCallbackFactory].
  */
 @Service
 class PerGoalMcpToolExportCallbackPublisher(
@@ -36,7 +36,7 @@ class PerGoalMcpToolExportCallbackPublisher(
     @Value("\${spring.application.name:agent-api}") applicationName: String,
 ) : McpToolExportCallbackPublisher {
 
-    private val delegate = PerGoalToolCallbackPublisher(
+    private val delegate = PerGoalToolCallbackFactory(
         autonomy = autonomy,
         objectMapper = objectMapper,
         applicationName = applicationName,

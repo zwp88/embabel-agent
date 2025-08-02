@@ -37,7 +37,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks
         assertEquals(
@@ -53,7 +53,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = true)
         assertEquals(
@@ -70,7 +70,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = true)
         assertEquals(
@@ -87,7 +87,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
 
         val toolCallbacks = provider.toolCallbacks
 
@@ -123,7 +123,7 @@ class PerGoalToolCallbackPublisherTest {
         agentPlatform.deploy(evenMoreEvilWizardWithStructuredInput())
         val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
 
-        val provider = PerGoalToolCallbackPublisher(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
         val toolCallbacks = provider.toolCallbacks
 
         assertNotNull(toolCallbacks)
