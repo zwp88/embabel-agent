@@ -21,7 +21,8 @@ import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
 
 /**
- * Process state and services
+ * Process state and services. Created by the platform,
+ * not user code.
  */
 data class ProcessContext(
     val processOptions: ProcessOptions = ProcessOptions(),
