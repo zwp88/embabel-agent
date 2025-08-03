@@ -28,6 +28,15 @@ interface OutputChannel {
     fun send(event: OutputChannelEvent)
 }
 
+object DevNullOutputChannel : OutputChannel {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    override fun send(event: OutputChannelEvent) {
+        logger.warn("DevNullOutputChannel received event: {}", event)
+    }
+}
+
 interface OutputChannelEvent : InProcess {
 
     // TODO priority

@@ -76,6 +76,7 @@ abstract class AbstractAgentProcess(
         ),
         agentProcess = this,
         processOptions = processOptions,
+        outputChannel = platformServices.outputChannel,
     )
 
     /**
@@ -106,7 +107,10 @@ abstract class AbstractAgentProcess(
         return ProcessKilledEvent(this)
     }
 
-    override fun bind(key: String, value: Any): Bindable {
+    override fun bind(
+        key: String,
+        value: Any,
+    ): Bindable {
         blackboard[key] = value
         processContext.onProcessEvent(
             ObjectBoundEvent(
@@ -123,7 +127,10 @@ abstract class AbstractAgentProcess(
     }
 
     // Override set to bind so that delegation works
-    override operator fun set(key: String, value: Any) {
+    override operator fun set(
+        key: String,
+        value: Any,
+    ) {
         bind(key, value)
     }
 
@@ -146,7 +153,8 @@ abstract class AbstractAgentProcess(
         val currentStatus = _status.get()
         return when (currentStatus) {
             AgentProcessStatusCode.COMPLETED,
-            AgentProcessStatusCode.KILLED, AgentProcessStatusCode.TERMINATED -> {
+            AgentProcessStatusCode.KILLED, AgentProcessStatusCode.TERMINATED,
+                -> {
                 logger.warn("Process {} Cannot be made RUNNING as its status is {}", this.id, status)
                 return false
             }

@@ -16,6 +16,7 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.api.common.Asyncer
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.*
 import com.embabel.agent.event.AgentDeploymentEvent
 import com.embabel.agent.event.AgentProcessCreationEvent
@@ -51,6 +52,7 @@ internal class DefaultAgentPlatform(
     private val ragService: RagService,
     private val asyncer: Asyncer,
     private val objectMapper: ObjectMapper,
+    private val outputChannel: OutputChannel,
     private val applicationContext: ApplicationContext? = null,
 ) : AgentPlatform {
 
@@ -69,6 +71,7 @@ internal class DefaultAgentPlatform(
         asyncer = asyncer,
         objectMapper = objectMapper,
         applicationContext = applicationContext,
+        outputChannel = outputChannel,
     )
 
     init {
