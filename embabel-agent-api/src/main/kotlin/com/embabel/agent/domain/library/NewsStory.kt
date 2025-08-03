@@ -29,10 +29,10 @@ open class RelevantNewsStories(
 }
 
 open class NewsStory(
-    val url: String,
+    override val url: String,
     val title: String,
-    val summary: String,
-) : PromptContributor {
+    override val summary: String,
+) : PromptContributor, Page {
 
     override fun contribution(): String {
         return "Title: $title\nSummary: $summary\nURL: $url"
