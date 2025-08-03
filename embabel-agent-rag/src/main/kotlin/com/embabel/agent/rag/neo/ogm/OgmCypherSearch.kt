@@ -18,9 +18,8 @@ package com.embabel.agent.rag.neo.ogm
 import com.embabel.agent.rag.Chunk
 import com.embabel.agent.rag.NamedEntityData
 import com.embabel.agent.rag.SimpleNamedEntityData
-import com.embabel.boogie.neo.common.CypherSearch
-import com.embabel.boogie.neo.common.LogicalQueryResolver
-import com.embabel.boogie.neo.ogm.OgmMappedNamedEntity
+import com.embabel.agent.rag.neo.common.CypherSearch
+import com.embabel.agent.rag.neo.common.LogicalQueryResolver
 import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import com.embabel.common.util.time
