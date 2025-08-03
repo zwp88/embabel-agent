@@ -22,12 +22,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import java.time.Instant
 
 @JsonClassDescription("topic to research")
-data class ResearchTopic(
+open class ResearchTopic(
     @get:JsonPropertyDescription("topic to research") val topic: String,
     @get:JsonPropertyDescription("specific questions") val questions: List<String>,
 )
 
-data class ResearchTopics(
+open class ResearchTopics(
     val topics: List<ResearchTopic>,
 )
 
@@ -58,11 +58,11 @@ open class ResearchReport(
             .indentLines(indent)
 }
 
-data class CompletedResearch(
+open class CompletedResearch(
     val topic: ResearchTopic,
     val researchReport: ResearchReport,
 )
 
-data class ResearchResult(
+open class ResearchResult(
     val topicResearches: List<CompletedResearch>,
 )

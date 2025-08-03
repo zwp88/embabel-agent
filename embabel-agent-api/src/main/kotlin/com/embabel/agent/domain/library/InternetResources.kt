@@ -20,10 +20,10 @@ import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 
 @JsonClassDescription("Internet resource")
-data class InternetResource(
+open class InternetResource(
     @get:JsonPropertyDescription("url of the resource")
     val url: String,
-    @get: JsonPropertyDescription("concise summary of the resource")
+    @get:JsonPropertyDescription("concise summary of the resource")
     val summary: String,
 ) : PromptContributor {
 

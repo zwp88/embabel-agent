@@ -17,7 +17,7 @@ package com.embabel.agent.domain.library
 
 import com.embabel.common.ai.prompt.PromptContributor
 
-data class RelevantNewsStories(
+open class RelevantNewsStories(
     val items: List<NewsStory>,
 ) : PromptContributor {
 
@@ -28,7 +28,7 @@ data class RelevantNewsStories(
     }
 }
 
-data class NewsStory(
+open class NewsStory(
     val url: String,
     val title: String,
     val summary: String,
