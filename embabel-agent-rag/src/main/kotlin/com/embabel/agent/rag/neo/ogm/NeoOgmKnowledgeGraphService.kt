@@ -15,7 +15,10 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
-import com.embabel.agent.rag.*
+import com.embabel.agent.rag.Chunk
+import com.embabel.agent.rag.NamedEntityData
+import com.embabel.agent.rag.Retrievable
+import com.embabel.agent.rag.RetrievableEntity
 import com.embabel.agent.rag.repository.ChunkRepository
 import com.embabel.agent.rag.schema.*
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
@@ -151,37 +154,57 @@ class NeoOgmKnowledgeGraphService(
         }
     }
 
-    private fun embedEntities(
-        session: Session,
-        entities: List<EntityData>
+    fun embedEntities(
+        entities: List<RetrievableEntity>,
     ) {
-        entities.forEach { entity ->
-            embedEntity(session, entity)
-        }
+        val session = sessionFactory.openSession()
+        doInTransaction(session, {
+            entities.forEach { entity ->
+                embedEntity(session, entity)
+            }
+        })
     }
 
     private fun embedEntity(
         session: Session,
-        entity: EntityData
+        entity: RetrievableEntity,
     ) {
+
         val embedding = embeddingService.model.embed(entity.embeddableValue())
         val cypher = """
                 MERGE (n:${entity.labels.joinToString(":")} {id: ${'$'}entityId})
                 SET n.embedding = ${'$'}embedding
                 RETURN COUNT(n) as nodesUpdated
                """.trimIndent()
-        logger.info("Executing embedding cypher: {}", cypher)
-        session.query(
+        val result = session.query(
             cypher,
             mapOf(
                 "entityId" to entity.id,
                 "embedding" to embedding,
             )
         )
-
+        val propertiesSet = result.queryStatistics().propertiesSet
+        if (propertiesSet < 1) {
+            logger.warn(
+                "Expected to set at least 1 embedding property, but set: {}. entity={}, cypher={}",
+                propertiesSet,
+                entity,
+                cypher,
+            )
+        }
     }
 }
 
-fun EntityData.neoLabels(): String {
-    return labels.joinToString(":")
+fun doInTransaction(
+    session: Session,
+    what: () -> Unit,
+) {
+    try {
+        val tx = session.beginTransaction()
+        what()
+        tx.commit()
+    } catch (e: Exception) {
+        session.transaction?.rollback()
+        throw e
+    }
 }
