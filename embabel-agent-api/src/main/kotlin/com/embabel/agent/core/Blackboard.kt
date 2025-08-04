@@ -122,7 +122,7 @@ interface Blackboard : Bindable, MayHaveLastResult, HasInfoString {
             return bound
         }
 
-        val aggregationClass = dataDictionary.domainTypes.map { it.clazz }.filter {
+        val aggregationClass = dataDictionary.jvmTypes.map { it.clazz }.filter {
             Aggregation::class.java.isAssignableFrom(it)
         }.find { it.simpleName == type }
         if (aggregationClass != null) {

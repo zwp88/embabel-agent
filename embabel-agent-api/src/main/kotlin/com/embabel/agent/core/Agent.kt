@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory
  * @param stuckHandler The handler to call when the agent is stuck, if provided
  * @param conditions Well-known conditions that can be referenced by actions
  * @param actions The actions the agent can use
- * @param embabelTypes Data types used in this agent
+ * @param domainTypes Data types used in this agent
  */
 @JsonSerialize(using = ComputerSaysNoSerializer::class)
 data class Agent(
@@ -49,7 +49,7 @@ data class Agent(
     override val actions: List<Action>,
     override val goals: Set<Goal>,
     val stuckHandler: StuckHandler? = null,
-    override val embabelTypes: Collection<EmbabelType> = mergeTypes(
+    override val domainTypes: Collection<DomainType> = mergeTypes(
         agentName = name,
         defaultDataTypes = emptyList(),
         actions = actions,
@@ -123,20 +123,20 @@ data class Agent(
          */
         fun mergeTypes(
             agentName: String,
-            defaultDataTypes: List<SchemaType>,
+            defaultDataTypes: List<DynamicType>,
             actions: List<Action>,
-        ): List<EmbabelType> {
+        ): List<DomainType> {
             // Merge properties from multiple type references
             for (action in actions) {
                 logger.debug(
                     "Action {} has types {}, inputBinding={}",
                     action.name,
-                    action.embabelTypes,
+                    action.domainTypes,
                     action.inputs,
                 )
             }
             val mergedSchemaTypes = (defaultDataTypes + actions
-                .flatMap { it.schemaTypes }
+                .flatMap { it.dynamicTypes }
                 .groupBy { it.name }
                 .mapValues { (_, types) ->
                     types.reduce { acc, type ->
@@ -152,7 +152,7 @@ data class Agent(
                 "Agent {} inferred types:\n\t{}",
                 agentName,
                 mergedSchemaTypes.joinToString("\n\t") { "${it.name} - ${it.properties.map { p -> p.name }}" })
-            return mergedSchemaTypes + actions.flatMap { it.domainTypes }.distinctBy { it.name }
+            return mergedSchemaTypes + actions.flatMap { it.jvmTypes }.distinctBy { it.name }
         }
     }
 

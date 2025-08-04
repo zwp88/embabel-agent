@@ -113,7 +113,7 @@ class PlatformInfoController(
         goalCount = agentPlatform.goals.size,
         conditionCount = agentPlatform.conditions.size,
         name = agentPlatform.name,
-        embabelTypes = agentPlatform.embabelTypes.map { it.name }.toSet(),
+        domainTypes = agentPlatform.domainTypes.map { it.name }.toSet(),
         models = modelProvider.listModels().sortedBy { it.name },
         toolGroups = agentPlatform.toolGroupResolver.availableToolGroups(),
     )
@@ -176,7 +176,7 @@ data class PlatformInfoSummary(
     val goalCount: Int,
     val conditionCount: Int,
     val name: String,
-    val embabelTypes: Set<String>,
+    val domainTypes: Set<String>,
     val models: List<ModelMetadata>,
     val toolGroups: List<ToolGroupMetadata>,
 )

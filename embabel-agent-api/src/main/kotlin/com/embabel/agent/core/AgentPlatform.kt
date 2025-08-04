@@ -148,8 +148,8 @@ interface AgentPlatform : AgentScope {
         parentAgentProcess: AgentProcess,
     ): AgentProcess
 
-    override val embabelTypes: Collection<EmbabelType>
-        get() = agents().flatMap { it.embabelTypes }.distinctBy { it.name }
+    override val domainTypes: Collection<DomainType>
+        get() = agents().flatMap { it.domainTypes }.distinctBy { it.name }
 
     override val actions: List<Action>
         get() = agents().flatMap { it.actions }.distinctBy { it.name }

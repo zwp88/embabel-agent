@@ -61,6 +61,6 @@ internal class SerializableAction(
 ),
     ActionRunner by runner {
 
-    override val embabelTypes: Collection<EmbabelType>
+    override val domainTypes: Collection<DomainType>
         get() = emptySet()
 }

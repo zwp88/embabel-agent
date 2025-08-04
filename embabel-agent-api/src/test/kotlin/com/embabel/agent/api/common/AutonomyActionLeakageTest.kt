@@ -166,8 +166,8 @@ class AutonomyActionLeakageTest {
                 return emptySet()
             }
 
-            override val embabelTypes: Collection<EmbabelType>
-                get() = listOf(DomainType(DummyType::class.java))
+            override val domainTypes: Collection<DomainType>
+                get() = listOf(JvmType(DummyType::class.java))
             override val toolGroups: Set<ToolGroupRequirement>
                 get() = emptySet()
 
@@ -212,8 +212,8 @@ class AutonomyActionLeakageTest {
                 return emptySet()
             }
 
-            override val embabelTypes
-                get() = listOf(DomainType(DummyType::class.java))
+            override val domainTypes
+                get() = listOf(JvmType(DummyType::class.java))
             override val toolGroups: Set<ToolGroupRequirement>
                 get() = emptySet()
         }
@@ -453,7 +453,7 @@ class AutonomyActionLeakageTest {
             }
 
             override fun referencedInputProperties(variable: String): Set<String> = emptySet()
-            override val embabelTypes = listOf(DomainType(DummyType::class.java))
+            override val domainTypes = listOf(JvmType(DummyType::class.java))
             override val toolGroups: Set<ToolGroupRequirement> = emptySet()
         }
     }

@@ -44,8 +44,8 @@ interface ActionSource {
 interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSource, DataDictionary, HasInfoString {
 
     @get:JsonIgnore
-    override val embabelTypes: Collection<EmbabelType>
-        get() = actions.flatMap { it.embabelTypes }.distinct()
+    override val domainTypes: Collection<DomainType>
+        get() = actions.flatMap { it.domainTypes }.distinct()
 
     override fun infoString(
         verbose: Boolean?,
@@ -59,7 +59,7 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
            |conditions:
            |${conditions.map { it.name }.sorted().joinToString("\n") { it.indent(1) }}
            |schema types:
-           |${embabelTypes.map { it }.joinToString("\n") { it.infoString(true, 1) }}
+           |${domainTypes.map { it }.joinToString("\n") { it.infoString(true, 1) }}
            |"""
             .trimMargin()
             .indentLines(indent)
@@ -85,9 +85,9 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
         return newAgent
     }
 
-    fun resolveType(name: String): EmbabelType {
-        return embabelTypes.find { it.name == name }
-            ?: error("Schema type '$name' not found in agent $name: types were ${embabelTypes.joinToString(", ") { it.name }}")
+    fun resolveType(name: String): DomainType {
+        return domainTypes.find { it.name == name }
+            ?: error("Schema type '$name' not found in agent ${this.name}: types were ${domainTypes.joinToString(", ") { it.name }}")
     }
 
     companion object {
@@ -116,5 +116,5 @@ private data class AgentScopeImpl(
     override val actions: List<Action>,
     override val goals: Set<Goal>,
     override val conditions: Set<Condition>,
-    override val embabelTypes: Collection<SchemaType> = emptyList(),
+    override val domainTypes: Collection<DynamicType> = emptyList(),
 ) : AgentScope

@@ -61,7 +61,7 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
      */
     val qos: ActionQos
 
-    override val embabelTypes: Collection<EmbabelType>
+    override val domainTypes: Collection<DomainType>
         get() =
             (inputs + outputs)
                 .map {
@@ -71,8 +71,8 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
     private fun referencedType(
         binding: IoBinding,
         action: Action,
-    ): SchemaType {
-        var type = SchemaType(name = binding.type)
+    ): DynamicType {
+        var type = DynamicType(name = binding.type)
         for (prop in action.referencedInputProperties(binding.name)) {
             loggerFor<Action>().debug("Discovered property {}", prop)
             type = type.withProperty(PropertyDefinition(name = prop))

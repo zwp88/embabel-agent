@@ -221,7 +221,7 @@ class AgentMetadataReaderTest {
         @Test
         fun `not an agent`() {
             val reader = AgentMetadataReader()
-            val metadata = reader.createAgentMetadata(OneTransformerActionOnly())
+            val metadata = reader.createAgentMetadata(ConditionFromBlackboard())
             assertNotNull(metadata)
             assertFalse(metadata!! is CoreAgent)
         }

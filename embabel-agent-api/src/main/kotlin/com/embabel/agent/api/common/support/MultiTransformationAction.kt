@@ -21,7 +21,6 @@ import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.AbstractAction
 import com.embabel.common.core.types.ZeroToOne
-import java.lang.reflect.Modifier
 
 /**
  * Transformer that can take multiple inputs.
@@ -57,8 +56,8 @@ class MultiTransformationAction<O : Any>(
     qos = qos,
 ) {
 
-    override val embabelTypes: Collection<EmbabelType>
-        get() = (inputClasses + outputClass).map { DomainType(it) }
+    override val domainTypes: Collection<DomainType>
+        get() = JvmType.fromClasses(inputClasses + outputClass)
 
     @Suppress("UNCHECKED_CAST")
     override fun execute(
@@ -142,8 +141,7 @@ private fun bindingsFrom(
     outputClass: Class<*>,
 ): Set<IoBinding> {
     if (SomeOf::class.java.isAssignableFrom(outputClass)) {
-        return outputClass.declaredFields
-            .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }
+        return SomeOf.eligibleFields(outputClass)
             .map { field ->
                 IoBinding(
                     // TODO bind to name if requires match

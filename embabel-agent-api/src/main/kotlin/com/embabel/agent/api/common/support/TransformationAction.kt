@@ -57,8 +57,8 @@ open class TransformationAction<I, O>(
     qos = qos,
 ) {
 
-    override val embabelTypes: Collection<EmbabelType>
-        get() = setOf(inputClass, outputClass).map { SchemaType(it.name) }
+    override val domainTypes: Collection<DomainType>
+        get() = setOf(inputClass, outputClass).map { DynamicType(it.name) }
 
     @Suppress("UNCHECKED_CAST")
     override fun execute(

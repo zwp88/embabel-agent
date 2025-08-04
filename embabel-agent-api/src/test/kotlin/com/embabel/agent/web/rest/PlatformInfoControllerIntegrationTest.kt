@@ -115,7 +115,7 @@ class PlatformInfoControllerIntegrationTest(
         assertEquals(1, platformInfo.agentCount)
         assertTrue(platformInfo.actionCount > 1)
 //        assertTrue(platformInfo.goalCount > 1)
-        assertTrue(platformInfo.embabelTypes.isNotEmpty())
+        assertTrue(platformInfo.domainTypes.isNotEmpty())
         assertTrue(platformInfo.toolGroups.isNotEmpty(), "Must have some tool groups")
         assertTrue(platformInfo.models.isNotEmpty(), "Must have some models in $content")
     }

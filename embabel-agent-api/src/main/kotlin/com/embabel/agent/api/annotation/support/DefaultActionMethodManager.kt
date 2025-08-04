@@ -120,7 +120,7 @@ internal class DefaultActionMethodManager(
 
                 else -> {
                     val requireNameMatch = parameter.getAnnotation(RequireNameMatch::class.java)
-                    val domainTypes = actionContext.processContext.agentProcess.agent.domainTypes.map { it.clazz }
+                    val domainTypes = actionContext.processContext.agentProcess.agent.jvmTypes.map { it.clazz }
                     val variable = if (requireNameMatch != null) {
                         parameter.name
                     } else {

@@ -17,8 +17,8 @@ package com.embabel.agent.support
 
 import com.embabel.agent.api.annotation.support.PersonWithReverseTool
 import com.embabel.agent.core.DataDictionaryImpl
-import com.embabel.agent.core.DomainType
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.JvmType
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.io.UserInput
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -44,7 +44,7 @@ class BlackboardTest {
                             AllOfTheAbove::class.java,
                             UserInput::class.java,
                             PersonWithReverseTool::class.java
-                        ).map { DomainType(it) },
+                        ).map { JvmType(it) },
                     )
                 )
             )
