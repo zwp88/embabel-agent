@@ -27,9 +27,11 @@ interface DataDictionary {
     val schemaTypes: Collection<SchemaType>
 
     /**
-     * Referenced domain types.
-     * These are normally data classes in Kotlin.
-     * They may have methods annotated with the Spring @Tool annotation.
+     * Referenced domain types, backed by JVM objects.
+     * These are often Java records or Kotlin data classes,
+     * although any class can be used, including existing domain objects.
+     * They may have methods annotated with the Spring @Tool annotation
+     * that will be exposed to LLMs.
      */
     val domainTypes: Collection<Class<*>>
 }

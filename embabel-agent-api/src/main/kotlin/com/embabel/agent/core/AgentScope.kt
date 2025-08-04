@@ -65,18 +65,6 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
             .trimMargin()
             .indentLines(indent)
 
-//        "%s\n\tgoals:\n\t\t%s\n\tactions:\n\t\t%s\n\tconditions: %s\n\tdomain types: %s\n\tschema types: %s".format(
-//            name,
-//            goals.sortedBy { it.name }
-//                .joinToString("\n\t\t") { it.infoString(verbose = verbose) },
-//            actions.sortedBy { it.name }
-//                .joinToString("\n\t\t") { it.infoString(verbose = verbose) },
-//            conditions.map { it.name }.sorted(),
-//            domainTypes.map { it.simpleName }.distinct().sorted(),
-//            schemaTypes.map { it }
-//                .sortedBy { it.name },
-//        )
-
     /**
      * Create a new agent from the given scope
      * @param name Name of the agent to create
@@ -120,7 +108,6 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
                 conditions = conditions,
             )
         }
-
     }
 }
 
