@@ -57,13 +57,13 @@ class MultiTransformationAction<O : Any>(
     qos = qos,
 ) {
 
-    override val domainTypes
-        get() = inputClasses + outputClass
+    override val embabelTypes: Collection<EmbabelType>
+        get() = (inputClasses + outputClass).map { DomainType(it) }
 
     @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
-        action: Action
+        action: Action,
     ): ActionStatus = ActionRunner.execute(processContext) {
         val inputValues: List<Any> = inputs.map {
             processContext.getValue(variable = it.name, type = it.type)
@@ -86,7 +86,7 @@ class MultiTransformationAction<O : Any>(
 
     private fun bindOutput(
         processContext: ProcessContext,
-        output: O
+        output: O,
     ) {
         if (!outputClass.isInstance(output)) {
             throw IllegalArgumentException(
@@ -126,7 +126,10 @@ class MultiTransformationAction<O : Any>(
     }
 }
 
-private fun calculateOutputs(outputVarName: String?, outputClass: Class<*>): Set<IoBinding> {
+private fun calculateOutputs(
+    outputVarName: String?,
+    outputClass: Class<*>,
+): Set<IoBinding> {
     return if (outputVarName == null) {
         emptySet()
     } else {
@@ -134,7 +137,10 @@ private fun calculateOutputs(outputVarName: String?, outputClass: Class<*>): Set
     }
 }
 
-private fun bindingsFrom(outputVarName: String?, outputClass: Class<*>): Set<IoBinding> {
+private fun bindingsFrom(
+    outputVarName: String?,
+    outputClass: Class<*>,
+): Set<IoBinding> {
     if (SomeOf::class.java.isAssignableFrom(outputClass)) {
         return outputClass.declaredFields
             .filter { !it.isSynthetic && !Modifier.isStatic(it.modifiers) }

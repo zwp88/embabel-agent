@@ -22,16 +22,25 @@ interface DataDictionary {
 
     /**
      * Schema types referenced by this component.
-     * These are not backed by JVM objects.
+     * These may or may not be backed by JVM objects.
      */
-    val schemaTypes: Collection<SchemaType>
+    val embabelTypes: Collection<EmbabelType>
 
-    /**
-     * Referenced domain types, backed by JVM objects.
-     * These are often Java records or Kotlin data classes,
-     * although any class can be used, including existing domain objects.
-     * They may have methods annotated with the Spring @Tool annotation
-     * that will be exposed to LLMs.
-     */
-    val domainTypes: Collection<Class<*>>
+    val schemaTypes: Collection<SchemaType>
+        get() =
+            embabelTypes.filterIsInstance<SchemaType>().toSet()
+
+    val domainTypes: Collection<DomainType>
+        get() =
+            embabelTypes.filterIsInstance<DomainType>().toSet()
+
+}
+
+class DataDictionaryImpl(
+    override val embabelTypes: Collection<EmbabelType>,
+) : DataDictionary {
+
+    constructor (
+        vararg embabelTypes: Class<*>,
+    ) : this(embabelTypes.map { DomainType(it) })
 }

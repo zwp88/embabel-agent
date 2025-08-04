@@ -298,8 +298,8 @@ abstract class AbstractAgentProcess(
      * Execute an action
      */
     protected fun executeAction(action: Action): ActionStatus {
-        val outputTypes: Map<String, SchemaType> =
-            action.outputs.associateBy({ it.name }, { agent.resolveSchemaType(it.type) })
+        val outputTypes: Map<String, EmbabelType> =
+            action.outputs.associateBy({ it.name }, { agent.resolveType(it.type) })
         logger.debug(
             "⚙️ Process {} executing action {}: outputTypes={}",
             id,

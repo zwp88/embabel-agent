@@ -44,8 +44,8 @@ interface ActionSource {
 interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSource, DataDictionary, HasInfoString {
 
     @get:JsonIgnore
-    override val domainTypes: Collection<Class<*>>
-        get() = actions.flatMap { it.domainTypes }.distinct()
+    override val embabelTypes: Collection<EmbabelType>
+        get() = actions.flatMap { it.embabelTypes }.distinct()
 
     override fun infoString(
         verbose: Boolean?,
@@ -58,9 +58,8 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
            |${actions.sortedBy { it.name }.joinToString("\n") { it.infoString(true, 1) }}
            |conditions:
            |${conditions.map { it.name }.sorted().joinToString("\n") { it.indent(1) }}
-           |domain types: ${domainTypes.map { it.simpleName }.distinct().sorted().joinToString(", ")}
            |schema types:
-           |${schemaTypes.map { it }.joinToString("\n") { it.infoString(true, 1) }}
+           |${embabelTypes.map { it }.joinToString("\n") { it.infoString(true, 1) }}
            |"""
             .trimMargin()
             .indentLines(indent)
@@ -86,9 +85,9 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
         return newAgent
     }
 
-    fun resolveSchemaType(name: String): SchemaType {
-        return schemaTypes.find { it.name == name }
-            ?: error("Schema type '$name' not found in agent $name")
+    fun resolveType(name: String): EmbabelType {
+        return embabelTypes.find { it.name == name }
+            ?: error("Schema type '$name' not found in agent $name: types were ${embabelTypes.joinToString(", ") { it.name }}")
     }
 
     companion object {
@@ -117,5 +116,5 @@ private data class AgentScopeImpl(
     override val actions: List<Action>,
     override val goals: Set<Goal>,
     override val conditions: Set<Condition>,
-    override val schemaTypes: Collection<SchemaType> = emptyList(),
+    override val embabelTypes: Collection<SchemaType> = emptyList(),
 ) : AgentScope

@@ -16,17 +16,23 @@
 package com.embabel.agent.core
 
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.Named
 import com.embabel.common.util.indent
 import com.embabel.common.util.indentLines
-import kotlin.collections.map
+
+/**
+ * Type known to the Embabel agent platform.
+ * May be backed by a domain object or by a map.
+ */
+sealed interface EmbabelType : HasInfoString, Named
 
 /**
  * Simple data type
  */
 data class SchemaType(
-    val name: String,
+    override val name: String,
     val properties: List<PropertyDefinition> = emptyList(),
-) : HasInfoString {
+) : EmbabelType {
 
     fun withProperty(
         property: PropertyDefinition,
@@ -54,3 +60,26 @@ data class PropertyDefinition(
     val type: String = "string",
     val description: String? = name,
 )
+
+/**
+ * Typed backed by a JVM object
+ */
+data class DomainType(
+    val clazz: Class<*>,
+) : EmbabelType {
+
+    override val name: String
+        get() = clazz.name
+
+    override fun infoString(
+        verbose: Boolean?,
+        indent: Int,
+    ): String {
+        return """
+                |class: ${clazz.name}
+                |"""
+            .trimMargin()
+            .indentLines(indent)
+    }
+
+}

@@ -61,7 +61,7 @@ interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, To
      */
     val qos: ActionQos
 
-    override val schemaTypes: Collection<SchemaType>
+    override val embabelTypes: Collection<EmbabelType>
         get() =
             (inputs + outputs)
                 .map {

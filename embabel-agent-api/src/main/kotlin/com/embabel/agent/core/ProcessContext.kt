@@ -46,5 +46,8 @@ data class ProcessContext(
         variable: String,
         type: String,
     ): Any? =
-        blackboard.getValue(variable = variable, type = type, domainTypes = agentProcess.agent.domainTypes)
+        blackboard.getValue(
+            variable = variable, type = type,
+            dataDictionary = agentProcess.agent,
+        )
 }

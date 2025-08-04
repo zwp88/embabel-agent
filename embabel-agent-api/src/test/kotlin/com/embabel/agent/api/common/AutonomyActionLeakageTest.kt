@@ -166,11 +166,11 @@ class AutonomyActionLeakageTest {
                 return emptySet()
             }
 
-            override val domainTypes: Collection<Class<*>>
-                get() = listOf(DummyType::class.java)
+            override val embabelTypes: Collection<EmbabelType>
+                get() = listOf(DomainType(DummyType::class.java))
             override val toolGroups: Set<ToolGroupRequirement>
                 get() = emptySet()
-            override val schemaTypes = emptyList<SchemaType>()
+
         }
 
         // Create action2 that satisfies goal2
@@ -212,11 +212,10 @@ class AutonomyActionLeakageTest {
                 return emptySet()
             }
 
-            override val domainTypes: Collection<Class<*>>
-                get() = listOf(DummyType::class.java)
+            override val embabelTypes
+                get() = listOf(DomainType(DummyType::class.java))
             override val toolGroups: Set<ToolGroupRequirement>
                 get() = emptySet()
-            override val schemaTypes = emptyList<SchemaType>()
         }
 
         // Create an agent with both actions
@@ -445,7 +444,6 @@ class AutonomyActionLeakageTest {
             override val inputs: Set<IoBinding> = setOf(IoBinding(name, type = UserInput::class.java))
             override val preconditions = preconditions
             override val effects = effects
-            override val schemaTypes = emptyList<SchemaType>()
 
             override fun execute(
                 processContext: ProcessContext,
@@ -455,7 +453,7 @@ class AutonomyActionLeakageTest {
             }
 
             override fun referencedInputProperties(variable: String): Set<String> = emptySet()
-            override val domainTypes: Collection<Class<*>> = listOf(DummyType::class.java)
+            override val embabelTypes = listOf(DomainType(DummyType::class.java))
             override val toolGroups: Set<ToolGroupRequirement> = emptySet()
         }
     }
