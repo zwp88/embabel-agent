@@ -176,12 +176,14 @@ class NeoOgmKnowledgeGraphService(
                 SET n.embedding = ${'$'}embedding
                 RETURN COUNT(n) as nodesUpdated
                """.trimIndent()
+        val params = mapOf(
+            "entityId" to entity.id,
+            "embedding" to embedding,
+        )
+        logger.info("Executing embed entity cypher: {},\nparams={}", cypher, params)
         val result = session.query(
             cypher,
-            mapOf(
-                "entityId" to entity.id,
-                "embedding" to embedding,
-            )
+            params,
         )
         val propertiesSet = result.queryStatistics().propertiesSet
         if (propertiesSet < 1) {
