@@ -23,6 +23,7 @@ import com.embabel.agent.spi.InvalidLlmReturnFormatException
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.support.springai.ChatClientLlmOperations
+import com.embabel.agent.spi.support.springai.DefaultToolDecorator
 import com.embabel.agent.spi.support.springai.MaybeReturn
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
@@ -55,7 +56,7 @@ import kotlin.test.assertEquals
  */
 class FakeChatModel(
     val response: String,
-    private val options: ChatOptions = DefaultChatOptions()
+    private val options: ChatOptions = DefaultChatOptions(),
 ) : ChatModel {
 
     val promptsPassed = mutableListOf<Prompt>()
@@ -120,7 +121,10 @@ class ChatClientLlmOperationsTest {
 
     data class Dog(val name: String)
 
-    data class TemporalDog(val name: String, val birthDate: LocalDate)
+    data class TemporalDog(
+        val name: String,
+        val birthDate: LocalDate,
+    )
 
     @Nested
     inner class CreateObject {

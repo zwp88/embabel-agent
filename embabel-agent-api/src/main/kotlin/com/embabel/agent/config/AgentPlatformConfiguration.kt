@@ -24,6 +24,7 @@ import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.*
+import com.embabel.agent.spi.support.springai.DefaultToolDecorator
 import com.embabel.common.ai.model.*
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator

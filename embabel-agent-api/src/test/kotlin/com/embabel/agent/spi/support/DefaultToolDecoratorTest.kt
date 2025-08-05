@@ -16,6 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
+import com.embabel.agent.spi.support.springai.DefaultToolDecorator
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentProcessRunning
 import com.embabel.common.ai.model.LlmOptions
 import org.junit.jupiter.api.Test

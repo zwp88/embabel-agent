@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi.support
+package com.embabel.agent.spi.support.springai
 
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.ToolGroupResolver
+import com.embabel.agent.spi.support.ObservabilityToolCallback
+import com.embabel.agent.spi.support.OutputTransformingToolCallback
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.StringTransformer
 import io.micrometer.observation.ObservationRegistry
