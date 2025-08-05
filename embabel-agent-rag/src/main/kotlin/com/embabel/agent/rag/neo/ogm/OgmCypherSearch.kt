@@ -24,11 +24,12 @@ import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import com.embabel.common.util.time
 import org.neo4j.ogm.model.Result
-import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.data.neo4j.transaction.SessionFactoryUtils
 import org.springframework.stereotype.Service
+
 
 @Service
 class OgmCypherSearch(
@@ -46,7 +47,7 @@ class OgmCypherSearch(
         params: Map<String, *>,
         logger: Logger?,
     ): List<NamedEntityData> {
-        val result = query(purpose, query, params, null, logger)
+        val result = query(purpose, query, params, logger = logger)
         return rowsToNamedEntityData(result)
     }
 
@@ -56,7 +57,7 @@ class OgmCypherSearch(
         params: Map<String, Any>,
         logger: Logger?,
     ): List<OgmMappedNamedEntity> {
-        val result = query(purpose, query, params, null, logger)
+        val result = query(purpose, query, params, logger = logger)
         return result.mapNotNull { row ->
             val match = row["n"] as? OgmMappedNamedEntity
             if (match == null) {
@@ -73,7 +74,7 @@ class OgmCypherSearch(
         params: Map<String, *>,
         logger: Logger?,
     ): List<SimilarityResult<NamedEntityData>> {
-        val result = query(purpose, query, params, null, logger)
+        val result = query(purpose, query, params, logger = logger)
         return rowsToSimilarityResult(result)
     }
 
@@ -83,7 +84,7 @@ class OgmCypherSearch(
         params: Map<String, *>,
         logger: Logger?,
     ): List<SimilarityResult<Chunk>> {
-        val result = query(purpose, query, params, null, logger)
+        val result = query(purpose, query, params, logger = logger)
         return result.map { row ->
             SimpleSimilaritySearchResult(
                 match = Chunk(
@@ -102,7 +103,7 @@ class OgmCypherSearch(
         params: Map<String, *>,
         logger: Logger?,
     ): List<SimilarityResult<OgmMappedNamedEntity>> {
-        val result = query(purpose, query, params, null, logger)
+        val result = query(purpose, query, params, logger = logger)
         return rowsToMappedEntitySimilarityResult(result)
     }
 
@@ -154,15 +155,14 @@ class OgmCypherSearch(
         purpose: String,
         query: String,
         params: Map<String, *>,
-        session: Session?,
         logger: Logger?,
     ): Result {
         val loggerToUse = logger ?: ogmCypherSearchLogger
-        val sessionToUse = session ?: sessionFactory.openSession()
+        val session = SessionFactoryUtils.getSession(sessionFactory)
         val cypher = if (query.contains(" ")) query else queryResolver.resolve(query)!!
         loggerToUse.info("Executing query for purpose {} with params {}\n{}", purpose, params, cypher)
         val (result, millis) = time {
-            sessionToUse.query(
+            session.query(
                 cypher,
                 params,
             )

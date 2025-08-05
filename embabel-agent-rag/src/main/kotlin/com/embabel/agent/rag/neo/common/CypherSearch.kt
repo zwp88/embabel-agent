@@ -23,6 +23,7 @@ import org.slf4j.Logger
 
 /**
  * API-independent cypher searcher
+ * Must work within Spring's transaction management
  */
 interface CypherSearch {
 
