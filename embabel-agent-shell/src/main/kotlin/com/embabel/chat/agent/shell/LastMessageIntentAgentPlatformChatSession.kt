@@ -21,11 +21,11 @@ import com.embabel.agent.api.common.autonomy.GoalChoiceApprover
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.shell.TerminalServices
-import com.embabel.agent.shell.config.ShellProperties
 import com.embabel.chat.AgenticResultAssistantMessage
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.MessageListener
 import com.embabel.chat.agent.AgentPlatformChatSession
+import com.embabel.chat.agent.ChatConfig
 
 /**
  * Shell-specific implementation of agent platform chat session.
@@ -38,10 +38,10 @@ class LastMessageIntentAgentPlatformChatSession(
     messageListener: MessageListener,
     processOptions: ProcessOptions = ProcessOptions(),
     private val terminalServices: TerminalServices,
-    private val config: ShellProperties.ChatConfig,
-) : AgentPlatformChatSession(autonomy, goalChoiceApprover, messageListener, processOptions) {
+    config: ChatConfig,
+) : AgentPlatformChatSession(autonomy, goalChoiceApprover, messageListener, processOptions, config) {
 
-    override fun shouldBindConversation(): Boolean = config.bindConversation
+    override fun shouldBindConversation(): Boolean = chatConfig.bindConversation
 
     override fun handleProcessWaitingException(
         pwe: ProcessWaitingException,

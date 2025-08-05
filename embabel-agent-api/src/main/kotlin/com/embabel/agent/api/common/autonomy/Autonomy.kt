@@ -284,7 +284,12 @@ class Autonomy(
                 null
             } else {
                 val multigoal = ultimate.match.withPreconditions(*credibleGoals.drop(1).map { it.match }.toTypedArray())
-                logger.info("Creating composite goal {} from credible goals: {}", multigoal, credibleGoals)
+                logger.info(
+                    "Creating composite of {} goals: {} from credible goals: {}",
+                    credibleGoals.size,
+                    multigoal,
+                    credibleGoals,
+                )
                 Ranking(match = multigoal, ultimate.score)
             }
         } else {
