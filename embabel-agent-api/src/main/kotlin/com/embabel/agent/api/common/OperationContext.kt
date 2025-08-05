@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.api.common.autonomy.AgentInvocation
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.api.dsl.AgentScopeBuilder
 import com.embabel.agent.core.*
@@ -23,6 +24,7 @@ import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.CurrentDate
 import com.embabel.common.ai.prompt.PromptContributor
+import java.util.concurrent.CompletableFuture
 
 /**
  * Context for any operation. Exposes blackboard and process context.
@@ -41,6 +43,18 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
      * Action or operation that is being executed.
      */
     val operation: Operation
+
+    /**
+     * Any agents known to the present platform that can handle the given object and return the given result type.
+     * It is not an error if there are no such agents
+     */
+    fun <T : Any> fireAgent(
+        obj: Any,
+        resultType: Class<T>,
+    ): CompletableFuture<T>? {
+        val invocation = AgentInvocation.create(agentPlatform(), resultType)
+        return invocation.invokeAsync(obj)
+    }
 
     /**
      * Create a prompt runner for this context.
@@ -82,16 +96,16 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
 
     /**
      * Execute the operations in parallel.
-     * @param coll the collection of elements to process
+     * @param items the collection of items to process
      * @param maxConcurrency the maximum number of concurrent operations to run
      * @param transform the transformation function to apply to each element
      */
     fun <T, R> parallelMap(
-        coll: Collection<T>,
+        items: Collection<T>,
         maxConcurrency: Int,
         transform: (t: T) -> R,
     ): List<R> = processContext.platformServices.asyncer.parallelMap(
-        coll = coll,
+        items = items,
         transform = transform,
         maxConcurrency = maxConcurrency,
     )

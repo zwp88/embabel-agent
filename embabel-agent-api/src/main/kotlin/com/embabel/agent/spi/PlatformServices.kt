@@ -17,6 +17,7 @@ package com.embabel.agent.spi
 
 import com.embabel.agent.api.common.Asyncer
 import com.embabel.agent.api.common.autonomy.Autonomy
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
@@ -38,6 +39,7 @@ data class PlatformServices(
     val asyncer: Asyncer,
     val ragService: RagService,
     val objectMapper: ObjectMapper,
+    val outputChannel: OutputChannel,
     private val applicationContext: ApplicationContext?,
 ) {
 

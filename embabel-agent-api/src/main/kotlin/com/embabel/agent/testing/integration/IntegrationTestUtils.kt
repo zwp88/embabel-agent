@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.testing.integration
 
+import com.embabel.agent.channel.DevNullOutputChannel
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.DefaultAgentPlatform
 import com.embabel.agent.core.support.InMemoryBlackboard
@@ -58,6 +59,7 @@ object IntegrationTestUtils {
             description = "Dummy Agent Platform for Integration Testing",
             asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor()),
             objectMapper = jacksonObjectMapper(),
+            outputChannel = DevNullOutputChannel,
         )
     }
 
@@ -73,6 +75,7 @@ object IntegrationTestUtils {
             asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor()),
             objectMapper = jacksonObjectMapper(),
             applicationContext = null,
+            outputChannel = DevNullOutputChannel,
         )
     }
 
@@ -97,6 +100,7 @@ object IntegrationTestUtils {
             processOptions = ProcessOptions(),
             platformServices = dummyPlatformServices(),
             agentProcess = dummyAgentProcessRunning(agent),
+            outputChannel = DevNullOutputChannel,
         )
     }
 

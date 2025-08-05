@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi.support
+package com.embabel.agent.spi.support.springai
 
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.AgentProcess
@@ -30,7 +30,7 @@ import java.time.Duration
 fun ToolCallback.withEventPublication(
     agentProcess: AgentProcess,
     action: Action?,
-    llmOptions: LlmOptions
+    llmOptions: LlmOptions,
 ): ToolCallback =
     this as? EventPublishingToolCallback ?: EventPublishingToolCallback(
         delegate = this,

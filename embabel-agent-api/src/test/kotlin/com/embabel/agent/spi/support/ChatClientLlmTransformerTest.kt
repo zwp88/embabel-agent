@@ -22,6 +22,7 @@ import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.support.springai.ChatClientLlmOperations
+import com.embabel.agent.spi.support.springai.DefaultToolDecorator
 import com.embabel.agent.spi.support.springai.MaybeReturn
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.common.ai.model.DefaultOptionsConverter
@@ -55,7 +56,11 @@ class MutableLlmInvocationHistory : LlmInvocationHistory {
 
 data class SpiPerson(val name: String)
 
-data class WierdPerson(val name: String, val age: Int, val weirdness: String)
+data class WierdPerson(
+    val name: String,
+    val age: Int,
+    val weirdness: String,
+)
 
 data class Return(
     val result: Result<*>,

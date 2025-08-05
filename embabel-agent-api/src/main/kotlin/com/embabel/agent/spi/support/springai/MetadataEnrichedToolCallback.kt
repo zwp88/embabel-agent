@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.spi.support
+package com.embabel.agent.spi.support.springai
 
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.common.util.loggerFor
+import com.embabel.common.util.trim
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
 
@@ -34,7 +35,11 @@ class MetadataEnrichedToolCallback(
         try {
             return delegate.call(toolInput)
         } catch (t: Throwable) {
-            loggerFor<MetadataEnrichedToolCallback>().error("Tool call failure on ${delegate.toolDefinition.name()}", t)
+            // Ensures logs aren't too verbose, but still informative.
+            loggerFor<MetadataEnrichedToolCallback>().warn(
+                "Tool call failure on ${delegate.toolDefinition.name()}: {}",
+                trim(s = t.message, max = 120, keepRight = 5),
+            )
             throw t
         }
     }

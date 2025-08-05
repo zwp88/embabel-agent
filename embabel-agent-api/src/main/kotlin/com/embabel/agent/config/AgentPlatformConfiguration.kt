@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.config
 
+import com.embabel.agent.channel.DevNullOutputChannel
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
@@ -22,6 +24,7 @@ import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.*
+import com.embabel.agent.spi.support.springai.DefaultToolDecorator
 import com.embabel.common.ai.model.*
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.NameGenerator
@@ -55,7 +58,7 @@ import org.springframework.web.client.RestTemplate
     @Bean
     fun toolDecorator(
         toolGroupResolver: ToolGroupResolver,
-        observationRegistry: ObservationRegistry
+        observationRegistry: ObservationRegistry,
     ): ToolDecorator {
         loggerFor<AgentPlatformConfiguration>().info(
             "Creating default ToolDecorator with toolGroupResolver: {}, observationRegistry: {}",
@@ -93,7 +96,10 @@ import org.springframework.web.client.RestTemplate
     fun restTemplate() = RestTemplate()
 
     @Bean
-    fun ranker(llmOperations: LlmOperations, rankingProperties: RankingProperties): Ranker = LlmRanker(
+    fun ranker(
+        llmOperations: LlmOperations,
+        rankingProperties: RankingProperties,
+    ): Ranker = LlmRanker(
         llmOperations = llmOperations,
         rankingProperties = rankingProperties,
     )
@@ -138,5 +144,10 @@ import org.springframework.web.client.RestTemplate
     @Bean
     fun autoLlmSelectionCriteriaResolver(
     ): AutoLlmSelectionCriteriaResolver = AutoLlmSelectionCriteriaResolver.DEFAULT
+
+    @Bean
+    fun outputChannel(): OutputChannel {
+        return DevNullOutputChannel
+    }
 
 }

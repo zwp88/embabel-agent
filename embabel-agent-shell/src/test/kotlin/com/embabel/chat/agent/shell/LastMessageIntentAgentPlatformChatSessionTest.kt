@@ -19,10 +19,10 @@ import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.GoalChoiceApprover
 import com.embabel.agent.domain.library.Person
-import com.embabel.agent.shell.config.ShellProperties
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.MessageSavingMessageListener
 import com.embabel.chat.UserMessage
+import com.embabel.chat.agent.ChatConfig
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -57,7 +57,7 @@ class LastMessageIntentAgentPlatformChatSessionTest {
             GoalChoiceApprover.APPROVE_ALL,
             messageListener = {},
             terminalServices = mockk(),
-            config = ShellProperties.ChatConfig(),
+            config = ChatConfig(),
         )
         val userMessage = UserMessage("Hello, world!")
         val l = MessageSavingMessageListener()

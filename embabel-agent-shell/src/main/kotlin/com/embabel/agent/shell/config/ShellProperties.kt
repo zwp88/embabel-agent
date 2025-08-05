@@ -15,20 +15,11 @@
  */
 package com.embabel.agent.shell.config
 
+import com.embabel.chat.agent.ChatConfig
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "embabel.shell")
 data class ShellProperties(
     val lineLength: Int = 140,
     val chat: ChatConfig = ChatConfig(),
-) {
-    /**
-     * Configuration for the chat session
-     * @param confirmGoals Whether to confirm goals with the user before proceeding
-     * @param bindConversation Whether to bind the conversation to the chat session
-     */
-    data class ChatConfig(
-        val confirmGoals: Boolean = true,
-        val bindConversation: Boolean = false,
-    )
-}
+)

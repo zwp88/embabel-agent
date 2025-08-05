@@ -129,11 +129,6 @@ class ShellCommands(
             )
         )
         blackboard = processOptions.blackboard
-        // Create shell module's own ChatConfig instance
-        val shellChatConfig = ShellProperties.ChatConfig(
-            confirmGoals = shellProperties.chat.confirmGoals,
-            bindConversation = shellProperties.chat.bindConversation
-        )
 
         val chatSession = LastMessageIntentAgentPlatformChatSession(
             messageListener = { },
@@ -141,7 +136,7 @@ class ShellCommands(
             processOptions = processOptions,
             goalChoiceApprover = if (shellProperties.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL,
             terminalServices = terminalServices,
-            config = shellChatConfig,
+            config = shellProperties.chat,
         )
         return terminalServices.chat(chatSession, colorPalette)
     }

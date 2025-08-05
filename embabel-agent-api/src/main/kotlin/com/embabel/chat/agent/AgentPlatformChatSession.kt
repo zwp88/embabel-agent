@@ -16,9 +16,23 @@
 package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.autonomy.*
+import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.chat.*
+
+
+/**
+ * Configuration for the chat session
+ * @param confirmGoals Whether to confirm goals with the user before proceeding
+ * @param bindConversation Whether to bind the conversation to the chat session
+ */
+data class ChatConfig(
+    val confirmGoals: Boolean = true,
+    val bindConversation: Boolean = false,
+    val multiGoal: Boolean = false,
+)
 
 /**
  * Base class for agent platform chat sessions.
@@ -29,9 +43,12 @@ abstract class AgentPlatformChatSession(
     private val goalChoiceApprover: GoalChoiceApprover,
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
+    val chatConfig: ChatConfig = ChatConfig(),
 ) : ChatSession {
 
     private var internalConversation: Conversation = InMemoryConversation()
+
+    private val blackboard: Blackboard = processOptions.blackboard ?: InMemoryBlackboard()
 
     override val conversation: Conversation
         get() = internalConversation
@@ -48,6 +65,12 @@ abstract class AgentPlatformChatSession(
     }
 
     protected fun generateResponse(message: UserMessage): AssistantMessage {
+
+        val handledCommand = handleAsCommand(message)
+        if (handledCommand != null) {
+            return handledCommand
+        }
+
         val bindings = buildMap {
             put("userInput", UserInput(message.content))
             if (shouldBindConversation())
@@ -55,15 +78,20 @@ abstract class AgentPlatformChatSession(
         }
         try {
             val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
-                processOptions = processOptions,
+                // We continue to use the same blackboard.
+                processOptions = processOptions.copy(
+                    blackboard = blackboard,
+                ),
                 goalChoiceApprover = goalChoiceApprover,
                 agentScope = autonomy.agentPlatform,
                 bindings = bindings,
                 goalSelectionOptions = GoalSelectionOptions(
-                    multiGoal = true,
+                    multiGoal = chatConfig.multiGoal,
                 ),
             )
             val result = dynamicExecutionResult.output
+            // Bind the result to the blackboard.
+            blackboard += result
             return AgenticResultAssistantMessage(
                 agentProcessExecution = dynamicExecutionResult,
                 content = result.toString(),
@@ -98,4 +126,42 @@ abstract class AgentPlatformChatSession(
         pwe: ProcessWaitingException,
         basis: Any,
     ): AssistantMessage
+
+    private fun handleAsCommand(message: UserMessage): AssistantMessage? {
+        return parseSlashCommand(message.content)?.let { (command, args) ->
+            when (command) {
+                "help" -> AssistantMessage(
+                    content = """
+                        |Available commands:
+                        |/help - Show this help message
+                        |/bb, blackboard - Show the blackboard
+                    """.trimMargin(),
+                )
+
+                "bb", "blackboard" -> {
+                    AssistantMessage(blackboard.infoString(verbose = true, indent = 2))
+                }
+
+                else -> AssistantMessage("Unrecognized / command $command")
+            }
+        }
+    }
+}
+
+val SLASH_COMMAND_REGEX = Regex("^/([a-zA-Z0-9_-]+)(?:\\s+(.*))?$")
+
+fun parseSlashCommand(input: String): Pair<String, List<String>>? {
+    val match = SLASH_COMMAND_REGEX.matchEntire(input)
+    return if (match != null) {
+        val command = match.groupValues[1]
+        val argsString = match.groupValues[2]
+        val args = if (argsString.isNotEmpty()) {
+            argsString.trim().split("\\s+".toRegex())
+        } else {
+            emptyList()
+        }
+        Pair(command, args)
+    } else {
+        null
+    }
 }

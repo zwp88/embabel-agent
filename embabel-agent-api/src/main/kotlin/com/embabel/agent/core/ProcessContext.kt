@@ -15,17 +15,20 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.MulticastAgenticEventListener
 import com.embabel.agent.spi.LlmOperations
 import com.embabel.agent.spi.PlatformServices
 
 /**
- * Process state and services
+ * Process state and services. Created by the platform,
+ * not user code.
  */
 data class ProcessContext(
     val processOptions: ProcessOptions = ProcessOptions(),
     internal val platformServices: PlatformServices,
+    val outputChannel: OutputChannel = platformServices.outputChannel,
     val agentProcess: AgentProcess,
 ) : LlmOperations by platformServices.llmOperations, AgenticEventListener by MulticastAgenticEventListener(
     processOptions.listeners + platformServices.eventListener,
@@ -43,5 +46,8 @@ data class ProcessContext(
         variable: String,
         type: String,
     ): Any? =
-        blackboard.getValue(variable = variable, type = type, domainTypes = agentProcess.agent.domainTypes)
+        blackboard.getValue(
+            variable = variable, type = type,
+            dataDictionary = agentProcess.agent,
+        )
 }
