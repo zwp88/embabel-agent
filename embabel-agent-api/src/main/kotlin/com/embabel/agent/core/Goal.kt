@@ -52,8 +52,8 @@ data class Goal(
 ) : GoapGoal, AgentSystemStep {
 
     // These methods are for Java, to obviate the builder antipattern
-    fun withPrecondition(preconditions: String): Goal {
-        return copy(pre = pre + preconditions)
+    fun withPrecondition(precondition: String): Goal {
+        return copy(pre = pre + precondition)
     }
 
     fun withPreconditions(vararg goals: Goal): Goal {

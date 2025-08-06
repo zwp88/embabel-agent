@@ -77,7 +77,7 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
         val newAgent = Agent(
             name = name,
             provider = provider,
-            description = name,
+            description = description,
             actions = actions,
             goals = goals,
             conditions = conditions,

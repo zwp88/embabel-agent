@@ -17,7 +17,10 @@ package com.embabel.agent.experimental.api.common.workflow
 
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.workflow.Feedback
+import com.embabel.agent.api.common.workflow.SimpleFeedback
 import com.embabel.agent.api.dsl.AgentScopeBuilder
+import com.embabel.agent.common.Constants.EMBABEL_PROVIDER
+import com.embabel.agent.core.Agent
 
 /**
  * Java friendly builder
@@ -32,8 +35,8 @@ data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
     companion object {
 
         @JvmStatic
-        fun <RESULT : Any> returning(resultClass: Class<RESULT>): RepeatUntilBuilder<RESULT, Feedback> {
-            return RepeatUntilBuilder(resultClass = resultClass)
+        fun <RESULT : Any> returning(resultClass: Class<RESULT>): RepeatUntilBuilder<RESULT, SimpleFeedback> {
+            return RepeatUntilBuilder(resultClass = resultClass, feedbackClass = SimpleFeedback::class.java)
         }
     }
 
@@ -66,6 +69,7 @@ data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
         ): Evaluator {
             return Evaluator(generator = generator, evaluator = evaluator)
         }
+
     }
 
     inner class Evaluator(
@@ -77,6 +81,11 @@ data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
             accept: (f: FEEDBACK) -> Boolean,
         ): Accepter {
             return Accepter(generator, evaluator, accept)
+        }
+
+        fun build(): AgentScopeBuilder<RESULT> {
+            return withAcceptanceCriteria { it.score >= scoreThreshold }
+                .build()
         }
     }
 
@@ -94,6 +103,19 @@ data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
                     acceptanceCriteria = accept,
                     resultClass = resultClass,
                     feedbackClass = feedbackClass,
+                )
+        }
+
+        fun buildAgent(
+            name: String,
+            description: String,
+        ): Agent {
+            return build()
+                .build()
+                .createAgent(
+                    name = name,
+                    provider = EMBABEL_PROVIDER,
+                    description = description,
                 )
         }
     }

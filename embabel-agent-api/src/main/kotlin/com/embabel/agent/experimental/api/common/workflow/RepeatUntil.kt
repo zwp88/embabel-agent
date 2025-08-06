@@ -46,13 +46,13 @@ data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
     private val _attempts: MutableList<Attempt<RESULT, FEEDBACK>> = mutableListOf(),
 ) {
 
-    val attempts: List<Attempt<RESULT, FEEDBACK>> = _attempts.toList()
+    fun attempts(): List<Attempt<RESULT, FEEDBACK>> = _attempts.toList()
 
-    val last: Attempt<RESULT, FEEDBACK>? = attempts.lastOrNull()
+    fun last(): Attempt<RESULT, FEEDBACK>? = _attempts.lastOrNull()
 
-    val lastFeedback: Feedback? = last?.feedback
+    fun lastFeedback(): Feedback? = last()?.feedback
 
-    val bestSoFar: Attempt<RESULT, FEEDBACK>? = attempts.maxByOrNull { it.feedback.score }
+    fun bestSoFar(): Attempt<RESULT, FEEDBACK>? = _attempts.maxByOrNull { it.feedback.score }
 
     fun recordAttempt(
         result: RESULT,
@@ -104,6 +104,7 @@ data class RepeatUntil(
                 ?: run {
                     val ah = AttemptHistory<RESULT, FEEDBACK>()
                     context += ah
+                    logger.info("Bound new AttemptHistory")
                     ah
                 }
         }
@@ -119,15 +120,17 @@ data class RepeatUntil(
             toolGroups = emptySet(),
         ) { context ->
             val attemptHistory = findOrBindAttemptHistory(context)
-
             val tac = (context as TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, RESULT>).copy(
                 input = attemptHistory,
             )
             val result = task.invoke(tac)
-            logger.info("Generated result: {}", result)
+            logger.info(
+                "Generated result {}: {}",
+                attemptHistory.attempts().size + 1,
+                result,
+            )
             result
         }
-
 
         val evaluationAction = TransformationAction(
             name = "${resultClass.name}=>${feedbackClass.name}",
@@ -146,16 +149,23 @@ data class RepeatUntil(
                 input = attemptHistory,
             )
             val feedback = evaluator(tac)
-            if (attemptHistory.bestSoFar == null || feedback.score > attemptHistory.bestSoFar.feedback.score) {
+            val bestSoFar = attemptHistory.bestSoFar()
+            if (bestSoFar == null) {
                 logger.info(
-                    "New best feedback found: {} (was {})",
+                    "First feedback computed: {}",
                     feedback,
-                    attemptHistory.bestSoFar ?: "none",
+                )
+            } else if (feedback.score > bestSoFar.feedback.score) {
+                logger.info(
+                    "New best feedback computed: {} (previously {})",
+                    feedback,
+                    bestSoFar,
                 )
             } else {
-                logger.debug("Not better than we've seen: Feedback is {}", feedback)
+                logger.info("Not better than we've seen: Feedback is {}", feedback)
             }
             attemptHistory.recordAttempt(context.input, feedback)
+            logger.info("Recorded attempt: {} with feedback: {}", context.input, feedback)
             feedback
         }
 
@@ -171,22 +181,22 @@ data class RepeatUntil(
             name = ACCEPTABLE_CONDITION,
             evaluator = { context, _ ->
                 val attemptHistory = context.last<AttemptHistory<RESULT, FEEDBACK>>()
-                if (attemptHistory == null || attemptHistory.last == null) {
+                if (attemptHistory?.last() == null) {
                     false
-                } else if (attemptHistory.attempts.size >= maxIterations) {
+                } else if (attemptHistory.attempts().size >= maxIterations) {
                     logger.info(
                         "Condition '{}': Giving up after {} iterations",
                         ACCEPTABLE_CONDITION,
-                        attemptHistory.attempts.size,
+                        attemptHistory.attempts().size,
                     )
                     true
                 } else {
-                    val lastFeedback = attemptHistory.last.feedback
+                    val lastFeedback = attemptHistory.last()!!.feedback
                     val isAcceptable = acceptanceCriteria(lastFeedback)
-                    logger.debug(
+                    logger.info(
                         "Condition '{}', iterations={}: Feedback acceptable={}: {}",
                         ACCEPTABLE_CONDITION,
-                        attemptHistory.attempts.size,
+                        attemptHistory.attempts().size,
                         isAcceptable,
                         lastFeedback,
                     )
@@ -205,15 +215,19 @@ data class RepeatUntil(
             inputClass = AttemptHistory::class.java,
             outputClass = resultClass,
         ) { context ->
-            context.input.last?.result as? RESULT
+            val finalResult = context.input.last()?.result as? RESULT
                 ?: throw IllegalStateException("No result available in AttemptHistory")
+            logger.info("Consolidating results, final result: {}", finalResult)
+            finalResult
         }
 
         val resultGoal = Goal(
             "final-${resultClass.name}",
             "Satisfied with the final ${resultClass.name}",
             satisfiedBy = resultClass,
-        ).withPrecondition(ACCEPTABLE_CONDITION)
+        ).withPrecondition(
+            ACCEPTABLE_CONDITION
+        )
 
         return AgentScopeBuilder(
             name = MobyNameGenerator.generateName(),
