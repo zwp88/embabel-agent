@@ -50,6 +50,8 @@ data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
 
     val last: Attempt<RESULT, FEEDBACK>? = attempts.lastOrNull()
 
+    val lastFeedback: Feedback? = last?.feedback
+
     val bestSoFar: Attempt<RESULT, FEEDBACK>? = attempts.maxByOrNull { it.feedback.score }
 
     fun recordAttempt(
