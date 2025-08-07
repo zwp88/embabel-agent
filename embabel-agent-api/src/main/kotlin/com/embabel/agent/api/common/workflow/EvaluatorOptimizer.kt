@@ -41,6 +41,7 @@ data class ScoredResult<RESULT, FEEDBACK>(
 /**
  * See https://www.anthropic.com/engineering/building-effective-agents
  */
+@Deprecated("Use RepeatUntilBuilder instead")
 object EvaluatorOptimizer {
 
     private val logger = LoggerFactory.getLogger(EvaluatorOptimizer::class.java)
