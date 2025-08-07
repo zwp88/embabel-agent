@@ -30,8 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RepeatUntilBuilderTest {
 
@@ -95,7 +94,11 @@ class RepeatUntilBuilderTest {
                             return new Report("thing-" + tac.getInput().attempts().size());
                         })
                 .withEvaluator(
-                        ctx -> new TextFeedback(0.5, "feedback"))
+                        ctx -> {
+                            assertNotNull(ctx.getInput().resultToEvaluate(),
+                                    "Last result must be available to evaluator");
+                            return new TextFeedback(0.5, "feedback");
+                        })
                 .withAcceptanceCriteria(f -> true)
                 .buildAgent("myAgent", "This is a very good agent");
 

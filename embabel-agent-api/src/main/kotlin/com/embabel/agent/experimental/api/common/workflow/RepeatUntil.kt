@@ -26,9 +26,11 @@ import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.last
 import com.embabel.common.core.MobyNameGenerator
+import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
 import com.embabel.common.core.types.ZeroToOne
 import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.time.Instant
 
 data class Attempt<RESULT : Any, FEEDBACK : Feedback>(
@@ -44,15 +46,33 @@ data class Attempt<RESULT : Any, FEEDBACK : Feedback>(
  */
 data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
     private val _attempts: MutableList<Attempt<RESULT, FEEDBACK>> = mutableListOf(),
-) {
+    private var lastResult: RESULT? = null,
+    override val timestamp: Instant = Instant.now(),
+) : Timestamped, Timed {
+
+    fun attemptCount(): Int = _attempts.size
+
+    override val runningTime: Duration
+        get() = Duration.between(timestamp, Instant.now())
 
     fun attempts(): List<Attempt<RESULT, FEEDBACK>> = _attempts.toList()
 
-    fun last(): Attempt<RESULT, FEEDBACK>? = _attempts.lastOrNull()
+    fun lastAttempt(): Attempt<RESULT, FEEDBACK>? = _attempts.lastOrNull()
 
-    fun lastFeedback(): Feedback? = last()?.feedback
+    /**
+     * Evaluator can use this to access the last result.
+     */
+    fun resultToEvaluate(): RESULT? = lastResult
+
+    fun lastFeedback(): Feedback? = lastAttempt()?.feedback
 
     fun bestSoFar(): Attempt<RESULT, FEEDBACK>? = _attempts.maxByOrNull { it.feedback.score }
+
+    internal fun recordResult(
+        result: RESULT,
+    ) {
+        lastResult = result
+    }
 
     internal fun recordAttempt(
         result: RESULT,
@@ -113,7 +133,7 @@ data class RepeatUntil(
         val taskAction = SupplierAction(
             name = "=>${resultClass.name}",
             description = "Generate $resultClass",
-            post = listOf(`RESULT_WAS_BOUND_LAST_CONDITION`),
+            post = listOf(RESULT_WAS_BOUND_LAST_CONDITION),
             cost = 0.0,
             value = 0.0,
             canRerun = true,
@@ -125,6 +145,8 @@ data class RepeatUntil(
                 input = attemptHistory,
             )
             val result = task.invoke(tac)
+            // Allow the evaluator to access the last result
+            attemptHistory.recordResult(result)
             logger.info(
                 "Generated result {}: {}",
                 attemptHistory.attempts().size + 1,
@@ -182,7 +204,7 @@ data class RepeatUntil(
             name = ACCEPTABLE_CONDITION,
             evaluator = { context, _ ->
                 val attemptHistory = context.last<AttemptHistory<RESULT, FEEDBACK>>()
-                if (attemptHistory?.last() == null) {
+                if (attemptHistory?.lastAttempt() == null) {
                     false
                 } else if (attemptHistory.attempts().size >= maxIterations) {
                     logger.info(
@@ -192,7 +214,7 @@ data class RepeatUntil(
                     )
                     true
                 } else {
-                    val lastFeedback = attemptHistory.last()!!.feedback
+                    val lastFeedback = attemptHistory.lastAttempt()!!.feedback
                     val isAcceptable = acceptanceCriteria(lastFeedback)
                     logger.info(
                         "Condition '{}', iterations={}: Feedback acceptable={}: {}",
@@ -216,7 +238,7 @@ data class RepeatUntil(
             inputClass = AttemptHistory::class.java,
             outputClass = resultClass,
         ) { context ->
-            val finalResult = context.input.last()?.result as? RESULT
+            val finalResult = context.input.lastAttempt()?.result as? RESULT
                 ?: throw IllegalStateException("No result available in AttemptHistory")
             logger.info("Consolidating results, final result: {}", finalResult)
             finalResult
