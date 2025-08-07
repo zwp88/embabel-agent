@@ -37,8 +37,6 @@ enum class ConditionDetermination {
         else -> FALSE
     }
 
-    // Was it calculated?
-
     companion object {
         operator fun invoke(value: Boolean?) = when (value) {
             true -> TRUE
@@ -84,7 +82,7 @@ interface GoapAction : GoapStep, Action {
 
     /**
      * Expected effects of this action.
-     * World state should be checked afterwards as these effects may not
+     * World state should be checked afterward as these effects may not
      * have been achieved
      */
     val effects: EffectSpec

@@ -73,7 +73,7 @@ abstract class AgentPlatformChatSession(
 
         val bindings = buildMap {
             put("userInput", UserInput(message.content))
-            if (shouldBindConversation())
+            if (chatConfig.bindConversation)
                 put("conversation", conversation)
         }
         try {
@@ -114,10 +114,6 @@ abstract class AgentPlatformChatSession(
         }
     }
 
-    /**
-     * Determines whether conversation should be bound to the blackboard
-     */
-    protected abstract fun shouldBindConversation(): Boolean
 
     /**
      * Handles process waiting exceptions in a platform-specific way

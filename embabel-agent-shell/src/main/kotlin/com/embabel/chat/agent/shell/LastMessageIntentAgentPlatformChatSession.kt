@@ -41,8 +41,6 @@ class LastMessageIntentAgentPlatformChatSession(
     config: ChatConfig,
 ) : AgentPlatformChatSession(autonomy, goalChoiceApprover, messageListener, processOptions, config) {
 
-    override fun shouldBindConversation(): Boolean = chatConfig.bindConversation
-
     override fun handleProcessWaitingException(
         pwe: ProcessWaitingException,
         basis: Any,
