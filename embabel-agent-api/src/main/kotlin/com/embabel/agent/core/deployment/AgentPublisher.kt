@@ -37,10 +37,10 @@ class AgentDeployer(
     init {
         logger.debug("Properties: {}", properties)
         if (!properties.bean) {
-            logger.info("AgentDeployer scanning disabled: skipping")
+            logger.info("AgentDeployer scanning disabled: not looking for agents defined as Spring beans")
         } else {
             logger.info(
-                "AgentDeployer scanning enabled: deploying {} agents",
+                "AgentDeployer scanning enabled: deploying {} agents defined as Spring beans",
                 agents.size,
             )
 

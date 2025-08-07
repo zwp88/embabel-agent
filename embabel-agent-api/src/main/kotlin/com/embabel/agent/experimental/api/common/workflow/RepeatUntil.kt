@@ -64,7 +64,7 @@ data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
      */
     fun resultToEvaluate(): RESULT? = lastResult
 
-    fun lastFeedback(): Feedback? = lastAttempt()?.feedback
+    fun lastFeedback(): FEEDBACK? = lastAttempt()?.feedback
 
     fun bestSoFar(): Attempt<RESULT, FEEDBACK>? = _attempts.maxByOrNull { it.feedback.score }
 

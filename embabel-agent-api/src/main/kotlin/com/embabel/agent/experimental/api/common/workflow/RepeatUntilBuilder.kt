@@ -111,6 +111,23 @@ data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
             return withAcceptanceCriteria { it.score >= scoreThreshold }
                 .build()
         }
+
+        /**
+         * Build an agent on this RepeatUntil workflow
+         * with default acceptance criteria.
+         */
+        fun buildAgent(
+            name: String,
+            description: String,
+        ): Agent {
+            return build()
+                .build()
+                .createAgent(
+                    name = name,
+                    provider = EMBABEL_PROVIDER,
+                    description = description,
+                )
+        }
     }
 
     inner class Accepter(
