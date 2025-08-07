@@ -20,6 +20,7 @@ import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
 import com.embabel.common.util.ComputerSaysNoSerializer
+import com.embabel.plan.Planner
 import com.embabel.plan.WorldState
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.time.Duration
@@ -65,6 +66,11 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
     val id: String
 
     val parentId: String?
+
+    /**
+     * Get the planner for this process
+     */
+    val planner: Planner<*, *, *>
 
     val history: List<ActionInvocation>
 

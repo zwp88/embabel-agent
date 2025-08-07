@@ -24,7 +24,6 @@ import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ProntoActionExecutionSchedule
 import com.embabel.agent.spi.ScheduledActionExecutionSchedule
 import com.embabel.agent.spi.support.AgenticEventListenerToolsStats
-import com.embabel.plan.Planner
 import com.embabel.plan.WorldState
 import com.embabel.plan.goap.WorldStateDeterminer
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -83,11 +82,6 @@ abstract class AbstractAgentProcess(
      * Get the WorldStateDeterminer for this process
      */
     protected abstract val worldStateDeterminer: WorldStateDeterminer
-
-    /**
-     * Get the planner for this process
-     */
-    protected abstract val planner: Planner<*, *, *>
 
     override val status: AgentProcessStatusCode
         get() = _status.get()

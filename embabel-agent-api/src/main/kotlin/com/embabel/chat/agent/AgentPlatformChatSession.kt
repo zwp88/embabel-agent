@@ -79,9 +79,7 @@ abstract class AgentPlatformChatSession(
         try {
             val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
                 // We continue to use the same blackboard.
-                processOptions = processOptions.copy(
-                    blackboard = blackboard,
-                ),
+                processOptions = processOptionsWithBlackboard(),
                 goalChoiceApprover = goalChoiceApprover,
                 agentScope = autonomy.agentPlatform,
                 bindings = bindings,
@@ -114,6 +112,12 @@ abstract class AgentPlatformChatSession(
         }
     }
 
+    private fun processOptionsWithBlackboard(): ProcessOptions {
+        return processOptions.copy(
+            blackboard = blackboard,
+        )
+    }
+
 
     /**
      * Handles process waiting exceptions in a platform-specific way
@@ -131,11 +135,20 @@ abstract class AgentPlatformChatSession(
                         |Available commands:
                         |/help - Show this help message
                         |/bb, blackboard - Show the blackboard
+                        |/plans - Show possible plans from here, with only user input
                     """.trimMargin(),
                 )
 
                 "bb", "blackboard" -> {
                     AssistantMessage(blackboard.infoString(verbose = true, indent = 2))
+                }
+
+                "plans" -> {
+                    val plans = autonomy.achievablePlans(
+                        processOptionsWithBlackboard(),
+                        mapOf("userInput" to UserInput("won't be used"))
+                    )
+                    AssistantMessage(plans.joinToString { it.infoString(verbose = true, indent = 2) })
                 }
 
                 else -> AssistantMessage("Unrecognized / command $command")
