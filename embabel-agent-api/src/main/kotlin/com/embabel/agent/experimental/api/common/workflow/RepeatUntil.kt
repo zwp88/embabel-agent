@@ -238,10 +238,10 @@ data class RepeatUntil(
             inputClass = AttemptHistory::class.java,
             outputClass = resultClass,
         ) { context ->
-            val finalResult = context.input.lastAttempt()?.result as? RESULT
+            val bestResult = context.input.bestSoFar()?.result as? RESULT
                 ?: throw IllegalStateException("No result available in AttemptHistory")
-            logger.info("Consolidating results, final result: {}", finalResult)
-            finalResult
+            logger.info("Consolidating results, final (best) result: {}", bestResult)
+            bestResult
         }
 
         val resultGoal = Goal(
