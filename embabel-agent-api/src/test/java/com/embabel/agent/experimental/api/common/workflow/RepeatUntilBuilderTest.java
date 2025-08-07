@@ -20,13 +20,12 @@ import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
 import com.embabel.agent.api.annotation.support.AgentMetadataReader;
 import com.embabel.agent.api.common.ActionContext;
-import com.embabel.agent.api.common.workflow.SimpleFeedback;
+import com.embabel.agent.api.common.workflow.TextFeedback;
 import com.embabel.agent.core.AgentProcessStatusCode;
 import com.embabel.agent.core.ProcessOptions;
 import com.embabel.agent.core.Verbosity;
 import com.embabel.agent.domain.io.UserInput;
 import com.embabel.agent.testing.integration.IntegrationTestUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -87,7 +86,6 @@ class RepeatUntilBuilderTest {
     }
 
     @Test
-    @Disabled("There is a binding bug with RepeatUntilBuilder")
     void terminatesItselfAgent() {
         var agent = RepeatUntilBuilder
                 .returning(Report.class)
@@ -97,7 +95,7 @@ class RepeatUntilBuilderTest {
                             return new Report("thing-" + tac.getInput().attempts().size());
                         })
                 .withEvaluator(
-                        ctx -> new SimpleFeedback(0.5, "feedback"))
+                        ctx -> new TextFeedback(0.5, "feedback"))
                 .withAcceptanceCriteria(f -> true)
                 .buildAgent("myAgent", "This is a very good agent");
 
@@ -110,7 +108,8 @@ class RepeatUntilBuilderTest {
                 Map.of("it", new UserInput("input"))
         );
         assertEquals(AgentProcessStatusCode.COMPLETED, result.getStatus());
-        assertTrue(result.lastResult() instanceof Report, "Report was bound: " + result.getObjects());
+        assertTrue(result.lastResult() instanceof Report,
+                "Report was bound: " + result.getObjects());
     }
 
 
@@ -149,7 +148,7 @@ class RepeatUntilBuilderTest {
                                 return new Report("thing-" + count[0]);
                             })
                     .withEvaluator(
-                            ctx -> new SimpleFeedback(0.5, "feedback"))
+                            ctx -> new TextFeedback(0.5, "feedback"))
                     .withAcceptanceCriteria(f -> true)
                     .build();
             return context.asSubProcess(
@@ -168,7 +167,7 @@ class RepeatUntilBuilderTest {
             final int[] count = {0};
             var eo = RepeatUntilBuilder
                     .returning(Report.class)
-                    .withFeedbackClass(SimpleFeedback.class)
+                    .withFeedbackClass(TextFeedback.class)
                     .withMaxIterations(3)
                     .repeating(
                             tac -> {
@@ -176,7 +175,7 @@ class RepeatUntilBuilderTest {
                                 return new Report("thing-" + count[0]);
                             })
                     .withEvaluator(
-                            ctx -> new SimpleFeedback(0.5, "feedback"))
+                            ctx -> new TextFeedback(0.5, "feedback"))
                     .withAcceptanceCriteria(f -> false) // never acceptable, hit max iterations
                     .build();
             return context.asSubProcess(
@@ -203,7 +202,7 @@ class RepeatUntilBuilderTest {
                                 return new Report("thing-" + count[0]);
                             })
                     .withEvaluator(
-                            ctx -> new SimpleFeedback(0.5, "feedback"))
+                            ctx -> new TextFeedback(0.5, "feedback"))
                     .build();
             return context.asSubProcess(
                     Report.class,

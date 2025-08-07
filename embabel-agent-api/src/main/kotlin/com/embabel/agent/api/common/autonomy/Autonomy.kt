@@ -283,7 +283,8 @@ class Autonomy(
             if (ultimate == null) {
                 null
             } else {
-                val multigoal = ultimate.match.withPreconditions(*credibleGoals.drop(1).map { it.match }.toTypedArray())
+                val multigoal =
+                    ultimate.match.withGoalPreconditions(*credibleGoals.drop(1).map { it.match }.toTypedArray())
                 logger.info(
                     "Creating composite of {} goals: {} from credible goals: {}",
                     credibleGoals.size,

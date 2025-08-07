@@ -52,11 +52,11 @@ data class Goal(
 ) : GoapGoal, AgentSystemStep {
 
     // These methods are for Java, to obviate the builder antipattern
-    fun withPrecondition(precondition: String): Goal {
-        return copy(pre = pre + precondition)
+    fun withPreconditions(vararg preconditions: String): Goal {
+        return copy(pre = pre + preconditions)
     }
 
-    fun withPreconditions(vararg goals: Goal): Goal {
+    fun withGoalPreconditions(vararg goals: Goal): Goal {
         return copy(pre = pre + goals.flatMap { it.pre }.toSet())
     }
 
@@ -70,9 +70,9 @@ data class Goal(
     @JsonIgnore
     override val preconditions: EffectSpec =
         run {
-            val conditions = pre.associate { it to ConditionDetermination.Companion(true) }.toMutableMap()
+            val conditions = pre.associate { it to ConditionDetermination(true) }.toMutableMap()
             inputs.forEach { input ->
-                conditions[input.value] = ConditionDetermination.Companion(true)
+                conditions[input.value] = ConditionDetermination(true)
             }
             conditions
         }

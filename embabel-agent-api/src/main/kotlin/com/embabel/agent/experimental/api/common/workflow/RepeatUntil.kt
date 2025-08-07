@@ -40,7 +40,7 @@ data class Attempt<RESULT : Any, FEEDBACK : Feedback>(
 }
 
 /**
- * We only bind this once
+ * Mutable object. We only bind this once
  */
 data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
     private val _attempts: MutableList<Attempt<RESULT, FEEDBACK>> = mutableListOf(),
@@ -54,7 +54,7 @@ data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
 
     fun bestSoFar(): Attempt<RESULT, FEEDBACK>? = _attempts.maxByOrNull { it.feedback.score }
 
-    fun recordAttempt(
+    internal fun recordAttempt(
         result: RESULT,
         feedback: FEEDBACK,
     ): Attempt<RESULT, FEEDBACK> {
@@ -67,6 +67,7 @@ data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
 
 
 /**
+ * Primitive for building repeat until acceptable workflows.
  * See https://www.anthropic.com/engineering/building-effective-agents
  * This is the Evaluator Optimizer pattern
  */
@@ -112,7 +113,7 @@ data class RepeatUntil(
         val taskAction = SupplierAction(
             name = "=>${resultClass.name}",
             description = "Generate $resultClass",
-            post = listOf(RESULT_WAS_LAST_ACTION_CONDITION),
+            post = listOf(`RESULT_WAS_BOUND_LAST_CONDITION`),
             cost = 0.0,
             value = 0.0,
             canRerun = true,
@@ -135,7 +136,7 @@ data class RepeatUntil(
         val evaluationAction = TransformationAction(
             name = "${resultClass.name}=>${feedbackClass.name}",
             description = "Evaluate $resultClass to $feedbackClass",
-            pre = listOf(RESULT_WAS_LAST_ACTION_CONDITION),
+            pre = listOf(`RESULT_WAS_BOUND_LAST_CONDITION`),
             post = listOf(ACCEPTABLE_CONDITION),
             cost = 0.0,
             value = 0.0,
@@ -169,8 +170,8 @@ data class RepeatUntil(
             feedback
         }
 
-        val resultWasLastActionCondition = ComputedBooleanCondition(
-            name = RESULT_WAS_LAST_ACTION_CONDITION,
+        val resultWasBoundLastCondition = ComputedBooleanCondition(
+            name = RESULT_WAS_BOUND_LAST_CONDITION,
             evaluator = { context, _ ->
                 val result = context.lastResult()
                 result != null && result::class.java == resultClass
@@ -225,9 +226,12 @@ data class RepeatUntil(
             "final-${resultClass.name}",
             "Satisfied with the final ${resultClass.name}",
             satisfiedBy = resultClass,
-        ).withPrecondition(
-            ACCEPTABLE_CONDITION
+        ).withPreconditions(
+            ACCEPTABLE_CONDITION,
+            // TODO why is this needed? Should not the satisfiedBy condition be enough?
+            RESULT_WAS_BOUND_LAST_CONDITION,
         )
+        logger.info("Created goal: {}", resultGoal.infoString(verbose = true, indent = 2))
 
         return AgentScopeBuilder(
             name = MobyNameGenerator.generateName(),
@@ -236,14 +240,14 @@ data class RepeatUntil(
                 evaluationAction,
                 consolidateAction,
             ),
-            conditions = setOf(acceptableCondition, resultWasLastActionCondition),
+            conditions = setOf(acceptableCondition, resultWasBoundLastCondition),
             goals = setOf(resultGoal)
         )
     }
 
     private companion object {
         private const val ACCEPTABLE_CONDITION = "acceptable"
-        private const val RESULT_WAS_LAST_ACTION_CONDITION = "resultWasLastAction"
+        private const val RESULT_WAS_BOUND_LAST_CONDITION = "resultWasBoundLast"
     }
 
 }
