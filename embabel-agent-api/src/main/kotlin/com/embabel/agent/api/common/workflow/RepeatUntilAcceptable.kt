@@ -90,19 +90,19 @@ data class AttemptHistory<RESULT : Any, FEEDBACK : Feedback>(
  * See https://www.anthropic.com/engineering/building-effective-agents
  * This is the Evaluator Optimizer pattern
  */
-data class RepeatUntil(
+data class RepeatUntilAcceptable(
     val maxIterations: Int = 3,
     val scoreThreshold: ZeroToOne = 0.9,
 ) {
 
-    private val logger = LoggerFactory.getLogger(RepeatUntil::class.java)
+    private val logger = LoggerFactory.getLogger(RepeatUntilAcceptable::class.java)
 
-    inline fun <reified RESULT : Any, reified FEEDBACK : Feedback> repeatUntilAcceptable(
+    inline fun <reified RESULT : Any, reified FEEDBACK : Feedback> build(
         noinline task: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, RESULT>) -> RESULT,
         noinline evaluator: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, FEEDBACK>) -> FEEDBACK,
         noinline acceptanceCriteria: (FEEDBACK) -> Boolean = { it.score >= scoreThreshold },
     ): AgentScopeBuilder<RESULT> =
-        repeatUntilAcceptable(
+        build(
             task = task,
             evaluator = evaluator,
             acceptanceCriteria = acceptanceCriteria,
@@ -111,7 +111,7 @@ data class RepeatUntil(
         )
 
 
-    fun <RESULT : Any, FEEDBACK : Feedback> repeatUntilAcceptable(
+    fun <RESULT : Any, FEEDBACK : Feedback> build(
         task: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, RESULT>) -> RESULT,
         evaluator: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, FEEDBACK>) -> FEEDBACK,
         acceptanceCriteria: (FEEDBACK) -> Boolean,

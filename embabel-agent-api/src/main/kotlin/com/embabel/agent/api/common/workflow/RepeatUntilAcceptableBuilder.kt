@@ -23,7 +23,7 @@ import com.embabel.agent.core.Agent
 /**
  * Java friendly builder for RepeatUntil workflow.
  */
-data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
+data class RepeatUntilAcceptableBuilder<RESULT : Any, FEEDBACK : Feedback>(
     private val resultClass: Class<RESULT>,
     private val feedbackClass: Class<FEEDBACK> = Feedback::class.java as Class<FEEDBACK>,
     private val maxIterations: Int = DEFAULT_MAX_ITERATIONS,
@@ -40,26 +40,26 @@ data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
          * Create a RepeatUntilBuilder for a specific result type and default TextFeedback.
          */
         @JvmStatic
-        fun <RESULT : Any> returning(resultClass: Class<RESULT>): RepeatUntilBuilder<RESULT, TextFeedback> {
-            return RepeatUntilBuilder(resultClass = resultClass, feedbackClass = TextFeedback::class.java)
+        fun <RESULT : Any> returning(resultClass: Class<RESULT>): RepeatUntilAcceptableBuilder<RESULT, TextFeedback> {
+            return RepeatUntilAcceptableBuilder(resultClass = resultClass, feedbackClass = TextFeedback::class.java)
         }
     }
 
     /**
      * Customize the feedback class for this RepeatUntil workflow.
      */
-    fun <F : Feedback> withFeedbackClass(feedbackClass: Class<F>): RepeatUntilBuilder<RESULT, F> =
-        RepeatUntilBuilder(
+    fun <F : Feedback> withFeedbackClass(feedbackClass: Class<F>): RepeatUntilAcceptableBuilder<RESULT, F> =
+        RepeatUntilAcceptableBuilder(
             resultClass = resultClass,
             feedbackClass = feedbackClass,
             maxIterations = maxIterations,
             scoreThreshold = scoreThreshold,
         )
 
-    fun withMaxIterations(maxIterations: Int): RepeatUntilBuilder<RESULT, FEEDBACK> =
+    fun withMaxIterations(maxIterations: Int): RepeatUntilAcceptableBuilder<RESULT, FEEDBACK> =
         copy(maxIterations = maxIterations)
 
-    fun withScoreThreshold(scoreThreshold: Double): RepeatUntilBuilder<RESULT, FEEDBACK> =
+    fun withScoreThreshold(scoreThreshold: Double): RepeatUntilAcceptableBuilder<RESULT, FEEDBACK> =
         copy(scoreThreshold = scoreThreshold)
 
     /**
@@ -138,8 +138,8 @@ data class RepeatUntilBuilder<RESULT : Any, FEEDBACK : Feedback>(
          * Build the workflow so it can be included in agents
          */
         fun build(): AgentScopeBuilder<RESULT> {
-            return RepeatUntil(maxIterations = maxIterations, scoreThreshold = scoreThreshold)
-                .repeatUntilAcceptable(
+            return RepeatUntilAcceptable(maxIterations = maxIterations, scoreThreshold = scoreThreshold)
+                .build(
                     task = generator,
                     evaluator = evaluator,
                     acceptanceCriteria = accept,

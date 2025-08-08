@@ -31,7 +31,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RepeatUntilBuilderTest {
+class RepeatUntilAcceptableBuilderTest {
 
     @Test
     void terminatesItself() {
@@ -85,7 +85,7 @@ class RepeatUntilBuilderTest {
 
     @Test
     void terminatesItselfAgent() {
-        var agent = RepeatUntilBuilder
+        var agent = RepeatUntilAcceptableBuilder
                 .returning(Report.class)
                 .withMaxIterations(3)
                 .repeating(
@@ -141,7 +141,7 @@ class RepeatUntilBuilderTest {
         @Action
         public Report report(UserInput userInput, ActionContext context) {
             final int[] count = {0};
-            var eo = RepeatUntilBuilder
+            var eo = RepeatUntilAcceptableBuilder
                     .returning(Report.class)
                     .withMaxIterations(3)
                     .repeating(
@@ -167,7 +167,7 @@ class RepeatUntilBuilderTest {
         @Action
         public Report report(UserInput userInput, ActionContext context) {
             final int[] count = {0};
-            var eo = RepeatUntilBuilder
+            var eo = RepeatUntilAcceptableBuilder
                     .returning(Report.class)
                     .withFeedbackClass(TextFeedback.class)
                     .withMaxIterations(3)
@@ -194,7 +194,7 @@ class RepeatUntilBuilderTest {
         @Action
         public Report report(UserInput userInput, ActionContext context) {
             final int[] count = {0};
-            var eo = RepeatUntilBuilder
+            var eo = RepeatUntilAcceptableBuilder
                     .returning(Report.class)
                     .withMaxIterations(3)
                     .withScoreThreshold(.4)
