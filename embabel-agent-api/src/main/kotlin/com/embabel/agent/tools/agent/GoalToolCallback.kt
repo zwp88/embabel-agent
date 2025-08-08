@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.definition.ToolDefinition
-import org.springframework.ai.util.json.schema.JsonSchemaGenerator
 
 /**
  * Spring AI ToolCallback implementation for a specific goal.
@@ -111,17 +110,3 @@ data class GoalToolCallback<I : Any>(
 
 }
 
-/**
- * Tool definition that wraps an input type, generating a JSON schema for it.
- */
-data class TypeWrappingToolDefinition(
-    private val name: String,
-    private val description: String,
-    private val type: Class<*>,
-) : ToolDefinition {
-
-    override fun name(): String = name
-    override fun description(): String = description
-
-    override fun inputSchema(): String = JsonSchemaGenerator.generateForType(type)
-}
