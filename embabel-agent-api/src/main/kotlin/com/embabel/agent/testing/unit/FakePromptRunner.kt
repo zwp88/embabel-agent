@@ -17,6 +17,7 @@ package com.embabel.agent.testing.unit
 
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.PromptRunner
+import com.embabel.agent.api.common.Subagent
 import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.support.safelyGetToolCallbacks
@@ -173,5 +174,9 @@ data class FakePromptRunner(
 
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         TODO("Implement handoff support")
+    }
+
+    override fun withSubagents(vararg subagents: Subagent): PromptRunner {
+        TODO("Implement subagent handoff support")
     }
 }

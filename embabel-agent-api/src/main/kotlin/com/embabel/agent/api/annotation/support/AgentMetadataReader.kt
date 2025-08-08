@@ -72,6 +72,11 @@ data class AgenticInfo(
     }
 
     fun noAutoScan() = agentCapabilitiesAnnotation?.scan == false || agentAnnotation?.scan == false
+
+    /**
+     * Name for this agent. Valid only if agentic() is true.
+     */
+    fun agentName(): String = (agentAnnotation?.name ?: "").ifBlank { type.simpleName }
 }
 
 /**
@@ -173,7 +178,7 @@ class AgentMetadataReader(
 
         val agent = if (agenticInfo.agentAnnotation != null) {
             CoreAgent(
-                name = agenticInfo.agentAnnotation.name.ifBlank { agenticInfo.type.simpleName },
+                name = agenticInfo.agentName(),
                 provider = agenticInfo.agentAnnotation.provider.ifBlank {
                     instance.javaClass.`package`.name
                 },

@@ -15,7 +15,10 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.api.annotation.support.AgenticInfo
 import com.embabel.agent.api.annotation.using
+import com.embabel.agent.core.Agent
+import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
@@ -121,6 +124,78 @@ data class ToolObject(
 }
 
 /**
+ * Define a handoff to a subagent.
+
+ */
+class Subagent private constructor(
+    private val agentRef: Any,
+    val inputClass: Class<*>,
+) {
+
+    /**
+     * Subagent that is an agent
+     * @param agent the subagent to hand off to
+     * @param inputClass the class of the input that the subagent expects
+     */
+    constructor(
+        agent: Agent,
+        inputClass: Class<*>,
+    ) : this(
+        agentRef = agent,
+        inputClass = inputClass,
+    )
+
+    constructor(
+        agentName: String,
+        inputClass: Class<*>,
+    ) : this(
+        agentRef = agentName,
+        inputClass = inputClass,
+    )
+
+    /**
+     * Reference to an annotated agent class.
+     */
+    constructor(
+        agentType: Class<*>,
+        inputClass: Class<*>,
+    ) : this(
+        agentRef = agentType,
+        inputClass = inputClass,
+    )
+
+    fun resolve(agentPlatform: AgentPlatform): Agent {
+        return when (agentRef) {
+            is Agent -> agentRef
+            is String -> agentPlatform.agents().find { it.name == agentRef }
+                ?: throw IllegalArgumentException(
+                    "Subagent with name '$agentRef' not found in platform ${agentPlatform.name}. " +
+                            "Available agents: ${agentPlatform.agents().map { it.name }}"
+                )
+
+            is Class<*> -> {
+                val agenticInfo = AgenticInfo(agentRef)
+                if (!agenticInfo.agentic()) {
+                    throw IllegalArgumentException(
+                        "Subagent must be an Agent or a String representing the agent name, but was: $agentRef"
+                    )
+                }
+                agentPlatform.agents().find { it.name == agenticInfo.agentName() }
+                    ?: throw IllegalArgumentException(
+                        "Subagent of type $agentRef with name '$agentRef' not found in platform ${agentPlatform.name}. " +
+                                "Available agents: ${agentPlatform.agents().map { it.name }}"
+                    )
+            }
+
+            else -> throw IllegalArgumentException(
+                "Subagent must be an Agent or a String representing the agent name, but was: $agentRef"
+            )
+        }
+    }
+}
+
+
+/**
  * User code should always use this interface to execute prompts.
  * A PromptRunner is immutable once constructed, and has determined
  * LLM and hyperparameters.
@@ -181,6 +256,13 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      */
     fun withHandoffs(
         vararg outputTypes: Class<*>,
+    ): PromptRunner
+
+    /**
+     * Add a list of subagents to hand off to.
+     */
+    fun withSubagents(
+        vararg subagents: Subagent,
     ): PromptRunner
 
     /**

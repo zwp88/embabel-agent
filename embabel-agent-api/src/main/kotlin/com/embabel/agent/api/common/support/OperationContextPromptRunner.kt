@@ -15,17 +15,16 @@
  */
 package com.embabel.agent.api.common.support
 
-import com.embabel.agent.api.common.ActionContext
-import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.api.common.PromptRunner
-import com.embabel.agent.api.common.ToolObject
+import com.embabel.agent.api.common.*
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.agent.tools.agent.AgentToolCallback
 import com.embabel.agent.tools.agent.Handoffs
+import com.embabel.agent.tools.agent.PromptedTextCommunicator
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
@@ -161,6 +160,24 @@ internal data class OperationContextPromptRunner(
         )
         return copy(
             handoffToolCallbacks = this.handoffToolCallbacks + handoffs.toolCallbacks,
+        )
+    }
+
+    override fun withSubagents(
+        vararg subagents: Subagent,
+    ): PromptRunner {
+        val newCallbacks = subagents.map { subagent ->
+            AgentToolCallback(
+                autonomy = context.agentPlatform().platformServices.autonomy(),
+                agent = subagent.resolve(context.agentPlatform()),
+                textCommunicator = PromptedTextCommunicator,
+                objectMapper = context.agentPlatform().platformServices.objectMapper,
+                inputType = subagent.inputClass,
+                listeners = emptyList(),
+            )
+        }
+        return copy(
+            handoffToolCallbacks = this.handoffToolCallbacks + newCallbacks,
         )
     }
 

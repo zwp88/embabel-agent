@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.api.annotation.support
 
-import com.embabel.agent.api.common.CreateObjectPromptException
-import com.embabel.agent.api.common.EvaluateConditionPromptException
-import com.embabel.agent.api.common.PromptRunner
-import com.embabel.agent.api.common.ToolObject
+import com.embabel.agent.api.common.*
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
@@ -95,6 +92,10 @@ internal data class MethodReturnPromptRunner(
     }
 
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
+        TODO("Probably won't be implemented as this class is likely to be deprecated")
+    }
+
+    override fun withSubagents(vararg subagents: Subagent): PromptRunner {
         TODO("Probably won't be implemented as this class is likely to be deprecated")
     }
 
