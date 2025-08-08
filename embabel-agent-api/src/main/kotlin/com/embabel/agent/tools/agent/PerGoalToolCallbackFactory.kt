@@ -19,16 +19,12 @@ import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Goal
-import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.core.Verbosity
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.common.core.types.NamedAndDescribed
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
-import org.springframework.ai.chat.model.ToolContext
 import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.ai.tool.definition.ToolDefinition
-import org.springframework.ai.util.json.schema.JsonSchemaGenerator
 
 const val CONFIRMATION_TOOL_NAME = "_confirm"
 
@@ -44,7 +40,7 @@ interface TextCommunicator {
      * Produce a response string for the given goal and ProcessWaitingException.
      */
     fun communicateAwaitable(
-        goal: Goal,
+        goal: NamedAndDescribed,
         pwe: ProcessWaitingException,
     ): String
 
@@ -155,99 +151,4 @@ class PerGoalToolCallbackFactory(
         }
     }
 
-}
-
-/**
- * Spring AI ToolCallback implementation for a specific goal.
- */
-data class GoalToolCallback<I : Any>(
-    val autonomy: Autonomy,
-    val textCommunicator: TextCommunicator,
-    val objectMapper: ObjectMapper,
-    val name: String,
-    val description: String,
-    val goal: Goal,
-    val inputType: Class<I>,
-    val listeners: List<AgenticEventListener>,
-) : ToolCallback {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
-
-    fun withListener(listener: AgenticEventListener) = copy(
-        listeners = listeners + listener,
-    )
-
-    override fun getToolDefinition(): ToolDefinition {
-        return TypeWrappingToolDefinition(
-            name = name,
-            description = description,
-            type = inputType,
-        )
-    }
-
-    override fun call(
-        toolInput: String,
-    ): String {
-        return call(toolInput, null)
-    }
-
-    override fun call(
-        toolInput: String,
-        toolContext: ToolContext?,
-    ): String {
-        logger.info("Calling tool {} with input {}", this.name, toolInput)
-        val verbosity = Verbosity(
-            showPrompts = true,
-        )
-        val inputObject = try {
-            val o = objectMapper.readValue(toolInput, inputType)
-            logger.info("Successfully parsed tool input to an instance of {}:\n{}", o::class.java.name, o)
-            o
-        } catch (e: Exception) {
-            val errorReturn =
-                "BAD INPUT ERROR parsing tool input: ${e.message}: Try again and see if you can get the format right"
-            logger.warn("Error $errorReturn parsing tool input: $toolInput", e)
-            return errorReturn
-        }
-        val processOptions = ProcessOptions(
-            verbosity = verbosity,
-            listeners = listeners,
-        )
-        val agent = autonomy.createGoalAgent(
-            inputObject = inputObject,
-            goal = goal,
-            agentScope = autonomy.agentPlatform,
-            // TODO Bug workaround
-            prune = false,
-        )
-        try {
-            val agentProcessExecution = autonomy.runAgent(
-                inputObject = inputObject,
-                processOptions = processOptions,
-                agent = agent,
-            )
-            logger.info("Goal response: {}", agentProcessExecution)
-            return textCommunicator.communicateResult(agentProcessExecution)
-        } catch (pwe: ProcessWaitingException) {
-            val response = textCommunicator.communicateAwaitable(goal, pwe)
-            logger.info("Returning waiting response:\n$response")
-            return response
-        }
-    }
-
-    override fun toString() =
-        "${javaClass.simpleName}(goal=${goal.name}, description=${goal.description})"
-
-}
-
-private data class TypeWrappingToolDefinition(
-    private val name: String,
-    private val description: String,
-    private val type: Class<*>,
-) : ToolDefinition {
-
-    override fun name(): String = name
-    override fun description(): String = description
-
-    override fun inputSchema(): String = JsonSchemaGenerator.generateForType(type)
 }

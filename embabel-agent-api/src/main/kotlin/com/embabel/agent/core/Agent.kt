@@ -16,10 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.api.common.StuckHandler
-import com.embabel.common.core.types.AssetCoordinates
-import com.embabel.common.core.types.Described
-import com.embabel.common.core.types.Named
-import com.embabel.common.core.types.Semver
+import com.embabel.common.core.types.*
 import com.embabel.common.util.ComputerSaysNoSerializer
 import com.embabel.common.util.indentLines
 import com.embabel.plan.goap.GoapPlanningSystem
@@ -54,7 +51,7 @@ data class Agent(
         defaultDataTypes = emptyList(),
         actions = actions,
     ),
-) : Described, AssetCoordinates, AgentScope {
+) : NamedAndDescribed, AssetCoordinates, AgentScope {
 
     @JvmOverloads
     constructor(

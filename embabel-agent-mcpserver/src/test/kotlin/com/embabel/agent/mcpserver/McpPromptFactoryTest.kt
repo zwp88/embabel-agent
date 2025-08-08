@@ -17,8 +17,7 @@ package com.embabel.agent.mcpserver
 
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.mcpserver.support.McpPromptFactory
-import com.embabel.common.core.types.Described
-import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.NamedAndDescribed
 import io.mockk.mockk
 import io.modelcontextprotocol.spec.McpSchema
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -45,7 +44,7 @@ class McpPromptFactoryTest {
     @Test
     fun oneArg() {
         val factory = McpPromptFactory()
-        val goal = NamedAndDescribed("oneArg", "A class with one argument")
+        val goal = NamedAndDescribed(name = "oneArg", description = "A class with one argument")
         val spec = factory.syncPromptSpecificationForType(
             goal,
             UserInput::class.java,
@@ -79,6 +78,3 @@ class McpPromptFactoryTest {
     }
 
 }
-
-
-data class NamedAndDescribed(override val name: String, override val description: String) : Named, Described

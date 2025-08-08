@@ -17,11 +17,11 @@ package com.embabel.agent.tools.agent
 
 import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
-import com.embabel.agent.core.Goal
 import com.embabel.agent.core.hitl.ConfirmationRequest
 import com.embabel.agent.core.hitl.FormBindingRequest
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.common.core.types.HasInfoString
+import com.embabel.common.core.types.NamedAndDescribed
 
 /**
  * Prompted awaitable communicator
@@ -41,7 +41,7 @@ object PromptedTextCommunicator : TextCommunicator {
     }
 
     override fun communicateAwaitable(
-        goal: Goal,
+        goal: NamedAndDescribed,
         pwe: ProcessWaitingException,
     ): String {
         return when (pwe.awaitable) {

@@ -15,8 +15,8 @@
  */
 package com.embabel.agent.core
 
-import com.embabel.common.core.types.Described
 import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.NamedAndDescribed
 import com.embabel.plan.goap.GoapStep
 
 /**
@@ -25,7 +25,7 @@ import com.embabel.plan.goap.GoapStep
 sealed interface Operation : Named
 
 
-interface AgentSystemStep : GoapStep, Described, Operation {
+interface AgentSystemStep : GoapStep, NamedAndDescribed, Operation {
 
     /**
      * Data inputs to this step.
