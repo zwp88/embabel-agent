@@ -18,9 +18,10 @@ package com.embabel.agent.tools.agent
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Agent
+import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
-import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.spi.support.springai.AgentProcessBindingToolCallback
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
@@ -37,14 +38,12 @@ data class AgentToolCallback<I : Any>(
     val textCommunicator: TextCommunicator,
     val objectMapper: ObjectMapper,
     val inputType: Class<I>,
-    val listeners: List<AgenticEventListener>,
+    val processOptionsCreator: (
+        parentAgentProcess: AgentProcess,
+    ) -> ProcessOptions,
 ) : ToolCallback {
 
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    fun withListener(listener: AgenticEventListener) = copy(
-        listeners = listeners + listener,
-    )
 
     override fun getToolDefinition(): ToolDefinition {
         return TypeWrappingToolDefinition(
@@ -64,6 +63,7 @@ data class AgentToolCallback<I : Any>(
         toolInput: String,
         toolContext: ToolContext?,
     ): String {
+        val parentAgentProcess = AgentProcessBindingToolCallback.agentProcess()
         logger.info("Calling tool {} with input {}", this.agent.name, toolInput)
         val verbosity = Verbosity(
             showPrompts = true,
@@ -78,10 +78,17 @@ data class AgentToolCallback<I : Any>(
             logger.warn("Error $errorReturn parsing tool input: $toolInput", e)
             return errorReturn
         }
-        val processOptions = ProcessOptions(
-            verbosity = verbosity,
-            listeners = listeners,
-        )
+        val processOptions = parentAgentProcess?.let {
+            logger.info("Found parent agent process: {} and creating ProcessOptions based on it", it)
+            processOptionsCreator(parentAgentProcess)
+        } ?: run {
+            logger.warn(
+                "No parent agent process found in tool context, using default process options."
+            )
+            ProcessOptions(
+                verbosity = verbosity,
+            )
+        }
 
         try {
             val agentProcessExecution = autonomy.runAgent(

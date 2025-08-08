@@ -109,4 +109,3 @@ data class GoalToolCallback<I : Any>(
         "${javaClass.simpleName}(goal=${goal.name}, description=${goal.description})"
 
 }
-

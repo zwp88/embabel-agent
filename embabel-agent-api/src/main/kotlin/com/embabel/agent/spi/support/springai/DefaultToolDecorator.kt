@@ -43,22 +43,25 @@ class DefaultToolDecorator(
         llmOptions: LlmOptions,
     ): ToolCallback {
         val toolGroup = toolGroupResolver?.findToolGroupForTool(toolName = tool.toolDefinition.name())
-        return ExceptionSuppressingToolCallback(
-            delegate = OutputTransformingToolCallback(
-                delegate = ObservabilityToolCallback(
-                    delegate = MetadataEnrichedToolCallback(
-                        toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
-                        delegate = tool,
-                    )
-                        .withEventPublication(
-                            agentProcess = agentProcess,
-                            action = action,
-                            llmOptions = llmOptions,
-                        ),
-                    observationRegistry = observationRegistry,
-                ),
-                outputTransformer = outputTransformer
-            )
+        return AgentProcessBindingToolCallback(
+            delegate = ExceptionSuppressingToolCallback(
+                delegate = OutputTransformingToolCallback(
+                    delegate = ObservabilityToolCallback(
+                        delegate = MetadataEnrichedToolCallback(
+                            toolGroupMetadata = toolGroup?.resolvedToolGroup?.metadata,
+                            delegate = tool,
+                        )
+                            .withEventPublication(
+                                agentProcess = agentProcess,
+                                action = action,
+                                llmOptions = llmOptions,
+                            ),
+                        observationRegistry = observationRegistry,
+                    ),
+                    outputTransformer = outputTransformer
+                )
+            ),
+            agentProcess = agentProcess,
         )
     }
 }

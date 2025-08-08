@@ -16,7 +16,9 @@
 package com.embabel.agent.api.common.support
 
 import com.embabel.agent.api.common.*
+import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.ToolGroupRequirement
+import com.embabel.agent.core.Verbosity
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
@@ -167,13 +169,25 @@ internal data class OperationContextPromptRunner(
         vararg subagents: Subagent,
     ): PromptRunner {
         val newCallbacks = subagents.map { subagent ->
+            val agent = subagent.resolve(context.agentPlatform())
             AgentToolCallback(
                 autonomy = context.agentPlatform().platformServices.autonomy(),
-                agent = subagent.resolve(context.agentPlatform()),
+                agent = agent,
                 textCommunicator = PromptedTextCommunicator,
                 objectMapper = context.agentPlatform().platformServices.objectMapper,
                 inputType = subagent.inputClass,
-                listeners = emptyList(),
+                processOptionsCreator = { agentProcess ->
+                    val blackboard = agentProcess.processContext.blackboard.spawn()
+                    loggerFor<OperationContextPromptRunner>().info(
+                        "Creating subagent process for {} with blackboard {}",
+                        agent.name,
+                        blackboard,
+                    )
+                    ProcessOptions(
+                        verbosity = Verbosity(showPrompts = true),
+                        blackboard = blackboard,
+                    )
+                },
             )
         }
         return copy(
