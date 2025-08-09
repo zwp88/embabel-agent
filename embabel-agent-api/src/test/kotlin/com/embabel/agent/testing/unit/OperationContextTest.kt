@@ -15,6 +15,20 @@
  */
 package com.embabel.agent.testing.unit
 
-class FakeOperationContextTest {
+import com.embabel.agent.api.common.PromptRunner
+import com.embabel.common.ai.model.LlmOptions
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+
+class OperationContextTest {
+
+    @Test
+    fun `ai uses correct LLM`() {
+        val oc = FakeOperationContext()
+        val llmo = LlmOptions.withModel("foobar")
+        val pr: PromptRunner = oc.ai().withLlm(llmo)
+        assertEquals(llmo, pr.llm)
+
+    }
 
 }

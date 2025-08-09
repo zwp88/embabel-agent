@@ -1,0 +1,69 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.embabel.agent.api.common
+
+import com.embabel.common.ai.model.AutoModelSelectionCriteria
+import com.embabel.common.ai.model.DefaultModelSelectionCriteria
+import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria
+
+/**
+ * Gateway to AI functionality in the context of an operation.
+ */
+interface Ai {
+
+    /**
+     * Get a configurable PromptRunner for this context using
+     * the given LLM. Allows full control over LLM options.
+     */
+    fun withLlm(llm: LlmOptions): PromptRunner
+
+    /**
+     * Get a configurable PromptRunner for this context choosing
+     * the given model by name and the default LLM options.
+     * Does not allow for any other LLM options to be set.
+     */
+    fun withLlm(model: String): PromptRunner {
+        return withLlm(LlmOptions.Companion(model = model))
+    }
+
+    /**
+     * Get a configurable PromptRunner for this context choosing
+     * the given model by role and the default LLM options.
+     * Does not allow for any other LLM options to be set.
+     * Users must configure roles, for example in application.properties.
+     */
+    fun withLlmByRole(role: String): PromptRunner {
+        return withLlm(LlmOptions.Companion(criteria = ModelSelectionCriteria.Companion.byRole(role)))
+    }
+
+    /**
+     * Get a configurable PromptRunner for this context using
+     * automatic model selection criteria. This may consider prompt
+     * and tools, so is not the same as default.
+     */
+    fun withAutoLlm(): PromptRunner {
+        return withLlm(LlmOptions.Companion(criteria = AutoModelSelectionCriteria))
+    }
+
+    /**
+     * Get a configurable PromptRunner for this context using
+     * the default model selection criteria.
+     */
+    fun withDefaultLlm(): PromptRunner {
+        return withLlm(LlmOptions.Companion(criteria = DefaultModelSelectionCriteria))
+    }
+}

@@ -57,6 +57,11 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     }
 
     /**
+     * Get AI functionality for this context
+     */
+    fun ai(): Ai = OperationContextAi(this)
+
+    /**
      * Create a prompt runner for this context.
      * Application code should always go through this method to run LLM operations.
      * @param llm the LLM options to use
@@ -292,4 +297,13 @@ class SupplierActionContext<O>(
 
     override fun domainObjectInstances(): List<Any> = listOf(outputClass)
 
+}
+
+private class OperationContextAi(
+    private val context: OperationContext,
+) : Ai {
+
+    override fun withLlm(llm: LlmOptions): PromptRunner {
+        return context.promptRunner().withLlm(llm)
+    }
 }

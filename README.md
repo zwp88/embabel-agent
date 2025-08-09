@@ -212,9 +212,13 @@ class StarNewsFinder(
 ) {
 
     @Action
-    fun extractPerson(userInput: UserInput): StarPerson =
+    fun extractPerson(
+        userInput: UserInput,
+        context: OperationContext
+    ): StarPerson =
         // All prompts are typesafe
-        PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
+        context.ai().withDefaultLlm()
+            .createObject("Create a person from this user input, extracting their name and star sign: $userInput")
 
     @Action
     fun retrieveHoroscope(starPerson: StarPerson) =
@@ -222,8 +226,12 @@ class StarNewsFinder(
 
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
-    fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
-        PromptRunner().createObject(
+    fun findNewsStories(
+        person: StarPerson,
+        horoscope: Horoscope,
+        context: OperationContext
+    ): RelevantNewsStories =
+        context.ai().withDefaultLlm().createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -253,10 +261,13 @@ class StarNewsFinder(
         person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
+        context: OperationContext,
     ): Writeup =
         // Customize LLM call
-        PromptRunner().withTemperature(1.2).createObject(
-            """
+        context.ai()
+            .withLlm(LlmOptions.withModel(model).withTemperature(0.9))
+            .createObject(
+                """
             Take the following news stories and write up something
             amusing for the target person.
 
@@ -271,7 +282,7 @@ class StarNewsFinder(
 
             Format it as Markdown with links.
         """.trimIndent()
-        )
+            )
 
 }
 ```
@@ -751,8 +762,8 @@ repositories {
         mavenContent {
             releasesOnly()
         }
-   }
-   maven {
+    }
+    maven {
         name = "embabel-snapshots"
         url = uri("https://repo.embabel.com/artifactory/libs-snapshot")
         mavenContent {
