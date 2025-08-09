@@ -43,7 +43,7 @@ class ConsensusBuilder<RESULT : Any>(
 
     }
 
-    fun withGeneratorTransforms(
+    fun withSources(
         generators: List<java.util.function.Function<out SupplierActionContext<RESULT>, RESULT>>,
     ): Generators {
         return Generators(
@@ -51,7 +51,8 @@ class ConsensusBuilder<RESULT : Any>(
         )
     }
 
-    fun withGenerators(
+    // We avoid method overloading because it's evil
+    fun sourcedFrom(
         generators: List<Supplier<RESULT>>,
     ): Generators {
         return Generators(

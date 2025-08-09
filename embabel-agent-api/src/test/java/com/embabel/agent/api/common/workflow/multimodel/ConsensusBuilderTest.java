@@ -37,7 +37,7 @@ class ConsensusBuilderTest {
     void testConsensusOfOneSimpleGenerator() {
         var agent = ConsensusBuilder
                 .returning(Age.class)
-                .withGenerators(List.of(() -> new Age(42)))
+                .sourcedFrom(List.of(() -> new Age(42)))
                 .withConsensusBy(context -> {
                     return new Age(context.getInput().getResults().stream().findFirst().get().years);
                 })
@@ -58,7 +58,7 @@ class ConsensusBuilderTest {
     void testConsensusOfOne() {
         var agent = ConsensusBuilder
                 .returning(Age.class)
-                .withGeneratorTransforms(List.of(tac -> new Age(42)))
+                .withSources(List.of(tac -> new Age(42)))
                 .withConsensusBy(context -> {
                     return new Age(context.getInput().getResults().stream().findFirst().get().years);
                 })
@@ -79,7 +79,7 @@ class ConsensusBuilderTest {
     void testConsensusOfTwo() {
         var agent = ConsensusBuilder
                 .returning(Age.class)
-                .withGeneratorTransforms(List.of(
+                .withSources(List.of(
                         tac -> new Age(42),
                         tac -> new Age(44)
                 ))
