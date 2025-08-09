@@ -95,7 +95,7 @@ data class RepeatUntilAcceptable(
     val scoreThreshold: ZeroToOne = 0.9,
 ) {
 
-    private val logger = LoggerFactory.getLogger(RepeatUntilAcceptable::class.java)
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     inline fun <reified RESULT : Any, reified FEEDBACK : Feedback> build(
         noinline task: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, RESULT>) -> RESULT,
@@ -267,8 +267,8 @@ data class RepeatUntilAcceptable(
     }
 
     private companion object {
-        private const val ACCEPTABLE_CONDITION = "acceptable"
-        private const val RESULT_WAS_BOUND_LAST_CONDITION = "resultWasBoundLast"
+        private val ACCEPTABLE_CONDITION = "${RepeatUntilAcceptable::class.simpleName}_acceptable"
+        private val RESULT_WAS_BOUND_LAST_CONDITION = "${RepeatUntilAcceptable::class.simpleName}_resultWasBoundLast"
     }
 
 }

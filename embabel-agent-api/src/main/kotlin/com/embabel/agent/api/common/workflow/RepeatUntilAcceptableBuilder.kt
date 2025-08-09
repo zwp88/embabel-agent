@@ -17,8 +17,6 @@ package com.embabel.agent.api.common.workflow
 
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.dsl.AgentScopeBuilder
-import com.embabel.agent.common.Constants.EMBABEL_PROVIDER
-import com.embabel.agent.core.Agent
 
 /**
  * Java friendly builder for RepeatUntil workflow.
@@ -30,7 +28,7 @@ data class RepeatUntilAcceptableBuilder<RESULT : Any, FEEDBACK : Feedback>(
     private val scoreThreshold: Double = DEFAULT_SCORE_THRESHOLD,
 ) {
 
-    companion object {
+    companion object : WorkFlowBuilderReturning {
 
         const val DEFAULT_MAX_ITERATIONS = 5
 
@@ -40,7 +38,7 @@ data class RepeatUntilAcceptableBuilder<RESULT : Any, FEEDBACK : Feedback>(
          * Create a RepeatUntilBuilder for a specific result type and default TextFeedback.
          */
         @JvmStatic
-        fun <RESULT : Any> returning(resultClass: Class<RESULT>): RepeatUntilAcceptableBuilder<RESULT, TextFeedback> {
+        override fun <RESULT : Any> returning(resultClass: Class<RESULT>): RepeatUntilAcceptableBuilder<RESULT, TextFeedback> {
             return RepeatUntilAcceptableBuilder(resultClass = resultClass, feedbackClass = TextFeedback::class.java)
         }
     }
@@ -89,7 +87,7 @@ data class RepeatUntilAcceptableBuilder<RESULT : Any, FEEDBACK : Feedback>(
     inner class Evaluator(
         private val generator: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, RESULT>) -> RESULT,
         private val evaluator: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, FEEDBACK>) -> FEEDBACK,
-    ) {
+    ) : WorkflowBuilder<RESULT>() {
 
         /**
          * Define the acceptance criteria for the feedback.
@@ -105,26 +103,9 @@ data class RepeatUntilAcceptableBuilder<RESULT : Any, FEEDBACK : Feedback>(
          * Build an instance with default acceptance criteria,
          * based on threshold score
          */
-        fun build(): AgentScopeBuilder<RESULT> {
+        override fun build(): AgentScopeBuilder<RESULT> {
             return withAcceptanceCriteria { it.score >= scoreThreshold }
                 .build()
-        }
-
-        /**
-         * Build an agent on this RepeatUntil workflow
-         * with default acceptance criteria.
-         */
-        fun buildAgent(
-            name: String,
-            description: String,
-        ): Agent {
-            return build()
-                .build()
-                .createAgent(
-                    name = name,
-                    provider = EMBABEL_PROVIDER,
-                    description = description,
-                )
         }
     }
 
@@ -132,12 +113,12 @@ data class RepeatUntilAcceptableBuilder<RESULT : Any, FEEDBACK : Feedback>(
         private val generator: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, RESULT>) -> RESULT,
         private val evaluator: (TransformationActionContext<AttemptHistory<RESULT, FEEDBACK>, FEEDBACK>) -> FEEDBACK,
         private val accept: (f: FEEDBACK) -> Boolean,
-    ) {
+    ) : WorkflowBuilder<RESULT>() {
 
         /**
          * Build the workflow so it can be included in agents
          */
-        fun build(): AgentScopeBuilder<RESULT> {
+        override fun build(): AgentScopeBuilder<RESULT> {
             return RepeatUntilAcceptable(maxIterations = maxIterations, scoreThreshold = scoreThreshold)
                 .build(
                     task = generator,
@@ -148,20 +129,5 @@ data class RepeatUntilAcceptableBuilder<RESULT : Any, FEEDBACK : Feedback>(
                 )
         }
 
-        /**
-         * Build an agent on this RepeatUntil workflow.
-         */
-        fun buildAgent(
-            name: String,
-            description: String,
-        ): Agent {
-            return build()
-                .build()
-                .createAgent(
-                    name = name,
-                    provider = EMBABEL_PROVIDER,
-                    description = description,
-                )
-        }
     }
 }
