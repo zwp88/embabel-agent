@@ -16,10 +16,10 @@
 package com.embabel.agent.config.models
 
 import com.embabel.agent.common.RetryProperties
-import com.embabel.common.ai.model.EmbeddingService
-import com.embabel.common.ai.model.Llm
-import com.embabel.common.ai.model.PerTokenPricingModel
+import com.embabel.common.ai.model.*
+import com.embabel.common.util.loggerFor
 import io.micrometer.observation.ObservationRegistry
+import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -37,7 +37,7 @@ data class OpenAiProperties(
 ) : RetryProperties
 
 /**
- * Well-known OpenAI models.
+ * Well-known models from OpenAI.
  */
 @Configuration(proxyBeanMethods = false)
 @Profile("!test")
@@ -63,6 +63,51 @@ class OpenAiModels(
 
     init {
         logger.info("Open AI models are available: {}", properties)
+    }
+
+    @Bean
+    fun gpt5(): Llm {
+        return openAiCompatibleLlm(
+            model = GPT_5,
+            provider = PROVIDER,
+            knowledgeCutoffDate = LocalDate.of(2024, 10, 1),
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = 1.25,
+                usdPer1mOutputTokens = 10.0,
+            ),
+            retryTemplate = properties.retryTemplate(GPT_5),
+            optionsConverter = Gpt5ChatOptionsConverter,
+        )
+    }
+
+    @Bean
+    fun gpt5mini(): Llm {
+        return openAiCompatibleLlm(
+            model = GPT_5_MINI,
+            provider = PROVIDER,
+            knowledgeCutoffDate = LocalDate.of(2024, 5, 31),
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = .25,
+                usdPer1mOutputTokens = 2.0,
+            ),
+            retryTemplate = properties.retryTemplate(GPT_5_MINI),
+            optionsConverter = Gpt5ChatOptionsConverter,
+        )
+    }
+
+    @Bean
+    fun gpt5nano(): Llm {
+        return openAiCompatibleLlm(
+            model = GPT_5_NANO,
+            provider = PROVIDER,
+            knowledgeCutoffDate = LocalDate.of(2024, 5, 31),
+            pricingModel = PerTokenPricingModel(
+                usdPer1mInputTokens = .05,
+                usdPer1mOutputTokens = .40,
+            ),
+            optionsConverter = Gpt5ChatOptionsConverter,
+            retryTemplate = properties.retryTemplate(GPT_5_NANO),
+        )
     }
 
     @Bean
@@ -123,10 +168,35 @@ class OpenAiModels(
 
         const val GPT_41_NANO = "gpt-4.1-nano"
 
+        const val GPT_5 = "gpt-5"
+
+        const val GPT_5_MINI = "gpt-5-mini"
+
+        const val GPT_5_NANO = "gpt-5-nano"
+
         const val PROVIDER = "OpenAI"
 
         const val TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small"
 
         const val DEFAULT_TEXT_EMBEDDING_MODEL = TEXT_EMBEDDING_3_SMALL
+    }
+}
+
+internal object Gpt5ChatOptionsConverter : OptionsConverter<OpenAiChatOptions> {
+
+    override fun convertOptions(options: LlmOptions): OpenAiChatOptions {
+        if (options.temperature != 1.0) {
+            loggerFor<Gpt5ChatOptionsConverter>().warn(
+                "GPT-5 models do not support temperature settings other than default 1.0. You set {} but it will be ignored.",
+                options.temperature,
+            )
+        }
+        return OpenAiChatOptions.builder()
+            .topP(options.topP)
+            .maxTokens(options.maxTokens)
+            .presencePenalty(options.presencePenalty)
+            .frequencyPenalty(options.frequencyPenalty)
+            .topP(options.topP)
+            .build()
     }
 }
