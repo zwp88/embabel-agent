@@ -26,14 +26,14 @@ class Gpt5ChatOptionsConverterTest(
 
     @Test
     fun `ignores temperature`() {
-        val llmo = LlmOptions(temperature = 0.5)
+        val llmo = LlmOptions().withTemperature(temperature = 0.5)
         val options = Gpt5ChatOptionsConverter.convertOptions(llmo)
         assertEquals(null, options.temperature, "Custom temperature should be ignored for GPT-5")
     }
 
     @Test
     fun `respects non-temperature options`() {
-        val llmo = LlmOptions.fromModel(OpenAiModels.GPT_5).withTopK(10).withTopP(.2)
+        val llmo = LlmOptions.withModel(OpenAiModels.GPT_5).withTopK(10).withTopP(.2)
         val options = Gpt5ChatOptionsConverter.convertOptions(llmo)
         assertEquals(llmo.topP, options.topP, "Top P should be preserved for GPT-5")
         assertNull(options.temperature, "Temperature should not be set for GPT-5")

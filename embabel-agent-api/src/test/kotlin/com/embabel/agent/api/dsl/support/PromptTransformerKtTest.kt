@@ -30,7 +30,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.ai.tool.ToolCallback
 
 
-data class PromptPerson(val name: String, val age: Int)
+data class PromptPerson(
+    val name: String,
+    val age: Int,
+)
+
 data class Summary(val text: String)
 
 class PromptTransformerKtTest {
@@ -137,9 +141,9 @@ class PromptTransformerKtTest {
 
         @Test
         fun `transformer should handle custom LLM options`() {
-            val customLlmOptions = LlmOptions(temperature = 0.7)
+            val customLlmOptions = LlmOptions().withTemperature(temperature = 0.7)
 
-            val transformer = promptTransformer<MagicVictim, Frog>(
+            val transformer = promptTransformer(
                 name = "customLlmTransformer",
                 llm = customLlmOptions,
                 inputClass = MagicVictim::class.java,

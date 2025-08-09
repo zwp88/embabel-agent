@@ -185,7 +185,7 @@ class OpenAiModels(
 internal object Gpt5ChatOptionsConverter : OptionsConverter<OpenAiChatOptions> {
 
     override fun convertOptions(options: LlmOptions): OpenAiChatOptions {
-        if (options.temperature != 1.0) {
+        if (options.temperature != null && options.temperature != 1.0) {
             loggerFor<Gpt5ChatOptionsConverter>().warn(
                 "GPT-5 models do not support temperature settings other than default 1.0. You set {} but it will be ignored.",
                 options.temperature,
