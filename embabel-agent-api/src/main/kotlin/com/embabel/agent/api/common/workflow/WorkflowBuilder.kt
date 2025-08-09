@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common.workflow
 
+import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.dsl.AgentScopeBuilder
 import com.embabel.agent.common.Constants
 import com.embabel.agent.core.Agent
@@ -27,7 +28,9 @@ interface WorkFlowBuilderReturning {
 /**
  * Common base class for building workflows.
  */
-abstract class WorkflowBuilder<RESULT : Any> {
+abstract class WorkflowBuilder<RESULT : Any>(
+    private val resultClass: Class<RESULT>,
+) {
 
     abstract fun build(): AgentScopeBuilder<RESULT>
 
@@ -45,6 +48,13 @@ abstract class WorkflowBuilder<RESULT : Any> {
                 provider = Constants.EMBABEL_PROVIDER,
                 description = description,
             )
+    }
+
+    fun asSubProcess(
+        context: ActionContext,
+    ): RESULT {
+        return build()
+            .asSubProcess(context, resultClass)
     }
 
 }

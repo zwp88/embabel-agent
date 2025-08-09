@@ -275,3 +275,21 @@ data class TransformationActionContext<I, O>(
 
     override val operation = action
 }
+
+class SupplierActionContext<O>(
+    override val processContext: ProcessContext,
+    override val action: Action,
+    val outputClass: Class<O>,
+) : ActionContext, Blackboard by processContext.agentProcess,
+    AgenticEventListener by processContext {
+
+    override val toolGroups: Set<ToolGroupRequirement>
+        get() = action.toolGroups
+
+    override val operation = action
+
+    val inputs: List<Any> get() = emptyList()
+
+    override fun domainObjectInstances(): List<Any> = listOf(outputClass)
+
+}

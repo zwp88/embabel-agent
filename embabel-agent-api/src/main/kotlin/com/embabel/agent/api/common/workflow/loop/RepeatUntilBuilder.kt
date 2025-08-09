@@ -73,7 +73,7 @@ data class RepeatUntilBuilder<RESULT : Any>(
     inner class Accepter(
         private val generator: (TransformationActionContext<ResultHistory<RESULT>, RESULT>) -> RESULT,
         private val accept: (InputActionContext<ResultHistory<RESULT>>) -> Boolean,
-    ) : WorkflowBuilder<RESULT>() {
+    ) : WorkflowBuilder<RESULT>(resultClass) {
 
         /**
          * Build the workflow so it can be included in agents
