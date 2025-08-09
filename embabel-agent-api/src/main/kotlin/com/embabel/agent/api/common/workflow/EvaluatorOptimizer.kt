@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.support.SupplierAction
 import com.embabel.agent.api.common.support.TransformationAction
+import com.embabel.agent.api.common.workflow.loop.Feedback
 import com.embabel.agent.api.dsl.AgentScopeBuilder
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ComputedBooleanCondition

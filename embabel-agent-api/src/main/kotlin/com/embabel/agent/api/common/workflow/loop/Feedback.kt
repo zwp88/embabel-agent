@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common.workflow
+package com.embabel.agent.api.common.workflow.loop
 
 import com.embabel.common.core.types.ZeroToOne
 

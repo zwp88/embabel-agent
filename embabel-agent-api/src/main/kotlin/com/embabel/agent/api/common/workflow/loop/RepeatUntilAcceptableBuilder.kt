@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common.workflow
+package com.embabel.agent.api.common.workflow.loop
 
 import com.embabel.agent.api.common.TransformationActionContext
+import com.embabel.agent.api.common.workflow.WorkFlowBuilderReturning
+import com.embabel.agent.api.common.workflow.WorkflowBuilder
 import com.embabel.agent.api.dsl.AgentScopeBuilder
 
 /**
