@@ -18,7 +18,6 @@ package com.embabel.agent.rag.neo.config
 import com.embabel.common.ai.model.EmbeddingService
 import com.embabel.common.util.loggerFor
 import org.neo4j.driver.Driver
-import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,10 +32,15 @@ class NeoVectorStoreConfiguration {
     }
 
     @Bean
-    fun neoVectorStore(driver: Driver, embeddingService: EmbeddingService): VectorStore {
+    fun neoVectorStore(
+        driver: Driver,
+        embeddingService: EmbeddingService,
+    ): Neo4jVectorStore {
         return Neo4jVectorStore.builder(
             driver,
             embeddingService.model,
-        ).build()
+        )
+            .initializeSchema(true)
+            .build()
     }
 }
