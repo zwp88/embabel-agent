@@ -36,6 +36,8 @@ abstract class WorkflowBuilder<RESULT : Any>(
 
     /**
      * Build an agent on this RepeatUntil workflow.
+     * Can be used to implement an @Bean method that returns an Agent,
+     * which will be automatically be registered on the current AgentPlatform.
      */
     fun buildAgent(
         name: String,
@@ -50,6 +52,10 @@ abstract class WorkflowBuilder<RESULT : Any>(
             )
     }
 
+    /**
+     * Convenience method to build an agent with a default name and description.
+     * This is typically used inside an @Action method.
+     */
     fun asSubProcess(
         context: ActionContext,
     ): RESULT {

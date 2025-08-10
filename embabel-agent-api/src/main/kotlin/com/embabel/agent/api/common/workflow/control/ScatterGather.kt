@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common.workflow.multimodel
+package com.embabel.agent.api.common.workflow.control
 
 import com.embabel.agent.api.common.SupplierActionContext
 import com.embabel.agent.api.common.TransformationActionContext
@@ -29,15 +29,19 @@ data class ResultList<RESULT : Any>(
     val results: List<RESULT>,
 )
 
-class Consensus(
+/**
+ * Scatter gather pattern for generating multiple results in parallel and consolidating them.
+ */
+class ScatterGather(
     private val maxConcurrency: Int,
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    fun <RESULT : Any> generateConsensus(
-        generators: List<(SupplierActionContext<RESULT>) -> RESULT>,
-        consensusFunction: (TransformationActionContext<ResultList<RESULT>, RESULT>) -> RESULT,
+    fun <ELEMENT : Any, RESULT : Any> forkJoin(
+        generators: List<(SupplierActionContext<ELEMENT>) -> ELEMENT>,
+        joinFunction: (TransformationActionContext<ResultList<ELEMENT>, RESULT>) -> RESULT,
+        elementClass: Class<ELEMENT>,
         resultClass: Class<RESULT>,
     ): AgentScopeBuilder<RESULT> {
 
@@ -53,7 +57,7 @@ class Consensus(
             logger.info("Generating results using {} generators", generators.size)
             val tac = SupplierActionContext(
                 processContext = context.processContext,
-                outputClass = resultClass,
+                outputClass = elementClass,
                 action = context.action,
             )
             val results = context.parallelMap(generators, maxConcurrency = maxConcurrency) { generator ->
@@ -73,8 +77,8 @@ class Consensus(
             inputClass = ResultList::class.java,
             outputClass = resultClass,
         ) { context ->
-            val finalResult = consensusFunction.invoke(
-                context as TransformationActionContext<ResultList<RESULT>, RESULT>,
+            val finalResult = joinFunction.invoke(
+                context as TransformationActionContext<ResultList<ELEMENT>, RESULT>,
             )
             logger.info("Consolidating results, final (best) result: {}", finalResult)
             finalResult
@@ -96,6 +100,5 @@ class Consensus(
             goals = setOf(resultGoal)
         )
     }
-
 
 }

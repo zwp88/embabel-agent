@@ -25,6 +25,9 @@ import java.util.concurrent.CompletableFuture
  * drawing on all of its agents as its own actions, goals, and conditions.
  * An AgentPlatform is stateful, as agents can be deployed to it.
  * See TypedOps for a higher level API with typed I/O.
+ * Typically, there is one AgentPlatform per Spring Boot application,
+ * with agents discovered by classpath scanning for @Agent annotations,
+ * but this is not a requirement.
  */
 interface AgentPlatform : AgentScope {
 
