@@ -27,7 +27,6 @@ import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.data.neo4j.transaction.SessionFactoryUtils
 import org.springframework.stereotype.Service
 
 /**
@@ -46,7 +45,7 @@ data class NeoOgmKnowledgeGraphServiceProperties(
 @Service
 class NeoOgmKnowledgeGraphService(
     private val sessionFactory: SessionFactory,
-    private val queryRunner: OgmCypherSearch,
+    private val ogmCypherSearch: OgmCypherSearch,
     modelProvider: ModelProvider,
     private val properties: NeoOgmKnowledgeGraphServiceProperties,
 ) : SchemaResolver, ChunkRepository {
@@ -56,7 +55,7 @@ class NeoOgmKnowledgeGraphService(
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
     override fun findAll(): List<Chunk> {
-        val rows = SessionFactoryUtils.getSession(sessionFactory).query(
+        val rows = ogmCypherSearch.currentSession().query(
             cypherChunkQuery(""),
             emptyMap<String, Any?>(),
             true,
@@ -69,7 +68,7 @@ class NeoOgmKnowledgeGraphService(
 
 
     override fun findChunksById(chunkIds: List<String>): List<Chunk> {
-        val session = SessionFactoryUtils.getSession(sessionFactory)
+        val session = ogmCypherSearch.currentSession()
         val rows = session.query(
             cypherChunkQuery(" WHERE c.id IN \$ids "),
             mapOf("ids" to chunkIds),
@@ -138,7 +137,7 @@ class NeoOgmKnowledgeGraphService(
             "chunkNodeName" to properties.chunkNodeName,
             "entityLabels" to entity.labels + properties.entityNodeName,
         )
-        val result = queryRunner.query(
+        val result = ogmCypherSearch.query(
             purpose = "Merge entity",
             query = "create_entity",
             params = params,
@@ -156,7 +155,7 @@ class NeoOgmKnowledgeGraphService(
     fun embedEntities(
         entities: List<RetrievableEntity>,
     ) {
-        val session = SessionFactoryUtils.getSession(sessionFactory)
+        val session = ogmCypherSearch.currentSession()
         entities.forEach { entity ->
             embedEntity(session, entity)
         }

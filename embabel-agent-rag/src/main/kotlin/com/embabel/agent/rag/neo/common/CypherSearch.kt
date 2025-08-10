@@ -30,6 +30,7 @@ interface CypherSearch {
     /**
      * Query for all entities in the knowledge graph.
      * Includes both generic entities and mapped entities.
+     * The query must return entities as n.
      */
     fun queryForEntities(
         purpose: String,
@@ -38,6 +39,10 @@ interface CypherSearch {
         logger: Logger? = null,
     ): List<NamedEntityData>
 
+    /**
+     * Query for mapped entities in the knowledge graph.
+     * The query must return entities as n.
+     */
     fun queryForMappedEntities(
         purpose: String,
         query: String,
