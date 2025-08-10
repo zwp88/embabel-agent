@@ -259,6 +259,7 @@ class ShellCommands(
                 "Could not process ingestion."
             }
         } catch (e: Exception) {
+            logger.error("Failed to ingest $url: ${e.message}", e)
             "Failed to ingest $url: ${e.message}"
         }
     }
