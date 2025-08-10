@@ -40,7 +40,7 @@ class NeoVectorStoreConfiguration {
             driver,
             embeddingService.model,
         )
-            .initializeSchema(true)
+            .initializeSchema(false)
             .build()
     }
 }

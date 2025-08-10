@@ -1,7 +1,8 @@
-CALL db.index.vector.queryNodes('spring-ai-document-index', $topK, $queryVector)
+CALL db.index.vector.queryNodes($vectorIndex, $topK, $queryVector)
 YIELD node AS chunk, score
-WHERE score > $similarityThreshold
-RETURN chunk.text as text, chunk.id as id,
+  WHERE score > $similarityThreshold
+RETURN chunk.text AS text, chunk.id AS id,
        score
-ORDER BY score DESC
+  ORDER BY score DESC
+
 

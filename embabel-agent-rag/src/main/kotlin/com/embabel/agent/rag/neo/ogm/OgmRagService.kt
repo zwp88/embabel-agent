@@ -24,9 +24,16 @@ import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
+
+
+@ConfigurationProperties(prefix = "embabel.graphrag.ogm")
+data class OgmRagServiceProperties(
+    val vectorIndex: String = "spring_ai_document_index",
+)
 
 /**
  * Performs RAG queries in readonly transactions using Neo4j OGM.
@@ -38,6 +45,7 @@ class OgmRagService(
     private val queryRunner: OgmCypherSearch,
     private val schemaResolver: SchemaResolver,
     platformTransactionManager: PlatformTransactionManager,
+    private val properties: OgmRagServiceProperties = OgmRagServiceProperties(),
 ) : RagService {
 
     private val logger = LoggerFactory.getLogger(OgmRagService::class.java)
@@ -100,6 +108,7 @@ class OgmRagService(
                 "searchChunks",
                 query = "chunk_vector_search",
                 params = mapOf(
+                    "vectorIndex" to properties.vectorIndex,
                     "queryVector" to embedding,
                     "topK" to 2,
                     "similarityThreshold" to 0.0,
