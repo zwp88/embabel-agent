@@ -15,10 +15,7 @@
  */
 package com.embabel.chat.agent.shell
 
-import com.embabel.agent.api.common.autonomy.AgentProcessExecution
-import com.embabel.agent.api.common.autonomy.Autonomy
-import com.embabel.agent.api.common.autonomy.GoalChoiceApprover
-import com.embabel.agent.api.common.autonomy.ProcessWaitingException
+import com.embabel.agent.api.common.autonomy.*
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.shell.TerminalServices
 import com.embabel.chat.AgenticResultAssistantMessage
@@ -34,12 +31,19 @@ import com.embabel.chat.agent.ChatConfig
  */
 class LastMessageIntentAgentPlatformChatSession(
     autonomy: Autonomy,
+    planLister: PlanLister,
     goalChoiceApprover: GoalChoiceApprover,
     messageListener: MessageListener,
     processOptions: ProcessOptions = ProcessOptions(),
     private val terminalServices: TerminalServices,
-    config: ChatConfig,
-) : AgentPlatformChatSession(autonomy, goalChoiceApprover, messageListener, processOptions, config) {
+    chatConfig: ChatConfig,
+) : AgentPlatformChatSession(
+    autonomy = autonomy,
+    planLister = planLister,
+    goalChoiceApprover = goalChoiceApprover, messageListener = messageListener,
+    processOptions = processOptions,
+    chatConfig = chatConfig,
+) {
 
     override fun handleProcessWaitingException(
         pwe: ProcessWaitingException,

@@ -63,6 +63,7 @@ data class ShellConfig(
 @ShellComponent
 class ShellCommands(
     private val autonomy: Autonomy,
+    private val planLister: PlanLister,
     private val modelProvider: ModelProvider,
     private val terminalServices: TerminalServices,
     private val environment: ConfigurableEnvironment,
@@ -133,10 +134,11 @@ class ShellCommands(
         val chatSession = LastMessageIntentAgentPlatformChatSession(
             messageListener = { },
             autonomy = autonomy,
+            planLister = planLister,
             processOptions = processOptions,
             goalChoiceApprover = if (shellProperties.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL,
             terminalServices = terminalServices,
-            config = shellProperties.chat,
+            chatConfig = shellProperties.chat,
         )
         return terminalServices.chat(chatSession, colorPalette)
     }

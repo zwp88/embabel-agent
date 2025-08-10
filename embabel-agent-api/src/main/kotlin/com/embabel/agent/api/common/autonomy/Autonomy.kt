@@ -16,7 +16,6 @@
 package com.embabel.agent.api.common.autonomy
 
 import com.embabel.agent.api.common.support.destructureAndBindIfNecessary
-import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.common.Constants
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
@@ -30,8 +29,9 @@ import com.embabel.agent.testing.integration.RandomRanker
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.indent
 import com.embabel.common.util.loggerFor
-import com.embabel.plan.Plan
-import com.embabel.plan.goap.*
+import com.embabel.plan.goap.AStarGoapPlanner
+import com.embabel.plan.goap.ConditionDetermination
+import com.embabel.plan.goap.WorldStateDeterminer
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 
@@ -61,19 +61,6 @@ data class GoalSelectionOptions(
     val multiGoal: Boolean = false,
 )
 
-interface PlanLister {
-
-    /**
-     * List achievable plans from the current world state.
-     * @param processOptions process options
-     * @param bindings bindings to use for the planning
-     */
-    fun achievablePlans(
-        processOptions: ProcessOptions,
-        bindings: Map<String, Any>,
-    ): List<Plan>
-}
-
 /**
  * Adds autonomy to an AgentPlatform, with the ability to choose
  * goals and agents dynamically, given user input.
@@ -84,47 +71,11 @@ class Autonomy(
     val agentPlatform: AgentPlatform,
     private val ranker: Ranker,
     val properties: AutonomyProperties,
-) : PlanLister {
+) {
 
     private val logger = loggerFor<Autonomy>()
 
     private val eventListener = agentPlatform.platformServices.eventListener
-
-    private val dummyAgent = agent(name = "noop", description = "never actually runs") {
-    }
-    
-    override fun achievablePlans(
-        processOptions: ProcessOptions,
-        bindings: Map<String, Any>,
-    ): List<Plan> {
-        // We'll never run this agent
-        val dummyAgentProcess = agentPlatform.createAgentProcess(
-            processOptions = processOptions,
-            agent = dummyAgent,
-            bindings = bindings,
-        )
-        val planner = dummyAgentProcess.planner as? GoapPlanner
-            ?: TODO("Only GoapPlanners are presently supported: found ${dummyAgentProcess.planner::class.qualifiedName}")
-        val planningSystem = planningSystem()
-        val plans = planner.plansToGoals(
-            system = planningSystem,
-        )
-        logger.info(
-            "Achievable plans given {} actions and {} goals from bindings {}: {}",
-            planningSystem.actions.size,
-            planningSystem.goals.size,
-            bindings,
-            plans.joinToString("\n") { it.infoString(verbose = true, indent = 1) }
-        )
-        return plans
-    }
-
-    private fun planningSystem(): GoapPlanningSystem {
-        return GoapPlanningSystem(
-            agentPlatform.actions.toSet(),
-            agentPlatform.goals,
-        )
-    }
 
     /**
      * Choose a goal based on the user input and try to achieve it.

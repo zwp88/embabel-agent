@@ -17,6 +17,7 @@ package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.autonomy.*
 import com.embabel.agent.core.Blackboard
+import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.io.UserInput
@@ -40,6 +41,7 @@ data class ChatConfig(
  */
 abstract class AgentPlatformChatSession(
     private val autonomy: Autonomy,
+    private val planLister: PlanLister,
     private val goalChoiceApprover: GoalChoiceApprover,
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
@@ -144,11 +146,13 @@ abstract class AgentPlatformChatSession(
                 }
 
                 "plans" -> {
-                    val plans = autonomy.achievablePlans(
+                    val plans = planLister.achievablePlans(
                         processOptionsWithBlackboard(),
                         mapOf("userInput" to UserInput("won't be used"))
                     )
-                    AssistantMessage(plans.joinToString { it.infoString(verbose = true, indent = 2) })
+                    AssistantMessage(plans.joinToString {
+                        ((it.goal as? Goal)?.description) ?: it.goal.name
+                    })
                 }
 
                 else -> AssistantMessage("Unrecognized / command $command")

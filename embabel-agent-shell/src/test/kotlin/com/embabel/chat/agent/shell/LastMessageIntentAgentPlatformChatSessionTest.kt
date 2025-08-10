@@ -17,6 +17,7 @@ package com.embabel.chat.agent.shell
 
 import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.api.common.autonomy.Autonomy
+import com.embabel.agent.api.common.autonomy.DefaultPlanLister
 import com.embabel.agent.api.common.autonomy.GoalChoiceApprover
 import com.embabel.agent.domain.library.Person
 import com.embabel.chat.AssistantMessage
@@ -53,11 +54,12 @@ class LastMessageIntentAgentPlatformChatSessionTest {
             )
         } returns der
         val chatSession = LastMessageIntentAgentPlatformChatSession(
-            mockAutonomy,
-            GoalChoiceApprover.APPROVE_ALL,
+            autonomy = mockAutonomy,
+            planLister = DefaultPlanLister(mockk()),
+            goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
             messageListener = {},
             terminalServices = mockk(),
-            config = ChatConfig(),
+            chatConfig = ChatConfig(),
         )
         val userMessage = UserMessage("Hello, world!")
         val l = MessageSavingMessageListener()
