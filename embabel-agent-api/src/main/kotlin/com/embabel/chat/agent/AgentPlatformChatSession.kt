@@ -36,15 +36,28 @@ data class ChatConfig(
 )
 
 /**
- * Base class for agent platform chat sessions.
- * Uses last message as intent and delegates handling to agent platform.
+ * Handles process waiting exceptions in a platform-specific way
  */
-abstract class AgentPlatformChatSession(
+interface ProcessWaitingHandler {
+
+    fun handleProcessWaitingException(
+        pwe: ProcessWaitingException,
+        basis: Any,
+    ): AssistantMessage
+}
+
+/**
+ * Support for chat sessions leveraging an AgentPlatform.
+ * Uses last message as intent and delegates handling to agent platform.
+ * Uses ProcessWaitingHandler to handle process waiting exceptions.
+ */
+class AgentPlatformChatSession(
     private val autonomy: Autonomy,
     private val planLister: PlanLister,
     private val goalChoiceApprover: GoalChoiceApprover,
     override val messageListener: MessageListener,
     val processOptions: ProcessOptions = ProcessOptions(),
+    val processWaitingHandler: ProcessWaitingHandler,
     val chatConfig: ChatConfig = ChatConfig(),
 ) : ChatSession {
 
@@ -67,7 +80,6 @@ abstract class AgentPlatformChatSession(
     }
 
     protected fun generateResponse(message: UserMessage): AssistantMessage {
-
         val handledCommand = handleAsCommand(message)
         if (handledCommand != null) {
             return handledCommand
@@ -97,7 +109,7 @@ abstract class AgentPlatformChatSession(
                 content = result.toString(),
             )
         } catch (pwe: ProcessWaitingException) {
-            return handleProcessWaitingException(pwe, message.content)
+            return processWaitingHandler.handleProcessWaitingException(pwe, message.content)
         } catch (_: NoGoalFound) {
             return AssistantMessage(
                 content = """|
@@ -120,14 +132,6 @@ abstract class AgentPlatformChatSession(
         )
     }
 
-
-    /**
-     * Handles process waiting exceptions in a platform-specific way
-     */
-    protected abstract fun handleProcessWaitingException(
-        pwe: ProcessWaitingException,
-        basis: Any,
-    ): AssistantMessage
 
     private fun handleAsCommand(message: UserMessage): AssistantMessage? {
         return parseSlashCommand(message.content)?.let { (command, args) ->

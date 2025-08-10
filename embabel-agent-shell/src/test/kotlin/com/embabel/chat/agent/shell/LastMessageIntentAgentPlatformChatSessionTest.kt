@@ -23,6 +23,7 @@ import com.embabel.agent.domain.library.Person
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.MessageSavingMessageListener
 import com.embabel.chat.UserMessage
+import com.embabel.chat.agent.AgentPlatformChatSession
 import com.embabel.chat.agent.ChatConfig
 import io.mockk.every
 import io.mockk.mockk
@@ -53,12 +54,12 @@ class LastMessageIntentAgentPlatformChatSessionTest {
                 goalSelectionOptions = any(),
             )
         } returns der
-        val chatSession = LastMessageIntentAgentPlatformChatSession(
+        val chatSession = AgentPlatformChatSession(
             autonomy = mockAutonomy,
             planLister = DefaultPlanLister(mockk()),
             goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
             messageListener = {},
-            terminalServices = mockk(),
+            processWaitingHandler = mockk(),
             chatConfig = ChatConfig(),
         )
         val userMessage = UserMessage("Hello, world!")

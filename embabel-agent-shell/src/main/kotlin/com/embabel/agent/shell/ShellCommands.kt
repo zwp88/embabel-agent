@@ -23,7 +23,8 @@ import com.embabel.agent.event.logging.LoggingPersonality
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.rag.Ingester
 import com.embabel.agent.shell.config.ShellProperties
-import com.embabel.chat.agent.shell.LastMessageIntentAgentPlatformChatSession
+import com.embabel.chat.agent.AgentPlatformChatSession
+import com.embabel.chat.agent.shell.TerminalServicesProcessWaitingHandler
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
@@ -131,13 +132,13 @@ class ShellCommands(
         )
         blackboard = processOptions.blackboard
 
-        val chatSession = LastMessageIntentAgentPlatformChatSession(
+        val chatSession = AgentPlatformChatSession(
             messageListener = { },
             autonomy = autonomy,
             planLister = planLister,
             processOptions = processOptions,
             goalChoiceApprover = if (shellProperties.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL,
-            terminalServices = terminalServices,
+            processWaitingHandler = TerminalServicesProcessWaitingHandler(terminalServices),
             chatConfig = shellProperties.chat,
         )
         return terminalServices.chat(chatSession, colorPalette)

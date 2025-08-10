@@ -15,35 +15,19 @@
  */
 package com.embabel.chat.agent.shell
 
-import com.embabel.agent.api.common.autonomy.*
-import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.api.common.autonomy.AgentProcessExecution
+import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.shell.TerminalServices
 import com.embabel.chat.AgenticResultAssistantMessage
 import com.embabel.chat.AssistantMessage
-import com.embabel.chat.MessageListener
-import com.embabel.chat.agent.AgentPlatformChatSession
-import com.embabel.chat.agent.ChatConfig
+import com.embabel.chat.agent.ProcessWaitingHandler
 
 /**
  * Shell-specific implementation of agent platform chat session.
- * Uses last message as intent and delegates handling to agent platform.
- * Can bind conversation to the blackboard if so configured.
  */
-class LastMessageIntentAgentPlatformChatSession(
-    autonomy: Autonomy,
-    planLister: PlanLister,
-    goalChoiceApprover: GoalChoiceApprover,
-    messageListener: MessageListener,
-    processOptions: ProcessOptions = ProcessOptions(),
+class TerminalServicesProcessWaitingHandler(
     private val terminalServices: TerminalServices,
-    chatConfig: ChatConfig,
-) : AgentPlatformChatSession(
-    autonomy = autonomy,
-    planLister = planLister,
-    goalChoiceApprover = goalChoiceApprover, messageListener = messageListener,
-    processOptions = processOptions,
-    chatConfig = chatConfig,
-) {
+) : ProcessWaitingHandler {
 
     override fun handleProcessWaitingException(
         pwe: ProcessWaitingException,
