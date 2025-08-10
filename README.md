@@ -206,8 +206,10 @@ In Kotlin or Java, agent implementation code is intuitive and easy to test.
 ```kotlin
 @Agent(description = "Find news based on a person's star sign")
 class StarNewsFinder(
-    // Services such as Horoscope are injected using Spring
+    // Services such as Horoscope are injected by Spring
     private val horoscopeService: HoroscopeService,
+    // Potentially externalized by Spring
+    @param:Value("\${star-news-finder.story.count:5}")
     private val storyCount: Int = 5,
 ) {
 
@@ -220,11 +222,14 @@ class StarNewsFinder(
         context.ai().withDefaultLlm()
             .createObject("Create a person from this user input, extracting their name and star sign: $userInput")
 
+    // This action doesn't use an LLM
+    // Embabel makes it easy to mix LLM use with regular code
     @Action
     fun retrieveHoroscope(starPerson: StarPerson) =
         Horoscope(horoscopeService.dailyHoroscope(starPerson.sign))
 
-    // toolGroups specifies tools that are required for this action to run
+    // This action uses tools
+    // "toolGroups" specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
     fun findNewsStories(
         person: StarPerson,
@@ -263,9 +268,12 @@ class StarNewsFinder(
         horoscope: Horoscope,
         context: OperationContext,
     ): Writeup =
-        // Customize LLM call
         context.ai()
-            .withLlm(LlmOptions.withModel(model).withTemperature(0.9))
+            .withLlm(
+                LlmOptions
+                    .withModel(model)
+                    .withTemperature(0.9)
+            )
             .createObject(
                 """
             Take the following news stories and write up something

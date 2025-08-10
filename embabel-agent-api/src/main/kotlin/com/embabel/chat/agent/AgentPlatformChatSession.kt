@@ -137,7 +137,7 @@ abstract class AgentPlatformChatSession(
                         |Available commands:
                         |/help - Show this help message
                         |/bb, blackboard - Show the blackboard
-                        |/plans - Show possible plans from here, with only user input
+                        |/plans - Show possible plans from here, with the existing blackboard and user input
                     """.trimMargin(),
                 )
 
@@ -150,12 +150,12 @@ abstract class AgentPlatformChatSession(
                         processOptionsWithBlackboard(),
                         mapOf("userInput" to UserInput("won't be used"))
                     )
-                    AssistantMessage(plans.joinToString {
+                    AssistantMessage("Plans:\n\t" + plans.joinToString("\n\t") {
                         ((it.goal as? Goal)?.description) ?: it.goal.name
                     })
                 }
 
-                else -> AssistantMessage("Unrecognized / command $command")
+                else -> AssistantMessage("Unrecognized slash command $command")
             }
         }
     }
