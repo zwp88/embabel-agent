@@ -25,15 +25,26 @@ import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 
+/**
+ * Performs RAG queries in readonly transactions using Neo4j OGM.
+ * Requires a Neo4j OGM PlatformTransactionManager to be configured in the Spring context.
+ */
 @Service
 class OgmRagService(
     private val modelProvider: ModelProvider,
     private val queryRunner: OgmCypherSearch,
     private val schemaResolver: SchemaResolver,
+    platformTransactionManager: PlatformTransactionManager,
 ) : RagService {
 
     private val logger = LoggerFactory.getLogger(OgmRagService::class.java)
+
+    private val readonlyTransactionTemplate = TransactionTemplate(platformTransactionManager).apply {
+        isReadOnly = true
+    }
 
     override val name = "OgmRagService"
 
@@ -48,15 +59,16 @@ class OgmRagService(
         val embedding = embeddingService.model.embed(ragRequest.query)
         val cypherRagQueryGenerator = SchemaDrivenCypherRagQueryGenerator(
             modelProvider,
-            // TODO hard coded schema
-            schemaResolver.getSchema("any")
+            schema,
         )
         val cypher = cypherRagQueryGenerator.generateQuery(
             request = ragRequest,
         )
         logger.info("Generated Cypher query: $cypher")
 
-        val cypherResults = executeGeneratedQuery(cypher)
+        val cypherResults = readonlyTransactionTemplate.execute { executeGeneratedQuery(cypher) } ?: Result.failure(
+            IllegalStateException("Transaction failed or returned null while executing Cypher query: $cypher")
+        )
         if (cypherResults.isSuccess) {
             val results = cypherResults.getOrThrow()
             if (results.isNotEmpty()) {
@@ -74,39 +86,47 @@ class OgmRagService(
             }
         }
 
-        val genericEntityResults = queryRunner.entityDataSimilaritySearch(
-            "searchEntities",
-            query = "entity_vector_search",
-            params = mapOf(
-                "queryVector" to embedding,
-                "topK" to ragRequest.topK,
-                "similarityThreshold" to ragRequest.similarityThreshold,
-            ),
-        )
-        val chunkResults = queryRunner.chunkSimilaritySearch(
-            "searchChunks",
-            query = "chunk_vector_search",
-            params = mapOf(
-                "queryVector" to embedding,
-                "topK" to 2,
-                "similarityThreshold" to 0.0,
-            ),
-            logger = logger,
-        )
-        val entityResults = queryRunner.mappedEntitySimilaritySearch(
-            purpose = "searchMappedEntities",
-            query = "entity_vector_search",
-            params = mapOf(
-                "queryVector" to embedding,
-                "topK" to ragRequest.topK,
-                "similarityThreshold" to ragRequest.similarityThreshold,
-            ),
-            logger,
-        )
-        return RagResponse(
-            service = this.name,
-            results = chunkResults + entityResults,
-        )
+//        val genericEntityResults = queryRunner.entityDataSimilaritySearch(
+//            "searchEntities",
+//            query = "entity_vector_search",
+//            params = mapOf(
+//                "queryVector" to embedding,
+//                "topK" to ragRequest.topK,
+//                "similarityThreshold" to ragRequest.similarityThreshold,
+//            ),
+//        )
+        return readonlyTransactionTemplate.execute {
+            val chunkResults = queryRunner.chunkSimilaritySearch(
+                "searchChunks",
+                query = "chunk_vector_search",
+                params = mapOf(
+                    "queryVector" to embedding,
+                    "topK" to 2,
+                    "similarityThreshold" to 0.0,
+                ),
+                logger = logger,
+            )
+            val entityResults = queryRunner.mappedEntitySimilaritySearch(
+                purpose = "searchMappedEntities",
+                query = "entity_vector_search",
+                params = mapOf(
+                    "queryVector" to embedding,
+                    "topK" to ragRequest.topK,
+                    "similarityThreshold" to ragRequest.similarityThreshold,
+                ),
+                logger,
+            )
+            RagResponse(
+                service = this.name,
+                results = chunkResults + entityResults,
+            )
+        } ?: run {
+            logger.error("Transaction failed or returned null, returning empty RagResponse")
+            RagResponse(
+                service = this.name,
+                results = emptyList(),
+            )
+        }
     }
 
     /**
