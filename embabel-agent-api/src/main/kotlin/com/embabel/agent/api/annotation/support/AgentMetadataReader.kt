@@ -16,7 +16,6 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.StuckHandler
 import com.embabel.agent.api.common.ToolObject
@@ -30,7 +29,6 @@ import com.embabel.agent.validation.AgentStructureValidator
 import com.embabel.agent.validation.AgentValidationManager
 import com.embabel.agent.validation.DefaultAgentValidationManager
 import com.embabel.agent.validation.GoapPathToCompletionValidator
-import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Semver
 import com.embabel.common.util.NameUtils
 import com.embabel.common.util.loggerFor
@@ -355,20 +353,6 @@ class AgentMetadataReader(
                 args,
             )
             evaluationResult
-        } catch (ecpe: EvaluateConditionPromptException) {
-            // This is our own exception to get typesafe prompt execution
-            // It is not a failure
-            val promptRunner = context.promptRunner(
-                llm = ecpe.llm ?: LlmOptions(),
-                promptContributors = ecpe.promptContributors,
-                contextualPromptContributors = ecpe.contextualPromptContributors,
-            )
-
-            promptRunner.evaluateCondition(
-                condition = ecpe.condition,
-                context = ecpe.context,
-                confidenceThreshold = ecpe.confidenceThreshold,
-            )
         } catch (t: Throwable) {
             logger.warn("Error invoking condition method ${method.name} with args $args", t)
             false

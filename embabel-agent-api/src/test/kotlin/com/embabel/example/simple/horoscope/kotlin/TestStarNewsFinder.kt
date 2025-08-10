@@ -15,7 +15,11 @@
  */
 package com.embabel.example.simple.horoscope.kotlin
 
-import com.embabel.agent.api.annotation.*
+import com.embabel.agent.api.annotation.AchievesGoal
+import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.Agent
+import com.embabel.agent.api.annotation.fromForm
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.createObject
 import com.embabel.agent.api.common.createObjectIfPossible
 import com.embabel.agent.core.CoreToolGroups
@@ -88,9 +92,12 @@ class TestStarNewsFinder(
 ) {
 
     @Action
-    fun extractPerson(userInput: UserInput): Person? =
+    fun extractPerson(
+        userInput: UserInput,
+        context: OperationContext,
+    ): Person? =
         // All prompts are typesafe
-        usingDefaultLlm.createObjectIfPossible(
+        context.ai().withDefaultLlm().createObjectIfPossible(
             """
             Create a person from this user input, extracting their name:
             ${userInput.content}
@@ -145,8 +152,11 @@ class TestStarNewsFinder(
      * @return A StarPerson object if extraction is successful, null otherwise
      */
     @Action
-    fun extractStarPerson(userInput: UserInput): StarPerson? =
-        using(LlmOptions(Auto)).createObjectIfPossible(
+    fun extractStarPerson(
+        userInput: UserInput,
+        context: OperationContext,
+    ): StarPerson? =
+        context.ai().withAutoLlm().createObjectIfPossible(
             """
             Create a person from this user input, extracting their name and star sign:
             ${userInput.content}
@@ -180,8 +190,12 @@ class TestStarNewsFinder(
      */
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = [CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION])
-    internal fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
-        usingDefaultLlm createObject (
+    internal fun findNewsStories(
+        person: StarPerson,
+        horoscope: Horoscope,
+        context: OperationContext,
+    ): RelevantNewsStories =
+        context.ai().withDefaultLlm() createObject (
                 """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -224,7 +238,8 @@ class TestStarNewsFinder(
         person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
-    ): Writeup = using(
+        context: OperationContext,
+    ): Writeup = context.ai().withLlm(
         LlmOptions(Auto).withTemperature(.9)
     ).createObject<Writeup>(
         """

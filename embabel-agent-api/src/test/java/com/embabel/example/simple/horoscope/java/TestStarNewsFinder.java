@@ -19,7 +19,7 @@ import com.embabel.agent.api.annotation.AchievesGoal;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
 import com.embabel.agent.api.annotation.WaitFor;
-import com.embabel.agent.api.common.PromptRunner;
+import com.embabel.agent.api.common.OperationContext;
 import com.embabel.agent.config.models.OpenAiModels;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.domain.io.UserInput;
@@ -55,8 +55,8 @@ public class TestStarNewsFinder {
     }
 
     @Action
-    public PersonImpl extractPerson(UserInput userInput) {
-        return PromptRunner.usingLlm(LlmOptions.fromCriteria(ModelSelectionCriteria.getAuto())).createObjectIfPossible(
+    public PersonImpl extractPerson(UserInput userInput, OperationContext operationContext) {
+        return operationContext.ai().withLlm(LlmOptions.fromCriteria(ModelSelectionCriteria.getAuto())).createObjectIfPossible(
                 """
                         Create a person from this user input, extracting their name:
                         %s""".formatted(userInput.getContent()),
@@ -79,13 +79,15 @@ public class TestStarNewsFinder {
     }
 
     @Action
-    public StarPerson extractStarPerson(UserInput userInput) {
-        return PromptRunner.usingLlm(LlmOptions.fromModel(OpenAiModels.GPT_41)).createObjectIfPossible(
-                """
-                        Create a person from this user input, extracting their name and star sign:
-                        %s""".formatted(userInput.getContent()),
-                StarPerson.class
-        );
+    public StarPerson extractStarPerson(UserInput userInput,
+                                        OperationContext operationContext) {
+        return operationContext.ai().withLlm(OpenAiModels.GPT_41)
+                .createObjectIfPossible(
+                        """
+                                Create a person from this user input, extracting their name and star sign:
+                                %s""".formatted(userInput.getContent()),
+                        StarPerson.class
+                );
     }
 
     @Action
@@ -95,7 +97,8 @@ public class TestStarNewsFinder {
 
     // toolGroups specifies tools that are required for this action to run
     @Action(toolGroups = {CoreToolGroups.WEB})
-    public RelevantNewsStories findNewsStories(StarPerson person, Horoscope horoscope) {
+    public RelevantNewsStories findNewsStories(
+            StarPerson person, Horoscope horoscope, OperationContext context) {
         var prompt = """
                 %s is an astrology believer with the sign %s.
                 Their horoscope for today is:
@@ -114,7 +117,7 @@ public class TestStarNewsFinder {
                 find news stories about training courses.""".formatted(
                 person.name(), person.sign(), horoscope.summary(), storyCount);
 
-        return PromptRunner.usingLlm().createObject(prompt, RelevantNewsStories.class);
+        return context.ai().withDefaultLlm().createObject(prompt, RelevantNewsStories.class);
     }
 
     // The @AchievesGoal annotation indicates that completing this action
@@ -126,7 +129,8 @@ public class TestStarNewsFinder {
     public Writeup writeup(
             StarPerson person,
             RelevantNewsStories relevantNewsStories,
-            Horoscope horoscope) {
+            Horoscope horoscope,
+            OperationContext context) {
         var llm = LlmOptions.Companion.fromCriteria(ModelSelectionCriteria.getAuto())
                 .withTemperature(0.9);
 
@@ -149,6 +153,6 @@ public class TestStarNewsFinder {
                 
                 Format it as Markdown with links.""".formatted(
                 person.name(), person.sign(), horoscope.summary(), newsItems);
-        return PromptRunner.usingLlm(llm).createObject(prompt, Writeup.class);
+        return context.ai().withLlm(llm).createObject(prompt, Writeup.class);
     }
 }

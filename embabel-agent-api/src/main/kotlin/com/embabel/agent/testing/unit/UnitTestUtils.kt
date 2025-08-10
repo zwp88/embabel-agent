@@ -15,27 +15,9 @@
  */
 package com.embabel.agent.testing.unit
 
-import com.embabel.agent.api.common.CreateObjectPromptException
-import com.embabel.agent.api.common.LlmCallRequest
-
 /**
  * Utilities for unit testing agent methods that generate prompts.
  */
 object UnitTestUtils {
 
-    /**
-     * Test an @Agent method that returns a prompt.
-     * Allows making assertions about the generated prompt string and LLM options.
-     * @param block The block to execute.
-     * Should be a call to the agent method with the appropriate arguments.
-     */
-    @JvmStatic
-    fun captureLlmCall(block: Runnable): LlmCallRequest {
-        try {
-            block.run()
-            error("Expected an LLM call but none was made")
-        } catch (epe: CreateObjectPromptException) {
-            return epe
-        }
-    }
 }

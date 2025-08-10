@@ -16,11 +16,9 @@
 package com.embabel.agent.api.common
 
 import com.embabel.agent.api.annotation.support.AgenticInfo
-import com.embabel.agent.api.annotation.using
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ToolGroupRequirement
-import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmUse
@@ -28,7 +26,6 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.StringTransformer
-import org.springframework.ai.tool.ToolCallback
 
 /**
  * User-facing interface for executing prompts.
@@ -289,18 +286,6 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
 
     fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 
-    companion object {
-
-        /**
-         * Create a PromptRunner instance for use in @Action methods
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun usingLlm(llm: LlmOptions = LlmOptions()): PromptRunner {
-            return using(llm)
-        }
-    }
-
 }
 
 /**
@@ -327,72 +312,3 @@ interface LlmObjectCreationRequest : LlmCall {
 interface LlmCallRequest : LlmObjectCreationRequest {
     val prompt: String
 }
-
-/**
- * Exception thrown to indicate that a prompt should be executed.
- * This is not a real failure but meant to be intercepted by infrastructure.
- * It allows us to maintain strong typing.
- * @param requireResult whether to require a result or allow the LLM to
- * say that it cannot produce a result
- * @param llm llm to use. Contextual LLM will be used if not set
- */
-sealed class ExecutePromptException(
-    override val requireResult: Boolean,
-    override val llm: LlmOptions? = null,
-    override val outputClass: Class<*>,
-    override val toolCallbacks: List<ToolCallback>,
-    val toolObjects: List<ToolObject>,
-    override val promptContributors: List<PromptContributor>,
-    override val contextualPromptContributors: List<ContextualPromptElement>,
-    override val generateExamples: Boolean?,
-) : LlmObjectCreationRequest, RuntimeException(
-    "Not a real failure but meant to be intercepted by infrastructure"
-) {
-
-    override val name = "ExecutePromptException"
-}
-
-class CreateObjectPromptException(
-    override val prompt: String,
-    requireResult: Boolean,
-    llm: LlmOptions? = null,
-    outputClass: Class<*>,
-    override val toolGroups: Set<ToolGroupRequirement>,
-    toolCallbacks: List<ToolCallback>,
-    toolObjects: List<ToolObject>,
-    promptContributors: List<PromptContributor>,
-    contextualPromptContributors: List<ContextualPromptElement>,
-    generateExamples: Boolean? = null,
-) : ExecutePromptException(
-    requireResult = requireResult,
-    llm = llm,
-    outputClass = outputClass,
-    toolCallbacks = toolCallbacks,
-    toolObjects = toolObjects,
-    promptContributors = promptContributors,
-    contextualPromptContributors = contextualPromptContributors,
-    generateExamples = generateExamples,
-), LlmCallRequest
-
-class EvaluateConditionPromptException(
-    val condition: String,
-    val context: String,
-    val confidenceThreshold: ZeroToOne,
-    requireResult: Boolean,
-    llm: LlmOptions? = null,
-    override val toolGroups: Set<ToolGroupRequirement>,
-    toolObjects: List<ToolObject>,
-    toolCallbacks: List<ToolCallback>,
-    promptContributors: List<PromptContributor>,
-    contextualPromptContributors: List<ContextualPromptElement>,
-    generateExamples: Boolean? = null,
-) : ExecutePromptException(
-    requireResult = requireResult,
-    llm = llm,
-    outputClass = Determination::class.java,
-    toolCallbacks = toolCallbacks,
-    toolObjects = toolObjects,
-    promptContributors = promptContributors,
-    contextualPromptContributors = contextualPromptContributors,
-    generateExamples = generateExamples,
-)

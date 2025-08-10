@@ -17,9 +17,7 @@ package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.AwaitableResponseException
 import com.embabel.agent.api.annotation.RequireNameMatch
-import com.embabel.agent.api.common.CreateObjectPromptException
 import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.api.common.ToolObject
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.support.MultiTransformationAction
 import com.embabel.agent.api.common.support.expandInputBindings
@@ -27,7 +25,6 @@ import com.embabel.agent.core.Action
 import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroupRequirement
-import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.stereotype.Component
@@ -147,33 +144,6 @@ internal class DefaultActionMethodManager(
         val result = try {
             method.trySetAccessible()
             ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray())
-        } catch (cope: CreateObjectPromptException) {
-            // This is our own exception to get typesafe prompt execution
-            // It is not a failure
-
-            val promptContributors = cope.promptContributors
-            val promptRunner = actionContext.promptRunner(
-                llm = cope.llm ?: LlmOptions(),
-                // Remember to add tool groups from the context to those the exception specified at the call site
-                toolGroups = cope.toolGroups + actionContext.toolGroups,
-                toolObjects = (cope.toolObjects + actionContext.domainObjectInstances()
-                    .map { ToolObject.from(it) }).distinct(),
-                promptContributors = promptContributors,
-                contextualPromptContributors = cope.contextualPromptContributors,
-                generateExamples = cope.generateExamples == true,
-            )
-
-            if (cope.requireResult) {
-                promptRunner.createObject(
-                    prompt = cope.prompt,
-                    outputClass = cope.outputClass,
-                )
-            } else {
-                promptRunner.createObjectIfPossible(
-                    prompt = cope.prompt,
-                    outputClass = actionContext.outputClass as Class<Any>,
-                )
-            }
         } catch (awe: AwaitableResponseException) {
             // This is not a failure, but will drive transition to a wait state
             logger.info(

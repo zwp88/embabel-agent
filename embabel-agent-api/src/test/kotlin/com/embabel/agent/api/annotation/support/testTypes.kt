@@ -425,14 +425,15 @@ class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 class OnePromptActionOnly(
 ) {
 
-    val promptRunner = using(
-        // Java style usage
-        llm = LlmOptions().withTemperature(1.7).withModel("magical"),
-    )
+    val llm = LlmOptions().withTemperature(1.7).withModel("magical")
+
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
-        return promptRunner.createObject("Generated prompt for ${userInput.content}")
+    fun toPersonWithPrompt(
+        userInput: UserInput,
+        context: OperationContext,
+    ): PersonWithReverseTool {
+        return context.ai().withLlm(llm).createObject("Generated prompt for ${userInput.content}")
     }
 
 }
@@ -462,10 +463,7 @@ class Combined {
     ).withValue(30.0)
 
     // Can reuse this or inject
-    val magicalLlm = using(
-        // Java style usage
-        llm = LlmOptions().withTemperature(1.7).withModel("magical"),
-    )
+    val magicalLlm = LlmOptions().withTemperature(1.7).withModel("magical")
 
     @Condition(cost = .5)
     fun condition1(processContext: ProcessContext): Boolean {
@@ -478,8 +476,11 @@ class Combined {
     }
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
-        return magicalLlm.createObject("Generated prompt for ${userInput.content}")
+    fun toPersonWithPrompt(
+        userInput: UserInput,
+        context: OperationContext,
+    ): PersonWithReverseTool {
+        return context.ai().withLlm(magicalLlm).createObject("Generated prompt for ${userInput.content}")
     }
 
     @Tool
@@ -494,8 +495,12 @@ class OnePromptActionWithToolOnly(
 ) {
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
-        return usingDefaultLlm createObject
+    fun toPersonWithPrompt(
+        userInput: UserInput,
+        operationContext: OperationContext,
+    ): PersonWithReverseTool {
+
+        return operationContext.ai().withDefaultLlm() createObject
                 "Generated prompt for ${userInput.content}"
     }
 
@@ -512,8 +517,9 @@ class FromPersonUsesDomainObjectTools {
     @Action
     fun fromPerson(
         person: PersonWithReverseTool,
+        context: OperationContext,
     ): UserInput {
-        return using().createObject("Create a UserInput")
+        return context.ai().withDefaultLlm().createObject("Create a UserInput")
     }
 }
 
@@ -535,8 +541,9 @@ class FromPersonUsesObjectToolsViaUsing {
     @Action
     fun fromPerson(
         person: PersonWithReverseTool,
+        context: ActionContext,
     ): UserInput {
-        return using(toolObjects = listOf(ToolObject(FunnyTool()))).createObject("Create a UserInput")
+        return context.promptRunner(toolObjects = listOf(ToolObject(FunnyTool()))).createObject("Create a UserInput")
     }
 }
 
@@ -546,8 +553,9 @@ class FromPersonUsesObjectToolsViaUsingWithRenaming {
     @Action
     fun fromPerson(
         person: PersonWithReverseTool,
+        context: OperationContext,
     ): UserInput {
-        return using()
+        return context.promptRunner()
             .withToolObject(
                 ToolObject(
                     FunnyTool(),
@@ -563,8 +571,9 @@ class FromPersonUsesObjectToolsViaUsingWithFilter {
     @Action
     fun fromPerson(
         person: PersonWithReverseTool,
+        context: OperationContext,
     ): UserInput {
-        return using()
+        return context.ai().withDefaultLlm()
             .withToolObject(
                 ToolObject(FunnyTool()).withNamingStrategy { "_$it" }.withFilter { false },
             ).createObject("Create a UserInput")
