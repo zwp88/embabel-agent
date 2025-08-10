@@ -61,6 +61,19 @@ data class GoalSelectionOptions(
     val multiGoal: Boolean = false,
 )
 
+interface PlanLister {
+
+    /**
+     * List achievable plans from the current world state.
+     * @param processOptions process options
+     * @param bindings bindings to use for the planning
+     */
+    fun achievablePlans(
+        processOptions: ProcessOptions,
+        bindings: Map<String, Any>,
+    ): List<Plan>
+}
+
 /**
  * Adds autonomy to an AgentPlatform, with the ability to choose
  * goals and agents dynamically, given user input.
@@ -71,19 +84,16 @@ class Autonomy(
     val agentPlatform: AgentPlatform,
     private val ranker: Ranker,
     val properties: AutonomyProperties,
-) {
+) : PlanLister {
 
     private val logger = loggerFor<Autonomy>()
 
     private val eventListener = agentPlatform.platformServices.eventListener
 
-    private val dummyAgent = agent(name = "noop", description = "never actually run") {
+    private val dummyAgent = agent(name = "noop", description = "never actually runs") {
     }
-
-    /**
-     * Achievable goals from the present world state
-     */
-    fun achievablePlans(
+    
+    override fun achievablePlans(
         processOptions: ProcessOptions,
         bindings: Map<String, Any>,
     ): List<Plan> {
@@ -94,7 +104,7 @@ class Autonomy(
             bindings = bindings,
         )
         val planner = dummyAgentProcess.planner as? GoapPlanner
-            ?: TODO("Only GoapPlanners supported: ${dummyAgentProcess.planner::class.qualifiedName}")
+            ?: TODO("Only GoapPlanners are presently supported: found ${dummyAgentProcess.planner::class.qualifiedName}")
         val planningSystem = planningSystem()
         val plans = planner.plansToGoals(
             system = planningSystem,

@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common
+package com.embabel.agent.api.common.autonomy
 
-import com.embabel.agent.api.common.autonomy.Autonomy
-import com.embabel.agent.api.common.autonomy.AutonomyProperties
-import com.embabel.agent.api.common.autonomy.NoAgentFound
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
@@ -25,6 +22,8 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.spi.Ranking
 import com.embabel.agent.spi.Rankings
 import com.embabel.agent.testing.integration.FakeRanker
+import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.Named
 import io.mockk.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
@@ -137,7 +136,7 @@ class AutonomyAgentSelectionTest {
                 description: String,
                 userInput: String,
                 rankables: Collection<T>,
-            ): Rankings<T> where T : com.embabel.common.core.types.Named, T : com.embabel.common.core.types.Described {
+            ): Rankings<T> where T : Named, T : Described {
                 return Rankings(rankables.map { Ranking(it, 0.8) })
             }
         }
@@ -244,7 +243,7 @@ class AutonomyAgentSelectionTest {
                 description: String,
                 userInput: String,
                 rankables: Collection<T>,
-            ): Rankings<T> where T : com.embabel.common.core.types.Named, T : com.embabel.common.core.types.Described {
+            ): Rankings<T> where T : Named, T : Described {
                 return Rankings(rankables.map { Ranking(it, 0.3) })
             }
         }

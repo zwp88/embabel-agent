@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.api.common
+package com.embabel.agent.api.common.autonomy
 
-import com.embabel.agent.api.common.autonomy.Autonomy
-import com.embabel.agent.api.common.autonomy.AutonomyProperties
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.testing.integration.IntegrationTestUtils
@@ -32,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Method
+import java.time.Duration
 import kotlin.reflect.full.declaredMemberExtensionFunctions
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaMethod
@@ -159,7 +158,7 @@ class AutonomyActionLeakageTest {
                 processContext: ProcessContext,
                 action: Action,
             ): ActionStatus {
-                return ActionStatus(runningTime = java.time.Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
+                return ActionStatus(runningTime = Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
 
             override fun referencedInputProperties(variable: String): Set<String> {
@@ -205,7 +204,7 @@ class AutonomyActionLeakageTest {
                 processContext: ProcessContext,
                 action: Action,
             ): ActionStatus {
-                return ActionStatus(runningTime = java.time.Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
+                return ActionStatus(runningTime = Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
 
             override fun referencedInputProperties(variable: String): Set<String> {
@@ -449,7 +448,7 @@ class AutonomyActionLeakageTest {
                 processContext: ProcessContext,
                 action: Action,
             ): ActionStatus {
-                return ActionStatus(runningTime = java.time.Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
+                return ActionStatus(runningTime = Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
 
             override fun referencedInputProperties(variable: String): Set<String> = emptySet()
