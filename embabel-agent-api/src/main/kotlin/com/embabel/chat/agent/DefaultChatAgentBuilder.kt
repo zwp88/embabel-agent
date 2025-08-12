@@ -15,34 +15,26 @@
  */
 package com.embabel.chat.agent
 
-import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.autonomy.Autonomy
-import com.embabel.agent.api.common.autonomy.DefaultPlanLister
 import com.embabel.agent.api.common.workflow.control.SimpleAgentBuilder
-import com.embabel.agent.common.Constants.EMBABEL_PROVIDER
 import com.embabel.agent.core.Agent
-import com.embabel.agent.core.ToolGroup
-import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.core.last
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.prompt.persona.Persona
-import com.embabel.agent.tools.agent.GoalToolCallback
-import com.embabel.agent.tools.agent.PromptedTextCommunicator
+import com.embabel.agent.tools.agent.ToolGroupFactory
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.Conversation
 import com.embabel.chat.WindowingConversationFormatter
 import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.textio.template.TemplateRenderer
-import com.embabel.common.util.loggerFor
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 class DefaultChatAgentBuilder(
-    private val autonomy: Autonomy,
-    private val templateRenderer: TemplateRenderer,
+    autonomy: Autonomy,
     private val llm: LlmOptions,
     private val persona: Persona = K9,
     private val promptTemplate: String = "chat/default_chat",
 ) {
+
+    private val toolGroupFactory = ToolGroupFactory(autonomy)
 
     fun build(): Agent =
         SimpleAgentBuilder
@@ -53,19 +45,22 @@ class DefaultChatAgentBuilder(
                     ?: throw IllegalStateException("No conversation found in context")
                 val formattedConversation =
                     conversation.promptContributor(WindowingConversationFormatter(windowSize = 100))
-                val prompt = templateRenderer.renderLoadedTemplate(
-                    promptTemplate,
-                    mapOf(
-                        "persona" to persona,
-                        "formattedConversation" to formattedConversation,
-                    )
-                )
-                loggerFor<Persona>().info("Continuing conversation with prompt:\n{}", prompt)
                 val assistantMessageContext = context.ai()
                     .withLlm(llm)
                     .withPromptElements(persona)
-                    .withToolGroup(dynamicPerGoalToolGroup(context))
-                    .generateText(prompt)
+                    .withToolGroup(
+                        toolGroupFactory.achievableGoalsToolGroup(
+                            context = context,
+                            bindings = mapOf("it" to UserInput("doesn't matter"))
+                        ),
+                    )
+                    .withTemplate(promptTemplate)
+                    .generateText(
+                        mapOf(
+                            "persona" to persona,
+                            "formattedConversation" to formattedConversation,
+                        )
+                    )
                 AssistantMessage(
                     name = persona.name,
                     content = assistantMessageContext,
@@ -75,31 +70,4 @@ class DefaultChatAgentBuilder(
                 name = "Default chat agent",
                 description = "Default conversation agent with persona ${persona.name}",
             )
-
-    private fun dynamicPerGoalToolGroup(context: OperationContext): ToolGroup {
-        val planLister = DefaultPlanLister(context.agentPlatform())
-        val achievableGoals = planLister.achievableGoals(
-            context.processContext.processOptions,
-            mapOf("it" to UserInput("doesn't matter"))
-        )
-        return ToolGroup(
-            metadata = ToolGroupMetadata(
-                name = "Default chat tools",
-                description = "Default tools for chat agent",
-                role = "chat",
-                provider = EMBABEL_PROVIDER,
-                permissions = emptySet(),
-            ),
-            toolCallbacks = achievableGoals.mapIndexed { i, goal ->
-                GoalToolCallback(
-                    autonomy = autonomy,
-                    name = "tool_$i",
-                    goal = goal,
-                    textCommunicator = PromptedTextCommunicator,
-                    objectMapper = jacksonObjectMapper(),
-                    inputType = UserInput::class.java,
-                )
-            }
-        )
-    }
 }

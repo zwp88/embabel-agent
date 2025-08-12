@@ -21,7 +21,6 @@ import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.prompt.element.ContextualPromptElement
-import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmUse
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
@@ -81,6 +80,11 @@ interface PromptRunnerOperations {
 
 }
 
+/**
+ * Llm operations based on a compiled template.
+ * Similar to [PromptRunnerOperations], but taking a model instead of a template string.
+ * Template names will be resolved by the [TemplateRenderer] provided.
+ */
 class TemplateOperations(
     templateName: String,
     templateRenderer: TemplateRenderer,
@@ -95,6 +99,12 @@ class TemplateOperations(
     ): T = promptRunnerOperations.createObject(
         prompt = compiledTemplate.render(model = model),
         outputClass = outputClass,
+    )
+
+    fun generateText(
+        model: Map<String, Any>,
+    ): String = promptRunnerOperations.generateText(
+        prompt = compiledTemplate.render(model = model),
     )
 }
 
@@ -345,7 +355,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
 
     /**
      * Set whether to generate examples of the output in the prompt
-     * on a per-PromptRunner basis. This overides platform defaults.
+     * on a per-PromptRunner basis. This overrides platform defaults.
      */
     fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 
@@ -367,11 +377,7 @@ inline infix fun <reified T> PromptRunner.create(prompt: String): T =
 inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
     createObjectIfPossible(prompt, T::class.java)
 
-interface LlmObjectCreationRequest : LlmCall {
-    val requireResult: Boolean
-    val outputClass: Class<*>
-}
-
-interface LlmCallRequest : LlmObjectCreationRequest {
-    val prompt: String
-}
+inline fun <reified T> TemplateOperations.createObject(
+    model: Map<String, Any>,
+): T =
+    createObject(outputClass = T::class.java, model = model)

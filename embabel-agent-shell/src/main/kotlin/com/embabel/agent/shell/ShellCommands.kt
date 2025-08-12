@@ -138,7 +138,6 @@ class ShellCommands(
                 agent = DefaultChatAgentBuilder(
                     autonomy = autonomy,
                     persona = K9,
-                    templateRenderer = templateRenderer,
                     llm = LlmOptions
                         .withModel(shellProperties.chat.model)
                         .withTemperature(null)
