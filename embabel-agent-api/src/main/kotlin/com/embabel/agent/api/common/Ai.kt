@@ -15,10 +15,7 @@
  */
 package com.embabel.agent.api.common
 
-import com.embabel.common.ai.model.AutoModelSelectionCriteria
-import com.embabel.common.ai.model.DefaultModelSelectionCriteria
-import com.embabel.common.ai.model.LlmOptions
-import com.embabel.common.ai.model.ModelSelectionCriteria
+import com.embabel.common.ai.model.*
 
 /**
  * Gateway to AI functionality in the context of an operation.
@@ -37,7 +34,7 @@ interface Ai {
      * Does not allow for any other LLM options to be set.
      */
     fun withLlm(model: String): PromptRunner {
-        return withLlm(LlmOptions.Companion(model = model))
+        return withLlm(LlmOptions(model = model))
     }
 
     /**
@@ -47,7 +44,7 @@ interface Ai {
      * Users must configure roles, for example in application.properties.
      */
     fun withLlmByRole(role: String): PromptRunner {
-        return withLlm(LlmOptions.Companion(criteria = ModelSelectionCriteria.Companion.byRole(role)))
+        return withLlm(LlmOptions(criteria = ModelSelectionCriteria.byRole(role)))
     }
 
     /**
@@ -56,7 +53,7 @@ interface Ai {
      * and tools, so is not the same as default.
      */
     fun withAutoLlm(): PromptRunner {
-        return withLlm(LlmOptions.Companion(criteria = AutoModelSelectionCriteria))
+        return withLlm(LlmOptions(criteria = AutoModelSelectionCriteria))
     }
 
     /**
@@ -64,6 +61,10 @@ interface Ai {
      * the default model selection criteria.
      */
     fun withDefaultLlm(): PromptRunner {
-        return withLlm(LlmOptions.Companion(criteria = DefaultModelSelectionCriteria))
+        return withLlm(LlmOptions(criteria = DefaultModelSelectionCriteria))
+    }
+
+    fun withFirstAvailableLlmOf(vararg llms: String): PromptRunner {
+        return withLlm(LlmOptions(criteria = FallbackByNameModelSelectionCriteria(llms.toList())))
     }
 }
