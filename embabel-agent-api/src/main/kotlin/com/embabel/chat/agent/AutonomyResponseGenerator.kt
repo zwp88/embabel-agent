@@ -18,7 +18,10 @@ package com.embabel.chat.agent
 import com.embabel.agent.api.common.autonomy.*
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.UserInput
-import com.embabel.chat.*
+import com.embabel.chat.AgenticResultAssistantMessage
+import com.embabel.chat.AssistantMessage
+import com.embabel.chat.Conversation
+import com.embabel.chat.MessageListener
 
 /**
  * Respond to messages by choosing and executing goals using Autonomy.
@@ -32,13 +35,22 @@ class AutonomyResponseGenerator(
 ) : ResponseGenerator {
 
     override fun generateResponses(
-        message: UserMessage,
         conversation: Conversation,
         processOptions: ProcessOptions,
         messageListener: MessageListener,
     ) {
+        val userMessage = conversation.lastMessageMustBeFromUser()
+        if (userMessage == null) {
+            messageListener.onMessage(
+                AssistantMessage(
+                    content = "I'm not sure what to respond to",
+                )
+            )
+            return
+        }
+
         val bindings = buildMap {
-            put("userInput", UserInput(message.content))
+            put("userInput", UserInput(userMessage.content))
             if (chatConfig.bindConversation)
                 put("conversation", conversation)
         }
@@ -63,7 +75,7 @@ class AutonomyResponseGenerator(
                 )
             )
         } catch (pwe: ProcessWaitingException) {
-            val assistantMessage = processWaitingHandler.handleProcessWaitingException(pwe, message.content)
+            val assistantMessage = processWaitingHandler.handleProcessWaitingException(pwe, userMessage.content)
             messageListener.onMessage(assistantMessage)
         } catch (_: NoGoalFound) {
             messageListener.onMessage(

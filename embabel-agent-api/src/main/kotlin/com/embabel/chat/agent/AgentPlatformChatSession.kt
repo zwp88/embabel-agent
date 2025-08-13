@@ -48,13 +48,11 @@ interface ResponseGenerator {
 
     /**
      * Generate response(s) in this conversation
-     * @param message User message to respond to
      * @param conversation Current conversation state, including new message
      * @param processOptions Options for the process, including blackboard
      * @param messageListener Listener to send created messages to
      */
     fun generateResponses(
-        message: UserMessage,
         conversation: Conversation,
         processOptions: ProcessOptions,
         messageListener: MessageListener,
@@ -123,9 +121,8 @@ class AgentPlatformChatSession(
             messageListener.onMessage(handledCommand)
         } else {
             responseGeneratorToUse.generateResponses(
-                userMessage,
-                conversation,
-                processOptions.copy(
+                conversation = conversation,
+                processOptions = processOptions.copy(
                     blackboard = blackboard,
                 ),
                 messageListener = messageListener

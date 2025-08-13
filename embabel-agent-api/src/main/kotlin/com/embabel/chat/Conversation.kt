@@ -16,6 +16,7 @@
 package com.embabel.chat
 
 import com.embabel.agent.api.common.autonomy.AgentProcessExecution
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.StableIdentified
@@ -28,6 +29,8 @@ import java.time.Instant
 interface Conversation : StableIdentified {
 
     val messages: List<Message>
+
+    fun lastMessageMustBeFromUser(): UserMessage? = messages.lastOrNull() as? UserMessage
 
     fun withMessage(message: Message): Conversation
 
@@ -70,10 +73,10 @@ enum class Role {
  */
 sealed class Message(
     val role: Role,
-    val content: String,
+    override val content: String,
     val name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Timestamped {
+) : HasContent, Timestamped {
 
     val sender: String get() = name ?: role.name.lowercase().replaceFirstChar { it.uppercase() }
 }

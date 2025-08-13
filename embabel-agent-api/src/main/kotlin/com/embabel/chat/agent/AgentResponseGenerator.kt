@@ -19,25 +19,16 @@ import com.embabel.agent.api.common.autonomy.AgentInvocation
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ProcessOptions
-import com.embabel.agent.prompt.persona.Persona
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.Conversation
 import com.embabel.chat.MessageListener
-import com.embabel.chat.UserMessage
-
-val K9 = Persona(
-    name = "K9",
-    persona = "You are an assistant who speaks like K9 from Dr Who",
-    voice = "Friendly and professional, with a robotic tone. Refer to user as Master. Quite clipped and matter of fact",
-    objective = "Assist the user with their tasks",
-)
 
 /**
- * Respond to messages using an agent.
+ * Respond to user messages using an agent.
  */
 class AgentResponseGenerator(
-    val agentPlatform: AgentPlatform,
-    val agent: Agent,
+    private val agentPlatform: AgentPlatform,
+    agent: Agent,
 ) : ResponseGenerator {
 
     init {
@@ -46,13 +37,13 @@ class AgentResponseGenerator(
     }
 
     override fun generateResponses(
-        message: UserMessage,
         conversation: Conversation,
         processOptions: ProcessOptions,
         messageListener: MessageListener,
     ) {
         val invocation = AgentInvocation
             .builder(agentPlatform)
+            .options { it.verbosity { v -> v.showPrompts(true) } }
             .build(AssistantMessage::class.java)
         val message = invocation.invoke(conversation)
         messageListener.onMessage(message)
