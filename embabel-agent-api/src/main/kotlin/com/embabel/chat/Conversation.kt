@@ -18,7 +18,6 @@ package com.embabel.chat
 import com.embabel.agent.api.common.autonomy.AgentProcessExecution
 import com.embabel.agent.domain.library.HasContent
 import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.Timestamped
 import java.time.Instant
@@ -30,6 +29,9 @@ interface Conversation : StableIdentified {
 
     val messages: List<Message>
 
+    /**
+     * Non-null if the conversation has messages and the last message is from the user.
+     */
     fun lastMessageMustBeFromUser(): UserMessage? = messages.lastOrNull() as? UserMessage
 
     fun withMessage(message: Message): Conversation
@@ -41,21 +43,6 @@ interface Conversation : StableIdentified {
 
 }
 
-data class InMemoryConversation(
-    override val id: String = MobyNameGenerator.generateName(),
-    override val messages: List<Message> = emptyList(),
-    private val persistent: Boolean = false,
-) : Conversation {
-
-    override fun withMessage(message: Message): Conversation {
-        return copy(
-            messages = messages + message,
-        )
-    }
-
-    override fun persistent(): Boolean = persistent
-}
-
 /**
  * Role of the message sender.
  * For visible messages, not user messages.
@@ -63,6 +50,7 @@ data class InMemoryConversation(
 enum class Role {
     USER,
     ASSISTANT,
+    SYSTEM,
 }
 
 /**
@@ -90,7 +78,7 @@ class UserMessage(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Message(Role.USER, content, name, timestamp)
+) : Message(role = Role.USER, content = content, name = name, timestamp = timestamp)
 
 /**
  * Message sent by the assistant.
@@ -101,7 +89,12 @@ open class AssistantMessage(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Message(Role.ASSISTANT, content, name, timestamp)
+) : Message(role = Role.ASSISTANT, content = content, name = name, timestamp = timestamp)
+
+class SystemMessage(
+    content: String,
+    override val timestamp: Instant = Instant.now(),
+) : Message(role = Role.SYSTEM, content = content, name = null, timestamp = timestamp)
 
 /**
  * Assistant message resulting from an agentic execution
