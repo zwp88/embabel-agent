@@ -32,7 +32,6 @@ class Handoffs(
 
     private val goalToolCallbackPublisher = PerGoalToolCallbackFactory(
         autonomy = autonomy,
-        objectMapper = objectMapper,
         applicationName = applicationName,
         textCommunicator = PromptedTextCommunicator,
     )

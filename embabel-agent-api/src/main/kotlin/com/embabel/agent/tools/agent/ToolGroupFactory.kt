@@ -25,6 +25,7 @@ import com.embabel.agent.domain.io.UserInput
 
 class ToolGroupFactory(
     private val autonomy: Autonomy,
+    private val goalToolNamingStrategy: GoalToolNamingStrategy = SanitizedGoalNameToolNamingStrategy,
 ) {
 
     /**
@@ -52,10 +53,9 @@ class ToolGroupFactory(
             toolCallbacks = achievableGoals.mapIndexed { i, goal ->
                 GoalToolCallback(
                     autonomy = autonomy,
-                    name = "tool_$i",
+                    name = goalToolNamingStrategy.nameForGoal(goal),
                     goal = goal,
                     textCommunicator = PromptedTextCommunicator,
-                    objectMapper = context.agentPlatform().platformServices.objectMapper,
                     inputType = UserInput::class.java,
                 )
             }

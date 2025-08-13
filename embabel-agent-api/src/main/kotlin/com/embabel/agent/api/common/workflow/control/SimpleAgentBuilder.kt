@@ -88,7 +88,7 @@ data class SimpleAgentBuilder<RESULT : Any>(
                 generator(supplierContext)
             }
             val goal = Goal(
-                name = "${resultClass.simpleName} Goal",
+                name = "${resultClass.simpleName}",
                 description = "Goal to generate a result of type ${resultClass.simpleName}",
                 satisfiedBy = resultClass,
             )

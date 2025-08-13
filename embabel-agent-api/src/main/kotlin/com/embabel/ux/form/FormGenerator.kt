@@ -26,11 +26,20 @@ annotation class Text(
     val placeholder: String = "",
 )
 
+/**
+ * Generate forms from JVM types.
+ */
 interface FormGenerator {
 
-    fun <T : Any> generateForm(dataClass: KClass<T>, title: String): Form
+    fun <T : Any> generateForm(
+        dataClass: KClass<T>,
+        title: String,
+    ): Form
 
-    fun <T : Any> generateForm(dataClass: Class<T>, title: String): Form =
+    fun <T : Any> generateForm(
+        dataClass: Class<T>,
+        title: String,
+    ): Form =
         generateForm(dataClass.kotlin, title)
 
 }

@@ -21,7 +21,6 @@ import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.Verbosity
 import com.embabel.agent.event.AgenticEventListener
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.model.ToolContext
 import org.springframework.ai.tool.ToolCallback
@@ -33,7 +32,6 @@ import org.springframework.ai.tool.definition.ToolDefinition
 data class GoalToolCallback<I : Any>(
     val autonomy: Autonomy,
     val textCommunicator: TextCommunicator,
-    val objectMapper: ObjectMapper,
     val name: String,
     val description: String = goal.description,
     val goal: Goal,
@@ -42,6 +40,8 @@ data class GoalToolCallback<I : Any>(
 ) : ToolCallback {
 
     private val logger = LoggerFactory.getLogger(javaClass)
+
+    private val objectMapper = autonomy.agentPlatform.platformServices.objectMapper
 
     fun withListener(listener: AgenticEventListener) = copy(
         listeners = listeners + listener,

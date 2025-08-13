@@ -21,7 +21,6 @@ import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.core.Goal
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.common.core.types.NamedAndDescribed
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.support.ToolCallbacks
 import org.springframework.ai.tool.ToolCallback
@@ -67,7 +66,6 @@ interface TextCommunicator {
  */
 class PerGoalToolCallbackFactory(
     private val autonomy: Autonomy,
-    private val objectMapper: ObjectMapper,
     applicationName: String,
     private val textCommunicator: TextCommunicator = PromptedTextCommunicator,
     private val goalToolNamingStrategy: GoalToolNamingStrategy = ApplicationNameGoalToolNamingStrategy(
@@ -146,7 +144,6 @@ class PerGoalToolCallbackFactory(
                 inputType = inputType,
                 listeners = listeners,
                 textCommunicator = textCommunicator,
-                objectMapper = objectMapper,
             )
         }
     }

@@ -81,13 +81,13 @@ class ScatterGatherBuilder<ELEMENT : Any, RESULT : Any>(
 
         fun consolidatedBy(
             consensusFunction: (TransformationActionContext<ResultList<ELEMENT>, RESULT>) -> RESULT,
-        ): ScatterGatherWorkflowBuilder {
-            return ScatterGatherWorkflowBuilder(generators, consensusFunction)
+        ): Emitter {
+            return Emitter(generators, consensusFunction)
         }
 
     }
 
-    inner class ScatterGatherWorkflowBuilder(
+    inner class Emitter(
         private val generators: List<Function<out SupplierActionContext<ELEMENT>, ELEMENT>>,
         private val consensusFunction: (TransformationActionContext<ResultList<ELEMENT>, RESULT>) -> RESULT,
     ) : WorkflowBuilder<RESULT>(resultClass, inputClasses = emptyList()) {

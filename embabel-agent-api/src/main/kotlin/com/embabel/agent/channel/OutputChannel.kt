@@ -45,7 +45,7 @@ object TerminalOutputChannel : OutputChannel {
     override fun send(event: OutputChannelEvent) {
         when (event) {
             is AssistantMessageOutputChannelEvent -> {
-                println("${event.name ?: "Asssistant"}: ${event.content}")
+                println("${event.name ?: "Assistant"}: ${event.content}")
             }
 
             is ContentOutputChannelEvent -> {

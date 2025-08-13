@@ -85,8 +85,8 @@ class ScatterGather(
         }
 
         val resultGoal = Goal(
-            "final-${resultClass.name}",
-            "Satisfied with the final ${resultClass.name}",
+            name = "final-${resultClass.name}",
+            description = "Satisfied with the final ${resultClass.name}",
             satisfiedBy = resultClass,
         )
         logger.info("Created goal: {}", resultGoal.infoString(verbose = true, indent = 2))
