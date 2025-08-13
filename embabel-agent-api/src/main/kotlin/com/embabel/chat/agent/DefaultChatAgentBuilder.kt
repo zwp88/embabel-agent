@@ -142,6 +142,7 @@ class DefaultChatAgentBuilder(
                     content = assistantMessageContent,
                 )
             }
+            .mustRun()
             .buildAgent(
                 name = "Default chat agent",
                 description = "Default conversation agent with persona ${persona.name}",

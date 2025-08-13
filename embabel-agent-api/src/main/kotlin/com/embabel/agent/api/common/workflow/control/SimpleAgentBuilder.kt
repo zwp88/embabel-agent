@@ -26,6 +26,7 @@ import com.embabel.agent.api.common.workflow.WorkflowBuilder
 import com.embabel.agent.api.dsl.AgentScopeBuilder
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.IoBinding
+import com.embabel.agent.core.support.Rerun.hasRunCondition
 import com.embabel.common.core.MobyNameGenerator
 
 /**
@@ -61,13 +62,22 @@ data class SimpleAgentBuilder<RESULT : Any>(
      */
     fun running(
         generator: (SupplierActionContext<RESULT>) -> RESULT,
-    ): WorkflowBuilder<RESULT> {
+    ): Emitter {
         return Emitter(generator)
     }
 
     inner class Emitter(
         private val generator: (SupplierActionContext<RESULT>) -> RESULT,
+        private val mustRun: Boolean = false,
     ) : WorkflowBuilder<RESULT>(resultClass, inputClasses) {
+
+        /**
+         * If this is true, the action must run even if its
+         * type result is already present in the blackboard.
+         */
+        fun mustRun(): Emitter {
+            return Emitter(generator, mustRun = true)
+        }
 
         override fun build(): AgentScopeBuilder<RESULT> {
             val action = SupplierAction(
@@ -87,11 +97,16 @@ data class SimpleAgentBuilder<RESULT : Any>(
                 )
                 generator(supplierContext)
             }
+            val preconditions = if (mustRun) {
+                listOf(hasRunCondition(action))
+            } else {
+                emptyList()
+            }
             val goal = Goal(
                 name = "${resultClass.simpleName}",
                 description = "Goal to generate a result of type ${resultClass.simpleName}",
                 satisfiedBy = resultClass,
-            )
+            ).withPreconditions(*preconditions.toTypedArray())
             return AgentScopeBuilder(
                 name = MobyNameGenerator.generateName(),
                 actions = listOf(action),
