@@ -197,11 +197,11 @@ abstract class AbstractAgentProcess(
             }
 
             AgentProcessStatusCode.COMPLETED -> {
-                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
+                platformServices.eventListener.onProcessEvent(AgentProcessCompletedEvent(this))
             }
 
             AgentProcessStatusCode.FAILED -> {
-                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
+                platformServices.eventListener.onProcessEvent(AgentProcessFailedEvent(this))
             }
 
             AgentProcessStatusCode.TERMINATED, AgentProcessStatusCode.KILLED -> {

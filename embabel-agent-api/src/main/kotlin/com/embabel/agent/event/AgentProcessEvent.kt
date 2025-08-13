@@ -134,9 +134,27 @@ class ToolCallResponseEvent internal constructor(
     override val runningTime: Duration,
 ) : AbstractAgentProcessEvent(request.agentProcess), Timed
 
-class AgentProcessFinishedEvent(
+/**
+ * The agent process has finished.
+ * It may have completed successfully or failed.
+ * Check the status code to determine the outcome.
+ */
+sealed class AgentProcessFinishedEvent(
     agentProcess: AgentProcess,
 ) : AbstractAgentProcessEvent(agentProcess)
+
+class AgentProcessCompletedEvent(
+    agentProcess: AgentProcess,
+) : AgentProcessFinishedEvent(agentProcess) {
+
+    val result: Any
+        get() =
+            agentProcess.lastResult() ?: throw IllegalStateException("Agent process ${agentProcess.id} has no result")
+}
+
+class AgentProcessFailedEvent(
+    agentProcess: AgentProcess,
+) : AgentProcessFinishedEvent(agentProcess)
 
 class AgentProcessWaitingEvent(
     agentProcess: AgentProcess,
@@ -225,6 +243,10 @@ class LlmResponseEvent<O> internal constructor(
     }
 }
 
+/**
+ * An object was bound to the process.
+ * May or may not be found. See subclasses for details.
+ */
 interface ObjectBindingEvent : AgentProcessEvent {
 
     val value: Any

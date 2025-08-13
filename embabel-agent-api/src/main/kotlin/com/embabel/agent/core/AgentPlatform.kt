@@ -76,7 +76,6 @@ interface AgentPlatform : AgentScope {
      * @param bindings the bindings for the process: Objects that are pre-bound
      * to the blackboard.
      */
-    @Deprecated("Use createAgentProcess and run or start instead")
     fun runAgentFrom(
         agent: Agent,
         processOptions: ProcessOptions = ProcessOptions(),

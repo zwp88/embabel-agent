@@ -25,7 +25,11 @@ import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.event.AgentProcessEvent
+import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.event.ObjectBindingEvent
 import com.embabel.chat.*
+import com.embabel.common.util.loggerFor
 
 
 /**
@@ -116,6 +120,30 @@ class AgentPlatformChatSession(
         userMessage: UserMessage,
         messageListener: MessageListener,
     ) {
+        // TODO this be generic with subprocesses?
+        val outerBindingListener = object : AgenticEventListener {
+            override fun onProcessEvent(event: AgentProcessEvent) {
+                if (event is ObjectBindingEvent) {
+                    when (event.value) {
+                        // An AssistantMessage being bound will cause the second process to think its complete
+                        is Conversation, is Message -> {
+                            loggerFor<AgentPlatformChatSession>().info(
+                                "Ignoring subagent binding of type {}",
+                                event.type,
+                            )
+                        }
+
+                        else -> {
+                            loggerFor<AgentPlatformChatSession>().info(
+                                "Promoting subagent binding of type {}",
+                                event.type,
+                            )
+                            blackboard.addObject(event.value)
+                        }
+                    }
+                }
+            }
+        }
         val handledCommand = handleAsCommand(userMessage)
         if (handledCommand != null) {
             messageListener.onMessage(handledCommand)
@@ -124,6 +152,7 @@ class AgentPlatformChatSession(
                 conversation = conversation,
                 processOptions = processOptions.copy(
                     blackboard = blackboard,
+                    listeners = listOf(outerBindingListener),
                 ),
                 messageListener = messageListener
             )

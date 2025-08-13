@@ -43,7 +43,7 @@ class AgentResponseGenerator(
     ) {
         val invocation = AgentInvocation
             .builder(agentPlatform)
-            .options { it.verbosity { v -> v.showPrompts(true) } }
+            .options(processOptions)
             .build(AssistantMessage::class.java)
         val message = invocation.invoke(conversation)
         messageListener.onMessage(message)

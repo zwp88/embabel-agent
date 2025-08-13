@@ -130,9 +130,16 @@ internal class DefaultAgentPlatform(
         return this
     }
 
-    private fun createBlackboard(processOptions: ProcessOptions): Blackboard {
+    private fun createBlackboard(
+        processOptions: ProcessOptions,
+        processId: String,
+    ): Blackboard {
         if (processOptions.blackboard != null) {
-            logger.info("Using existing blackboard {}", processOptions.blackboard.blackboardId)
+            logger.info(
+                "Using existing blackboard {} for agent process {}",
+                processOptions.blackboard.blackboardId,
+                processId,
+            )
             return processOptions.blackboard
         }
         return InMemoryBlackboard()
@@ -152,7 +159,8 @@ internal class DefaultAgentPlatform(
         processOptions: ProcessOptions,
         bindings: Map<String, Any>,
     ): AgentProcess {
-        val blackboard = createBlackboard(processOptions)
+        val id = agentProcessIdGenerator.createProcessId(agent, processOptions)
+        val blackboard = createBlackboard(processOptions, id)
         blackboard.bindAll(bindings)
         val platformServicesToUse = if (processOptions.test) {
             logger.warn("Using test LLM operations: {}", processOptions)
@@ -165,7 +173,7 @@ internal class DefaultAgentPlatform(
             agent = agent,
             platformServices = platformServicesToUse,
             blackboard = blackboard,
-            id = agentProcessIdGenerator.createProcessId(agent, processOptions),
+            id = id,
             parentId = null,
             processOptions = processOptions,
         )

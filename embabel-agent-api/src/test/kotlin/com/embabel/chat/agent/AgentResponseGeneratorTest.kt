@@ -16,10 +16,10 @@
 package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.workflow.control.SimpleAgentBuilder
+import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.last
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.chat.*
-import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
 class AgentResponseGeneratorTest {
@@ -48,7 +48,7 @@ class AgentResponseGeneratorTest {
         val conversation = InMemoryConversation(messages = listOf(m))
         arg.generateResponses(
             conversation,
-            mockk(),
+            ProcessOptions(),
             messageListener = msel,
         )
         assert(msel.messages().size == 1)

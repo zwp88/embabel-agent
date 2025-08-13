@@ -22,6 +22,7 @@ import com.embabel.agent.common.Constants
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.event.AgenticEventListener
 
 class ToolGroupFactory(
     private val autonomy: Autonomy,
@@ -36,13 +37,14 @@ class ToolGroupFactory(
     fun achievableGoalsToolGroup(
         context: OperationContext,
         bindings: Map<String, Any>,
+        listeners: List<AgenticEventListener>,
     ): ToolGroup {
         val planLister = DefaultPlanLister(context.agentPlatform())
         val achievableGoals = planLister.achievableGoals(
             processOptions = context.processContext.processOptions,
             bindings = bindings,
         )
-        return ToolGroup.Companion(
+        return ToolGroup(
             metadata = ToolGroupMetadata.Companion(
                 name = "Default chat tools",
                 description = "Default tools for chat agent",
@@ -57,6 +59,7 @@ class ToolGroupFactory(
                     goal = goal,
                     textCommunicator = PromptedTextCommunicator,
                     inputType = UserInput::class.java,
+                    listeners = listeners,
                 )
             }
         )

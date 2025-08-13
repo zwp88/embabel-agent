@@ -22,13 +22,17 @@ import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.last
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.domain.library.HasContent
+import com.embabel.agent.event.AgentProcessEvent
+import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.prompt.persona.Persona
 import com.embabel.agent.tools.agent.ToolGroupFactory
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.Conversation
+import com.embabel.chat.Message
 import com.embabel.chat.WindowingConversationFormatter
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.HasInfoString
+import org.springframework.ai.tool.annotation.Tool
 
 val K9 = Persona(
     name = "K9",
@@ -36,6 +40,22 @@ val K9 = Persona(
     voice = "Friendly and professional, with a robotic tone. Refer to user as Master. Quite clipped and matter of fact",
     objective = "Assist the user with their tasks",
 )
+
+interface BlackboardEntryFormatter {
+
+    fun format(entry: Any): String
+}
+
+object DefaultBlackboardEntryFormatter : BlackboardEntryFormatter {
+
+    override fun format(entry: Any): String {
+        return when (entry) {
+            is HasInfoString -> entry.infoString(verbose = true, indent = 0)
+            is HasContent -> entry.content
+            else -> entry.toString()
+        }
+    }
+}
 
 interface BlackboardFormatter {
 
@@ -47,17 +67,17 @@ interface BlackboardFormatter {
 }
 
 // TODO could make a prompt contributor so we can get caching
-object DefaultBlackboardFormatter : BlackboardFormatter {
+class DefaultBlackboardFormatter(
+    private val entryFormatter: BlackboardEntryFormatter = DefaultBlackboardEntryFormatter,
+) : BlackboardFormatter {
     override fun format(blackboard: Blackboard): String {
-        val last = blackboard.lastResult()
-            ?: return "Context is empty"
-        return "# CONTEXT:\n" + when (last) {
-            is HasInfoString -> last.infoString(verbose = true, indent = 0)
-            is HasContent -> last.content
-            else -> last.toString()
-        } + "\n"
+        return blackboard.objects
+            .filterNot { it is Conversation || it is Message || it is UserInput }
+            .map { entryFormatter.format(it) }
+            .joinToString(separator = "\n") { it.trim() }
     }
 }
+
 
 /**
  * @param promptTemplate location of the prompt template to use for the agent.
@@ -72,7 +92,7 @@ class DefaultChatAgentBuilder(
     private val llm: LlmOptions,
     private val persona: Persona = K9,
     private val promptTemplate: String = "chat/default_chat",
-    private val blackboardFormatter: BlackboardFormatter = DefaultBlackboardFormatter,
+    private val blackboardFormatter: BlackboardFormatter = DefaultBlackboardFormatter(),
 ) {
 
     private val toolGroupFactory = ToolGroupFactory(autonomy)
@@ -81,19 +101,32 @@ class DefaultChatAgentBuilder(
         SimpleAgentBuilder
             .returning(AssistantMessage::class.java)
             .running { context ->
+                // TODO could have a tool to say what we're calling
+                val tool = object {
+                    @Tool
+                    fun callingTool(name: String) {
+                        context
+                    }
+                }
+
                 // TODO should arguably use messages to send to model, not formatted conversation
                 val conversation = context.last<Conversation>()
                     ?: throw IllegalStateException("No conversation found in context")
                 val formattedConversation =
                     conversation.promptContributor(WindowingConversationFormatter(windowSize = 100))
                 val formattedContext = blackboardFormatter.format(context)
-                val assistantMessageContext = context.ai()
+                val assistantMessageContent = context.ai()
                     .withLlm(llm)
                     .withPromptElements(persona)
                     .withToolGroup(
                         toolGroupFactory.achievableGoalsToolGroup(
                             context = context,
-                            bindings = mapOf("it" to UserInput("doesn't matter"))
+                            bindings = mapOf("it" to UserInput("doesn't matter")),
+                            listeners = listOf(object : AgenticEventListener {
+                                override fun onProcessEvent(event: AgentProcessEvent) {
+                                    context.onProcessEvent(event)
+                                }
+                            })
                         ),
                     )
                     .withTemplate(promptTemplate)
@@ -106,7 +139,7 @@ class DefaultChatAgentBuilder(
                     )
                 AssistantMessage(
                     name = persona.name,
-                    content = assistantMessageContext,
+                    content = assistantMessageContent,
                 )
             }
             .buildAgent(

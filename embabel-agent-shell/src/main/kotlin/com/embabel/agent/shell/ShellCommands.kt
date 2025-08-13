@@ -118,7 +118,7 @@ class ShellCommands(
         val processOptions = ProcessOptions(
             verbosity = Verbosity(
                 debug = false,
-                showPrompts = false,
+                showPrompts = true,
                 showLlmResponses = false,
                 showPlanning = true,
             )
