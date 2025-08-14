@@ -29,7 +29,6 @@ import com.embabel.agent.tools.agent.ToolGroupFactory
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.Conversation
 import com.embabel.chat.Message
-import com.embabel.chat.WindowingConversationFormatter
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.HasInfoString
 import org.springframework.ai.tool.annotation.Tool
@@ -83,7 +82,6 @@ class DefaultBlackboardFormatter(
  * @param promptTemplate location of the prompt template to use for the agent.
  * It expects:
  * - persona: the persona of the agent
- * - formattedConversation: the formatted conversation so far
  * - formattedContext: the blackboard of the agent in a textual form
  *
  */
@@ -109,13 +107,11 @@ class DefaultChatAgentBuilder(
                     }
                 }
 
-                // TODO should arguably use messages to send to model, not formatted conversation
                 val conversation = context.last<Conversation>()
                     ?: throw IllegalStateException("No conversation found in context")
-                val formattedConversation =
-                    conversation.promptContributor(WindowingConversationFormatter(windowSize = 100))
+
                 val formattedContext = blackboardFormatter.format(context)
-                val assistantMessageContent = context.ai()
+                val assistantMessage = context.ai()
                     .withLlm(llm)
                     .withPromptElements(persona)
                     .withToolGroup(
@@ -130,17 +126,14 @@ class DefaultChatAgentBuilder(
                         ),
                     )
                     .withTemplate(promptTemplate)
-                    .generateText(
-                        mapOf(
+                    .respondWithSystemPrompt(
+                        conversation = conversation,
+                        model = mapOf(
                             "persona" to persona,
-                            "formattedConversation" to formattedConversation,
                             "formattedContext" to formattedContext,
                         )
                     )
-                AssistantMessage(
-                    name = persona.name,
-                    content = assistantMessageContent,
-                )
+                assistantMessage
             }
             .mustRun()
             .buildAgent(

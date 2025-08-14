@@ -47,7 +47,7 @@ abstract class AbstractLlmOperations(
         prompt: String,
         interaction: LlmInteraction,
         agentProcess: AgentProcess,
-        action: Action?
+        action: Action?,
     ): String = createObject(
         prompt = prompt,
         interaction = interaction,
@@ -100,7 +100,7 @@ abstract class AbstractLlmOperations(
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
-        action: Action?
+        action: Action?,
     ): Result<O> {
         val (allToolCallbacks, prompt, llmRequestEvent) = setup<O>(
             agentProcess = agentProcess,

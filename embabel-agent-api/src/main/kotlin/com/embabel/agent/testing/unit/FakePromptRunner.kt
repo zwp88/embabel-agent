@@ -22,6 +22,7 @@ import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.chat.Message
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.MobyNameGenerator
@@ -119,6 +120,13 @@ data class FakePromptRunner(
             method = Method.CREATE_OBJECT_IF_POSSIBLE,
         )
         return getResponse(outputClass)
+    }
+
+    override fun <T> createObject(
+        messages: List<Message>,
+        outputClass: Class<T>,
+    ): T {
+        return createObject(prompt = messages.joinToString(), outputClass = outputClass)
     }
 
     override fun evaluateCondition(

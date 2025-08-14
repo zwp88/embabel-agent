@@ -28,6 +28,7 @@ import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.tools.agent.AgentToolCallback
 import com.embabel.agent.tools.agent.Handoffs
 import com.embabel.agent.tools.agent.PromptedTextCommunicator
+import com.embabel.chat.Message
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
@@ -113,6 +114,30 @@ internal data class OperationContextPromptRunner(
             )
         }
         return result.getOrNull()
+    }
+
+    override fun <T> createObject(
+        messages: List<Message>,
+        outputClass: Class<T>,
+    ): T {
+        val interaction = LlmInteraction(
+            llm = llm,
+            toolGroups = this.toolGroups + toolGroups,
+            toolCallbacks = safelyGetToolCallbacks(toolObjects) + otherToolCallbacks,
+            promptContributors = promptContributors + contextualPromptContributors.map {
+                it.toPromptContributor(
+                    context
+                )
+            },
+            id = idForPrompt(messages.lastOrNull()?.content ?: "messages", outputClass),
+            generateExamples = generateExamples,
+        )
+        return context.processContext.doTransform(
+            messages = messages,
+            interaction = interaction,
+            outputClass = outputClass,
+            llmRequestEvent = null,
+        )
     }
 
     override fun evaluateCondition(

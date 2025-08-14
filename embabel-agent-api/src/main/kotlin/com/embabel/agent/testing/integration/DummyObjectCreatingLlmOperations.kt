@@ -20,6 +20,7 @@ import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.LlmOperations
+import com.embabel.chat.Message
 import com.embabel.common.util.DummyInstanceCreator
 
 /**
@@ -33,18 +34,18 @@ open class DummyObjectCreatingLlmOperations(
         prompt: String,
         interaction: LlmInteraction,
         agentProcess: AgentProcess,
-        action: Action?
+        action: Action?,
     ): String {
         return stringsToUse.random()
     }
 
     override fun <O> doTransform(
-        prompt: String,
+        messages: List<Message>,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>?,
     ): O {
-        logger.debug("Creating fake response for class: ${outputClass.name}")
+        logger.debug("Creating fake response for class: {}", outputClass.name)
 
         // Create a mock instance based on the output class structure
         @Suppress("UNCHECKED_CAST")
@@ -56,9 +57,9 @@ open class DummyObjectCreatingLlmOperations(
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
-        action: Action?
+        action: Action?,
     ): Result<O> {
-        logger.debug("Creating fake response for class: ${outputClass.name}")
+        logger.debug("Creating fake response for class: {}", outputClass.name)
 
         // Create a mock instance based on the output class structure
         @Suppress("UNCHECKED_CAST")
@@ -73,7 +74,7 @@ open class DummyObjectCreatingLlmOperations(
         interaction: LlmInteraction,
         outputClass: Class<O>,
         agentProcess: AgentProcess,
-        action: Action?
+        action: Action?,
     ): O = doTransform(
         prompt = prompt,
         interaction = interaction,

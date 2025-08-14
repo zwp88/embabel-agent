@@ -18,6 +18,8 @@ package com.embabel.agent.spi
 import com.embabel.agent.core.*
 import com.embabel.agent.event.LlmRequestEvent
 import com.embabel.agent.prompt.element.ContextualPromptElement
+import com.embabel.chat.Message
+import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptContributorConsumer
@@ -114,7 +116,10 @@ data class LlmInteraction(
     companion object {
 
         @JvmStatic
-        fun from(llm: LlmCall, id: InteractionId) = LlmInteraction(
+        fun from(
+            llm: LlmCall,
+            id: InteractionId,
+        ) = LlmInteraction(
             id = id,
             llm = llm.llm ?: LlmOptions(),
             toolCallbacks = llm.toolCallbacks,
@@ -149,7 +154,9 @@ class InvalidLlmReturnFormatException(
         indent: Int,
     ): String =
         if (verbose == true) {
-            "${javaClass.simpleName}: Expected type: ${expectedType.name}, root cause: ${cause!!.message}, return\n$llmReturn".indent(indent)
+            "${javaClass.simpleName}: Expected type: ${expectedType.name}, root cause: ${cause!!.message}, return\n$llmReturn".indent(
+                indent
+            )
         } else {
             "${javaClass.simpleName}: Expected type: ${expectedType.name}, root cause: ${cause!!.message}"
         }
@@ -218,13 +225,29 @@ interface LlmOperations {
 
     /**
      * Low level transform, not necessarily aware of platform
-     * @param prompt user prompt
+     * @param prompt user prompt. Will become the last user message
      * @param interaction The LLM call options
      * @param outputClass Class of the output object
      * @param llmRequestEvent Event already published for this request if one has been
      */
     fun <O> doTransform(
         prompt: String,
+        interaction: LlmInteraction,
+        outputClass: Class<O>,
+        llmRequestEvent: LlmRequestEvent<O>?,
+    ): O =
+        doTransform(
+            messages = listOf(UserMessage(prompt)),
+            interaction = interaction,
+            outputClass = outputClass,
+            llmRequestEvent = llmRequestEvent,
+        )
+
+    /**
+     * Respond in a conversation
+     */
+    fun <O> doTransform(
+        messages: List<Message>,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>?,

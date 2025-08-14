@@ -23,6 +23,7 @@ import com.embabel.agent.spi.LlmCall
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.ToolDecorator
 import com.embabel.agent.spi.support.LlmDataBindingProperties
+import com.embabel.chat.Message
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
@@ -82,7 +83,7 @@ internal class ChatClientLlmOperations(
 
     @Suppress("UNCHECKED_CAST")
     override fun <O> doTransform(
-        prompt: String,
+        messages: List<Message>,
         interaction: LlmInteraction,
         outputClass: Class<O>,
         llmRequestEvent: LlmRequestEvent<O>?,
@@ -97,7 +98,7 @@ internal class ChatClientLlmOperations(
                 if (promptContributions.isNotEmpty()) {
                     add(SystemMessage(promptContributions))
                 }
-                add(UserMessage(prompt))
+                addAll(messages.map { it.toSpringAiMessage() })
             }
         )
         llmRequestEvent?.let {
@@ -156,6 +157,7 @@ internal class ChatClientLlmOperations(
                         "ChatClient call for interaction ${interaction.id.value} failed",
                         cause
                     )
+
                     else -> throw RuntimeException(
                         "ChatClient call for interaction ${interaction.id.value} failed with unknown error",
                         e
@@ -266,6 +268,7 @@ internal class ChatClientLlmOperations(
                                     throwable
                                 )
                             }
+
                             is RuntimeException -> {
                                 logger.error(
                                     "LLM {}: attempt {} failed",
@@ -275,6 +278,7 @@ internal class ChatClientLlmOperations(
                                 )
                                 throw (throwable.cause as? RuntimeException ?: throwable)
                             }
+
                             else -> {
                                 logger.error(
                                     "LLM {}: attempt {} failed with unexpected error",
@@ -326,7 +330,7 @@ internal class ChatClientLlmOperations(
     @Suppress("UNCHECKED_CAST")
     private fun <T> createParameterizedTypeReference(
         rawType: Class<*>,
-        typeArgument: Class<*>
+        typeArgument: Class<*>,
     ): ParameterizedTypeReference<T> {
         // Create a type with proper generic information
         val type = object : ParameterizedType {

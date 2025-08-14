@@ -22,6 +22,10 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.LlmUse
+import com.embabel.chat.AssistantMessage
+import com.embabel.chat.Conversation
+import com.embabel.chat.Message
+import com.embabel.chat.SystemMessage
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
@@ -68,6 +72,24 @@ interface PromptRunnerOperations {
     ): T?
 
     /**
+     * Create an object from messages
+     */
+    fun <T> createObject(
+        messages: List<Message>,
+        outputClass: Class<T>,
+    ): T
+
+    fun respond(
+        messages: List<Message>,
+    ): AssistantMessage =
+        AssistantMessage(
+            createObject(
+                messages = messages,
+                outputClass = String::class.java,
+            )
+        )
+
+    /**
      * Use operations from a given template
      */
     fun withTemplate(templateName: String): TemplateOperations
@@ -105,6 +127,20 @@ class TemplateOperations(
         model: Map<String, Any>,
     ): String = promptRunnerOperations.generateText(
         prompt = compiledTemplate.render(model = model),
+    )
+
+    /**
+     * Respond in the conversation using the template as system prompt.
+     */
+    fun respondWithSystemPrompt(
+        conversation: Conversation,
+        model: Map<String, Any>,
+    ): AssistantMessage = promptRunnerOperations.respond(
+        listOf(
+            SystemMessage(
+                content = compiledTemplate.render(model = model)
+            )
+        ) + conversation.messages
     )
 }
 
