@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.domain.library
 
+import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.Timestamped
 import java.time.Instant
 
@@ -34,7 +35,7 @@ interface HasContent {
  * Content asset that can be used in different ways: for example
  * in producing different marketing materials.
  */
-interface ContentAsset : HasContent, Timestamped
+interface ContentAsset : HasContent, Timestamped, PromptContributor
 
 /**
  * Blog content, specifying its format in a way that will
@@ -47,4 +48,14 @@ data class Blog(
     override val timestamp: Instant = Instant.now(),
     val keywords: Set<String> = emptySet(),
     val format: String = "markdown",
-) : ContentAsset
+) : ContentAsset {
+
+    override fun contribution(): String =
+        """
+            |Blog Post:
+            |Title: $title
+            |Author: $author
+            |Content: $content
+            |Date: ${timestamp.atZone(java.time.ZoneId.systemDefault()).toLocalDate()}
+        """.trimIndent()
+}

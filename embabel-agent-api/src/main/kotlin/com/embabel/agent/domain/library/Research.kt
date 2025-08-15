@@ -35,8 +35,12 @@ open class ResearchTopics(
  * Reusable domain object for a research report.
  * Open as subclasses can be created to hold additional information.
  */
-@JsonClassDescription("Research report, containing a text field and links")
+@JsonClassDescription("Research report, containing a topic, content and links")
 open class ResearchReport(
+    @get:JsonPropertyDescription(
+        "Topic the report is about, e.g. 'Quantum Computing', 'AI Ethics', etc.",
+    )
+    val topic: String,
     @get:JsonPropertyDescription(
         "The text of the research report",
     )
@@ -58,4 +62,13 @@ open class ResearchReport(
             .indentLines(indent)
 
     override fun toString(): String = infoString(verbose = false, indent = 0)
+
+    override fun contribution(): String =
+        """
+            |Research Report:
+            |Topic: $topic
+            |Content: $content
+            |Links: ${links.joinToString("\n") { "${it.url} - ${it.summary}" }}
+            |Date: ${timestamp.atZone(java.time.ZoneId.systemDefault()).toLocalDate()}
+        """.trimIndent()
 }

@@ -24,6 +24,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="dogfood" target="21" />
+      <module name="embabel-agent-discord" target="21" />
       <module name="embabel-agent-docs" target="21" />
       <module name="embabel-agent-example-dependencies" target="1.5" />
       <module name="embabel-agent-example-parent" target="21" />

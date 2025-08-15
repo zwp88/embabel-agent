@@ -33,7 +33,8 @@ class TopicResearchAgent {
     @AchievesGoal(description = "Researches a topic based on user input")
     @Action
     public ResearchReport researchTopic(UserInput userInput) {
-        return new ResearchReport("We researched %s".formatted(userInput.getContent()), Collections.emptyList());
+        return new ResearchReport(
+                userInput.getContent(), "We researched %s".formatted(userInput.getContent()), Collections.emptyList());
     }
 
 }
@@ -41,7 +42,7 @@ class TopicResearchAgent {
 class CodeResearchReport extends ResearchReport {
 
     public CodeResearchReport(String content) {
-        super(content, Collections.emptyList());
+        super("code", content, Collections.emptyList());
     }
 
 }
