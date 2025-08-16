@@ -45,6 +45,8 @@ interface FileTools : FileReadTools, FileWriteTools {
         /**
          * Create a FileReadTools instance with the given root directory.
          */
+        @JvmStatic
+        @JvmOverloads
         fun readOnly(
             root: String,
             fileContentTransformers: List<StringTransformer> = emptyList(),
@@ -53,6 +55,8 @@ interface FileTools : FileReadTools, FileWriteTools {
         /**
          * Create a readwrite FileTools instance with the given root directory.
          */
+        @JvmStatic
+        @JvmOverloads
         fun readWrite(
             root: String,
             fileContentTransformers: List<StringTransformer> = emptyList(),
@@ -103,7 +107,10 @@ interface FileReadTools : DirectoryBased, FileReadLog, FileAccessLog, SelfToolCa
      * @param findHighest if true, only the highest matching file in the directory tree will be returned
      * For example, if you want to find all Maven projects by looking for pom.xml files.
      */
-    fun findFiles(glob: String, findHighest: Boolean): List<String> {
+    fun findFiles(
+        glob: String,
+        findHighest: Boolean,
+    ): List<String> {
         val basePath = Paths.get(root).toAbsolutePath().normalize()
         val syntaxAndPattern = if (glob.startsWith("glob:") || glob.startsWith("regex:")) glob else "glob:$glob"
         val matcher = FileSystems.getDefault().getPathMatcher(syntaxAndPattern)
@@ -237,14 +244,31 @@ interface FileWriteTools : DirectoryBased, FileAccessLog, FileChangeLog, SelfToo
 
     override fun getPathsAccessed(): List<String> = getChanges().map { it.path }.distinct()
 
+    /**
+     * Create a file at the relative path under the root
+     */
     @Tool(description = "Create a file with the given content")
-    fun createFile(path: String, content: String): String {
+    fun createFile(
+        path: String,
+        content: String,
+    ): String {
         createFile(path, content, overwrite = false)
         recordChange(FileModification(path, FileModificationType.CREATE))
         return "file created"
     }
 
-    fun createFile(path: String, content: String, overwrite: Boolean) {
+    /**
+     * Create a file with the given content.
+     * @param path the relative path to create the file at
+     * @param content the content to write to the file
+     * @param overwrite if true, overwrite the file if it already exists
+     * @return the path to the created file
+     */
+    fun createFile(
+        path: String,
+        content: String,
+        overwrite: Boolean,
+    ): Path {
         val resolvedPath = resolvePath(root, path)
         if (Files.exists(resolvedPath) && !overwrite) {
             logger.warn("File already exists at {}", path)
@@ -253,14 +277,14 @@ interface FileWriteTools : DirectoryBased, FileAccessLog, FileChangeLog, SelfToo
 
         // Ensure parent directories exist
         Files.createDirectories(resolvedPath.parent)
-        Files.writeString(resolvedPath, content)
+        return Files.writeString(resolvedPath, content)
     }
 
     @Tool(description = "Edit the file at the given location. Replace oldContent with newContent. oldContent is typically just a part of the file. e.g. use it to replace a particular method to add another method")
     fun editFile(
         path: String,
         @ToolParam(description = "content to replace") oldContent: String,
-        @ToolParam(description = "replacement content") newContent: String
+        @ToolParam(description = "replacement content") newContent: String,
     ): String {
         logger.info("Editing file at path {}", path)
         logger.debug("File edit at path {}: {} -> {}", path, oldContent, newContent)
@@ -304,7 +328,10 @@ interface FileWriteTools : DirectoryBased, FileAccessLog, FileChangeLog, SelfToo
     }
 
     @Tool(description = "Append content to an existing file. The file must already exist.")
-    fun appendFile(path: String, content: String): String {
+    fun appendFile(
+        path: String,
+        content: String,
+    ): String {
         val resolvedPath = resolveAndValidateFile(root = root, path = path)
         Files.write(resolvedPath, content.toByteArray(), java.nio.file.StandardOpenOption.APPEND)
         logger.info("Appended content to file at path: $path")
@@ -317,7 +344,11 @@ interface FileWriteTools : DirectoryBased, FileAccessLog, FileChangeLog, SelfToo
      * If create is true, the file will be created if it doesn't exist.
      * If createIfNotExists is false, an exception will be thrown if the file doesn't exist.
      */
-    fun appendToFile(path: String, content: String, createIfNotExists: Boolean) {
+    fun appendToFile(
+        path: String,
+        content: String,
+        createIfNotExists: Boolean,
+    ) {
         if (createIfNotExists) {
             try {
                 createFile(path, content, overwrite = false)
@@ -404,7 +435,10 @@ interface FileWriteTools : DirectoryBased, FileAccessLog, FileChangeLog, SelfToo
  * Resolves a relative path against the root directory
  * Prevents path traversal attacks by ensuring the resolved path is within the root
  */
-private fun resolvePath(root: String, path: String): Path {
+private fun resolvePath(
+    root: String,
+    path: String,
+): Path {
     val basePath = Paths.get(root).toAbsolutePath().normalize()
     val resolvedPath = basePath.resolve(path).normalize().toAbsolutePath()
 
@@ -418,7 +452,10 @@ private fun resolvePath(root: String, path: String): Path {
  * Resolves a path and validates that it exists and is a regular file
  * @throws IllegalArgumentException if the file doesn't exist or isn't a regular file
  */
-private fun resolveAndValidateFile(root: String, path: String): Path {
+private fun resolveAndValidateFile(
+    root: String,
+    path: String,
+): Path {
     val resolvedPath = resolvePath(root = root, path = path)
     if (!Files.exists(resolvedPath)) {
         throw IllegalArgumentException("File does not exist: $path, root=$root")

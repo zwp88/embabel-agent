@@ -40,8 +40,9 @@ class AgentDeployer(
             logger.info("AgentDeployer scanning disabled: not looking for agents defined as Spring beans")
         } else {
             logger.info(
-                "AgentDeployer scanning enabled: deploying {} agents defined as Spring beans",
+                "AgentDeployer scanning enabled: deploying {} agents defined as Spring beans: {}",
                 agents.size,
+                agents.map { it.name }.sorted().joinToString(", ")
             )
 
             agents.forEach { agent ->
