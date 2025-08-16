@@ -425,8 +425,7 @@ class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 class OnePromptActionOnly(
 ) {
 
-    val llm = LlmOptions().withTemperature(1.7).withModel("magical")
-
+    val llm = LlmOptions.withModel("magical").withTemperature(.7)
 
     @Action(cost = 500.0)
     fun toPersonWithPrompt(
@@ -463,7 +462,7 @@ class Combined {
     ).withValue(30.0)
 
     // Can reuse this or inject
-    val magicalLlm = LlmOptions().withTemperature(1.7).withModel("magical")
+    val magicalLlm = LlmOptions.withModel("magical").withTemperature(1.7)
 
     @Condition(cost = .5)
     fun condition1(processContext: ProcessContext): Boolean {

@@ -434,7 +434,7 @@ class OnePromptActionOnly(
 
     val
     // Java style usage
-            llm = LlmOptions().withTemperature(1.7).withModel("magical")
+            llm = LlmOptions.withModel("magical").withTemperature(1.7)
 
     @Action(cost = 500.0)
     fun toPersonWithPrompt(
@@ -472,7 +472,7 @@ class Combined {
 
     // Can reuse this or inject
     val magicalLlm =
-        LlmOptions().withTemperature(1.7).withModel("magical")
+        LlmOptions.withModel("magical").withTemperature(1.7)
 
 
     @Condition(cost = .5)
