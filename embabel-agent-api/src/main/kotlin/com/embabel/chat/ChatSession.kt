@@ -31,6 +31,8 @@ interface ChatSession {
     val messageListener: MessageListener
 
     /**
+     * Update the conversation with a new message
+     * and respond to it.
      * Any response messages will be sent to the messageListener
      * @param userMessage message to send
      * @param additionalListener any additional listener to send the message to,

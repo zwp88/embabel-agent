@@ -26,6 +26,7 @@ import com.embabel.chat.AssistantMessage
 import com.embabel.chat.MessageSavingMessageListener
 import com.embabel.chat.UserMessage
 import com.embabel.chat.agent.AgentPlatformChatSession
+import com.embabel.chat.agent.AutonomyResponseGenerator
 import com.embabel.chat.agent.ChatConfig
 import io.mockk.every
 import io.mockk.mockk
@@ -60,11 +61,14 @@ class AutonomyResponseGeneratorTest {
             )
         } returns der
         val chatSession = AgentPlatformChatSession(
-            autonomy = mockAutonomy,
             planLister = DefaultPlanLister(mockk()),
-            goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
-            processWaitingHandler = mockk(),
-            chatConfig = ChatConfig(),
+            messageListener = {},
+            responseGenerator = AutonomyResponseGenerator(
+                autonomy = mockAutonomy,
+                goalChoiceApprover = GoalChoiceApprover.APPROVE_ALL,
+                processWaitingHandler = mockk(),
+                chatConfig = ChatConfig(),
+            ),
         )
         val userMessage = UserMessage("Hello, world!")
         val l = MessageSavingMessageListener()

@@ -125,14 +125,13 @@ class ShellCommands(
         )
         blackboard = processOptions.blackboard
 
+        val goalChoiceApprover =
+            if (shellProperties.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL
+
         val chatSession = AgentPlatformChatSession(
             messageListener = { },
-            autonomy = autonomy,
             planLister = planLister,
             processOptions = processOptions,
-            goalChoiceApprover = if (shellProperties.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL,
-            processWaitingHandler = TerminalServicesProcessWaitingHandler(terminalServices),
-            chatConfig = shellProperties.chat,
             responseGenerator = if (shellProperties.chat.bindConversation) AgentResponseGenerator(
                 agentPlatform = agentPlatform,
                 agent = DefaultChatAgentBuilder(
@@ -142,7 +141,12 @@ class ShellCommands(
                         .withModel(shellProperties.chat.model)
                         .withTemperature(null)
                 ).build()
-            ) else null,
+            ) else AutonomyResponseGenerator(
+                autonomy = autonomy,
+                goalChoiceApprover = goalChoiceApprover,
+                processWaitingHandler = TerminalServicesProcessWaitingHandler(terminalServices),
+                chatConfig = shellProperties.chat,
+            ),
         )
         return terminalServices.chat(chatSession, colorPalette)
     }
