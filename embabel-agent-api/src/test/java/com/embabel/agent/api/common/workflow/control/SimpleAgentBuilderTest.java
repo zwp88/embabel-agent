@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.api.common.workflow.control;
 
+import com.embabel.agent.api.common.autonomy.AgentInvocation;
 import com.embabel.agent.core.AgentProcessStatusCode;
 import com.embabel.agent.core.ProcessOptions;
 import com.embabel.agent.domain.io.UserInput;
@@ -57,6 +58,18 @@ class SimpleAgentBuilderTest {
             assertTrue(result.lastResult() instanceof Age);
             var age = (Age) result.lastResult();
             assertEquals(55, age.years(), "Expected age");
+        }
+
+        @Test
+        void invocation() {
+            var agent = SimpleAgentBuilder
+                    .returning(Age.class)
+                    .running(tac -> new Age(55))
+                    .buildAgent("name", "description");
+            var agentPlatform = IntegrationTestUtils.dummyAgentPlatform();
+            agentPlatform.deploy(agent);
+            var result = AgentInvocation.builder(agentPlatform).build(Age.class).invoke(new UserInput("input"));
+            assertEquals(55, result.years(), "Expected age");
         }
 
     }
