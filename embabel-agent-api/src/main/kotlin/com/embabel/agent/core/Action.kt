@@ -41,12 +41,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     JsonSubTypes.Type(value = SerializableAction::class),
 )
-interface Action : AgentSystemStep, GoapAction, ActionRunner, DataDictionary, ToolGroupConsumer {
-
-    /**
-     * Expected data outputs of the action.
-     */
-    val outputs: Set<IoBinding>
+interface Action : DataFlowStep, GoapAction, ActionRunner, DataDictionary, ToolGroupConsumer {
 
     override val cost: ZeroToOne get() = 0.0
 

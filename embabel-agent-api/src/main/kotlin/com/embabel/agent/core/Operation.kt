@@ -35,3 +35,15 @@ interface AgentSystemStep : GoapStep, NamedAndDescribed, Operation {
     val inputs: Set<IoBinding>
 
 }
+
+/**
+ * Step that takes data as input and produces data as output.
+ */
+interface DataFlowStep : AgentSystemStep {
+
+    /**
+     * Expected data outputs of the step.
+     */
+    val outputs: Set<IoBinding>
+
+}
