@@ -32,7 +32,7 @@ import org.springframework.transaction.support.TransactionTemplate
 
 @ConfigurationProperties(prefix = "embabel.graphrag.ogm")
 data class OgmRagServiceProperties(
-    val vectorIndex: String = "spring_ai_document_index",
+    val vectorIndex: String = "spring-ai-document-index",
 )
 
 /**

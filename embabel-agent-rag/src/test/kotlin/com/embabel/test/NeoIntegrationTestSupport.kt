@@ -15,6 +15,7 @@
  */
 package com.embabel.test
 
+import com.embabel.agent.rag.neo.ogm.OgmRagService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -36,4 +37,7 @@ open class NeoIntegrationTestSupport {
 
     @Autowired
     protected var applicationContext: ApplicationContext? = null
+
+    @Autowired
+    protected var ragService: OgmRagService? = null
 }

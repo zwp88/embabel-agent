@@ -1,0 +1,48 @@
+/*
+ * Copyright 2024-2025 Embabel Software, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.embabel.agent.rag.neo.ogm
+
+import com.embabel.agent.rag.RagRequest
+import com.embabel.common.ai.model.Llm
+import com.embabel.test.NeoIntegrationTestSupport
+import io.mockk.every
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import kotlin.test.assertEquals
+
+
+class OgmRagServiceTest(
+    @param:Autowired @param:Qualifier("best")
+    private val cypherGenerationLlm: Llm,
+) : NeoIntegrationTestSupport() {
+
+    @Test
+    @Disabled("problem with not finding spring ai vector index")
+    fun `should find nothing in empty db`() {
+        every { cypherGenerationLlm.model.call(any<String>()) } returns "MATCH (n) WHERE n.name CONTAINS 'test' RETURN n"
+
+        val results = ragService!!.search(
+            RagRequest(
+                query = "test",
+                topK = 10,
+            )
+        )
+        assertEquals(0, results.results.size, "Expected no results in empty database")
+    }
+
+}
