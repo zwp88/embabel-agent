@@ -193,7 +193,6 @@ internal data class OperationContextPromptRunner(
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         val handoffs = Handoffs(
             autonomy = context.agentPlatform().platformServices.autonomy(),
-            objectMapper = context.agentPlatform().platformServices.objectMapper,
             outputTypes = outputTypes.toList(),
             applicationName = context.agentPlatform().name,
         )

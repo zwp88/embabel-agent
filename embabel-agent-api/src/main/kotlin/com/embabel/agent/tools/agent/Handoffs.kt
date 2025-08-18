@@ -17,7 +17,6 @@ package com.embabel.agent.tools.agent
 
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.ToolCallbackPublisher
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.ai.tool.ToolCallback
 
 /**
@@ -25,7 +24,6 @@ import org.springframework.ai.tool.ToolCallback
  */
 class Handoffs(
     autonomy: Autonomy,
-    objectMapper: ObjectMapper,
     val outputTypes: List<Class<*>>,
     applicationName: String,
 ) : ToolCallbackPublisher {
