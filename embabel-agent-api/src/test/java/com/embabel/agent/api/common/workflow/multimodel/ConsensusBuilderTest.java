@@ -18,19 +18,36 @@ package com.embabel.agent.api.common.workflow.multimodel;
 import com.embabel.agent.core.AgentProcessStatusCode;
 import com.embabel.agent.core.ProcessOptions;
 import com.embabel.agent.domain.io.UserInput;
-import com.embabel.agent.testing.integration.IntegrationTestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class ConsensusBuilderTest {
 
     record Age(int years) {
+    }
+
+    @Test
+    void testNoExportedActionsFromWorkflow() {
+        var agent = ConsensusBuilder
+                .returning(Age.class)
+                .sourcedFrom(List.of(() -> new Age(42)))
+                .withConsensusBy(context -> {
+                    return new Age(context.getInput().getResults().stream().findFirst().get().years);
+                })
+                .buildAgent("name", "description");
+        assertFalse(agent.getActions().isEmpty(), "Should have actions");
+        var ap = dummyAgentPlatform();
+        ap.deploy(agent);
+        assertTrue(agent.getOpaque(), "Agent should be opaque");
+        assertTrue(agent.getActions().size() > 1,
+                "Should have actions on the agent");
+        assertEquals(0, ap.getActions().size());
     }
 
     @Test
@@ -42,7 +59,7 @@ class ConsensusBuilderTest {
                     return new Age(context.getInput().getResults().stream().findFirst().get().years);
                 })
                 .buildAgent("name", "description");
-        var ap = IntegrationTestUtils.dummyAgentPlatform();
+        var ap = dummyAgentPlatform();
         var result = ap.runAgentFrom(
                 agent,
                 ProcessOptions.getDEFAULT(),
@@ -63,7 +80,7 @@ class ConsensusBuilderTest {
                     return new Age(context.getInput().getResults().stream().findFirst().get().years);
                 })
                 .buildAgent("name", "description");
-        var ap = IntegrationTestUtils.dummyAgentPlatform();
+        var ap = dummyAgentPlatform();
         var result = ap.runAgentFrom(
                 agent,
                 ProcessOptions.getDEFAULT(),
@@ -91,7 +108,7 @@ class ConsensusBuilderTest {
                         )
                 )
                 .buildAgent("name", "description");
-        var ap = IntegrationTestUtils.dummyAgentPlatform();
+        var ap = dummyAgentPlatform();
         var result = ap.runAgentFrom(
                 agent,
                 ProcessOptions.getDEFAULT(),

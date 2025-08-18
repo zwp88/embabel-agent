@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RepeatUntilBuilderTest {
@@ -57,6 +58,31 @@ class RepeatUntilBuilderTest {
                     "content='" + content + '\'' +
                     '}';
         }
+    }
+
+    @Test
+    void testNoExportedActionsFromWorkflow() {
+        var agent = RepeatUntilBuilder
+                .returning(Report.class)
+                .withInput(Person.class)
+                .withMaxIterations(3)
+                .repeating(
+                        tac -> {
+                            var person = tac.last(Person.class);
+                            assertNotNull(person, "Person must be provided as input");
+                            return new Report(person.name + " " + person.age);
+                        })
+                .until(f -> true)
+                .buildAgent("myAgent", "This is a very good agent");
+
+        assertFalse(agent.getActions().isEmpty(), "Should have actions");
+        assertTrue(agent.getOpaque(), "Agent should be opaque");
+
+        var ap = dummyAgentPlatform();
+        ap.deploy(agent);
+        assertTrue(agent.getActions().size() > 1,
+                "Should have actions on the agent");
+        assertEquals(0, ap.getActions().size());
     }
 
     @Nested

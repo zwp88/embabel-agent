@@ -157,7 +157,7 @@ data class RepeatUntilAcceptable(
         val evaluationAction = TransformationAction(
             name = "${resultClass.name}=>${feedbackClass.name}",
             description = "Evaluate $resultClass to $feedbackClass",
-            pre = listOf(`RESULT_WAS_BOUND_LAST_CONDITION`),
+            pre = listOf(RESULT_WAS_BOUND_LAST_CONDITION),
             post = listOf(ACCEPTABLE_CONDITION),
             cost = 0.0,
             value = 0.0,
@@ -262,7 +262,8 @@ data class RepeatUntilAcceptable(
                 consolidateAction,
             ),
             conditions = setOf(acceptableCondition, resultWasBoundLastCondition),
-            goals = setOf(resultGoal)
+            goals = setOf(resultGoal),
+            opaque = true,
         )
     }
 

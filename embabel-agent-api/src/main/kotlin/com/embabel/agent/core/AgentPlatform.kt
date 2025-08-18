@@ -154,12 +154,12 @@ interface AgentPlatform : AgentScope {
         get() = agents().flatMap { it.domainTypes }.distinctBy { it.name }
 
     override val actions: List<Action>
-        get() = agents().flatMap { it.actions }.distinctBy { it.name }
+        get() = agents().filterNot { it.opaque }.flatMap { it.actions }.distinctBy { it.name }
 
     override val goals: Set<Goal>
         get() = agents().flatMap { it.goals }.distinctBy { it.name }.toSet()
 
     override val conditions: Set<Condition>
-        get() = agents().flatMap { it.conditions }.distinctBy { it.name }.toSet()
+        get() = agents().filterNot { it.opaque }.flatMap { it.conditions }.distinctBy { it.name }.toSet()
 
 }

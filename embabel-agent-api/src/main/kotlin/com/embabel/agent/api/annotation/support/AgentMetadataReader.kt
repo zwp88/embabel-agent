@@ -186,6 +186,7 @@ class AgentMetadataReader(
                 actions = actions,
                 goals = goals.toSet(),
                 stuckHandler = instance as? StuckHandler,
+                opaque = agenticInfo.agentAnnotation.opaque,
             )
         } else {
             AgentScope(

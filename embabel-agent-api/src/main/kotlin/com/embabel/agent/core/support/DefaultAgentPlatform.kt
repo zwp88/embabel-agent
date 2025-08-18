@@ -81,6 +81,8 @@ internal class DefaultAgentPlatform(
         logger.debug("{}: event listener: {}", name, eventListener)
     }
 
+    override val opaque = false
+
     override fun getAgentProcess(id: String): AgentProcess? {
         return agentProcessRepository.findById(id)
     }

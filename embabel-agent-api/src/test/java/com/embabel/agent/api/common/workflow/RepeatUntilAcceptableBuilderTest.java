@@ -31,9 +31,38 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RepeatUntilAcceptableBuilderTest {
+
+    @Test
+    void testNoExportedActionsFromWorkflow() {
+        var agent = RepeatUntilAcceptableBuilder
+                .returning(Report.class)
+                .withMaxIterations(3)
+                .repeating(
+                        tac -> {
+                            return new Report("thing-" + tac.getInput().attempts().size());
+                        })
+                .withEvaluator(
+                        ctx -> {
+                            assertNotNull(ctx.getInput().resultToEvaluate(),
+                                    "Last result must be available to evaluator");
+                            return new TextFeedback(0.5, "feedback");
+                        })
+                .withAcceptanceCriteria(f -> true)
+                .buildAgent("myAgent", "This is a very good agent");
+
+        assertFalse(agent.getActions().isEmpty(), "Should have actions");
+        var ap = dummyAgentPlatform();
+        ap.deploy(agent);
+        assertTrue(agent.getOpaque(), "Agent should be opaque");
+
+        assertTrue(agent.getActions().size() > 1,
+                "Should have actions on the agent");
+        assertEquals(0, ap.getActions().size());
+    }
 
     @Test
     void terminatesItself() {

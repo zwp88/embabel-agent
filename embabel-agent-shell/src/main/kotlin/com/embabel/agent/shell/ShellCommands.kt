@@ -159,15 +159,16 @@ class ShellCommands(
                     it.infoString(verbose = true, indent = 1)
                 }
         }"
-        return detail + "\n\nTLDR;\n${agentPlatform.agents().joinToString("\n") { "${it.name}: ${it.description}" }}"
+        return detail + "\n\nTL;DR\n${agentPlatform.agents().joinToString("\n") { "${it.name}: ${it.description}" }}"
     }
 
     @ShellMethod("List actions")
     fun actions(): String {
-        return "${"Actions:".bold()}\n${
+        val detail = "${"Actions:".bold()}\n${
             agentPlatform.actions
                 .joinToString(separator = "\n") { it.infoString(verbose = true, indent = 1) }
         }"
+        return detail + "\n\nTL;DR\n${agentPlatform.actions.joinToString("\n") { "${it.name}: ${it.description}" }}"
     }
 
     @ShellMethod("List conditions")

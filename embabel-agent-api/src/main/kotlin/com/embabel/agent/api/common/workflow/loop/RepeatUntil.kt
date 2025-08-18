@@ -193,7 +193,8 @@ data class RepeatUntil(
                 consolidateAction,
             ),
             conditions = setOf(acceptableCondition, resultWasBoundLastCondition),
-            goals = setOf(resultGoal)
+            goals = setOf(resultGoal),
+            opaque = true,
         )
     }
 

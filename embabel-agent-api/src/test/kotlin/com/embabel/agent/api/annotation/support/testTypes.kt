@@ -379,6 +379,22 @@ class AgentWithCustomName {
 
 }
 
+@Agent(
+    description = "one transformer action only",
+    opaque = true,
+)
+class OpaqueAgent {
+
+    @Action(cost = 500.0)
+    fun toPerson(
+        userInput: UserInput,
+        task: Task,
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
+    }
+
+}
+
 
 @Agent(
     description = "one transformer action only",

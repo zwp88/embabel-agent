@@ -18,6 +18,7 @@ package com.embabel.agent.api.annotation.support
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.support.containsAll
+import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
 import com.embabel.plan.goap.ConditionDetermination
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
@@ -254,6 +255,34 @@ class AgentMetadataReaderTest {
                 "myAgentWithCustomName",
                 metadata.name,
             )
+        }
+
+        @Test
+        fun `not expose actions on opaque agent `() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(OpaqueAgent())
+            assertNotNull(metadata)
+            assertTrue(metadata is CoreAgent, "@Agent should create an agent")
+            metadata as CoreAgent
+            assertEquals(1, metadata.actions.size)
+            val ap = dummyAgentPlatform()
+            ap.deploy(metadata)
+            assertEquals(1, ap.agents().size)
+            assertEquals(0, ap.actions.size)
+        }
+
+        @Test
+        fun `expose actions by default on non-opaque agent `() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(AgentWithCustomName())
+            assertNotNull(metadata)
+            assertTrue(metadata is CoreAgent, "@Agent should create an agent")
+            metadata as CoreAgent
+            assertEquals(1, metadata.actions.size)
+            val ap = dummyAgentPlatform()
+            ap.deploy(metadata)
+            assertEquals(1, ap.agents().size)
+            assertEquals(1, ap.actions.size)
         }
     }
 }

@@ -24,8 +24,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class ScatterGatherBuilderTest {
@@ -34,6 +34,28 @@ class ScatterGatherBuilderTest {
     }
 
     record Age(int years) {
+    }
+
+    @Test
+    void testNoExportedActionsFromWorkflow() {
+        var agent = ScatterGatherBuilder
+                .returning(Age.class)
+                .fromElements(Birthday.class)
+                .generatedBy(List.of(
+                        () -> new Birthday(),
+                        () -> new Birthday()))
+                .consolidatedBy(context -> {
+                    return new Age(context.getInput().getResults().size());
+                })
+                .buildAgent("name", "description");
+        assertFalse(agent.getActions().isEmpty(), "Should have actions");
+        assertTrue(agent.getOpaque(), "Agent should be opaque");
+
+        var ap = dummyAgentPlatform();
+        ap.deploy(agent);
+        assertTrue(agent.getActions().size() > 1,
+                "Should have actions on the agent");
+        assertEquals(0, ap.getActions().size());
     }
 
     @Test

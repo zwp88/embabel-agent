@@ -44,7 +44,6 @@ class ScatterGather(
         elementClass: Class<ELEMENT>,
         resultClass: Class<RESULT>,
     ): AgentScopeBuilder<RESULT> {
-
         val generateAction = SupplierAction(
             name = "=>${resultClass.name}",
             description = "Generate $resultClass",
@@ -97,7 +96,8 @@ class ScatterGather(
                 generateAction,
                 consolidateAction,
             ),
-            goals = setOf(resultGoal)
+            goals = setOf(resultGoal),
+            opaque = true,
         )
     }
 

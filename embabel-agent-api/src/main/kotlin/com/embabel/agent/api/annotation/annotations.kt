@@ -67,6 +67,7 @@ enum class Planner {
  * @param beanName The value may indicate a suggestion for a logical component name,
  * to be turned into a Spring bean in case of an autodetected component. Use only if there's the likelihood of
  * conflict with the default bean name.
+ * @param opaque Whether to hide the agent's actions and conditions
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(
@@ -82,6 +83,7 @@ annotation class Agent(
     val scan: Boolean = true,
     @get:AliasFor(annotation = Component::class, attribute = "value")
     val beanName: String = "",
+    val opaque: Boolean = false,
 )
 
 /**
