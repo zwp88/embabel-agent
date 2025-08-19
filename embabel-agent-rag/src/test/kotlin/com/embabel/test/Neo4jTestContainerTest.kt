@@ -29,10 +29,10 @@ import kotlin.test.assertEquals
 @NeoIntegrationTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class Neo4jTestContainerTest(
-    @Autowired private val testContainer: Neo4jTestContainer,
+    @param:Autowired private val testContainer: Neo4jTestContainer,
 ) {
 
-    val boltUrl = testContainer.boltUrl
+    val boltUrl: String = testContainer.boltUrl
     val driver: Driver = GraphDatabase.driver(
         boltUrl,
         AuthTokens.basic("neo4j", testContainer.adminPassword)
@@ -41,10 +41,12 @@ class Neo4jTestContainerTest(
     @BeforeEach
     fun setup() {
         driver.session().executeWrite { tx ->
-            tx.run("""
+            tx.run(
+                """
             CALL apoc.cypher.runFile("reference-data.cypher") YIELD fileName
             RETURN fileName
-        """.trimIndent()).consume()
+        """.trimIndent()
+            ).consume()
         }
     }
 

@@ -17,6 +17,9 @@ package com.embabel.test
 
 import com.embabel.agent.rag.neo.ogm.OgmRagService
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.neo4j.driver.AuthTokens
+import org.neo4j.driver.Driver
+import org.neo4j.driver.GraphDatabase
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Profile
@@ -40,4 +43,13 @@ open class NeoIntegrationTestSupport {
 
     @Autowired
     protected var ragService: OgmRagService? = null
+
+    @Autowired
+    var testContainer: Neo4jTestContainer? = null
+
+
+    fun driver(): Driver = GraphDatabase.driver(
+        testContainer!!.boltUrl,
+        AuthTokens.basic("neo4j", testContainer!!.adminPassword)
+    )
 }

@@ -19,7 +19,6 @@ import com.embabel.agent.rag.RagRequest
 import com.embabel.common.ai.model.Llm
 import com.embabel.test.NeoIntegrationTestSupport
 import io.mockk.every
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -31,9 +30,36 @@ class OgmRagServiceTest(
     private val cypherGenerationLlm: Llm,
 ) : NeoIntegrationTestSupport() {
 
+    private fun createVectorIndexes() {
+        driver().session().executeWrite { tx ->
+            tx.run(
+                """
+            CREATE VECTOR INDEX `spring-ai-document-index` IF NOT EXISTS 
+            FOR (n:Document) ON (n.embedding)
+            OPTIONS {indexConfig: {
+            `vector.dimensions`: 1536,
+            `vector.similarity_function`: 'cosine'
+            }};
+        """.trimIndent()
+            ).consume()
+
+            tx.run(
+                """
+            CREATE VECTOR INDEX entity_embeddings IF NOT EXISTS
+            FOR (n:Entity)
+            ON (n.embedding)
+            OPTIONS {indexConfig: {
+            `vector.dimensions`: 1536,
+            `vector.similarity_function`: 'cosine'
+            }};
+        """.trimIndent()
+            ).consume()
+        }
+    }
+
     @Test
-    @Disabled("problem with not finding spring ai vector index")
     fun `should find nothing in empty db`() {
+        createVectorIndexes()
         every { cypherGenerationLlm.model.call(any<String>()) } returns "MATCH (n) WHERE n.name CONTAINS 'test' RETURN n"
 
         val results = ragService!!.search(
