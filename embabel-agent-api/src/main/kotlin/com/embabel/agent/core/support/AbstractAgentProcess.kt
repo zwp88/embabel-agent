@@ -340,7 +340,6 @@ abstract class AbstractAgentProcess(
         val actionStatus = action.qos.retryTemplate("Action-${action.name}").execute<ActionStatus, Throwable> {
             action.execute(
                 processContext = processContext,
-                action = action,
             )
         }
         val runningTime = Duration.between(timestamp, Instant.now())

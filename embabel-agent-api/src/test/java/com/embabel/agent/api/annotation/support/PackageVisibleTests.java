@@ -76,7 +76,7 @@ class PackageVisibleTests {
         );
 
         pc.getBlackboard().plusAssign(new PackageInput("John Doe"));
-        var result = action.execute(pc, action);
+        var result = action.execute(pc);
         assertEquals(ActionStatusCode.SUCCEEDED, result.getStatus());
         assertEquals(new PackageOutput("John Doe"), pc.getBlackboard().lastResult());
     }

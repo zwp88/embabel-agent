@@ -62,7 +62,6 @@ class MultiTransformationAction<O : Any>(
     @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
-        action: Action,
     ): ActionStatus = ActionRunner.execute(processContext) {
         val inputValues: List<Any> = inputs.map {
             processContext.getValue(variable = it.name, type = it.type)

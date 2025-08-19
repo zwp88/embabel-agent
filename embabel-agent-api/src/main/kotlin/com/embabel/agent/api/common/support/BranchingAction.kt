@@ -86,7 +86,6 @@ open class BranchingAction<I, O1, O2>(
     @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
-        action: Action,
     ): ActionStatus = ActionRunner.execute(processContext) {
         val input = processContext.getValue(inputVarName, inputClass.name) as I
         val branch = block.transform(

@@ -213,7 +213,6 @@ interface ActionContext : OperationContext {
 
         singleAction.execute(
             processContext = this.processContext,
-            action = action!!,
         )
         return last(outputClass) ?: throw IllegalStateException(
             "No output of type ${outputClass.name} found in context"

@@ -496,7 +496,6 @@ data class AgentScopeBuilder<O>(
 
         singleAction.execute(
             processContext = context.processContext,
-            action = context.action!!,
         )
         return context.last(outputClass) ?: throw IllegalStateException(
             "No output of type ${outputClass.name} found in context"
@@ -563,7 +562,6 @@ inline fun <reified I, reified O : Any> runAgent(
     val singleAction = agent.asAction<Any, O>()
     singleAction.execute(
         processContext = context.processContext,
-        action = context.action,
     )
     return context.last<O>() ?: throw IllegalStateException(
         "No output of type ${O::class.java} found in context"

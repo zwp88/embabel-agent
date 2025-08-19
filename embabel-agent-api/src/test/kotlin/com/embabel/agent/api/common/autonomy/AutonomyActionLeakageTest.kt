@@ -156,7 +156,6 @@ class AutonomyActionLeakageTest {
 
             override fun execute(
                 processContext: ProcessContext,
-                action: Action,
             ): ActionStatus {
                 return ActionStatus(runningTime = Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
@@ -202,7 +201,6 @@ class AutonomyActionLeakageTest {
 
             override fun execute(
                 processContext: ProcessContext,
-                action: Action,
             ): ActionStatus {
                 return ActionStatus(runningTime = Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }
@@ -446,7 +444,6 @@ class AutonomyActionLeakageTest {
 
             override fun execute(
                 processContext: ProcessContext,
-                action: Action,
             ): ActionStatus {
                 return ActionStatus(runningTime = Duration.ofSeconds(2), status = ActionStatusCode.SUCCEEDED)
             }

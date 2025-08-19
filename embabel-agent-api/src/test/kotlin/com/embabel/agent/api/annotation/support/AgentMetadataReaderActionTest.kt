@@ -248,7 +248,7 @@ class AgentMetadataReaderActionTest {
             outputChannel = DevNullOutputChannel,
         )
         pc.agentProcess.bind(IoBinding.DEFAULT_BINDING, UserInput("John Doe"))
-        val result = action.execute(pc, action)
+        val result = action.execute(pc)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -291,7 +291,7 @@ class AgentMetadataReaderActionTest {
             agentProcess = mockAgentProcess,
             outputChannel = DevNullOutputChannel,
         )
-        val result = action.execute(pc, action)
+        val result = action.execute(pc)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -329,7 +329,7 @@ class AgentMetadataReaderActionTest {
         )
         pc.blackboard += UserInput("John Doe")
         pc.blackboard += SnakeMeal(emptyList())
-        val result = action.execute(pc, action)
+        val result = action.execute(pc)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe and tasty!"), pc.blackboard.lastResult())
     }
@@ -380,7 +380,7 @@ class AgentMetadataReaderActionTest {
             platformServices = dummyPlatformServices(),
             agentProcess = mockAgentProcess,
         )
-        val result = action.execute(pc, action)
+        val result = action.execute(pc)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -417,7 +417,7 @@ class AgentMetadataReaderActionTest {
             platformServices = platformServices,
         )
         pc.blackboard += InternalInput("John Doe")
-        val result = action.execute(pc, action)
+        val result = action.execute(pc)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(InternalOutput("John Doe"), pc.blackboard.lastResult())
     }
@@ -469,7 +469,7 @@ class AgentMetadataReaderActionTest {
             platformServices = dummyPlatformServices(),
             agentProcess = mockAgentProcess,
         )
-        val result = action.execute(pc, action)
+        val result = action.execute(pc)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -514,7 +514,7 @@ class AgentMetadataReaderActionTest {
             platformServices = dummyPlatformServices(),
             agentProcess = mockAgentProcess,
         )
-        val result = action.execute(pc, action)
+        val result = action.execute(pc)
         assertEquals(ActionStatusCode.SUCCEEDED, result.status)
         assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
     }
@@ -636,7 +636,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, action)
+            val result = action.execute(pc)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
             assertEquals(LlmOptions.withModel("magical").withTemperature(.7), llmo.captured.llm)
@@ -691,7 +691,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, action)
+            val result = action.execute(pc)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
 //                assertEquals(1, llmi.captured.toolCallbacks.size)
@@ -801,7 +801,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, action)
+            val result = action.execute(pc)
             assertEquals(ActionStatusCode.SUCCEEDED, result.status)
             assertTrue(pc.blackboard.lastResult() is UserInput)
             assertEquals("John Doe", (pc.blackboard.lastResult() as UserInput).content)
@@ -863,7 +863,7 @@ class AgentMetadataReaderActionTest {
                 platformServices = mockPlatformServices,
                 agentProcess = mockAgentProcess,
             )
-            val result = action.execute(pc, action)
+            val result = action.execute(pc)
             assertEquals(ActionStatusCode.WAITING, result.status)
             val fr = pc.blackboard.lastResult()
             assertTrue(
