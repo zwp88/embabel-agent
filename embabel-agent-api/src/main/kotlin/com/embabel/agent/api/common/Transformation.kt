@@ -108,7 +108,7 @@ fun <I, O : Any> agentTransformer(
 ): Action {
     return TransformationAction(
         name = "@action-${agent.name}",
-        description = "@action-${agent.name}",
+        description = agent.description,
         pre = pre,
         post = post,
         cost = cost,
