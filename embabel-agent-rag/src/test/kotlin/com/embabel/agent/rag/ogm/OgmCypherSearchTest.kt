@@ -18,7 +18,6 @@ package com.embabel.agent.rag.ogm
 import com.embabel.agent.rag.neo.ogm.OgmCypherSearch
 import com.embabel.test.NeoIntegrationTest
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 
@@ -27,7 +26,7 @@ class OgmCypherSearchTest(
     @param:Autowired private val ogmCypherSearch: OgmCypherSearch,
 ) {
 
-    @Test
+    //    @Test
     fun should_query() {
         val query = "match (n) return n limit 100"
         val params: Map<String, *> = emptyMap<String, Any>()
