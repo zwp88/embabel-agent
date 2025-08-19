@@ -1,7 +1,54 @@
 [[reference.dsl]]
-=== Kotlin DSL
+=== DSL
 
-==== DSL
+You can also create agents using a DSL in Kotlin or Java.
+
+This is useful for workflows where you want an atomic action that is complete in itself but may contain multiple steps or actions.
+
+==== Standard Workflows
+
+There are a number of standard workflows, constructed by builders, that meet common requirements.
+These can be used to create agents that will be exposed as Spring beans, or within `@Action` methods within other agents.
+All are type safe.
+
+- `SimpleAgentBuilder`: The simplest agent, with no preconditions or postconditions.
+- `ScatterGatherBuilder`: Fork join pattern for parallel processing.
+- `ConsensusBuilder`: A pattern for reaching consensus among multiple sources.
+Specialization of `ScatterGather`.
+- `RepeatUntil`: Repeats a step until a condition is met.
+- `RepeatUntilAcceptable`: Repeats a step while a condition is met, with a separate evaluator providing feedback.
+
+Creating a simple agent:
+
+[source,java]
+----
+var agent = SimpleAgentBuilder
+    .returning(Joke.class)
+    .running(tac -> tac.ai()
+        .withDefaultLlm()
+        .createObject("Tell me a joke", Joke.class))
+    .buildAgent("joker", "This is guaranteed to return a dreadful joke");
+----
+
+A more complex example:
+
+[source,java]
+----
+@Action
+FactChecks runAndConsolidateFactChecks(
+        DistinctFactualAssertions distinctFactualAssertions,
+        ActionContext context) {
+    var llmFactChecks = properties.models().stream()
+            .flatMap(model -> factCheckWithSingleLlm(model, distinctFactualAssertions, context))
+            .toList();
+    return ScatterGatherBuilder
+            .returning(FactChecks.class)
+            .fromElements(FactCheck.class)
+            .generatedBy(llmFactChecks)
+            .consolidatedBy(this::reconcileFactChecks)
+            .asSubProcess(context);
+    }
+----
 
 ==== Registering `Agent` beans
 
@@ -13,6 +60,7 @@ Any bean of `Agent` type results in auto registration.
 ----
 @Configuration
 class FactCheckerAgentConfiguration {
+
     @Bean
     fun factChecker(factCheckerProperties: FactCheckerProperties): Agent {
         return factCheckerAgent(

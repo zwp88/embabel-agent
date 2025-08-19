@@ -6,6 +6,14 @@ This is the recommended model to use in Java, and remains compelling in Kotlin.
 
 ==== The `@Agent` annotation
 
+This is used on a class to define an agent.
+It is a Spring stereotype annotation, so it triggers Spring component scanning.
+Your agent class will automatically be registered as a Spring bean.
+It will also be registered with the agent framework, so it can be used in agent processes.
+
+You must provide the `description` parameter, which is a human-readable description of the agent.
+This is particularly important as it may be used by the LLM in agent selection.
+
 ==== The `@Action` annotation
 
 The `@Action` annotation is used to mark methods that perform actions within an agent.
@@ -24,12 +32,17 @@ Defaults to false.
 
 ==== The `@Condition` annotation
 
+The `@Condition` annotation is used to mark methods that evaluate conditions.
+They can take an `OperationContext` parameter to access the blackboard and other infrastructure.
+If they take domain object parameters, the condition will automatically be false until suitable instances are available.
+
 > NOTE: Condition methods should not have side effects--for example, on the blackboard.
 This is important because they may be called multiple times.
 
 ==== Parameters
 
-`@Action` or `@Condition` methods must have at least one parameter.
+`@Action` methods must have at least one parameter.
+`@Condition` methods must have zero or more parameters, but otherwise follow the same rules as `@Action` methods regarding parameters.
 Ordering of parameters is not important.
 
 Parameters fall in two categories:
@@ -42,12 +55,14 @@ This enables nice-to-have parameters that are not required for the action to run
 
 * _Infrastructure objects_. `OperationContext` parameters may be passed to action or condition methods.
 
+NOTE: Domain objects drive planning, specifying the preconditions to an action.
+
 The `ActionContext` subtype can be used in action methods.
 It adds `asSubProcess` methods that can be used to run other agents in subprocesses.
 This is an important element of composition.
 
 > Use the least specific type possible for parameters.
-Use `OperationContext` unles you are creating a subprocess.
+Use `OperationContext` unless you are creating a subprocess.
 
 ==== Binding by name
 
@@ -58,6 +73,8 @@ The `@RequireNameMatch` annotation can be used to bind parameters by name.
 Action methods normally return a single domain object.
 
 Nullable return types are allowed.
+Returning null will trigger replanning.
+There may or not be an alternative path from that point, but it won't be what the planner was trying to achieve.
 
 There is a special case where the return type can essentially be a union type, where the action method can return one of several types.
 This is achieved by a return type implementing the `SomeOf` tag interface.
@@ -97,7 +114,10 @@ It may enable the most appropriate routing.
 
 ==== Action method implementation
 
-Using PromptRunner etc.
+Embabel makes it easy to seamlessly integrate LLM invocation and application code, using common types.
+An `@Action` method is a normal method, and can use any libraries or frameworks you like.
+
+The only special thing about it is its ability to use the `OperationContext` parameter to access the blackboard and invoke LLMs.
 
 ==== The `@AchievesGoal` annotation
 

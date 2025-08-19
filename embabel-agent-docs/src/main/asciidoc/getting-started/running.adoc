@@ -69,3 +69,35 @@ execute "research the recent australian federal election. what is the position o
 # Fact checking
 x "fact check the following: holden cars are still made in australia"
 ----
+
+==== Implementing Your Own Shell Commands
+
+Particularly during development, you may want to implement your own shell commands to try agents or flows.
+Simply write a Spring Shell component and Sprig will inject it and register it automatically.
+
+For example, you can inject the `AgentPlatform` and use it to invoke agents directly, as in this code from the examples repository:
+
+[source,java]
+----
+@ShellComponent
+public record SupportAgentShellCommands(
+        AgentPlatform agentPlatform
+) {
+
+    @ShellMethod("Get bank support for a customer query")
+    public String bankSupport(
+            @ShellOption(value = "id", help = "customer id", defaultValue = "123") Long id,
+            @ShellOption(value = "query", help = "customer query", defaultValue = "What's my balance, including pending amounts?") String query
+    ) {
+        var supportInput = new SupportInput(id, query);
+        System.out.println("Support input: " + supportInput);
+        var invocation = AgentInvocation
+                .builder(agentPlatform)
+                .options(ProcessOptions.builder().verbosity(v -> v.showPrompts(true)).build())
+                .build(SupportOutput.class);
+        var result = invocation.invoke(supportInput);
+        return result.toString();
+    }
+}
+----
+

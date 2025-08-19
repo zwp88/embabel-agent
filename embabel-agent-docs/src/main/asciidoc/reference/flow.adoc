@@ -1,7 +1,105 @@
 [[reference.flow]]
 === Agent Process Flow
 
+When an agent is invoked, Embabel creates an `AgentProcess` with a unique identifier that manages the complete execution lifecycle.
+
+==== AgentProcess Lifecycle
+
+An `AgentProcess` maintains state throughout its execution and can transition between various states:
+
+**Process States:**
+
+- `NOT_STARTED`: The process has not started yet
+- `RUNNING`: The process is executing without any known problems
+- `COMPLETED`: The process has completed successfully
+- `FAILED`: The process has failed and cannot continue
+- `TERMINATED`: The process was killed by an early termination policy
+- `KILLED`: The process was killed by the user or platform
+- `STUCK`: The process cannot formulate a plan to progress (may be temporary)
+- `WAITING`: The process is waiting for user input or external event
+- `PAUSED`: The process has paused due to scheduling policy
+
+**Process Execution Methods:**
+
+- `tick()`: Perform the next single step and return when an action completes
+- `run()`: Execute the process as far as possible until completion, failure, or a waiting state
+
+These methods are not directly called by user code, but are managed by the framework to control execution flow.
+
+Each `AgentProcess` maintains:
+
+- **Unique ID**: Persistent identifier for tracking and reference
+- **History**: Record of all executed actions with timing information
+- **Goal**: The objective the process is trying to achieve
+- **Failure Info**: Details about any failure that occurred
+- **Parent ID**: Reference to parent process for nested executions
+
 ==== Planning
 
+Planning occurs after each action execution using Goal-Oriented Action Planning (GOAP).
+The planning process:
+
+1. **Analyze Current State**: Examine the current blackboard contents and world state
+2. **Identify Available Actions**: Find all actions that can be executed based on their preconditions
+3. **Search for Action Sequences**: Use A* algorithm to find optimal paths to achieve the goal
+4. **Select Optimal Plan**: Choose the best action sequence based on cost and success probability
+5. **Execute Next Action**: Run the first action in the plan and replan
+
+This creates a dynamic **OODA loop** (Observe-Orient-Decide-Act):
+- **Observe**: Check current blackboard state and action results - **Orient**: Understand what has changed since the last planning cycle - **Decide**: Formulate or update the plan based on new information - **Act**: Execute the next planned action
+
+The replanning approach allows agents to:
+
+- Adapt to unexpected action results
+- Handle dynamic environments where conditions change
+- Recover from partial failures
+- Take advantage of new opportunities that arise
+
 ==== Blackboard
+
+The Blackboard serves as the shared memory system that maintains state throughout the agent process execution.
+It implements the https://en.wikipedia.org/wiki/Blackboard_(design_pattern)[Blackboard architectural pattern], a knowledge-based system approach.
+
+Most of the time, user code doesn't need to interact with the blackboard directly, as it is managed by the framework.
+For example, action inputs come from the blackboard, and action outputs are automatically added to the blackboard, and conditions are evaluated based on its contents.
+
+**Key Characteristics:**
+
+- **Central Repository**: Stores all domain objects, intermediate results, and process state
+- **Type-Based Access**: Objects are indexed and retrieved by their types
+- **Ordered Storage**: Objects maintain the order they were added, with latest being default
+- **Immutable Objects**: Once added, objects cannot be modified (new versions can be added)
+- **Condition Tracking**: Maintains boolean conditions used by the planning system
+
+**Core Operations:**
+
+[source,kotlin]
+----
+// Add objects to blackboard
+blackboard += person
+blackboard["result"] = analysis
+
+// Retrieve objects by type
+val person = blackboard.last<Person>()
+val allPersons = blackboard.all<Person>()
+
+// Check conditions
+blackboard.setCondition("userVerified", true)
+val verified = blackboard.getCondition("userVerified")
+----
+
+**Data Flow:**
+
+1. **Input Processing**: Initial user input is added to the blackboard
+2. **Action Execution**: Each action reads inputs from blackboard and adds results
+3. **State Evolution**: Blackboard accumulates objects representing the evolving state
+4. **Planning Input**: Current blackboard state informs the next planning cycle
+5. **Result Extraction**: Final results are retrieved from blackboard upon completion
+
+The blackboard enables:
+
+- **Loose Coupling**: Actions don't need direct references to each other
+- **Flexible Data Flow**: Actions can consume any available data of the right type
+- **State Persistence**: Complete execution history is maintained
+- **Debugging Support**: Full visibility into state evolution for troubleshooting
 
