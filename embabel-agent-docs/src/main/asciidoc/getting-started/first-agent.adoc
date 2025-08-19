@@ -1,2 +1,99 @@
 [[getting-started.first-agent]]
 === Writing Your First Agent
+
+The easiest way to create your first agent is to use the Java or Kotlin template repositories.
+
+==== Using the Template
+
+Create a new project from the https://github.com/embabel/java-agent-template[Java template] or https://github.com/embabel/kotlin-agent-template[Kotlin template] by clicking "Use this template" on GitHub.
+
+Or use the project creator:
+
+[source,bash]
+----
+uvx --from git+https://github.com/embabel/project-creator.git project-creator
+----
+
+==== Example: WriteAndReviewAgent
+
+The Java template includes a `WriteAndReviewAgent` that demonstrates key concepts:
+
+[source,java]
+----
+@Agent(description = "Agent that writes and reviews stories")
+public class WriteAndReviewAgent {
+
+    @Action
+    public Story writeStory(UserInput userInput, OperationContext context) {
+        // High temperature for creativity
+        var writer = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+            .withTemperature(0.8)
+            .withPersona("You are a creative storyteller");
+
+        return context.ai()
+            .withLlm(writer)
+            .createObject("Write a story about: " + userInput.getContent(), Story.class);
+    }
+
+    @AchievesGoal(description = "Review and improve the story")
+    @Action  
+    public ReviewedStory reviewStory(Story story, OperationContext context) {
+        // Low temperature for analytical review
+        var reviewer = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+            .withTemperature(0.2)
+            .withPersona("You are a careful editor and reviewer");
+
+        String prompt = "Review this story and suggest improvements: " + story.text();
+        
+        return context.ai()
+            .withLlm(reviewer)
+            .createObject(prompt, ReviewedStory.class);
+    }
+}
+----
+
+==== Key Concepts Demonstrated
+
+**Multiple LLMs with Different Configurations:**
+
+- Writer LLM uses high temperature (0.8) for creativity
+- Reviewer LLM uses low temperature (0.2) for analytical review
+- Different personas guide the model behavior
+
+**Actions and Goals:**
+
+- `@Action` methods are the steps the agent can take
+- `@AchievesGoal` marks the final action that completes the agent's work
+
+**Domain Objects:**
+
+- `Story` and `ReviewedStory` are strongly-typed domain objects
+- Help structure the interaction between actions
+
+==== Running Your Agent
+
+Set your API keys and run the shell:
+
+[source,bash]
+----
+export OPENAI_API_KEY="your_key_here"
+./scripts/shell.sh
+----
+
+In the shell, try:
+
+----
+x "Tell me a story about a robot learning to paint"
+----
+
+The agent will:
+
+1. Generate a creative story using the writer LLM
+2. Review and improve it using the reviewer LLM
+3. Return the final reviewed story
+
+==== Next Steps
+
+- Explore the https://github.com/embabel/embabel-agent-examples[examples repository] for more complex agents
+- Read the <<reference.reference,Reference Documentation>> for detailed API information
+- Try building your own domain-specific agents

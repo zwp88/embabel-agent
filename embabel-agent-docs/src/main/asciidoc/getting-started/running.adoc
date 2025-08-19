@@ -1,2 +1,71 @@
 [[getting-started.running]]
 === Getting Embabel Running
+
+==== Running the Examples
+
+The quickest way to get started with Embabel is to run the examples:
+
+[source,bash]
+----
+# Clone and run examples
+git clone https://github.com/embabel/embabel-agent-examples
+cd embabel-agent-examples/scripts/java
+./shell.sh
+----
+
+NOTE: Choose the `java` or `kotlin` scripts directory depending on your preference.
+
+==== Prerequisites
+
+- Java 21+
+- API Key from OpenAI or Anthropic
+- Maven 3.9+ (optional)
+
+Set your API keys:
+
+[source,bash]
+----
+export OPENAI_API_KEY="your_openai_key"
+export ANTHROPIC_API_KEY="your_anthropic_key"
+----
+
+==== Using the Shell
+
+Spring Shell is an easy way to interact with the Embabel agent framework, especially during development.
+
+Type `help` to see available commands.
+Use `execute` or `x` to run an agent:
+
+----
+execute "Lynda is a Scorpio, find news for her" -p -r
+----
+
+This will look for an agent, choose the star finder agent and run the flow. `-p` will log prompts `-r` will log LLM responses.
+Omit these for less verbose logging.
+
+Options:
+
+- `-p` logs prompts
+- `-r` logs LLM responses
+
+Use the `chat` command to enter an interactive chat with the agent.
+It will attempt to run the most appropriate agent for each command.
+
+TIP: Spring Shell supports history.
+Type `!!` to repeat the last command.
+This will survive restarts, so is handy when iterating on an agent.
+
+==== Example Commands
+
+Try these commands in the shell:
+
+----
+# Simple horoscope agent
+execute "My name is Sarah and I'm a Leo"
+
+# Research with web tools (requires Docker Desktop with MCP extension)
+execute "research the recent australian federal election. what is the position of the Greens party?"
+
+# Fact checking
+x "fact check the following: holden cars are still made in australia"
+----

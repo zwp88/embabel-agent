@@ -1,13 +1,81 @@
 [[reference.types-runner]]
-=== Core types
+=== Core Types
 
 ==== LlmOptions
 
+The `LlmOptions` class specifies which LLM to use and its hyperparameters.
+It's defined in the https://github.com/embabel/embabel-common[embabel-common] project and provides a fluent API for LLM configuration:
+
+[source,java]
+----
+// Create LlmOptions with model and temperature
+var options = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+    .withTemperature(0.8);
+
+// Use different hyperparameters for different tasks
+var analyticalOptions = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+    .withTemperature(0.2)
+    .withTopP(0.9);
+----
+
+**Important Methods:**
+
+- `withModel(String)`: Specify the model name
+- `withTemperature(Double)`: Set creativity/randomness (0.0-1.0)
+- `withTopP(Double)`: Set nucleus sampling parameter
+- `withTopK(Integer)`: Set top-K sampling parameter
+- `withPersona(String)`: Add a system message persona
+
 ==== PromptRunner
 
-All LLM calls go via the `PromptRunner` interface.
+All LLM calls in user applications should be made via the `PromptRunner` interface.
 Once created, a `PromptRunner` can run multiple prompts with the same LLM, hyperparameters, tool groups and `PromptContributors`.
 
-===== Getting a `PromptRunner`
+===== Getting a PromptRunner
 
-===== `PromptRunner` methods
+You obtain a `PromptRunner` from an `OperationContext` using the fluent API:
+
+[source,java]
+----
+@Action
+public Story createStory(UserInput input, OperationContext context) {
+    // Get PromptRunner with default LLM
+    var runner = context.ai().withDefaultLlm();
+    
+    // Get PromptRunner with specific LLM options
+    var customRunner = context.ai().withLlm(
+        LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+            .withTemperature(0.8)
+    );
+    
+    return customRunner.createObject("Write a story about: " + input.getContent(), Story.class);
+}
+----
+
+===== PromptRunner Methods
+
+**Core Object Creation:**
+
+- `createObject(String, Class<T>)`: Create a typed object from a prompt
+- `createObjectIfPossible(String, Class<T>)`: Try to create an object, return null on failure.
+This can cause replanning.
+- `generateText(String)`: Generate simple text response
+
+TIP: Normally you want to use one of the `createObject` methods to ensure the response is typed correctly.
+
+**Tool and Context Management:**
+
+- `withToolGroup(String)`: Add tool groups for LLM access
+- `withToolObject(Object)`: Add domain objects with @Tool methods
+- `withPromptContributor(PromptContributor)`: Add context contributors
+
+**LLM Configuration:**
+
+- `withLlm(LlmOptions)`: Use specific LLM configuration
+- `withGenerateExamples(Boolean)`: Control example generation
+
+**Advanced Features:**
+
+- `withTemplate(String)`: Use Jinja templates for prompts
+- `withSubagents(Subagent...)`: Enable handoffs to other agents
+- `evaluateCondition(String, String)`: Evaluate boolean condition

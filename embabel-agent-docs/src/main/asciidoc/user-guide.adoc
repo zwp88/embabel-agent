@@ -4,7 +4,9 @@ ifndef::imagesdir[]
 endif::[]
 
 include::overview/overview.adoc[]
+
 include::getting-started/getting-started.adoc[]
+
 include::reference/reference.adoc[]
 
 

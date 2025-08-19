@@ -1,7 +1,138 @@
 [[getting-started.installing]]
 === Getting the Binaries
 
+The easiest way to get started with Embabel Agent is to add the Spring Boot starter dependency to your project.
+
 ==== Maven
 
+Add the Embabel Agent Spring Boot starter to your `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.embabel.agent</groupId>
+    <artifactId>embabel-agent-starter</artifactId>
+    <version>${embabel-agent.version}</version>
+</dependency>
+----
+
+You'll also need to add the Embabel repository to your `pom.xml`:
+
+[source,xml]
+----
+<repositories>
+    <repository>
+        <id>embabel-releases</id>
+        <url>https://repo.embabel.com/artifactory/libs-release</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+    <repository>
+        <id>embabel-snapshots</id>
+        <url>https://repo.embabel.com/artifactory/libs-snapshot</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+    <repository>
+        <id>spring-milestones</id>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+----
+
 ==== Gradle
+
+Add the required repositories to your `build.gradle.kts`:
+
+[source,kotlin]
+----
+repositories {
+    mavenCentral()
+    maven {
+        name = "embabel-releases"
+        url = uri("https://repo.embabel.com/artifactory/libs-release")
+        mavenContent {
+            releasesOnly()
+        }
+    }
+    maven {
+        name = "embabel-snapshots"
+        url = uri("https://repo.embabel.com/artifactory/libs-snapshot")
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
+    maven {
+        name = "Spring Milestones"
+        url = uri("https://repo.spring.io/milestone")
+    }
+}
+----
+
+Add the Embabel Agent starter dependency:
+
+[source,kotlin]
+----
+dependencies {
+    implementation("com.embabel.agent:embabel-agent-starter:${embabel-agent.version}")
+}
+----
+
+For Gradle Groovy DSL (`build.gradle`):
+
+[source,groovy]
+----
+repositories {
+    mavenCentral()
+    maven {
+        name = 'embabel-releases'
+        url = 'https://repo.embabel.com/artifactory/libs-release'
+        mavenContent {
+            releasesOnly()
+        }
+    }
+    maven {
+        name = 'embabel-snapshots'
+        url = 'https://repo.embabel.com/artifactory/libs-snapshot'
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
+    maven {
+        name = 'Spring Milestones'
+        url = 'https://repo.spring.io/milestone'
+    }
+}
+
+dependencies {
+    implementation 'com.embabel.agent:embabel-agent-starter:${embabel-agent.version}'
+}
+----
+
+==== Environment Setup
+
+Before running your application, you'll need to set up your environment with API keys for the LLM providers you plan to use.
+
+Required:
+- `OPENAI_API_KEY`: For OpenAI models (GPT-4, GPT-5, etc.)
+
+Optional but recommended:
+- `ANTHROPIC_API_KEY`: For Anthropic models (Claude 3.x, etc.)
+
+Example `.env` file:
+----
+OPENAI_API_KEY=your_openai_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+----
 

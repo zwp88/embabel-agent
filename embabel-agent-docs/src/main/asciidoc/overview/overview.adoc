@@ -4,5 +4,7 @@
 :sectanchors:
 
 include::agent-framework.adoc[]
+
 include::why-embabel.adoc[]
+
 include::concepts.adoc[]
