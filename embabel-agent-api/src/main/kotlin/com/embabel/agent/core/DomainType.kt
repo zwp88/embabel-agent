@@ -17,21 +17,23 @@ package com.embabel.agent.core
 
 import com.embabel.agent.api.common.SomeOf
 import com.embabel.common.core.types.HasInfoString
-import com.embabel.common.core.types.Named
+import com.embabel.common.core.types.NamedAndDescribed
 import com.embabel.common.util.indent
 import com.embabel.common.util.indentLines
+import com.fasterxml.jackson.annotation.JsonClassDescription
 
 /**
  * Type known to the Embabel agent platform.
  * May be backed by a domain object or by a map.
  */
-sealed interface DomainType : HasInfoString, Named
+sealed interface DomainType : HasInfoString, NamedAndDescribed
 
 /**
  * Simple data type
  */
 data class DynamicType(
     override val name: String,
+    override val description: String = name,
     val properties: List<PropertyDefinition> = emptyList(),
 ) : DomainType {
 
@@ -71,6 +73,16 @@ data class JvmType(
 
     override val name: String
         get() = clazz.name
+
+    override val description: String
+        get() {
+            val ann = clazz.getAnnotation(JsonClassDescription::class.java)
+            return if (ann != null) {
+                "${clazz.simpleName}: ${ann.value}"
+            } else {
+                clazz.name
+            }
+        }
 
     override fun infoString(
         verbose: Boolean?,
