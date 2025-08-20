@@ -4,14 +4,24 @@
 Like Spring, Embabel facilitates testing of user applications.
 The framework provides comprehensive testing support for both unit and integration testing scenarios.
 
+IMPORTANT: Building Gen AI applications is no different from building other software.
+Testing is critical to delivering quality software and must be considered from the outset.
+
 ==== Unit Testing
 
 Unit testing in Embabel enables testing individual agent actions without involving real LLM calls.
+
+Embabel's design means that agents are usually POJOs that can be instantiated with fake or mock objects.
+Actions are methods that can be called directly with test fixtures.
+In additional to your domain objects, you will pass a text fixture for the Embabel `OperationContext`, enabling you to intercept and verify LLM calls.
+
 The framework provides `FakePromptRunner` and `FakeOperationContext` to mock LLM interactions while allowing you to verify prompts, hyperparameters, and business logic.
+Alternatively you can use mock objects.
+https://site.mockito.org/[Mockito] is the default choice for Java; https://mockk.io/[mockk] for Kotlin.
 
 ===== Java Example: Testing Prompts and Hyperparameters
 
-Here's the actual unit test from the Java Agent Template repository:
+Here's a unit test from the http://github.com/embabel/java-agent-template[Java Agent Template] repository, using Embabel fake objects:
 
 [source,java]
 ----
@@ -66,7 +76,7 @@ class WriteAndReviewAgentTest {
 
 ===== Kotlin Example: Testing Prompts and Hyperparameters
 
-Here's the actual unit test from the Kotlin Agent Template repository:
+Here's the unit test from the http://github.com/embabel/kotlin-agent-template[Kotlin Agent Template] repository:
 
 [source,kotlin]
 ----
@@ -172,7 +182,7 @@ void shouldHandleMultipleLlmInteractions() {
     context.expectResponse(review);
 
     // Act
-    Story writtenStory = agent.writeStory(input, context);
+    var writtenStory = agent.writeStory(input, context);
     ReviewedStory reviewedStory = agent.reviewStory(writtenStory, context);
 
     // Assert
@@ -188,83 +198,8 @@ void shouldHandleMultipleLlmInteractions() {
     assertEquals(0.8, writerCall.getInteraction().getLlm().getTemperature(), 0.01);
     
     // Verify second call (reviewer)
-    LlmInvocation reviewerCall = invocations.get(1);
+    var reviewerCall = invocations.get(1);
     assertEquals(0.2, reviewerCall.getInteraction().getLlm().getTemperature(), 0.01);
-}
-----
-
-===== Common Testing Pitfalls to Avoid
-
-**❌ Not Setting Expected Responses:**
-
-[source,java]
-----
-@Test
-void badTest() {
-    // This will throw IllegalStateException
-    agent.writeStory(input, context); // No expectResponse() called!
-}
-----
-
-**✅ Always Set Expected Responses:**
-
-[source,java]
-----
-@Test
-void goodTest() {
-    context.expectResponse(new Story("Expected story"));
-    Story result = agent.writeStory(input, context);
-    // Test passes
-}
-----
-
-**❌ Wrong Response Type:**
-
-[source,java]
-----
-@Test
-void badTypeTest() {
-    context.expectResponse("String instead of Story"); // Wrong type!
-    agent.writeStory(input, context); // Will throw ClassCastException
-}
-----
-
-**✅ Correct Response Type:**
-
-[source,java]
-----
-@Test
-void goodTypeTest() {
-    context.expectResponse(new Story("Correct type"));
-    Story result = agent.writeStory(input, context);
-    // Test passes
-}
-----
-
-===== Testing Tool Objects and Domain Methods
-
-[source,java]
-----
-@Test
-void shouldTestDomainObjectTools() {
-    // Arrange
-    Customer customer = new Customer("John Doe", LoyaltyLevel.GOLD);
-    CustomerAnalysis expectedAnalysis = new CustomerAnalysis("High value customer");
-    context.expectResponse(expectedAnalysis);
-
-    // Act - action that uses customer's @Tool methods
-    var result = agent.analyzeCustomer(customer, context);
-
-    // Assert
-    assertEquals(expectedAnalysis, result);
-    
-    // Verify that domain object methods are available as tools
-    var invocation = context.getLlmInvocations().get(0);
-    List<ToolCallback> tools = invocation.getInteraction().getToolCallbacks();
-    
-    // Verify customer discount tool is available
-    assertTrue(tools.stream()
-        .anyMatch(tool -> tool.getName().contains("loyaltyDiscount")));
 }
 ----
 
@@ -272,47 +207,75 @@ void shouldTestDomainObjectTools() {
 
 Integration testing exercises complete agent workflows with real or mock external services while still avoiding actual LLM calls for predictability and speed.
 
-===== Spring Boot Test Setup
+This can ensure:
+
+- Agents are picked up by the agent platform
+- Data flow is correct within agents
+- Failure scenarios are handled gracefully
+- Agents interact correctly with each other and external systems
+- The overall workflow behaves as expected
+- LLM prompts and hyperparameters are correctly configured
+
+Embabel integration testing is built on top of https://docs.spring.io/spring-framework/reference/testing/integration.html[Spring's excellent integration testing support], thus allowing you to work with real databases if you wish.
+Spring's https://docs.spring.io/spring-boot/reference/testing/testcontainers.html[integration with Testcontainers] is particularly userul.
+
+===== Using EmbabelMockitoIntegrationTest
+
+Embabel provides `EmbabelMockitoIntegrationTest` as a base class that simplifies integration testing with convenient helper methods:
 
 [source,java]
 ----
-@SpringBootTest
-@TestPropertySource(properties = {
-    "embabel.agent.llm.default-model=test-model",
-    "embabel.agent.verbosity.debug=true"
-})
-class WriteAndReviewAgentIntegrationTest {
+/**
+ * Use framework superclass to test the complete workflow of writing and reviewing a story.
+ * This will run under Spring Boot against an AgentPlatform instance
+ * that has loaded all our agents.
+ */
+class StoryWriterIntegrationTest extends EmbabelMockitoIntegrationTest {
 
-    @Autowired
-    private AgentPlatform agentPlatform;
-    
-    @MockBean
-    private LlmOperations llmOperations;
-    
     @Test
-    void shouldExecuteCompleteWorkflow() throws Exception {
-        // Arrange
-        UserInput input = new UserInput("Write about artificial intelligence");
-        
-        // Mock LLM responses
-        when(llmOperations.createObject(contains("Write a story"), eq(Story.class)))
-            .thenReturn(new Story("AI will transform our world..."));
-        when(llmOperations.createObject(contains("Review this story"), eq(ReviewedStory.class)))
-            .thenReturn(new ReviewedStory("Excellent exploration of AI themes."));
+    void shouldExecuteCompleteWorkflow() {
+        var input = new UserInput("Write about artificial intelligence");
 
-        // Act
-        AgentInvocation<ReviewedStory> invocation = 
-            AgentInvocation.create(agentPlatform, ReviewedStory.class);
-        ReviewedStory result = invocation.invoke(input);
+        var story = new Story("AI will transform our world...");
+        var reviewedStory = new ReviewedStory(story, "Excellent exploration of AI themes.", Personas.REVIEWER);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals("Excellent exploration of AI themes.", result.getText());
-        
-        // Verify LLM interactions
-        verify(llmOperations, times(2)).createObject(any(String.class), any(Class.class));
+        whenCreateObject(contains("Craft a short story"), Story.class)
+                .thenReturn(story);
+
+        // The second call uses generateText
+        whenGenerateText(contains("You will be given a short story to review"))
+                .thenReturn(reviewedStory.review());
+
+        var invocation = AgentInvocation.create(agentPlatform, ReviewedStory.class);
+        var reviewedStoryResult = invocation.invoke(input);
+
+        assertNotNull(reviewedStoryResult);
+        assertTrue(reviewedStoryResult.getContent().contains(story.text()),
+                "Expected story content to be present: " + reviewedStoryResult.getContent());
+        assertEquals(reviewedStory, reviewedStoryResult,
+                "Expected review to match: " + reviewedStoryResult);
+
+        verifyCreateObjectMatching(prompt -> prompt.contains("Craft a short story"), Story.class,
+                llm -> llm.getLlm().getTemperature() == 0.9 && llm.getToolGroups().isEmpty());
+        verifyGenerateTextMatching(prompt -> prompt.contains("You will be given a short story to review"));
+        verifyNoMoreInteractions();
     }
 }
 ----
 
-This comprehensive testing approach ensures your agents work correctly while maintaining fast, reliable tests that don't depend on external LLM services.
+===== Key Integration Testing Features
+
+**Base Class Benefits:**
+- `EmbabelMockitoIntegrationTest` handles Spring Boot setup and LLM mocking automatically - Provides `agentPlatform` and `llmOperations` pre-configured - Includes helper methods for common testing patterns
+
+**Convenient Stubbing Methods:**
+- `whenCreateObject(prompt, outputClass)`: Mock object creation calls - `whenGenerateText(prompt)`: Mock text generation calls - Support for both exact prompts and `contains()` matching
+
+**Advanced Verification:**
+- `verifyCreateObjectMatching()`: Verify prompts with custom matchers - `verifyGenerateTextMatching()`: Verify text generation calls - `verifyNoMoreInteractions()`: Ensure no unexpected LLM calls
+
+**LLM Configuration Testing:**
+- Verify temperature settings: `llm.getLlm().getTemperature() == 0.9`
+- Check tool groups: `llm.getToolGroups().isEmpty()`
+- Validate persona and other LLM options
+

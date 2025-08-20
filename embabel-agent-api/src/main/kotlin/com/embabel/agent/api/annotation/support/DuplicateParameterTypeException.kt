@@ -93,7 +93,7 @@ internal fun buildDuplicateParameterTypeMessage(
 
     return """
         Ambiguous parameters in $declaring.${method.name}(): multiple parameters share the same type without @RequireNameMatch.
-        Conflicts: $details. 
+        Conflicts: $details.
         How to fix: annotate each parameter of the duplicated type with @RequireNameMatch so values are bound by parameter name, or make the parameter types unique.
         """
 }
