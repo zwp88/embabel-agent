@@ -32,6 +32,11 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Base class for integration tests that use Mockito to mock LLM operations.
+ * Provides convenient methods for stubbing and verifying LLM interactions.
+ * Subclasses will be Spring Boot tests that start the AgentPlatform.
+ */
 @SpringBootTest
 @TestPropertySource(properties = {
         "embabel.agent.llm.default-model=test-model",
@@ -39,7 +44,7 @@ import static org.mockito.Mockito.when;
         "spring.shell.interactive.enabled=false",
         "spring.shell.noninteractive.enabled=false"
 })
-class EmbabelMockitoIntegrationTest {
+public class EmbabelMockitoIntegrationTest {
 
     @Autowired
     protected AgentPlatform agentPlatform;
