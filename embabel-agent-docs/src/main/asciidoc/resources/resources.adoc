@@ -5,21 +5,18 @@
 
 === Rod Johnson's Blog Posts
 
-==== https://medium.com/@springrod/embabel-a-new-agent-platform-for-the-jvm-1c83402e0014[Embabel: A new Agent Platform For the JVM]
-
-Introduction to the Embabel agent framework, explaining the motivation for building an agent platform specifically for the JVM ecosystem.
+- https://medium.com/@springrod/embabel-a-new-agent-platform-for-the-jvm-1c83402e0014[Embabel: A new Agent Platform For the JVM] - Introduction to the Embabel agent framework, explaining the motivation for building an agent platform specifically for the JVM ecosystem.
 Covers the key differentiators and benefits of the approach.
 
-==== https://medium.com/@springrod/the-embabel-vision-967654f13793[The Embabel Vision]
-
-Rod Johnson's vision for the future of agent frameworks and how Embabel fits into the broader AI landscape.
+- https://medium.com/@springrod/the-embabel-vision-967654f13793[The Embabel Vision] - Rod Johnson's vision for the future of agent frameworks and how Embabel fits into the broader AI landscape.
 Discusses the long-term goals and strategic direction of the project.
 
-==== https://medium.com/@springrod/context-engineering-needs-domain-understanding-b4387e8e4bf8[Context Engineering Needs Domain Understanding]
-
-Deep dive into the DICE (Domain-Integrated Context Engineering) concept and why domain understanding is fundamental to effective context engineering in AI systems.
+- https://medium.com/@springrod/context-engineering-needs-domain-understanding-b4387e8e4bf8[Context Engineering Needs Domain Understanding] - Deep dive into the DICE (Domain-Integrated Context Engineering) concept and why domain understanding is fundamental to effective context engineering in AI systems.
 
 === Examples and Tutorials
+
+- https://www.baeldung.com/java-embabel-agent-framework[Creating an AI Agent in Java Using Embabel Agent Framework] by Baeldung - A nice introductory example, in Java.
+- https://jettro.dev/building-agents-with-embabel-a-hands-on-introduction-4f96d2edeac0[Building Agents With Embabel: A Hands-On Introduction] by Jettro Coenradie - An excellent Java tutorial.
 
 ==== https://github.com/embabel/embabel-agent-examples[Embabel Agent Examples Repository]
 

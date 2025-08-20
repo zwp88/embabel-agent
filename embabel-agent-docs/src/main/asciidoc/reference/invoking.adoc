@@ -1,7 +1,292 @@
 [[reference.invoking]]
 === Invoking Embabel Agents
 
-While the examples primarily show Embabel agents being invoked via `UserInput` through the Embabel shell, they can also be invoked programmatically, with strong typing.
+While many examples show Embabel agents being invoked via `UserInput` through the Embabel shell, they can also be invoked programmatically with strong typing.
 
-==== The `TypedOps` interface
+This is usually how they're used in web applications.
+It is also the most deterministic approach as code, rather than LLM assessment of user input, determines which agent is invoked and how.
+
+==== Creating an AgentProcess Programmatically
+
+You can create and execute agent processes directly using the `AgentPlatform`:
+
+[source,kotlin]
+----
+// Create an agent process with bindings
+val agentProcess = agentPlatform.createAgentProcess(
+    agent = myAgent,
+    processOptions = ProcessOptions(),
+    bindings = mapOf("input" to userRequest)
+)
+
+// Start the process and wait for completion
+val result = agentPlatform.start(agentProcess).get()
+
+// Or run synchronously
+val completedProcess = agentProcess.run()
+val result = completedProcess.last<MyResultType>()
+----
+
+You can create processes and populate their input map from varargs objects:
+
+[source,kotlin]
+----
+// Create process from objects (like in web controllers)
+val agentProcess = agentPlatform.createAgentProcessFrom(
+    agent = travelAgent,
+    processOptions = ProcessOptions(),
+    travelRequest,
+    userPreferences
+)
+----
+
+==== Using AgentInvocation
+
+`AgentInvocation` provides a higher-level, type-safe API for invoking agents.
+It automatically finds the appropriate agent based on the expected result type.
+
+===== Basic Usage
+
+[tabs]
+====
+Java::
++
+[source,java]
+----
+// Simple invocation with explicit result type
+AgentInvocation<TravelPlan> invocation = 
+    AgentInvocation.create(agentPlatform, TravelPlan.class);
+
+TravelPlan plan = invocation.invoke(travelRequest);
+----
+
+Kotlin::
++
+[source,kotlin]
+----
+// Type-safe invocation with inferred result type
+val invocation: AgentInvocation<TravelPlan> = 
+    AgentInvocation.create(agentPlatform)
+
+val plan = invocation.invoke(travelRequest)
+----
+====
+
+===== Invocation with Named Inputs
+
+[source,java]
+----
+// Invoke with a map of named inputs
+Map<String, Object> inputs = Map.of(
+    "request", travelRequest,
+    "preferences", userPreferences
+);
+
+TravelPlan plan = invocation.invoke(inputs);
+----
+
+===== Custom Process Options
+
+Configure verbosity, budget, and other execution options:
+
+[tabs]
+====
+Java::
++
+[source,java]
+----
+AgentInvocation<TravelPlan> invocation = 
+    AgentInvocation.builder(agentPlatform)
+        .options(options -> options
+            .verbosity(verbosity -> verbosity
+                .showPrompts(true)
+                .showResponses(true)
+                .debug(true)))
+        .build(TravelPlan.class);
+
+TravelPlan plan = invocation.invoke(travelRequest);
+----
+
+Kotlin::
++
+[source,kotlin]
+----
+val processOptions = ProcessOptions(
+    verbosity = Verbosity(
+        showPrompts = true,
+        showResponses = true,
+        debug = true
+    )
+)
+
+val invocation: AgentInvocation<TravelPlan> = 
+    AgentInvocation.builder(agentPlatform)
+        .options(processOptions)
+        .build()
+
+val plan = invocation.invoke(travelRequest)
+----
+====
+
+===== Asynchronous Invocation
+
+For long-running operations, use async invocation:
+
+[source,java]
+----
+CompletableFuture<TravelPlan> future = invocation.invokeAsync(travelRequest);
+
+// Handle result when complete
+future.thenAccept(plan -> {
+    logger.info("Travel plan generated: {}", plan);
+});
+
+// Or wait for completion
+TravelPlan plan = future.get();
+----
+
+===== Agent Selection
+
+`AgentInvocation` automatically finds agents by examining their goals:
+
+- Searches all registered agents in the platform
+- Finds agents with goals that produce the requested result type
+- Uses the first matching agent found
+- Throws an error if no suitable agent is available
+
+===== Real-World Web Application Example
+
+Here's how `AgentInvocation` is used in the http://github.com/embabel/tripper[Tripper travel planning application] with htmx for asynchronous UI updates:
+
+[source,kotlin]
+----
+@Controller
+class TripPlanningController(
+    private val agentPlatform: AgentPlatform
+) {
+    
+    private val activeJobs = ConcurrentHashMap<String, CompletableFuture<TripPlan>>()
+    
+    @PostMapping("/plan-trip")
+    fun planTrip(
+        @ModelAttribute tripRequest: TripRequest,
+        model: Model
+    ): String {
+        // Generate unique job ID for tracking
+        val jobId = UUID.randomUUID().toString()
+        
+        // Create agent invocation with custom options
+        val invocation: AgentInvocation<TripPlan> = AgentInvocation.builder(agentPlatform)
+            .options { options ->
+                options.verbosity { verbosity ->
+                    verbosity.showPrompts(true)
+                        .showResponses(false)
+                        .debug(false)
+                }
+            }
+            .build()
+        
+        // Start async agent execution
+        val future = invocation.invokeAsync(tripRequest)
+        activeJobs[jobId] = future
+        
+        // Set up completion handler
+        future.whenComplete { result, throwable ->
+            if (throwable != null) {
+                logger.error("Trip planning failed for job $jobId", throwable)
+            } else {
+                logger.info("Trip planning completed for job $jobId")
+            }
+        }
+        
+        model.addAttribute("jobId", jobId)
+        model.addAttribute("tripRequest", tripRequest)
+        
+        // Return htmx template that will poll for results
+        return "trip-planning-progress"
+    }
+    
+    @GetMapping("/trip-status/{jobId}")
+    @ResponseBody
+    fun getTripStatus(@PathVariable jobId: String): ResponseEntity<Map<String, Any>> {
+        val future = activeJobs[jobId]
+            ?: return ResponseEntity.notFound().build()
+        
+        return when {
+            future.isDone -> {
+                try {
+                    val tripPlan = future.get()
+                    activeJobs.remove(jobId)
+                    
+                    ResponseEntity.ok(mapOf(
+                        "status" to "completed",
+                        "result" to tripPlan,
+                        "redirect" to "/trip-result/$jobId"
+                    ))
+                } catch (e: Exception) {
+                    activeJobs.remove(jobId)
+                    ResponseEntity.ok(mapOf(
+                        "status" to "failed",
+                        "error" to e.message
+                    ))
+                }
+            }
+            future.isCancelled -> {
+                activeJobs.remove(jobId)
+                ResponseEntity.ok(mapOf("status" to "cancelled"))
+            }
+            else -> {
+                ResponseEntity.ok(mapOf(
+                    "status" to "in_progress",
+                    "message" to "Planning your amazing trip..."
+                ))
+            }
+        }
+    }
+    
+    @GetMapping("/trip-result/{jobId}")
+    fun showTripResult(
+        @PathVariable jobId: String,
+        model: Model
+    ): String {
+        // Retrieve completed result from cache or database
+        val tripPlan = tripResultCache[jobId]
+            ?: return "redirect:/error"
+        
+        model.addAttribute("tripPlan", tripPlan)
+        return "trip-result"
+    }
+    
+    @DeleteMapping("/cancel-trip/{jobId}")
+    @ResponseBody
+    fun cancelTrip(@PathVariable jobId: String): ResponseEntity<Map<String, String>> {
+        val future = activeJobs[jobId]
+        
+        return if (future != null && !future.isDone) {
+            future.cancel(true)
+            activeJobs.remove(jobId)
+            ResponseEntity.ok(mapOf("status" to "cancelled"))
+        } else {
+            ResponseEntity.badRequest()
+                .body(mapOf("error" to "Job not found or already completed"))
+        }
+    }
+    
+    companion object {
+        private val logger = LoggerFactory.getLogger(TripPlanningController::class.java)
+        private val tripResultCache = ConcurrentHashMap<String, TripPlan>()
+    }
+}
+----
+
+**Key Patterns:**
+
+- **Async Execution**: Uses `invokeAsync()` to avoid blocking the web request
+- **Job Tracking**: Maintains a map of active futures for status polling
+- **htmx Integration**: Returns status updates that htmx can consume for UI updates
+- **Error Handling**: Proper exception handling and user feedback
+- **Resource Cleanup**: Removes completed jobs from memory
+- **Process Options**: Configures verbosity and debugging for production use
+
+IMPORTANT: Agents can also be exposed as MCP servers and consumed from tools like Claude Desktop.
 
