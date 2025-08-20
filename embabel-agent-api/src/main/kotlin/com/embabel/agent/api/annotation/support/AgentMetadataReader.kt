@@ -274,6 +274,7 @@ class AgentMetadataReader(
         method: Method,
         instance: Any,
     ): ComputedBooleanCondition {
+        requireNonAmbiguousParameters(method)
         val conditionAnnotation = method.getAnnotation(Condition::class.java)
         return ComputedBooleanCondition(
             name = conditionAnnotation.name.ifBlank {
