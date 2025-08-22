@@ -47,7 +47,8 @@ import org.springframework.web.client.RestTemplate
 @Configuration
 @EnableConfigurationProperties(
     ConfigurableModelProviderProperties::class,
-    AgentPlatformProperties::class
+    AgentPlatformProperties::class,
+    ProcessRepositoryProperties::class
 )
 /*internal*/ class AgentPlatformConfiguration(
 ) {
@@ -108,7 +109,9 @@ import org.springframework.web.client.RestTemplate
     )
 
     @Bean
-    fun agentProcessRepository(): AgentProcessRepository = InMemoryAgentProcessRepository()
+    fun agentProcessRepository(
+        processRepositoryProperties: ProcessRepositoryProperties
+    ): AgentProcessRepository = InMemoryAgentProcessRepository(processRepositoryProperties)
 
     @Bean
     fun toolGroupResolver(toolGroups: List<ToolGroup>): ToolGroupResolver = RegistryToolGroupResolver(
