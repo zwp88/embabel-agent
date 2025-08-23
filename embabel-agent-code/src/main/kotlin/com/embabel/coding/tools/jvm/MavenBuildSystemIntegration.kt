@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.coding.tools
+package com.embabel.coding.tools.jvm
+
+import com.embabel.coding.tools.BuildStatus
+import com.embabel.coding.tools.BuildSystemIntegration
 
 class MavenBuildSystemIntegration : BuildSystemIntegration {
 
-    override fun parseBuildOutput(root: String, rawOutput: String): BuildStatus? {
+    override fun parseBuildOutput(
+        root: String,
+        rawOutput: String,
+    ): BuildStatus? {
 
         // TODO messy test
         if (!rawOutput.contains("[INFO]")) {

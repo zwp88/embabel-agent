@@ -18,7 +18,21 @@
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-api</artifactId>
         </dependency>
-        
+
+        <!-- https://mvnrepository.com/artifact/io.github.classgraph/classgraph -->
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.181</version>
+        </dependency>
+
+        <!-- JGit for git operations -->
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>7.0.0.202409031743-r</version>
+        </dependency>
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>com.embabel.agent</groupId>

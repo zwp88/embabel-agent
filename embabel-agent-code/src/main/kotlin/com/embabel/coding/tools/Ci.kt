@@ -16,6 +16,7 @@
 package com.embabel.coding.tools
 
 import com.embabel.agent.tools.DirectoryBased
+import com.embabel.coding.tools.jvm.MavenBuildSystemIntegration
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
