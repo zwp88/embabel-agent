@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.config
 
+import com.embabel.agent.api.common.Ai
 import com.embabel.agent.api.common.ExecutingOperationContext
 import com.embabel.agent.api.dsl.agent
 import com.embabel.agent.core.AgentPlatform
@@ -24,10 +25,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Scope
 
 /**
- * Support injection of [ExecutingOperationContext] into beans.
+ * Support injection of [ExecutingOperationContext] and [Ai] into beans.
+ *
  */
 @Configuration
-class OperationContextInjectionConfiguration {
+class InfrastructureInjectionConfiguration {
 
     @Bean
     @Scope("prototype")
@@ -48,6 +50,12 @@ class OperationContextInjectionConfiguration {
                 bindings = emptyMap(),
             ),
         )
+    }
+
+    @Bean
+    @Scope("prototype")
+    fun aiFactory(agentPlatform: AgentPlatform): Ai {
+        return executingOperationContextFactory(agentPlatform).ai()
     }
 }
 

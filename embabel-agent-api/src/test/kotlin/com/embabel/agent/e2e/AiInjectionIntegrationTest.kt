@@ -15,7 +15,7 @@
  */
 package com.embabel.agent.e2e
 
-import com.embabel.agent.api.common.ExecutingOperationContext
+import com.embabel.agent.api.common.Ai
 import com.embabel.agent.core.AgentPlatform
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,12 +26,12 @@ import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertNotNull
 
 @Component
-class TakesOperationContext(
-    private val eop: ExecutingOperationContext,
+class TakesAi(
+    private val ai: Ai,
 ) {
 
     fun myMethod() {
-        assertNotNull(eop.ai().withAutoLlm())
+        assertNotNull(ai.withAutoLlm())
     }
 
 }
@@ -41,16 +41,16 @@ class TakesOperationContext(
 @Import(
     value = [
         FakeConfig::class,
-        TakesOperationContext::class,
+        TakesAi::class,
     ]
 )
-class OperationContextInjectionIntegrationTest(
+class AiInjectionIntegrationTest(
     @param:Autowired
     private val agentPlatform: AgentPlatform,
 ) {
 
     @Test
-    fun `test can inject operation context into action`() {
+    fun `test can inject Ai into action`() {
 
     }
 }
