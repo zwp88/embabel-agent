@@ -44,7 +44,7 @@ class TakesOperationContext(
         TakesOperationContext::class,
     ]
 )
-class AgentPlatformIntegrationTest(
+class OperationContextInjectionIntegrationTest(
     @param:Autowired
     private val agentPlatform: AgentPlatform,
 ) {
@@ -54,3 +54,4 @@ class AgentPlatformIntegrationTest(
 
     }
 }
+

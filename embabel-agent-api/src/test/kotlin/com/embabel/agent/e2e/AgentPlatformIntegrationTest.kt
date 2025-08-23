@@ -103,7 +103,7 @@ class FakeConfig {
         FakeConfig::class,
     ]
 )
-class OperationContextInjectionIntegrationTest(
+class AgentPlatformIntegrationTest(
     @param:Autowired
     private val autonomy: Autonomy,
     @param:Autowired
