@@ -76,14 +76,13 @@ interface ExecutingOperationContext : OperationContext {
          * Create an ExecutingOperationContext for the given process context and operation.
          */
         operator fun invoke(
-            processContext: ProcessContext,
-            operation: Operation,
-            toolGroups: Set<ToolGroupRequirement>,
+            name: String,
+            agentProcess: AgentProcess,
         ): ExecutingOperationContext =
             ExecutingOperationContextImpl(
-                processContext = processContext,
-                operation = operation,
-                toolGroups = toolGroups,
+                processContext = agentProcess.processContext,
+                operation = InjectedType.named(name),
+                toolGroups = emptySet(),
             )
     }
 
