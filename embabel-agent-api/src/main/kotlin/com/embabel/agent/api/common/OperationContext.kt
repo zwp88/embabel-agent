@@ -122,7 +122,7 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
             operation: Operation,
             toolGroups: Set<ToolGroupRequirement>,
         ): OperationContext =
-            MinimalOperationContext(
+            OperationContextImpl(
                 processContext = processContext,
                 operation = operation,
                 toolGroups = toolGroups,
@@ -130,95 +130,14 @@ interface OperationContext : Blackboard, ToolGroupConsumer {
     }
 }
 
-private class MinimalOperationContext(
+private class OperationContextImpl(
     override val processContext: ProcessContext,
     override val operation: Operation,
     override val toolGroups: Set<ToolGroupRequirement>,
 ) : OperationContext, Blackboard by processContext.agentProcess {
     override fun toString(): String {
-        return "MinimalOperationContext(processContext=$processContext, operation=${operation.name})"
+        return "${javaClass.simpleName}(processContext=$processContext, operation=${operation.name})"
     }
-}
-
-/**
- * Context for actions
- * @param processContext the process context
- * @param action the action being executed, if one is executing.
- * This is useful for getting tools etc.
- */
-interface ActionContext : OperationContext {
-    override val processContext: ProcessContext
-    val action: Action?
-
-    override fun promptRunner(
-        llm: LlmOptions,
-        toolGroups: Set<ToolGroupRequirement>,
-        toolObjects: List<ToolObject>,
-        promptContributors: List<PromptContributor>,
-        contextualPromptContributors: List<ContextualPromptElement>,
-        generateExamples: Boolean,
-    ): PromptRunner {
-        val promptContributorsToUse = (promptContributors + CurrentDate()).distinctBy { it.promptContribution().role }
-
-        val doi = domainObjectInstances()
-        return OperationContextPromptRunner(
-            this,
-            llm = llm,
-            toolGroups = this.toolGroups + toolGroups,
-            toolObjects = (toolObjects + doi.map { ToolObject(it) }).distinct(),
-            promptContributors = promptContributorsToUse,
-            contextualPromptContributors = contextualPromptContributors,
-            generateExamples = generateExamples,
-        )
-    }
-
-    /**
-     * Return the domain object instances that are relevant for this action context.
-     * They may expose tools.
-     */
-    fun domainObjectInstances(): List<Any>
-
-    /**
-     * Run the given agent as a sub-process of this action context.
-     * @param outputClass the class of the output of the agent
-     * @param agentScopeBuilder the builder for the agent scope to run
-     */
-    fun <O : Any> asSubProcess(
-        outputClass: Class<O>,
-        agentScopeBuilder: AgentScopeBuilder<O>,
-    ): O {
-        val agent = agentScopeBuilder.build().createAgent(
-            name = agentScopeBuilder.name,
-            provider = agentScopeBuilder.provider,
-            description = agentScopeBuilder.name,
-        )
-        return asSubProcess(
-            outputClass = outputClass,
-            agent = agent,
-        )
-    }
-
-    /**
-     * Run the given agent as a sub-process of this action context.
-     */
-    fun <O : Any> asSubProcess(
-        outputClass: Class<O>,
-        agent: Agent,
-    ): O {
-        val singleAction = agentTransformer(
-            agent = agent,
-            inputClass = Unit::class.java,
-            outputClass = outputClass,
-        )
-
-        singleAction.execute(
-            processContext = this.processContext,
-        )
-        return last(outputClass) ?: throw IllegalStateException(
-            "No output of type ${outputClass.name} found in context"
-        )
-    }
-
 }
 
 /**

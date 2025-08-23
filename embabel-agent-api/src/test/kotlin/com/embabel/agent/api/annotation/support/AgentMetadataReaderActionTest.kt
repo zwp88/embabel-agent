@@ -705,8 +705,13 @@ class AgentMetadataReaderActionTest {
         }
 
         @Test
-        fun `prompt action invocation with tools on domain object parameter via context`() {
-            testToolsAreExposed(FromPersonUsesDomainObjectToolsViaContext())
+        fun `prompt action invocation with tools on domain object parameter via ActionContext`() {
+            testToolsAreExposed(FromPersonUsesDomainObjectToolsViaActionContext())
+        }
+
+        @Test
+        fun `prompt action invocation with tools on domain object parameter via ExecutingOperationContext`() {
+            testToolsAreExposed(FromPersonUsesDomainObjectToolsViaExecutingOperationContext())
         }
 
         @Test

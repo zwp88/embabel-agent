@@ -539,12 +539,24 @@ class FromPersonUsesDomainObjectTools {
 }
 
 @AgentCapabilities
-class FromPersonUsesDomainObjectToolsViaContext {
+class FromPersonUsesDomainObjectToolsViaActionContext {
 
     @Action
     fun fromPerson(
         person: PersonWithReverseTool,
         context: ActionContext,
+    ): UserInput {
+        return context.promptRunner().createObject("Create a UserInput")
+    }
+}
+
+@AgentCapabilities
+class FromPersonUsesDomainObjectToolsViaExecutingOperationContext {
+
+    @Action
+    fun fromPerson(
+        person: PersonWithReverseTool,
+        context: ExecutingOperationContext,
     ): UserInput {
         return context.promptRunner().createObject("Create a UserInput")
     }
