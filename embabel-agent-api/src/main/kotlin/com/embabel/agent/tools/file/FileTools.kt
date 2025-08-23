@@ -98,6 +98,21 @@ interface FileReadTools : DirectoryBased, FileReadLog, FileAccessLog, SelfToolCa
         return Files.exists(resolvePath(""))
     }
 
+    /**
+     * Count the total number of files in the repository (excluding .git directory).
+     */
+    @Tool(description = "Count the number of files in the repository, excluding .git directory")
+    fun fileCount(): Int {
+        return try {
+            Files.walk(resolvePath(""))
+                .filter { path -> !path.toString().contains("/.git/") && Files.isRegularFile(path) }
+                .count()
+                .toInt()
+        } catch (e: Exception) {
+            0
+        }
+    }
+
     @Tool(description = "Find files using glob patterns. Return absolute paths")
     fun findFiles(glob: String): List<String> = findFiles(glob, findHighest = false)
 

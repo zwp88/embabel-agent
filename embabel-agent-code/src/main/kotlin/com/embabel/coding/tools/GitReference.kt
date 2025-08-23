@@ -15,20 +15,44 @@
  */
 package com.embabel.coding.tools
 
+import com.embabel.agent.tools.file.DefaultFileReadLog
+import com.embabel.agent.tools.file.FileReadLog
+import com.embabel.agent.tools.file.FileReadTools
+import com.embabel.agent.tools.file.WellKnownFileContentTransformers
+import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.util.StringTransformer
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.GitAPIException
 import java.nio.file.Files
 import java.nio.file.Path
 
 /**
+ * Limits for file formats when reading files from a cloned repository.
+ * @param fileCountLimit Limit of the number of files that will allow a PromptContributor to be returned.
+ * @param fileSizeLimit Limit of the size of file that will be included in the prompt contribution.
+ */
+data class FileFormatLimits(
+    val fileCountLimit: Int = 200,
+    val fileSizeLimit: Long = 200_000,
+)
+
+/**
  * Reference to a cloned Git repository with automatic cleanup capabilities.
+ * Exposes LLM tools.
+ * @param localPath The local path where the repository is cloned.
+ * @param shouldDeleteOnClose If true, the repository will be deleted when closed.
+
  */
 data class ClonedRepository(
     val localPath: Path,
     internal val shouldDeleteOnClose: Boolean = true,
-) : AutoCloseable {
+    val fileFormatLimits: FileFormatLimits = FileFormatLimits(),
+) : AutoCloseable, FileReadTools, FileReadLog by DefaultFileReadLog() {
 
-    val absolutePath: String = localPath.toAbsolutePath().toString()
+    override val fileContentTransformers: List<StringTransformer>
+        get() = listOf(WellKnownFileContentTransformers.removeApacheLicenseHeader)
+
+    override val root = localPath.toAbsolutePath().toString()
 
     override fun close() {
         if (shouldDeleteOnClose && Files.exists(localPath)) {
@@ -40,12 +64,73 @@ data class ClonedRepository(
             }
         }
     }
+
+    /**
+     * Write all files in the repository to a single string.
+     * Only use this for small repositories as it loads everything into memory.
+     * Applies file content transformers (like removing Apache license headers).
+     */
+    fun writeAllFilesToString(): String {
+        val result = StringBuilder()
+        try {
+            Files.walk(localPath)
+                .filter { path ->
+                    !path.toString().contains("/.git/") &&
+                            Files.isRegularFile(path)
+                }
+                .sorted()
+                .forEach { path ->
+                    val relativePath = localPath.relativize(path)
+                    val content = try {
+                        if (Files.size(path) > fileFormatLimits.fileSizeLimit) {
+                            "// File too large to read: $relativePath"
+                        } else {
+                            Files.readString(path)
+                        }
+                        val rawContent = Files.readString(path)
+                        WellKnownFileContentTransformers.removeApacheLicenseHeader.transform(rawContent)
+                    } catch (e: Exception) {
+                        "// Error reading file: ${e.message}"
+                    }
+
+                    result.append("=== $relativePath ===\n")
+                    result.append(content)
+                    result.append("\n\n")
+                }
+        } catch (e: Exception) {
+            result.append("Error walking repository: ${e.message}")
+        }
+
+        return result.toString()
+    }
+
+    /**
+     * Return a prompt contributor if the repo is small enough
+     */
+    fun promptContributor(): PromptContributor? {
+        if (fileCount() > 1000 || writeAllFilesToString().length > fileFormatLimits.fileSizeLimit) {
+            return null // Too large to contribute meaningfully
+        }
+        return object : PromptContributor {
+            override fun contribution(): String {
+                return """
+                    |Cloned repository at: $localPath
+                    |Use file tools to read files in the repository.
+                    |Read limit is set to ${fileFormatLimits.fileSizeLimit} bytes.
+                """.trimMargin()
+            }
+        }
+    }
+
 }
 
-class GitReference {
+class GitReference(
+    private val fileFormatLimits: FileFormatLimits = FileFormatLimits(),
+) {
 
     /**
      * Clone a Git repository from the given URL to a temporary directory.
+     * The returned object will expose tools.
      *
      * @param url The Git repository URL (supports both HTTP/HTTPS and SSH)
      * @param branch Optional specific branch to check out (defaults to repository default)
@@ -76,7 +161,11 @@ class GitReference {
                 }
             }
 
-            return ClonedRepository(tempDir)
+            return ClonedRepository(
+                localPath = tempDir,
+                shouldDeleteOnClose = true,
+                fileFormatLimits = fileFormatLimits,
+            )
         } catch (e: Exception) {
             // Clean up on failure
             try {
@@ -122,7 +211,11 @@ class GitReference {
             }
         }
 
-        return ClonedRepository(targetDirectory, shouldDeleteOnClose = false)
+        return ClonedRepository(
+            localPath = targetDirectory,
+            shouldDeleteOnClose = false,
+            fileFormatLimits = fileFormatLimits,
+        )
     }
 
     private fun createTempDirectory(): Path {

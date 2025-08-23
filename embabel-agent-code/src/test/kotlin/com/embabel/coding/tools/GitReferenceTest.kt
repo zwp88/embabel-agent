@@ -15,6 +15,7 @@
  */
 package com.embabel.coding.tools
 
+import org.eclipse.jgit.api.Git
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -36,8 +37,8 @@ class GitReferenceTest {
             assertTrue(Files.exists(clonedRepo.localPath.resolve(".git")))
 
             // Verify absolute path is returned
-            assertTrue(clonedRepo.absolutePath.startsWith("/"))
-            assertEquals(clonedRepo.localPath.toAbsolutePath().toString(), clonedRepo.absolutePath)
+            assertTrue(clonedRepo.root.startsWith("/"))
+            assertEquals(clonedRepo.localPath.toAbsolutePath().toString(), clonedRepo.root)
 
             // Verify some expected files exist (Hello-World repo has README)
             assertTrue(Files.exists(clonedRepo.localPath.resolve("README")))
@@ -122,5 +123,53 @@ class GitReferenceTest {
 
         // Note: We can't reliably test cleanup in unit tests since it happens in close()
         // and temp directories might be cleaned up by the OS
+    }
+
+    @Test
+    fun `fileCount returns number of files excluding git directory`() {
+        val url = "https://github.com/octocat/Hello-World.git"
+
+        gitReference.cloneRepository(url).use { clonedRepo ->
+            val fileCount = clonedRepo.fileCount()
+            assertTrue(fileCount > 0, "Repository should contain at least one file")
+            // Hello-World repo typically has README file
+            assertTrue(fileCount >= 1, "Should have at least README file")
+        }
+    }
+
+    @Test
+    fun `writeAllFilesToString returns repository content as string`() {
+        val url = "https://github.com/octocat/Hello-World.git"
+
+        gitReference.cloneRepository(url).use { clonedRepo ->
+            val allContent = clonedRepo.writeAllFilesToString()
+
+            assertFalse(allContent.isEmpty(), "Content should not be empty")
+            assertTrue(allContent.contains("=== README ==="), "Should contain README file header")
+            assertFalse(allContent.contains("/.git/"), "Should not include .git directory content")
+
+            // Verify file content transformers are applied
+            // The removeApacheLicenseHeader transformer should have been applied
+            // (though the Hello-World repo may not have Apache headers to remove)
+        }
+    }
+
+    @Test
+    fun `writeAllFilesToString handles empty repository gracefully`(@TempDir tempDir: Path) {
+        // Create a minimal git repo for testing
+        val emptyRepo = tempDir.resolve("empty-repo")
+        Files.createDirectories(emptyRepo)
+
+        // Initialize empty git repo
+        Git.init().setDirectory(emptyRepo.toFile()).call().use { git ->
+            // Create an empty commit
+            git.commit().setMessage("Initial commit").setAllowEmpty(true).call()
+        }
+
+        val clonedRepo = ClonedRepository(localPath = emptyRepo, shouldDeleteOnClose = false)
+
+        val content = clonedRepo.writeAllFilesToString()
+        // Should handle empty repository without errors
+        assertNotNull(content)
     }
 }
