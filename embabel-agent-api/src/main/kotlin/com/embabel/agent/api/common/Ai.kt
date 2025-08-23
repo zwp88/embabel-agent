@@ -16,11 +16,25 @@
 package com.embabel.agent.api.common
 
 import com.embabel.common.ai.model.*
+import org.springframework.ai.embedding.EmbeddingModel
+
+typealias Embedding = FloatArray
+
 
 /**
  * Gateway to AI functionality in the context of an operation.
+ * This includes both LLM and embedding models.
  */
 interface Ai {
+
+    fun withEmbeddingModel(model: String): EmbeddingModel =
+        withEmbeddingModel(ModelSelectionCriteria.byName(model))
+
+    fun withEmbeddingModel(criteria: ModelSelectionCriteria): EmbeddingModel
+
+    fun withDefaultEmbeddingModel(): EmbeddingModel =
+        withEmbeddingModel(DefaultModelSelectionCriteria)
+
 
     /**
      * Get a configurable PromptRunner for this context using

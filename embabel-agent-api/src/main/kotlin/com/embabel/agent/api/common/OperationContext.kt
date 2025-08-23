@@ -22,8 +22,10 @@ import com.embabel.agent.core.*
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.model.ModelSelectionCriteria
 import com.embabel.common.ai.prompt.CurrentDate
 import com.embabel.common.ai.prompt.PromptContributor
+import org.springframework.ai.embedding.EmbeddingModel
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -220,6 +222,12 @@ class SupplierActionContext<O>(
 private class OperationContextAi(
     private val context: OperationContext,
 ) : Ai {
+
+    override fun withEmbeddingModel(criteria: ModelSelectionCriteria): EmbeddingModel {
+        return context.processContext.platformServices.modelProvider().getEmbeddingService(
+            criteria
+        ).model
+    }
 
     override fun withLlm(llm: LlmOptions): PromptRunner {
         return context.promptRunner().withLlm(llm)
