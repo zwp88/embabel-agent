@@ -95,7 +95,7 @@ Java::
 +
 [source,java]
 ----
-AgentInvocation<TravelPlan> invocation = 
+var invocation =
     AgentInvocation.builder(agentPlatform)
         .options(options -> options
             .verbosity(verbosity -> verbosity
