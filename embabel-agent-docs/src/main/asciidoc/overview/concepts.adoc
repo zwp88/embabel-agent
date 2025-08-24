@@ -5,28 +5,115 @@ Agent frameworks break up tasks into separate smaller interactions, making LLM u
 
 Embabel models agentic flows in terms of:
 
-==== Actions
-
-Steps an agent takes. These are the building blocks of agent behavior.
-
-==== Goals
-
-What an agent is trying to achieve.
-
-==== Conditions
-
-Conditions to assess before executing an action or determining that a goal has been achieved. 
+- **Actions**: Steps an agent takes.
+These are the building blocks of agent behavior.
+- **Goals**: What an agent is trying to achieve.
+- ** Conditions**: Conditions to while planning.
 Conditions are reassessed after each action is executed.
+- **Domain Model**: Objects underpinning the flow and informing Actions, Goals and Conditions.
 
-==== Domain Model
-
-Objects underpinning the flow and informing Actions, Goals and Conditions.
-
-==== Plan
-
-A sequence of actions to achieve a goal. 
+This enables Embabel to create a **plan**: A sequence of actions to achieve a goal.
 Plans are dynamically formulated by the system, not the programmer.
 The system replans after the completion of each action, allowing it to adapt to new information as well as observe the effects of the previous action.
 This is effectively an https://en.wikipedia.org/wiki/OODA_loop[OODA loop].
 
 NOTE: Application developers don't usually have to deal with these concepts directly, as most conditions result from data flow defined in code, allowing the system to infer pre and post conditions.
+
+==== Data Flow Example: WriteAndReviewAgent
+
+Let's look at an example that demonstrates how Embabel infers conditions from input/output types and manages data flow between actions.
+This example comes from the https://github.com/embabel/java-agent-template[Java Agent Template]:
+
+[source,java]
+----
+@Agent(description = "Agent that writes and reviews stories")  // <1>
+public class WriteAndReviewAgent {
+
+    @Action  // <2>
+    public Story writeStory(UserInput userInput, OperationContext context) {  // <3>
+        // High temperature for creativity
+        var writer = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+            .withTemperature(0.8)  // <4>
+            .withPersona("You are a creative storyteller");
+
+        return context.ai()
+            .withLlm(writer)
+            .createObject("Write a story about: " + userInput.getContent(), Story.class);  // <5>
+    }
+
+    @AchievesGoal(description = "Review and improve the story")  // <6>
+    @Action  
+    public ReviewedStory reviewStory(Story story, OperationContext context) {  // <7>
+        // Low temperature for analytical review
+        var reviewer = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+            .withTemperature(0.2)  // <8>
+            .withPersona("You are a careful editor and reviewer");
+
+        String prompt = "Review this story and suggest improvements: " + story.text();
+        
+        return context.ai()
+            .withLlm(reviewer)
+            .createObject(prompt, ReviewedStory.class);  // <9>
+    }
+}
+----
+
+==== How Embabel Infers Conditions and Data Flow
+
+<1> **Agent Declaration**: The `@Agent` annotation defines this as an agent capable of a multi-step flow.
+
+<2> **Action Definition**: `@Action` marks methods as steps the agent can take.
+Each action represents a capability.
+
+<3> **Input Condition Inference**: The method signature `writeStory(UserInput userInput, ...)` tells Embabel:
+- **Precondition**: "A UserInput object must be available"
+- **Required Data**: The agent needs user input to proceed
+- **Capability**: This action can process user requests into stories
+
+<4> **LLM Configuration**: High temperature (0.8) optimizes for creative, diverse outputs - appropriate for story generation.
+
+<5> **Output Condition Creation**: Returning `Story` creates:
+- **Postcondition**: "A Story object is now available in the world state"
+- **Data Availability**: This output becomes input for subsequent actions
+- **Type Safety**: The domain model enforces structure
+
+<6> **Goal Achievement**: `@AchievesGoal` marks this as a terminal action that completes the agent's objective.
+
+<7> **Data Flow Chain**: The method signature `reviewStory(Story story, ...)` creates:
+- **Precondition**: "A Story object must exist" (from previous action)
+- **Dependency**: This action can only execute after `writeStory` completes
+- **Automatic Orchestration**: Embabel sequences these actions based on type requirements
+
+<8> **Different LLM Strategy**: Low temperature (0.2) optimizes for consistent, analytical outputs - appropriate for review tasks.
+
+<9> **Final Output**: Returns `ReviewedStory`, completing the agent's goal with an improved story.
+
+State is managed by the framework, through the process blackboard.
+
+==== The Inferred Execution Plan
+
+Based on the type signatures alone, Embabel automatically infers this execution plan:
+
+**Goal**: Produce a `ReviewedStory` (final return type of `@AchievesGoal` action)
+
+The initial plan:
+- To get `ReviewedStory` → need `reviewStory()` action - `reviewStory()` requires `Story` → need `writeStory()` action - `writeStory()` requires `UserInput` → must be provided by user
+
+Execution sequence:
+`UserInput` → `writeStory()` → `Story` → `reviewStory()` → `ReviewedStory` and achieves goal.
+
+==== Key Benefits of Type-Driven Flow
+
+**Automatic Orchestration**: No manual workflow definition needed - the agent figures out the sequence from type dependencies.
+This is particularly beneficial if things go wrong, as the planner can re-evaluate the situation and may be able to find an alternative path to the goal.
+
+**Dynamic Replanning**: After each action, the agent reassesses what's possible based on available data objects.
+
+**Type Safety**: Compile-time guarantees that data flows correctly between actions.
+No magic string keys.
+
+**Flexible Execution**: If multiple actions could produce the required input type, the agent chooses based on context and efficiency.
+(Actions can have cost and value.)
+
+This demonstrates how Embabel transforms simple method signatures into sophisticated multi-step agent behavior, with the complex orchestration handled automatically by the framework.
+
