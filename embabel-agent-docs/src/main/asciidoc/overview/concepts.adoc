@@ -19,88 +19,133 @@ This is effectively an https://en.wikipedia.org/wiki/OODA_loop[OODA loop].
 
 NOTE: Application developers don't usually have to deal with these concepts directly, as most conditions result from data flow defined in code, allowing the system to infer pre and post conditions.
 
-==== Data Flow Example: WriteAndReviewAgent
+==== Complete Example
 
-Let's look at an example that demonstrates how Embabel infers conditions from input/output types and manages data flow between actions.
-This example comes from the https://github.com/embabel/java-agent-template[Java Agent Template]:
+Let's look at a complete example that demonstrates how Embabel infers conditions from input/output types and manages data flow between actions.
+This example comes from the https://github.com/embabel/embabel-agent-examples[Embabel Agent Examples] repository:
 
 [source,java]
 ----
-@Agent(description = "Agent that writes and reviews stories")  // <1>
-public class WriteAndReviewAgent {
+@Agent(description = "Find news based on a person's star sign")  // <1>
+public class StarNewsFinder {
 
-    @Action  // <2>
-    public Story writeStory(UserInput userInput, OperationContext context) {  // <3>
-        // High temperature for creativity
-        var writer = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
-            .withTemperature(0.8)  // <4>
-            .withPersona("You are a creative storyteller");
+    private final HoroscopeService horoscopeService;  // <2>
+    private final int storyCount;
 
-        return context.ai()
-            .withLlm(writer)
-            .createObject("Write a story about: " + userInput.getContent(), Story.class);  // <5>
+    public StarNewsFinder(
+            HoroscopeService horoscopeService,  // <3>
+            @Value("${star-news-finder.story.count:5}") int storyCount) {
+        this.horoscopeService = horoscopeService;
+        this.storyCount = storyCount;
     }
 
-    @AchievesGoal(description = "Review and improve the story")  // <6>
-    @Action  
-    public ReviewedStory reviewStory(Story story, OperationContext context) {  // <7>
-        // Low temperature for analytical review
-        var reviewer = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
-            .withTemperature(0.2)  // <8>
-            .withPersona("You are a careful editor and reviewer");
-
-        String prompt = "Review this story and suggest improvements: " + story.text();
-        
+    @Action  // <4>
+    public StarPerson extractStarPerson(UserInput userInput, OperationContext context) {  // <5>
         return context.ai()
-            .withLlm(reviewer)
-            .createObject(prompt, ReviewedStory.class);  // <9>
+            .withLlm(OpenAiModels.GPT_41)
+            .createObject("""
+                Create a person from this user input, extracting their name and star sign:
+                %s""".formatted(userInput.getContent()), StarPerson.class);  // <6>
+    }
+
+    @Action  // <7>
+    public Horoscope retrieveHoroscope(StarPerson starPerson) {  // <8>
+        // Uses regular injected Spring service - not LLM
+        return new Horoscope(horoscopeService.dailyHoroscope(starPerson.sign()));  // <9>
+    }
+
+    @Action(toolGroups = {CoreToolGroups.WEB})  // <10>
+    public RelevantNewsStories findNewsStories(
+            StarPerson person, Horoscope horoscope, OperationContext context) {  // <11>
+        var prompt = """
+            %s is an astrology believer with the sign %s.
+            Their horoscope for today is: %s
+            Given this, use web tools to find %d relevant news stories.
+            """.formatted(person.name(), person.sign(), horoscope.summary(), storyCount);
+
+        return context.ai().withDefaultLlm().createObject(prompt, RelevantNewsStories.class);  // <12>
+    }
+
+    @AchievesGoal(description = "Write an amusing writeup based on horoscope and news")  // <13>
+    @Action
+    public Writeup writeup(
+            StarPerson person, RelevantNewsStories stories, Horoscope horoscope,
+            OperationContext context) {  // <14>
+        var llm = LlmOptions.fromCriteria(ModelSelectionCriteria.getAuto())
+            .withTemperature(0.9);  // <15>
+
+        var prompt = """
+            Write something amusing for %s based on their horoscope and these news stories.
+            Format as Markdown with links.
+            """.formatted(person.name());
+            
+        return context.ai().withLlm(llm).createObject(prompt, Writeup.class);  // <16>
     }
 }
 ----
 
-==== How Embabel Infers Conditions and Data Flow
-
 <1> **Agent Declaration**: The `@Agent` annotation defines this as an agent capable of a multi-step flow.
 
-<2> **Action Definition**: `@Action` marks methods as steps the agent can take.
+<2> **Spring Integration**: Regular Spring dependency injection - the agent uses both LLM services and traditional business services.
+
+<3> **Service Injection**: `HoroscopeService` is injected like any Spring bean - agents can mix AI and non-AI operations seamlessly.
+
+<4> **Action Definition**: `@Action` marks methods as steps the agent can take.
 Each action represents a capability.
 
-<3> **Input Condition Inference**: The method signature `writeStory(UserInput userInput, ...)` tells Embabel:
+<5> **Input Condition Inference**: The method signature `extractStarPerson(UserInput userInput, ...)` tells Embabel:
 - **Precondition**: "A UserInput object must be available"
 - **Required Data**: The agent needs user input to proceed
-- **Capability**: This action can process user requests into stories
+- **Capability**: This action can extract structured data from unstructured input
 
-<4> **LLM Configuration**: High temperature (0.8) optimizes for creative, diverse outputs - appropriate for story generation.
-
-<5> **Output Condition Creation**: Returning `Story` creates:
-- **Postcondition**: "A Story object is now available in the world state"
+<6> **Output Condition Creation**: Returning `StarPerson` creates:
+- **Postcondition**: "A StarPerson object is now available in the world state"
 - **Data Availability**: This output becomes input for subsequent actions
 - **Type Safety**: The domain model enforces structure
 
-<6> **Goal Achievement**: `@AchievesGoal` marks this as a terminal action that completes the agent's objective.
+<7> **Non-LLM Action**: Not all actions use LLMs - this demonstrates hybrid AI/traditional programming.
 
-<7> **Data Flow Chain**: The method signature `reviewStory(Story story, ...)` creates:
-- **Precondition**: "A Story object must exist" (from previous action)
-- **Dependency**: This action can only execute after `writeStory` completes
-- **Automatic Orchestration**: Embabel sequences these actions based on type requirements
+<8> **Data Flow Chain**: The method signature `retrieveHoroscope(StarPerson starPerson)` creates:
+- **Precondition**: "A StarPerson object must exist" (from previous action)
+- **Dependency**: This action can only execute after `extractStarPerson` completes
+- **Service Integration**: Uses the injected `horoscopeService` rather than an LLM
 
-<8> **Different LLM Strategy**: Low temperature (0.2) optimizes for consistent, analytical outputs - appropriate for review tasks.
+<9> **Regular Service Call**: This action calls a traditional Spring service - demonstrating how agents blend AI and conventional operations.
 
-<9> **Final Output**: Returns `ReviewedStory`, completing the agent's goal with an improved story.
+<10> **Tool Requirements**: `toolGroups = {CoreToolGroups.WEB}` specifies this action needs web search capabilities.
 
-State is managed by the framework, through the process blackboard.
+<11> **Multi-Input Dependencies**: This method requires both `StarPerson` and `Horoscope` - showing complex data flow orchestration.
+
+<12> **Tool-Enabled LLM**: The LLM can use web tools to search for current news stories based on the horoscope context.
+
+<13> **Goal Achievement**: `@AchievesGoal` marks this as a terminal action that completes the agent's objective.
+
+<14> **Complex Input Requirements**: The final action requires three different data types, showing sophisticated orchestration.
+
+<15> **Creative Configuration**: High temperature (0.9) optimizes for creative, entertaining output - appropriate for amusing writeups.
+
+<16> **Final Output**: Returns `Writeup`, completing the agent's goal with personalized content.
+
+State is managed by the framework, through the process blackboard
 
 ==== The Inferred Execution Plan
 
 Based on the type signatures alone, Embabel automatically infers this execution plan:
 
-**Goal**: Produce a `ReviewedStory` (final return type of `@AchievesGoal` action)
+**Goal**: Produce a `Writeup` (final return type of `@AchievesGoal` action)
 
 The initial plan:
-- To get `ReviewedStory` → need `reviewStory()` action - `reviewStory()` requires `Story` → need `writeStory()` action - `writeStory()` requires `UserInput` → must be provided by user
+
+- To emit `Writeup` → need `writeup()` action
+- `writeup()` requires `StarPerson`, `RelevantNewsStories`, and `Horoscope`
+- To get `StarPerson` → need `extractStarPerson()` action
+- To get `Horoscope` → need `retrieveHoroscope()` action (requires `StarPerson`)
+- To get `RelevantNewsStories` → need `findNewsStories()` action (requires `StarPerson` and `Horoscope`)
+- `extractStarPerson()` requires `UserInput` → must be provided by user
 
 Execution sequence:
-`UserInput` → `writeStory()` → `Story` → `reviewStory()` → `ReviewedStory` and achieves goal.
+
+`UserInput` → `extractStarPerson()` → `StarPerson` → `retrieveHoroscope()` → `Horoscope` → `findNewsStories()` → `RelevantNewsStories` → `writeup()` → `Writeup` and achieves goal.
 
 ==== Key Benefits of Type-Driven Flow
 
