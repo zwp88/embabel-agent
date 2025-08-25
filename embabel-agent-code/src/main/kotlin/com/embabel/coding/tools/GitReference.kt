@@ -24,7 +24,10 @@ import com.embabel.common.util.StringTransformer
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.GitAPIException
 import java.io.IOException
-import java.nio.file.*
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 
 /**
@@ -46,7 +49,7 @@ data class FileFormatLimits(
  */
 data class ClonedRepository(
     val localPath: Path,
-    internal val shouldDeleteOnClose: Boolean = true,
+    val shouldDeleteOnClose: Boolean = true,
     val fileFormatLimits: FileFormatLimits = FileFormatLimits(),
 ) : AutoCloseable, FileReadTools, FileReadLog by DefaultFileReadLog() {
 
@@ -79,7 +82,10 @@ data class ClonedRepository(
         try {
             // Use FileVisitor for cross-platform .git exclusion
             Files.walkFileTree(localPath, object : SimpleFileVisitor<Path>() {
-                override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
+                override fun preVisitDirectory(
+                    dir: Path,
+                    attrs: BasicFileAttributes,
+                ): FileVisitResult {
                     val dirName = dir.fileName?.toString()
                     return if (dirName == ".git") {
                         FileVisitResult.SKIP_SUBTREE
@@ -88,14 +94,20 @@ data class ClonedRepository(
                     }
                 }
 
-                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                override fun visitFile(
+                    file: Path,
+                    attrs: BasicFileAttributes,
+                ): FileVisitResult {
                     if (attrs.isRegularFile) {
                         files.add(file)
                     }
                     return FileVisitResult.CONTINUE
                 }
 
-                override fun visitFileFailed(file: Path, exc: IOException): FileVisitResult {
+                override fun visitFileFailed(
+                    file: Path,
+                    exc: IOException,
+                ): FileVisitResult {
                     // Log but continue processing other files
                     return FileVisitResult.CONTINUE
                 }

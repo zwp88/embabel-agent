@@ -20,6 +20,9 @@ import com.embabel.coding.tools.ApiMethod
 import com.embabel.coding.tools.ApiReference
 import io.github.classgraph.ClassGraph
 
+/**
+ * Extracts API reference information from the project classpath using ClassGraph.
+ */
 class ClassGraphApiReferenceExtractor {
 
     fun excludeFromProjectClasspath(
