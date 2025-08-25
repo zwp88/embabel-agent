@@ -17,6 +17,7 @@ package com.embabel.coding.tools
 
 import com.embabel.coding.tools.git.ClonedRepositoryReference
 import com.embabel.coding.tools.git.RepositoryReferenceProvider
+import com.embabel.common.util.loggerFor
 import org.eclipse.jgit.api.Git
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -86,7 +87,7 @@ class GitReferenceTest {
             // This should not auto-delete on close
             assertFalse(clonedRepo.shouldDeleteOnClose)
         }
-        println("Cloned repository at: ${targetDir.toAbsolutePath()}")
+        loggerFor<GitReferenceTest>().info("Cloned repository at: ${targetDir.toAbsolutePath()}")
 
         // Directory should still exist after close since shouldDeleteOnClose is false
         assertTrue(Files.exists(targetDir))

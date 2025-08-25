@@ -17,6 +17,7 @@ package com.embabel.coding.tools.jvm
 
 import com.embabel.agent.api.common.PromptRunner
 import com.embabel.coding.tools.api.ApiReference
+import junit.framework.TestCase.assertFalse
 import org.junit.jupiter.api.Test
 
 class ClassGraphApiReferenceExtractorTest {
@@ -28,9 +29,10 @@ class ClassGraphApiReferenceExtractorTest {
             acceptedPackages = setOf("com.embabel.agent"),
         )
         val tools = ApiReference(apiref)
-        println("Extracted API reference: ${tools.formatAsText()}")
-        println(tools.findClassSignature(PromptRunner::class.java.name))
-        println(tools.findPackageSignature("com.embabel.agent.api.common"))
+        val pr = tools.findClassSignature(PromptRunner::class.java.name)
+        assertFalse(pr.isEmpty())
+        val agp = tools.findPackageSignature("com.embabel.agent.api.common")
+        assertFalse(agp.isEmpty())
     }
 
 }
