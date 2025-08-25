@@ -179,4 +179,71 @@ class GitReferenceTest {
         // Should handle empty repository without errors
         assertNotNull(content)
     }
+
+    @Test
+    fun `shutdown hook cleanup works properly`(@TempDir tempDir: Path) {
+        val testDir = tempDir.resolve("test-shutdown-repo")
+        Files.createDirectories(testDir)
+        Files.writeString(testDir.resolve("test-file.txt"), "test content")
+
+        val clonedRepo = ClonedRepositoryReference(
+            localPath = testDir,
+            shouldDeleteOnClose = true
+        )
+
+        // Verify directory exists initially
+        assertTrue(Files.exists(testDir))
+        assertTrue(Files.exists(testDir.resolve("test-file.txt")))
+
+        // Close manually should cleanup and remove shutdown hook
+        clonedRepo.close()
+
+        // Directory should be cleaned up
+        assertFalse(Files.exists(testDir))
+
+        // Calling close again should be safe (idempotent)
+        clonedRepo.close()
+    }
+
+    @Test
+    fun `no cleanup for shouldDeleteOnClose false`(@TempDir tempDir: Path) {
+        val testDir = tempDir.resolve("test-no-cleanup-repo")
+        Files.createDirectories(testDir)
+        Files.writeString(testDir.resolve("test-file.txt"), "test content")
+
+        val clonedRepo = ClonedRepositoryReference(
+            localPath = testDir,
+            shouldDeleteOnClose = false
+        )
+
+        assertTrue(Files.exists(testDir))
+
+        clonedRepo.close()
+
+        // Directory should still exist since shouldDeleteOnClose is false
+        assertTrue(Files.exists(testDir))
+        assertTrue(Files.exists(testDir.resolve("test-file.txt")))
+    }
+
+    @Test
+    fun `equals and hashCode work correctly for different instances`(@TempDir tempDir: Path) {
+        val testDir = tempDir.resolve("test-repo")
+        Files.createDirectories(testDir)
+
+        val repo1 = ClonedRepositoryReference(testDir, shouldDeleteOnClose = false)
+        val repo2 = ClonedRepositoryReference(testDir, shouldDeleteOnClose = true)  // Different cleanup behavior
+        val repo3 = ClonedRepositoryReference(tempDir.resolve("other-repo"), shouldDeleteOnClose = false)
+
+        // Same path should be equal regardless of other properties
+        assertEquals(repo1, repo2)
+        assertEquals(repo1.hashCode(), repo2.hashCode())
+
+        // Different paths should not be equal
+        assertNotEquals(repo1, repo3)
+        assertNotEquals(repo1.hashCode(), repo3.hashCode())
+
+        repo1.close()
+        repo2.close()
+        repo3.close()
+    }
 }

@@ -25,7 +25,7 @@ class ClassGraphApiReferenceExtractorTest {
     @Test
     fun `extract Embabel agent framework`() {
         val cigar = ClassGraphApiReferenceExtractor()
-        val apiref = cigar.excludeFromProjectClasspath(
+        val apiref = cigar.fromProjectClasspath(
             acceptedPackages = setOf("com.embabel.agent"),
         )
         val tools = ApiReference(apiref)

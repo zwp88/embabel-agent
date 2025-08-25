@@ -15,13 +15,13 @@
  */
 package com.embabel.coding.tools.api
 
-import com.embabel.agent.tools.common.Reference
+import com.embabel.agent.tools.common.LlmReference
 import org.springframework.ai.tool.annotation.Tool
 
 class ApiReference(
     private val api: Api,
     private val classLimit: Int = 100,
-) : Reference {
+) : LlmReference {
 
     override fun contribution(): String {
         if (api.classes.size > classLimit) {

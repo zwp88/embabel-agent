@@ -30,9 +30,21 @@ data class FileFormatLimits(
     val fileSizeLimit: Long = 200_000,
 )
 
-class RepositoryReferenceProvider(
+data class RepositoryReferenceProvider(
     private val fileFormatLimits: FileFormatLimits = FileFormatLimits(),
 ) {
+
+    fun withFileCountLimit(limit: Int): RepositoryReferenceProvider {
+        return copy(
+            fileFormatLimits = this.fileFormatLimits.copy(fileCountLimit = limit),
+        )
+    }
+
+    fun withFileSizeLimit(limit: Long): RepositoryReferenceProvider {
+        return copy(
+            fileFormatLimits = this.fileFormatLimits.copy(fileSizeLimit = limit),
+        )
+    }
 
     /**
      * Clone a Git repository from the given URL to a temporary directory.
@@ -44,6 +56,7 @@ class RepositoryReferenceProvider(
      * @return ClonedRepository with absolute path and cleanup capabilities
      * @throws GitAPIException if the clone operation fails
      */
+    @JvmOverloads
     fun cloneRepository(
         url: String,
         branch: String? = null,
@@ -126,5 +139,12 @@ class RepositoryReferenceProvider(
 
     private fun createTempDirectory(): Path {
         return Files.createTempDirectory("embabel-git-")
+    }
+
+    companion object {
+
+        @JvmStatic
+        fun create(): RepositoryReferenceProvider = RepositoryReferenceProvider()
+
     }
 }

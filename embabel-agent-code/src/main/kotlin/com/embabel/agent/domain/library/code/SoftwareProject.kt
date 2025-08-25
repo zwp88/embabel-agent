@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.domain.library.code
 
+import com.embabel.agent.tools.common.LlmReference
 import com.embabel.agent.tools.file.*
 import com.embabel.coding.tools.ci.BuildOptions
 import com.embabel.coding.tools.ci.BuildResult
 import com.embabel.coding.tools.ci.Ci
-import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.annotation.JsonClassDescription
@@ -31,19 +31,19 @@ import org.springframework.ai.tool.annotation.ToolParam
  * Open to allow extension
  */
 @JsonClassDescription("Analysis of a technology project")
-open class SoftwareProject(
+open class SoftwareProject @JvmOverloads constructor(
     override val root: String,
     val url: String? = null,
     @get:JsonPropertyDescription("The technologies used in the project. List, comma separated. Include 10")
-    val tech: String,
+    val tech: String = "Java,Embabel,Spring Boot,Maven",
     val defaultCodingStyle: String = """
             No coding style guide found at ${DEFAULT_CODING_STYLE_GUIDE}.
             Try to follow the conventions of files you read in the project.
         """.trimIndent(),
     @get:JsonPropertyDescription("Build command, such as 'mvn clean test'")
-    val buildCommand: String,
+    val buildCommand: String = "mvn clean test",
     val wasCreated: Boolean = false,
-) : PromptContributor, FileTools, SymbolSearch, FileChangeLog by DefaultFileChangeLog(), FileReadLog by DefaultFileReadLog() {
+) : LlmReference, FileTools, SymbolSearch, FileChangeLog by DefaultFileChangeLog(), FileReadLog by DefaultFileReadLog() {
 
     init {
         if (!exists()) {
@@ -58,7 +58,7 @@ open class SoftwareProject(
 
     val codingStyle: String
         get() {
-            val location = "$root/$DEFAULT_CODING_STYLE_GUIDE"
+            val location = DEFAULT_CODING_STYLE_GUIDE
             loggerFor<SoftwareProject>().info("Looking for coding style guide at '$location'")
             val content = safeReadFile(location)
             loggerFor<SoftwareProject>().info("Found coding style guide at $location")

@@ -25,7 +25,7 @@ import io.github.classgraph.ClassGraph
  */
 class ClassGraphApiReferenceExtractor {
 
-    fun excludeFromProjectClasspath(
+    fun fromProjectClasspath(
         acceptedPackages: Set<String>,
         rejectedPackages: Set<String> = DEFAULT_EXCLUDED_PACKAGES,
     ): Api {

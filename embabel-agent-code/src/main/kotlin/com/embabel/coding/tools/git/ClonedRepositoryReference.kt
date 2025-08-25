@@ -15,7 +15,7 @@
  */
 package com.embabel.coding.tools.git
 
-import com.embabel.agent.tools.common.Reference
+import com.embabel.agent.tools.common.LlmReference
 import com.embabel.agent.tools.file.DefaultFileReadLog
 import com.embabel.agent.tools.file.FileReadLog
 import com.embabel.agent.tools.file.FileReadTools
@@ -30,24 +30,62 @@ import java.nio.file.attribute.BasicFileAttributes
 
 /**
  * Reference to a cloned Git repository with automatic cleanup capabilities.
- * Exposes LLM tools.
+ * Exposes LLM tools and ensures proper cleanup on application shutdown.
+ *
  * @param localPath The local path where the repository is cloned.
  * @param shouldDeleteOnClose If true, the repository will be deleted when closed.
-
+ * @param fileFormatLimits Limits for file processing operations.
  */
-data class ClonedRepositoryReference(
+class ClonedRepositoryReference(
     val localPath: Path,
     val shouldDeleteOnClose: Boolean = true,
     val fileFormatLimits: FileFormatLimits = FileFormatLimits(),
-) : AutoCloseable, FileReadTools, FileReadLog by DefaultFileReadLog(), Reference {
+) : AutoCloseable, FileReadTools, FileReadLog by DefaultFileReadLog(), LlmReference {
 
     override val fileContentTransformers: List<StringTransformer>
         get() = listOf(WellKnownFileContentTransformers.removeApacheLicenseHeader)
 
     override val root = localPath.toAbsolutePath().toString()
 
+    private var isClosed = false
+    private val shutdownHook: Thread?
+
+    init {
+        // Register shutdown hook for cleanup if this should delete on close
+        shutdownHook = if (shouldDeleteOnClose) {
+            val hook = Thread {
+                if (!isClosed) {
+                    cleanupRepository()
+                }
+            }
+            Runtime.getRuntime().addShutdownHook(hook)
+            hook
+        } else {
+            null
+        }
+    }
+
     override fun close() {
-        if (shouldDeleteOnClose && Files.exists(localPath)) {
+        if (!isClosed) {
+            isClosed = true
+
+            // Remove shutdown hook since we're cleaning up manually
+            shutdownHook?.let { hook ->
+                try {
+                    Runtime.getRuntime().removeShutdownHook(hook)
+                } catch (e: IllegalStateException) {
+                    // JVM is already shutting down, ignore
+                }
+            }
+
+            if (shouldDeleteOnClose) {
+                cleanupRepository()
+            }
+        }
+    }
+
+    private fun cleanupRepository() {
+        if (Files.exists(localPath)) {
             try {
                 localPath.toFile().deleteRecursively()
             } catch (e: Exception) {
@@ -55,6 +93,23 @@ data class ClonedRepositoryReference(
                 System.err.println("Warning: Could not delete temporary git repository at $localPath: ${e.message}")
             }
         }
+    }
+
+    /**
+     * Equality based on localPath only, not on cleanup behavior or limits.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ClonedRepositoryReference) return false
+        return localPath == other.localPath
+    }
+
+    override fun hashCode(): Int {
+        return localPath.hashCode()
+    }
+
+    override fun toString(): String {
+        return "ClonedRepositoryReference(localPath=$localPath, shouldDeleteOnClose=$shouldDeleteOnClose)"
     }
 
     /**
