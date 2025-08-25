@@ -32,6 +32,7 @@ import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
 import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
+import org.jetbrains.annotations.ApiStatus
 
 /**
  * User-facing interface for executing prompts.
@@ -336,6 +337,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      * Add a list of handoffs to agents on this platform
      * @param outputTypes the types of objects that can result from output flow
      */
+    @ApiStatus.Experimental
     fun withHandoffs(
         vararg outputTypes: Class<*>,
     ): PromptRunner
@@ -343,6 +345,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     /**
      * Add a list of subagents to hand off to.
      */
+    @ApiStatus.Experimental
     fun withSubagents(
         vararg subagents: Subagent,
     ): PromptRunner
