@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.embabel.agent</groupId>
     <artifactId>embabel-agent-dependencies</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Embabel Agent BOM</name>
     <description>Embabel Agent BOM</description>
@@ -120,8 +120,4 @@
             <url>https://repo.embabel.com/artifactory/libs-snapshot</url>
         </snapshotRepository>
     </distributionManagement>
-
-  <scm>
-    <tag>embabel-agent-parent-0.1.1</tag>
-  </scm>
 </project>
