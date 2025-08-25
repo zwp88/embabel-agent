@@ -15,8 +15,8 @@
  */
 package com.embabel.coding.tools.jvm
 
-import com.embabel.coding.tools.BuildStatus
-import com.embabel.coding.tools.BuildSystemIntegration
+import com.embabel.coding.tools.ci.BuildStatus
+import com.embabel.coding.tools.ci.BuildSystemIntegration
 
 class MavenBuildSystemIntegration : BuildSystemIntegration {
 

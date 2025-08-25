@@ -15,6 +15,8 @@
  */
 package com.embabel.coding.tools
 
+import com.embabel.coding.tools.git.ClonedRepositoryReference
+import com.embabel.coding.tools.git.RepositoryReferenceProvider
 import org.eclipse.jgit.api.Git
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -24,13 +26,13 @@ import java.nio.file.Path
 
 class GitReferenceTest {
 
-    private val gitReference = GitReference()
+    private val repositoryReferenceProvider = RepositoryReferenceProvider()
 
     @Test
     fun `clone public repository to temporary directory`() {
         val url = "https://github.com/octocat/Hello-World.git"
 
-        gitReference.cloneRepository(url).use { clonedRepo ->
+        repositoryReferenceProvider.cloneRepository(url).use { clonedRepo ->
             // Verify the repository was cloned
             assertTrue(Files.exists(clonedRepo.localPath))
             assertTrue(Files.isDirectory(clonedRepo.localPath))
@@ -52,7 +54,7 @@ class GitReferenceTest {
     fun `clone repository with specific branch`() {
         val url = "https://github.com/octocat/Hello-World.git"
 
-        gitReference.cloneRepository(url, branch = "master").use { clonedRepo ->
+        repositoryReferenceProvider.cloneRepository(url, branch = "master").use { clonedRepo ->
             assertTrue(Files.exists(clonedRepo.localPath))
             assertTrue(Files.exists(clonedRepo.localPath.resolve(".git")))
             assertTrue(Files.exists(clonedRepo.localPath.resolve("README")))
@@ -63,7 +65,7 @@ class GitReferenceTest {
     fun `clone repository with shallow depth`() {
         val url = "https://github.com/octocat/Hello-World.git"
 
-        gitReference.cloneRepository(url, depth = 1).use { clonedRepo ->
+        repositoryReferenceProvider.cloneRepository(url, depth = 1).use { clonedRepo ->
             assertTrue(Files.exists(clonedRepo.localPath))
             assertTrue(Files.exists(clonedRepo.localPath.resolve(".git")))
             assertTrue(Files.exists(clonedRepo.localPath.resolve("README")))
@@ -75,7 +77,7 @@ class GitReferenceTest {
         val url = "https://github.com/octocat/Hello-World.git"
         val targetDir = tempDir.resolve("hello-world")
 
-        gitReference.cloneRepositoryTo(url, targetDir).use { clonedRepo ->
+        repositoryReferenceProvider.cloneRepositoryTo(url, targetDir).use { clonedRepo ->
             assertEquals(targetDir, clonedRepo.localPath)
             assertTrue(Files.exists(targetDir))
             assertTrue(Files.exists(targetDir.resolve(".git")))
@@ -98,7 +100,7 @@ class GitReferenceTest {
         Files.write(targetDir.resolve("existing-file.txt"), "content".toByteArray())
 
         assertThrows(IllegalArgumentException::class.java) {
-            gitReference.cloneRepositoryTo(url, targetDir)
+            repositoryReferenceProvider.cloneRepositoryTo(url, targetDir)
         }
     }
 
@@ -107,7 +109,7 @@ class GitReferenceTest {
         val invalidUrl = "https://github.com/nonexistent/nonexistent.git"
 
         assertThrows(Exception::class.java) {
-            gitReference.cloneRepository(invalidUrl).use { }
+            repositoryReferenceProvider.cloneRepository(invalidUrl).use { }
         }
     }
 
@@ -116,7 +118,7 @@ class GitReferenceTest {
         val url = "https://github.com/octocat/Hello-World.git"
         var localPath: Path? = null
 
-        gitReference.cloneRepository(url).use { clonedRepo ->
+        repositoryReferenceProvider.cloneRepository(url).use { clonedRepo ->
             localPath = clonedRepo.localPath
             assertTrue(Files.exists(localPath!!))
         }
@@ -129,7 +131,7 @@ class GitReferenceTest {
     fun `fileCount returns number of files excluding git directory`() {
         val url = "https://github.com/octocat/Hello-World.git"
 
-        gitReference.cloneRepository(url).use { clonedRepo ->
+        repositoryReferenceProvider.cloneRepository(url).use { clonedRepo ->
             val fileCount = clonedRepo.fileCount()
             assertTrue(fileCount > 0, "Repository should contain at least one file")
             // Hello-World repo typically has README file
@@ -141,7 +143,7 @@ class GitReferenceTest {
     fun `writeAllFilesToString returns repository content as string`() {
         val url = "https://github.com/octocat/Hello-World.git"
 
-        gitReference.cloneRepository(url).use { clonedRepo ->
+        repositoryReferenceProvider.cloneRepository(url).use { clonedRepo ->
             val allContent = clonedRepo.writeAllFilesToString()
 
             assertFalse(allContent.isEmpty(), "Content should not be empty")
@@ -170,7 +172,7 @@ class GitReferenceTest {
                 .call()
         }
 
-        val clonedRepo = ClonedRepository(localPath = emptyRepo, shouldDeleteOnClose = false)
+        val clonedRepo = ClonedRepositoryReference(localPath = emptyRepo, shouldDeleteOnClose = false)
 
         val content = clonedRepo.writeAllFilesToString()
         // Should handle empty repository without errors

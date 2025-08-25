@@ -16,9 +16,9 @@
 package com.embabel.agent.domain.library.code
 
 import com.embabel.agent.tools.file.*
-import com.embabel.coding.tools.BuildOptions
-import com.embabel.coding.tools.BuildResult
-import com.embabel.coding.tools.Ci
+import com.embabel.coding.tools.ci.BuildOptions
+import com.embabel.coding.tools.ci.BuildResult
+import com.embabel.coding.tools.ci.Ci
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor

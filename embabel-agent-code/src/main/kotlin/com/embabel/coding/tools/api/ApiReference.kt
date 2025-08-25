@@ -13,20 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.coding.tools
+package com.embabel.coding.tools.api
 
+import com.embabel.agent.tools.common.Reference
 import org.springframework.ai.tool.annotation.Tool
 
-class ApiReferenceTools(
-    private val apiReference: ApiReference,
-) {
+class ApiReference(
+    private val api: Api,
+    private val classLimit: Int = 100,
+) : Reference {
+
+    override fun contribution(): String {
+        if (api.classes.size > classLimit) {
+            return """
+                API reference is too large to include here (contains ${api.totalClasses} classes and ${api.totalMethods} methods).
+                Use the tools `findClassSignature` and `findPackageSignature` to look up specific classes or packages by their fully qualified names (FQN).
+            """.trimIndent()
+        }
+        return """
+            The following is an API reference for ${api.totalClasses} classes and ${api.totalMethods} methods.
+            Use this reference to answer questions about the API, find class or package signatures, and understand how to use the classes and methods.
+            You can also use the tools `findClassSignature` and `findPackageSignature` to look up specific classes or packages by their fully qualified names (FQN).
+
+            ${formatAsText()}
+        """.trimIndent()
+    }
 
     fun formatAsText(): String {
         val sb = StringBuilder()
-        sb.appendLine("API Reference - ${apiReference.totalClasses} classes, ${apiReference.totalMethods} methods")
+        sb.appendLine("API Reference - ${api.totalClasses} classes, ${api.totalMethods} methods")
         sb.appendLine()
 
-        for (clazz in apiReference.classes.sortedBy { "${it.packageName}.${it.name}" }) {
+        for (clazz in api.classes.sortedBy { "${it.packageName}.${it.name}" }) {
             sb.appendLine()
             sb.append(formatClass(clazz))
             sb.appendLine()
@@ -36,13 +54,13 @@ class ApiReferenceTools(
 
     @Tool(description = "find the signature of a class by FQN")
     fun findClassSignature(fqn: String): String {
-        val clazz = apiReference.classes.find { "${it.packageName}.${it.name}" == fqn }
+        val clazz = api.classes.find { "${it.packageName}.${it.name}" == fqn }
         return clazz?.let { formatClass(it) } ?: "Class not found: $fqn"
     }
 
     @Tool(description = "find the signature of a package by FQN")
     fun findPackageSignature(packageName: String): String {
-        val classesInPackage = apiReference.classes.filter { it.packageName == packageName }
+        val classesInPackage = api.classes.filter { it.packageName == packageName }
         if (classesInPackage.isEmpty()) {
             return "Package not found: $packageName"
         }

@@ -15,9 +15,9 @@
  */
 package com.embabel.coding.tools.jvm
 
-import com.embabel.coding.tools.ApiClass
-import com.embabel.coding.tools.ApiMethod
-import com.embabel.coding.tools.ApiReference
+import com.embabel.coding.tools.api.Api
+import com.embabel.coding.tools.api.ApiClass
+import com.embabel.coding.tools.api.ApiMethod
 import io.github.classgraph.ClassGraph
 
 /**
@@ -28,7 +28,7 @@ class ClassGraphApiReferenceExtractor {
     fun excludeFromProjectClasspath(
         acceptedPackages: Set<String>,
         rejectedPackages: Set<String> = DEFAULT_EXCLUDED_PACKAGES,
-    ): ApiReference {
+    ): Api {
         val classGraph = ClassGraph()
             .enableClassInfo()
             .enableMethodInfo()
@@ -82,7 +82,7 @@ class ClassGraphApiReferenceExtractor {
                 }
 
             val totalMethods = apiClasses.sumOf { it.methods.size }
-            ApiReference(apiClasses, apiClasses.size, totalMethods)
+            Api(apiClasses, apiClasses.size, totalMethods)
         }
     }
 

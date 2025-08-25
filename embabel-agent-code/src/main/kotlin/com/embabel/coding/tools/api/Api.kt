@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.coding.tools
+package com.embabel.coding.tools.api
 
 data class ApiMethod(
     val name: String,
@@ -31,7 +31,7 @@ data class ApiClass(
     val superTypes: List<String> = emptyList(),
 )
 
-data class ApiReference(
+data class Api(
     val classes: List<ApiClass>,
     val totalClasses: Int,
     val totalMethods: Int,

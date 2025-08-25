@@ -16,7 +16,7 @@
 package com.embabel.coding.tools.jvm
 
 import com.embabel.agent.api.common.PromptRunner
-import com.embabel.coding.tools.ApiReferenceTools
+import com.embabel.coding.tools.api.ApiReference
 import org.junit.jupiter.api.Test
 
 class ClassGraphApiReferenceExtractorTest {
@@ -27,7 +27,7 @@ class ClassGraphApiReferenceExtractorTest {
         val apiref = cigar.excludeFromProjectClasspath(
             acceptedPackages = setOf("com.embabel.agent"),
         )
-        val tools = ApiReferenceTools(apiref)
+        val tools = ApiReference(apiref)
         println("Extracted API reference: ${tools.formatAsText()}")
         println(tools.findClassSignature(PromptRunner::class.java.name))
         println(tools.findPackageSignature("com.embabel.agent.api.common"))

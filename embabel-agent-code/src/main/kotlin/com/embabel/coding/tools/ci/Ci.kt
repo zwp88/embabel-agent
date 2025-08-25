@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.coding.tools
+package com.embabel.coding.tools.ci
 
 import com.embabel.agent.tools.DirectoryBased
 import com.embabel.coding.tools.jvm.MavenBuildSystemIntegration
