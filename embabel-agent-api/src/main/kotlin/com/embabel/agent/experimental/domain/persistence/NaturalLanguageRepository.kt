@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.persistence
+package com.embabel.agent.experimental.domain.persistence
 
 import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.ZeroToOne
@@ -48,7 +48,7 @@ data class EntityMatch<T>(
 
 data class FindEntitiesResponse<T>(
     val request: FindEntitiesRequest,
-    val matches: List<EntityMatch<T>>
+    val matches: List<EntityMatch<T>>,
 )
 
 /**

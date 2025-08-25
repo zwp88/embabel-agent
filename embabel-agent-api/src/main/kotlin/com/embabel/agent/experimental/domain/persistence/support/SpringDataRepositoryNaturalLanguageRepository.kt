@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.persistence.support
+package com.embabel.agent.experimental.domain.persistence.support
 
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.createObject
-import com.embabel.agent.domain.persistence.EntityMatch
-import com.embabel.agent.domain.persistence.FindEntitiesRequest
-import com.embabel.agent.domain.persistence.FindEntitiesResponse
-import com.embabel.agent.domain.persistence.NaturalLanguageRepository
+import com.embabel.agent.experimental.domain.persistence.EntityMatch
+import com.embabel.agent.experimental.domain.persistence.FindEntitiesRequest
+import com.embabel.agent.experimental.domain.persistence.FindEntitiesResponse
+import com.embabel.agent.experimental.domain.persistence.NaturalLanguageRepository
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.CrudRepository
@@ -106,7 +106,7 @@ class SpringDataRepositoryNaturalLanguageRepository<T, ID>(
 
     private fun invokeFinders(
         findEntitiesRequest: FindEntitiesRequest,
-        finderInvocations: FinderInvocations
+        finderInvocations: FinderInvocations,
     ): List<EntityMatch<T>> {
         val allMatches = mutableListOf<EntityMatch<T>>()
         for (finder in finderInvocations.invocations) {

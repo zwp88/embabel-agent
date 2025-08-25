@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.domain.persistence
+package com.embabel.agent.experimental.domain.persistence
 
 import com.embabel.agent.api.annotation.waitFor
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.core.hitl.ConfirmationRequest
-import com.embabel.agent.domain.persistence.support.SpringDataRepositoryNaturalLanguageRepository
+import com.embabel.agent.experimental.domain.persistence.support.SpringDataRepositoryNaturalLanguageRepository
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.CrudRepository
@@ -31,7 +31,7 @@ inline fun <reified T : Any, ID> CrudRepository<T, ID>.findOneFromContent(
     noinline idGetter: (T) -> ID?,
     context: OperationContext,
     llm: LlmOptions = LlmOptions(),
-    noinline confirmOne: (match: EntityMatch<T>) -> ConfirmationRequest<T>? = { null }
+    noinline confirmOne: (match: EntityMatch<T>) -> ConfirmationRequest<T>? = { null },
 ): T? = NaturalLanguageRepositoryUtils.findOneFromContent(
     content = content,
     entityType = T::class.java,
@@ -56,7 +56,7 @@ object NaturalLanguageRepositoryUtils {
         context: OperationContext,
         repository: CrudRepository<T, ID>,
         llm: LlmOptions = LlmOptions(),
-        confirmOne: (match: EntityMatch<T>) -> ConfirmationRequest<T>? = { null }
+        confirmOne: (match: EntityMatch<T>) -> ConfirmationRequest<T>? = { null },
     ): T? {
         val nlRepository = SpringDataRepositoryNaturalLanguageRepository(
             repository = repository,
