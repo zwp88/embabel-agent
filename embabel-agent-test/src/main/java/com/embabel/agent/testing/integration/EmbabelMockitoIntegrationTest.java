@@ -18,6 +18,7 @@ package com.embabel.agent.testing.integration;
 import com.embabel.agent.core.AgentPlatform;
 import com.embabel.agent.spi.LlmInteraction;
 import com.embabel.agent.spi.LlmOperations;
+import com.embabel.common.ai.model.ModelProvider;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
  */
 @SpringBootTest
 @TestPropertySource(properties = {
-        "embabel.agent.llm.default-model=test-model",
+        "embabel.models.default-llm=test-model",
         "embabel.agent.verbosity.debug=true",
         "spring.shell.interactive.enabled=false",
         "spring.shell.noninteractive.enabled=false"
@@ -48,6 +49,9 @@ public class EmbabelMockitoIntegrationTest {
 
     @Autowired
     protected AgentPlatform agentPlatform;
+
+    @MockitoBean
+    private ModelProvider modelProvider;
 
     @MockitoBean
     protected LlmOperations llmOperations;
