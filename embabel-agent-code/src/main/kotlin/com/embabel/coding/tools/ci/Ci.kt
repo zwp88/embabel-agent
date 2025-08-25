@@ -108,15 +108,17 @@ class Ci(
         return buildResult.copy(status = buildStatus)
     }
 
-    private fun parseOutput(rawOutput: String): BuildStatus? {
+    private fun parseOutput(rawOutput: String): BuildStatus {
         for (b in buildSystemIntegrations) {
             val status = b.parseBuildOutput(root, rawOutput)
             if (status != null) {
                 return status
             }
         }
-        logger.warn("No build system understands this output")
-        return null
+        return BuildStatus(
+            success = false,
+            relevantOutput = "No build system understands this output: Are you sure the build command is correct?\n$rawOutput",
+        )
     }
 
     /**
