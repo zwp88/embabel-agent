@@ -16,10 +16,11 @@
 package com.embabel.agent.tools.common
 
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.core.types.Named
 
 /**
  * A Reference offers tools and is a prompt contributor.
  * The prompt contribution must describe how to use the tools
  * or can include relevant information directly.
  */
-interface LlmReference : PromptContributor
+interface LlmReference : PromptContributor, Named

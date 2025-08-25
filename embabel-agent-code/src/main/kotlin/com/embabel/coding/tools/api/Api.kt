@@ -15,6 +15,8 @@
  */
 package com.embabel.coding.tools.api
 
+import com.embabel.common.core.types.Named
+
 data class ApiMethod(
     val name: String,
     val parameters: List<String>,
@@ -32,7 +34,8 @@ data class ApiClass(
 )
 
 data class Api(
+    override val name: String,
     val classes: List<ApiClass>,
     val totalClasses: Int,
     val totalMethods: Int,
-)
+) : Named

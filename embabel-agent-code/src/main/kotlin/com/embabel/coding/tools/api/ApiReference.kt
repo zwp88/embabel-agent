@@ -23,6 +23,8 @@ class ApiReference(
     private val classLimit: Int = 100,
 ) : LlmReference {
 
+    override val name = api.name
+
     override fun contribution(): String {
         if (api.classes.size > classLimit) {
             return """

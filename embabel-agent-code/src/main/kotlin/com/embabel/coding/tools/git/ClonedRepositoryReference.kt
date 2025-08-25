@@ -42,6 +42,9 @@ class ClonedRepositoryReference(
     val fileFormatLimits: FileFormatLimits = FileFormatLimits(),
 ) : AutoCloseable, FileReadTools, FileReadLog by DefaultFileReadLog(), LlmReference {
 
+    override val name: String
+        get() = root.substringAfterLast('/')
+
     override val fileContentTransformers: List<StringTransformer>
         get() = listOf(WellKnownFileContentTransformers.removeApacheLicenseHeader)
 

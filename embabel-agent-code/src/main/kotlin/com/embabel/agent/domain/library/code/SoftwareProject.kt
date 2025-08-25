@@ -56,6 +56,9 @@ open class SoftwareProject @JvmOverloads constructor(
         )
     }
 
+    override val name: String
+        get() = root.substringAfterLast('/')
+
     val codingStyle: String
         get() {
             val location = DEFAULT_CODING_STYLE_GUIDE

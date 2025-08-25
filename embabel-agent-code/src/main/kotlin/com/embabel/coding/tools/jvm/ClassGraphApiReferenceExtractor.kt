@@ -26,6 +26,7 @@ import io.github.classgraph.ClassGraph
 class ClassGraphApiReferenceExtractor {
 
     fun fromProjectClasspath(
+        name: String,
         acceptedPackages: Set<String>,
         rejectedPackages: Set<String> = DEFAULT_EXCLUDED_PACKAGES,
     ): Api {
@@ -82,7 +83,7 @@ class ClassGraphApiReferenceExtractor {
                 }
 
             val totalMethods = apiClasses.sumOf { it.methods.size }
-            Api(apiClasses, apiClasses.size, totalMethods)
+            Api(name, apiClasses, apiClasses.size, totalMethods)
         }
     }
 
