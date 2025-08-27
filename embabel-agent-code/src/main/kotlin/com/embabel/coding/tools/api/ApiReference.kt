@@ -87,6 +87,11 @@ class ApiReference(
         if (clazz.type != "class") sb.append(" (${clazz.type})")
         sb.appendLine()
 
+        // Class comment
+        clazz.comment?.let { comment ->
+            sb.appendLine("  // $comment")
+        }
+
         // Annotations
 //        if (clazz.annotations.isNotEmpty()) {
 //            sb.appendLine("  @${clazz.annotations.joinToString(" @") { it.substringAfterLast('.') }}")
@@ -103,6 +108,11 @@ class ApiReference(
             val annotations = if (method.annotations.isNotEmpty()) {
                 " @${method.annotations.joinToString(" @") { it.substringAfterLast('.') }}"
             } else ""
+
+            // Method with comment
+            method.comment?.let { comment ->
+                sb.appendLine("    // $comment")
+            }
             sb.appendLine("  ${method.name}($params): ${method.returnType}$annotations")
         }
         return sb.toString()
