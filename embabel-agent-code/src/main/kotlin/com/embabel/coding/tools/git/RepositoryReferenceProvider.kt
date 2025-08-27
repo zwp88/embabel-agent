@@ -81,6 +81,7 @@ data class RepositoryReferenceProvider(
             }
 
             return ClonedRepositoryReference(
+                url = url,
                 localPath = tempDir,
                 shouldDeleteOnClose = true,
                 fileFormatLimits = fileFormatLimits,
@@ -131,6 +132,7 @@ data class RepositoryReferenceProvider(
         }
 
         return ClonedRepositoryReference(
+            url = url,
             localPath = targetDirectory,
             shouldDeleteOnClose = false,
             fileFormatLimits = fileFormatLimits,

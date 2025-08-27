@@ -15,7 +15,7 @@
  */
 package com.embabel.coding.tools.api
 
-import com.embabel.agent.tools.common.LlmReference
+import com.embabel.agent.api.common.LlmReference
 import org.springframework.ai.tool.annotation.Tool
 
 class ApiReference(
@@ -24,6 +24,9 @@ class ApiReference(
 ) : LlmReference {
 
     override val name = api.name
+
+    override val description =
+        "API reference for ${api.name} with ${api.totalClasses} classes and ${api.totalMethods} methods."
 
     override fun contribution(): String {
         if (api.classes.size > classLimit) {
