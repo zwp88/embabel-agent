@@ -6,7 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/embabel-agent-code/embabel-agent-code.iml" filepath="$PROJECT_DIR$/embabel-agent-code/embabel-agent-code.iml" />
       <module fileurl="file://$PROJECT_DIR$/embabel-agent-parent.iml" filepath="$PROJECT_DIR$/embabel-agent-parent.iml" />
       <module fileurl="file://$PROJECT_DIR$/embabel-agent-rag/embabel-agent-rag.iml" filepath="$PROJECT_DIR$/embabel-agent-rag/embabel-agent-rag.iml" />
-      <module fileurl="file://$PROJECT_DIR$/embabel-agent-rag-lucene/embabel-agent-rag-lucene.iml" filepath="$PROJECT_DIR$/embabel-agent-rag-lucene/embabel-agent-rag-lucene.iml" />
     </modules>
   </component>
 </project>

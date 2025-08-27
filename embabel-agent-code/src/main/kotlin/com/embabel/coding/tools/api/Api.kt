@@ -33,6 +33,9 @@ data class ApiClass(
     val superTypes: List<String> = emptyList(),
 )
 
+/**
+ * Representation of an API with its classes and methods.
+ */
 data class Api(
     override val name: String,
     val classes: List<ApiClass>,
