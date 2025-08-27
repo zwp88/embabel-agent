@@ -27,6 +27,8 @@ import com.embabel.agent.spi.support.springai.DefaultToolDecorator
 import com.embabel.agent.spi.support.springai.MaybeReturn
 import com.embabel.agent.support.SimpleTestAgent
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
+import com.embabel.chat.SystemMessage
+import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.*
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -259,7 +261,39 @@ class ChatClientLlmOperationsTest {
         }
 
         @Test
-        fun `presents tools to ChatModel`() {
+        fun `presents tools to ChatModel via doTransform`() {
+            val duke = Dog("Duke")
+
+            val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))
+
+            // Wumpus's have tools
+            val toolCallbacks = ToolCallbacks.from(Wumpus("wumpy")).toList()
+            val setup = createChatClientLlmOperations(fakeChatModel)
+            val result = setup.llmOperations.doTransform(
+                messages = listOf(
+                    SystemMessage("do whatever"),
+                    UserMessage("prompt"),
+                ),
+                interaction = LlmInteraction(
+                    id = InteractionId("id"),
+                    llm = LlmOptions(),
+                    toolCallbacks = toolCallbacks,
+                ),
+                outputClass = Dog::class.java,
+                llmRequestEvent = null,
+            )
+            assertEquals(duke, result)
+            assertEquals(1, fakeChatModel.promptsPassed.size)
+            val tools = fakeChatModel.optionsPassed[0].toolCallbacks
+            assertEquals(toolCallbacks.size, tools.size, "Must have passed same number of tools")
+            assertEquals(
+                toolCallbacks.map { it.toolDefinition.name() }.toSet(),
+                tools.map { it.toolDefinition.name() }.toSet(),
+            )
+        }
+
+        @Test
+        fun `presents tools to ChatModel when given multiple messages`() {
             val duke = Dog("Duke")
 
             val fakeChatModel = FakeChatModel(jacksonObjectMapper().writeValueAsString(duke))

@@ -80,6 +80,9 @@ interface PromptRunnerOperations {
         outputClass: Class<T>,
     ): T
 
+    /**
+     * Respond in a conversation
+     */
     fun respond(
         messages: List<Message>,
     ): AssistantMessage =
@@ -132,6 +135,8 @@ class TemplateOperations(
 
     /**
      * Respond in the conversation using the template as system prompt.
+     * @param conversation the conversation so far
+     * @param model the model to render the system prompt template with
      */
     fun respondWithSystemPrompt(
         conversation: Conversation,
@@ -347,6 +352,14 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     fun withSubagents(
         vararg subagents: Subagent,
     ): PromptRunner
+
+    /**
+     * Add a system prompt
+     */
+    fun withSystemPrompt(systemPrompt: String): PromptRunner =
+        withPromptContributor(
+            PromptContributor.fixed(systemPrompt)
+        )
 
     /**
      * Add a prompt contributor that can add to the prompt.
