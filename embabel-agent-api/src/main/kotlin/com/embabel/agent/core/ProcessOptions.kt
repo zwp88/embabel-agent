@@ -19,15 +19,20 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.identity.User
 import java.util.function.Consumer
 
+interface LlmVerbosity {
+    val showPrompts: Boolean
+    val showLlmResponses: Boolean
+}
+
 /**
  * Controls log output.
  */
 data class Verbosity(
-    val showPrompts: Boolean = false,
-    val showLlmResponses: Boolean = false,
+    override val showPrompts: Boolean = false,
+    override val showLlmResponses: Boolean = false,
     val debug: Boolean = false,
     val showPlanning: Boolean = false,
-) {
+) : LlmVerbosity {
     val showLongPlans: Boolean get() = showPlanning || debug || showLlmResponses || showPrompts
 
     companion object {

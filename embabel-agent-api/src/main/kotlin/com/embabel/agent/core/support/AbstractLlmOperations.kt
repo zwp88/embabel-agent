@@ -102,7 +102,7 @@ abstract class AbstractLlmOperations(
         agentProcess: AgentProcess,
         action: Action?,
     ): Result<O> {
-        val (allToolCallbacks, prompt, llmRequestEvent) = setup<O>(
+        val (allToolCallbacks, prompt, llmRequestEvent) = setup(
             agentProcess = agentProcess,
             interaction = interaction,
             action = action,
