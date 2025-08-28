@@ -141,7 +141,7 @@ class ChatClientLlmOperationsTest {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
             val setup = createChatClientLlmOperations(fakeChatModel)
             setup.llmOperations.createObject(
-                prompt = prompt,
+                messages = listOf(UserMessage(prompt)),
                 interaction = LlmInteraction(
                     id = InteractionId("id"), llm = LlmOptions()
                 ),
@@ -161,7 +161,7 @@ class ChatClientLlmOperationsTest {
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObject(
-                prompt = "prompt",
+                messages = listOf(UserMessage("prompt")),
                 interaction = LlmInteraction(
                     id = InteractionId("id"), llm = LlmOptions()
                 ),
@@ -179,7 +179,7 @@ class ChatClientLlmOperationsTest {
             val setup = createChatClientLlmOperations(fakeChatModel)
             try {
                 setup.llmOperations.createObject(
-                    prompt = "prompt",
+                    messages = listOf(UserMessage("prompt")),
                     interaction = LlmInteraction(
                         id = InteractionId("id"), llm = LlmOptions()
                     ),
@@ -202,7 +202,7 @@ class ChatClientLlmOperationsTest {
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObject(
-                prompt = "prompt",
+                messages = listOf(UserMessage("prompt")),
                 interaction = LlmInteraction(
                     id = InteractionId("id"), llm = LlmOptions()
                 ),
@@ -221,13 +221,17 @@ class ChatClientLlmOperationsTest {
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObject(
-                prompt = """
+                messages = listOf(
+                    UserMessage(
+                        """
                     Return a dog. Dogs look like this:
                 {
                     "name": "Duke",
                     "type": "Dog"
                 }
-                """.trimIndent(),
+                """.trimIndent()
+                    )
+                ),
                 interaction = LlmInteraction(
                     id = InteractionId("id"), llm = LlmOptions()
                 ),
@@ -246,7 +250,7 @@ class ChatClientLlmOperationsTest {
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObject(
-                prompt = "prompt",
+                messages = listOf(UserMessage("prompt")),
                 interaction = LlmInteraction(
                     id = InteractionId("id"), llm = LlmOptions()
                 ),
@@ -302,7 +306,7 @@ class ChatClientLlmOperationsTest {
             val toolCallbacks = ToolCallbacks.from(Wumpus("wumpy")).toList()
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObject(
-                prompt = "prompt",
+                messages = listOf(UserMessage("prompt")),
                 interaction = LlmInteraction(
                     id = InteractionId("id"),
                     llm = LlmOptions(),
@@ -331,7 +335,7 @@ class ChatClientLlmOperationsTest {
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObject(
-                prompt = "prompt",
+                messages = listOf(UserMessage("prompt")),
                 interaction = LlmInteraction(
                     id = InteractionId("id"), llm = LlmOptions()
                 ),
@@ -352,7 +356,7 @@ class ChatClientLlmOperationsTest {
 
             val setup = createChatClientLlmOperations(fakeChatModel)
             val result = setup.llmOperations.createObject(
-                prompt = "prompt",
+                messages = listOf(UserMessage("prompt")),
                 interaction = LlmInteraction(
                     id = InteractionId("id"), llm = LlmOptions()
                 ),
