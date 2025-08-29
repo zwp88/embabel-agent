@@ -15,6 +15,7 @@
  */
 package com.embabel.coding.tools.git
 
+import com.embabel.agent.core.AgentProcess
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.GitAPIException
 import org.springframework.ai.tool.annotation.Tool
@@ -47,9 +48,19 @@ data class RepositoryReferenceProvider(
         )
     }
 
+    /**
+     * Will add a reference to the blackboard
+     */
     @Tool(description = "Clone a Git repository from the given URL to a temporary directory")
-    fun clone(url: String): ClonedRepositoryReference {
-        return cloneRepository(url)
+    fun clone(url: String): String {
+        val agentProcess = AgentProcess.get()
+        if (agentProcess == null) {
+            error("No agent process: Cannot add cloned repository to agent process")
+        } else {
+            val clonedRepositoryReference = cloneRepository(url)
+            agentProcess += clonedRepositoryReference
+            return "Cloned repository from $url to ${clonedRepositoryReference.localPath} and added to agent process ${agentProcess.id}"
+        }
     }
 
     /**
