@@ -520,6 +520,51 @@ class AgentMetadataReaderActionTest {
     }
 
     @Test
+    fun `transformer action with 2 args invocation and ai parameter`() {
+        val reader = AgentMetadataReader()
+        val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnlyAndAiParameter())
+        assertNotNull(metadata)
+        assertEquals(1, metadata!!.actions.size)
+        val action = metadata.actions.first()
+        val agent = mockk<CoreAgent>()
+        every { agent.jvmTypes } returns listOf(
+            PersonWithReverseTool::class.java,
+            UserInput::class.java
+        ).map { JvmType(it) }
+        val mockAgentProcess = mockk<AgentProcess>()
+        every { mockAgentProcess.agent } returns agent
+        val mockPlatformServices = mockk<PlatformServices>()
+        every { mockPlatformServices.llmOperations } returns mockk()
+        every { mockPlatformServices.eventListener } returns DevNull
+
+        val blackboard = InMemoryBlackboard()
+        blackboard += UserInput("John Doe")
+        blackboard += ("task" to Task("task"))
+        every { mockAgentProcess.getValue(any(), any(), any()) } answers {
+            blackboard.getValue(
+                firstArg(),
+                secondArg(),
+                thirdArg(),
+            )
+        }
+        every { mockAgentProcess.set(any(), any()) } answers {
+            blackboard.set(
+                firstArg(),
+                secondArg(),
+            )
+        }
+        every { mockAgentProcess.lastResult() } returns PersonWithReverseTool("John Doe")
+
+        val pc = ProcessContext(
+            platformServices = dummyPlatformServices(),
+            agentProcess = mockAgentProcess,
+        )
+        val result = action.execute(pc)
+        assertEquals(ActionStatusCode.SUCCEEDED, result.status)
+        assertEquals(PersonWithReverseTool("John Doe"), pc.blackboard.lastResult())
+    }
+
+    @Test
     @Disabled
     fun `consumer action with no parameters`() {
     }

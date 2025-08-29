@@ -197,7 +197,7 @@ class OneOperationContextConditionOnly {
 class OneOperationContextAiOnly {
 
     @Condition(cost = .5)
-    fun condition1(operationContext: OperationContext): Boolean {
+    fun condition1(ai: Ai): Boolean {
         return true
     }
 
@@ -415,6 +415,38 @@ class AgentWithOneTransformerActionWith2ArgsOnly {
     fun toPerson(
         userInput: UserInput,
         task: Task,
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
+    }
+
+}
+
+@Agent(
+    description = "one transformer action only with ai",
+)
+class AgentWithOneTransformerActionWith2ArgsOnlyAndAiParameter {
+
+    @Action(cost = 500.0)
+    fun toPerson(
+        userInput: UserInput,
+        task: Task,
+        ai: Ai,
+    ): PersonWithReverseTool {
+        return PersonWithReverseTool(userInput.content)
+    }
+
+}
+
+@Agent(
+    description = "one transformer action only with OperationContext",
+)
+class AgentWithOneTransformerActionWith2ArgsOnlyAndOperationContextParameter {
+
+    @Action(cost = 500.0)
+    fun toPerson(
+        userInput: UserInput,
+        task: Task,
+        context: OperationContext,
     ): PersonWithReverseTool {
         return PersonWithReverseTool(userInput.content)
     }

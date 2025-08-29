@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.api.annotation.support
 
+import com.embabel.agent.api.common.Ai
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.core.support.Rerun
 import com.embabel.agent.support.containsAll
@@ -28,7 +30,11 @@ import kotlin.test.assertNull
 import com.embabel.agent.core.Agent as CoreAgent
 
 
-class AgentMetadataReaderTest {
+/**
+ * Test for metadata extraction from annotations,
+ * not invocation
+ */
+class AgentMetadataReaderMetadataTest {
 
     @Nested
     inner class Errors {
@@ -272,7 +278,7 @@ class AgentMetadataReaderTest {
         }
 
         @Test
-        fun `expose actions by default on non-opaque agent `() {
+        fun `expose actions by default on non-opaque agent`() {
             val reader = AgentMetadataReader()
             val metadata = reader.createAgentMetadata(AgentWithCustomName())
             assertNotNull(metadata)
@@ -283,6 +289,38 @@ class AgentMetadataReaderTest {
             ap.deploy(metadata)
             assertEquals(1, ap.agents().size)
             assertEquals(1, ap.actions.size)
+        }
+
+        @Test
+        fun `not treat OperationContext parameter as a precondition`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(
+                AgentWithOneTransformerActionWith2ArgsOnlyAndOperationContextParameter()
+            )
+            assertNotNull(metadata)
+            assertTrue(metadata is CoreAgent, "@Agent should create an agent")
+            metadata as CoreAgent
+            assertEquals(1, metadata.actions.size)
+            val action = metadata.actions.single()
+            assertFalse(
+                action.preconditions.any { it.key == "it:${OperationContext::class.java.name}" },
+                "OperationContext parameter should not be treated as an input precondition: ${action.preconditions}"
+            )
+        }
+
+        @Test
+        fun `not treat Ai parameter as a precondition`() {
+            val reader = AgentMetadataReader()
+            val metadata = reader.createAgentMetadata(AgentWithOneTransformerActionWith2ArgsOnlyAndAiParameter())
+            assertNotNull(metadata)
+            assertTrue(metadata is CoreAgent, "@Agent should create an agent")
+            metadata as CoreAgent
+            assertEquals(1, metadata.actions.size)
+            val action = metadata.actions.single()
+            assertFalse(
+                action.preconditions.any { it.key == "it:${Ai::class.java.name}" },
+                "Ai parameter should not be treated as an input precondition: ${action.preconditions}"
+            )
         }
     }
 }
