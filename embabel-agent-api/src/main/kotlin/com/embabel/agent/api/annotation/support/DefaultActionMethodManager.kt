@@ -65,7 +65,7 @@ internal class DefaultActionMethodManager(
             .map {
                 val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
                 expandInputBindings(
-                    if (nameMatchAnnotation != null) it.name else IoBinding.Companion.DEFAULT_BINDING,
+                    if (nameMatchAnnotation != null) it.name else IoBinding.DEFAULT_BINDING,
                     it.type
                 )
             }

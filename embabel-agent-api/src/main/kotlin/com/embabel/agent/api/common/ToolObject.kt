@@ -40,7 +40,7 @@ data class ToolObject(
         obj: Any,
     ) : this(
         obj = obj,
-        namingStrategy = StringTransformer.Companion.IDENTITY,
+        namingStrategy = StringTransformer.IDENTITY,
         filter = { true },
     )
 

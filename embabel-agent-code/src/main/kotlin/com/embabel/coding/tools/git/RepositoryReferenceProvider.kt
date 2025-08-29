@@ -17,6 +17,7 @@ package com.embabel.coding.tools.git
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.GitAPIException
+import org.springframework.ai.tool.annotation.Tool
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -44,6 +45,11 @@ data class RepositoryReferenceProvider(
         return copy(
             fileFormatLimits = this.fileFormatLimits.copy(fileSizeLimit = limit),
         )
+    }
+
+    @Tool(description = "Clone a Git repository from the given URL to a temporary directory")
+    fun clone(url: String): ClonedRepositoryReference {
+        return cloneRepository(url)
     }
 
     /**
