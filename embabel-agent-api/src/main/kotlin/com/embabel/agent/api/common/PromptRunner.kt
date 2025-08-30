@@ -22,13 +22,9 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.spi.LlmUse
-import com.embabel.chat.AssistantMessage
-import com.embabel.chat.Conversation
-import com.embabel.chat.Message
-import com.embabel.chat.SystemMessage
+import com.embabel.chat.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.core.types.NamedAndDescribed
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
 import com.embabel.common.util.loggerFor
@@ -58,7 +54,10 @@ interface PromptRunnerOperations {
     fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,
-    ): T
+    ): T = createObject(
+        messages = listOf(UserMessage(prompt)),
+        outputClass = outputClass,
+    )
 
     /**
      * Try to create an object of the given type using the given prompt and LLM options from context
@@ -149,20 +148,6 @@ class TemplateOperations(
         ) + conversation.messages
     )
 }
-
-/**
- * A Reference exposes tools and is a prompt contributor.
- * The prompt contribution might describe how to use the tools
- * or can include relevant information directly.
- * Consider, for example, a reference to an API which is so small it's
- * included in the prompt, versus a large API which must be
- * accessed via tools.
- * The reference name is used in a strategy for tool naming, so should be fairly short.
- * Description may be more verbose.
- * If you want a custom naming strategy, use a ToolObject directly,
- * and add the PromptContributor separately.
- */
-interface LlmReference : NamedAndDescribed, PromptContributor
 
 /**
  * Define a handoff to a subagent.

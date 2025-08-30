@@ -61,14 +61,6 @@ internal data class OperationContextPromptRunner(
     }
 
     override fun <T> createObject(
-        prompt: String,
-        outputClass: Class<T>,
-    ): T = createObject(
-        messages = listOf(UserMessage(prompt)),
-        outputClass = outputClass,
-    )
-
-    override fun <T> createObject(
         messages: List<Message>,
         outputClass: Class<T>,
     ): T {
