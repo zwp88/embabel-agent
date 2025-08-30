@@ -218,4 +218,12 @@ internal data class OperationContextPromptRunner(
 
     override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
         copy(generateExamples = generateExamples)
+
+    override fun <T> creating(outputClass: Class<T>): ObjectCreator<T> {
+        return PromptRunnerObjectCreator(
+            promptRunner = this,
+            outputClass = outputClass,
+            objectMapper = context.agentPlatform().platformServices.objectMapper,
+        )
+    }
 }

@@ -28,6 +28,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
 import com.embabel.common.util.loggerFor
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.jetbrains.annotations.ApiStatus
 
 /**
@@ -393,6 +394,80 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      * on a per-PromptRunner basis. This overrides platform defaults.
      */
     fun withGenerateExamples(generateExamples: Boolean): PromptRunner
+
+    /**
+     * Create an object creator for the given output class.
+     * Allows setting strongly typed examples.
+     */
+    fun <T> creating(outputClass: Class<T>): ObjectCreator<T>
+
+}
+
+/**
+ * Create an object of the given type from a prompt or messages.
+ * Allows setting strongly typed examples.
+ */
+interface ObjectCreator<T> {
+
+    /**
+     * Add an example of the desired output to the prompt.
+     * This will be included in JSON.
+     */
+    fun withExample(
+        description: String,
+        value: T,
+    ): ObjectCreator<T>
+
+    /**
+     * Create an object of the given type using the given prompt and LLM options from context
+     * (process context or implementing class).
+     * Prompts are typically created within the scope of an
+     * @Action method that provides access to
+     * domain object instances, offering type safety.
+     */
+    fun fromPrompt(
+        prompt: String,
+    ): T = fromMessages(
+        messages = listOf(UserMessage(prompt)),
+    )
+
+    /**
+     * Create an object from messages
+     */
+    fun fromMessages(
+        messages: List<Message>,
+    ): T
+
+}
+
+internal data class PromptRunnerObjectCreator<T>(
+    internal val promptRunner: PromptRunner,
+    internal val outputClass: Class<T>,
+    private val objectMapper: ObjectMapper,
+) : ObjectCreator<T> {
+
+    override fun withExample(
+        description: String,
+        value: T,
+    ): ObjectCreator<T> {
+        return copy(
+            promptRunner = promptRunner.withPromptContributor(
+                PromptContributor.fixed(
+                    """
+                        Example: $description
+                        ${objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value)}
+                        """.trimIndent()
+                )
+            )
+        )
+    }
+
+    override fun fromMessages(messages: List<Message>): T {
+        return promptRunner.createObject(
+            messages = messages,
+            outputClass = outputClass,
+        )
+    }
 
 }
 

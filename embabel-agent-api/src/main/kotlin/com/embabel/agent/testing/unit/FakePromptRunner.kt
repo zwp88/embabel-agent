@@ -28,6 +28,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
 
 enum class Method {
@@ -197,5 +198,9 @@ data class FakePromptRunner(
 
     override fun withToolGroup(toolGroup: ToolGroup): PromptRunner {
         TODO("Not yet implemented")
+    }
+
+    override fun <T> creating(outputClass: Class<T>): ObjectCreator<T> {
+        return PromptRunnerObjectCreator(this, outputClass, jacksonObjectMapper())
     }
 }
