@@ -25,6 +25,7 @@ import com.embabel.agent.spi.LlmUse
 import com.embabel.chat.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.ai.prompt.PromptElement
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
 import com.embabel.common.util.loggerFor
@@ -360,7 +361,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     /**
      * Add varargs of prompt contributors and contextual prompt elements.
      */
-    fun withPromptElements(vararg elements: Any): PromptRunner {
+    fun withPromptElements(vararg elements: PromptElement): PromptRunner {
         val promptContributors = elements.filterIsInstance<PromptContributor>()
         val contextualPromptElements = elements.filterIsInstance<ContextualPromptElement>()
         val oddOnesOut = elements.filterNot { it is PromptContributor || it is ContextualPromptElement }
