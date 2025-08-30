@@ -15,19 +15,75 @@
  */
 package com.embabel.agent.api.common
 
+import com.embabel.agent.api.annotation.support.Wumpus
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.core.Operation
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.chat.Message
 import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.util.StringTransformer
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class OperationContextPromptRunnerTest {
+
+    private fun defaults(context: OperationContext): OperationContextPromptRunner {
+        return OperationContextPromptRunner(
+            context = context,
+            llm = LlmOptions(),
+            toolGroups = emptySet(),
+            toolObjects = emptyList(),
+            promptContributors = emptyList(),
+            contextualPromptContributors = emptyList(),
+            generateExamples = false,
+        )
+    }
+
+    @Test
+    fun `test change LlmOptions`() {
+        val llm = LlmOptions.withModel("my-model").withTemperature(1.0)
+        val ocpr = defaults(mockk<OperationContext>())
+            .withLlm(llm)
+        assertEquals(llm, ocpr.llm, "LlmOptions not set correctly")
+    }
+
+    @Test
+    fun `test toolObject instance`() {
+        val llm = LlmOptions.withModel("my-model").withTemperature(1.0)
+        val wumpus = Wumpus("wumpuses-have-tools")
+        val ocpr = defaults(mockk<OperationContext>())
+            .withLlm(llm)
+            .withToolObject(wumpus)
+        assertEquals(1, ocpr.toolObjects.size, "Must have one tool object")
+        assertEquals(wumpus, ocpr.toolObjects[0].obj, "Tool object instance not set correctly")
+        assertEquals(
+            StringTransformer.IDENTITY,
+            ocpr.toolObjects[0].namingStrategy,
+            "Tool object naming strategy not set correctly"
+        )
+    }
+
+    @Test
+    fun `test ToolObject instance with custom naming strategy`() {
+        val llm = LlmOptions.withModel("my-model").withTemperature(1.0)
+        val wumpus = Wumpus("wumpuses-have-tools")
+        val namingStrategy = StringTransformer { it.replace("_", " ") }
+        val ocpr = defaults(mockk<OperationContext>())
+            .withLlm(llm)
+            .withToolObject(ToolObject(wumpus).withNamingStrategy(namingStrategy))
+        assertEquals(1, ocpr.toolObjects.size, "Must have one tool object")
+        assertEquals(wumpus, ocpr.toolObjects[0].obj, "Tool object instance not set correctly")
+        assertEquals(
+            namingStrategy,
+            ocpr.toolObjects[0].namingStrategy,
+            "Tool object naming strategy not set correctly"
+        )
+    }
 
     @Test
     @Disabled("test not implemented yet")

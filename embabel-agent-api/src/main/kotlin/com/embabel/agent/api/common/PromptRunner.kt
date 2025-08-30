@@ -255,7 +255,6 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      */
     val toolObjects: List<ToolObject>
 
-
     /**
      * Specify an LLM for the PromptRunner
      */
