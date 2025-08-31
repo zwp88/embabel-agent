@@ -110,8 +110,13 @@ import org.springframework.web.client.RestTemplate
 
     @Bean
     fun agentProcessRepository(
-        processRepositoryProperties: ProcessRepositoryProperties
+        processRepositoryProperties: ProcessRepositoryProperties,
     ): AgentProcessRepository = InMemoryAgentProcessRepository(processRepositoryProperties)
+
+    @Bean
+    fun contextRepository(
+        contextRepositoryProperties: ContextRepositoryProperties,
+    ): ContextRepository = InMemoryContextRepository(contextRepositoryProperties)
 
     @Bean
     fun toolGroupResolver(toolGroups: List<ToolGroup>): ToolGroupResolver = RegistryToolGroupResolver(
