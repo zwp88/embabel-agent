@@ -15,14 +15,10 @@
  */
 package com.embabel.chat
 
-import com.embabel.agent.core.ContextId
-
 /**
  * Simplest possible conversation session implementation
  */
 interface ChatSession {
-
-    val contextId: ContextId
 
     /**
      * Conversation history. Kept up to date.

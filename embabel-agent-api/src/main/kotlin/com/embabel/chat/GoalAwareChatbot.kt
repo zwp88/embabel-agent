@@ -23,6 +23,9 @@ import com.embabel.agent.spi.ContextRepository
 import com.embabel.chat.agent.DefaultChatAgentBuilder
 import com.embabel.common.ai.model.LlmOptions
 
+/*
+ * A chatbot that uses an agent to respond to messages.
+ */
 class GoalAwareChatbot(
     private val contextRepository: ContextRepository,
     private val autonomy: Autonomy,
@@ -38,7 +41,7 @@ class GoalAwareChatbot(
         val conversation = InMemoryConversation(id = context.id!!)
         context.addObject(conversation)
         contextRepository.save(context)
-        val session = SimpleChatSession(contextId = ContextId(context.id!!), _conversation = conversation)
+        val session = SimpleChatSession(_conversation = conversation)
         return session
     }
 
@@ -46,12 +49,11 @@ class GoalAwareChatbot(
         return contextRepository.findById(contextId.value)?.let { context ->
             val conversation = context.last(Conversation::class.java)
                 ?: error("Conversation not found in context ${context.id}")
-            SimpleChatSession(contextId = contextId, _conversation = conversation)
+            SimpleChatSession(_conversation = conversation)
         }
     }
 
     internal inner class SimpleChatSession(
-        override val contextId: ContextId,
         private var _conversation: Conversation,
     ) : ChatSession {
 

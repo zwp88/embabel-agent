@@ -19,7 +19,6 @@ import com.embabel.agent.api.common.autonomy.PlanLister
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Blackboard
-import com.embabel.agent.core.ContextId
 import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
@@ -95,9 +94,6 @@ class AgentPlatformChatSession(
     private var internalConversation: Conversation = InMemoryConversation()
 
     private val blackboard: Blackboard = processOptions.blackboard ?: InMemoryBlackboard()
-
-    override val contextId: ContextId
-        get() = TODO("Not implemented in this legacy class")
 
     override val conversation: Conversation
         get() = internalConversation
