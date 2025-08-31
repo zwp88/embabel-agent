@@ -21,7 +21,7 @@ package com.embabel.chat
 interface ChatSession {
 
     /**
-     * Conversation history
+     * Conversation history. Kept up to date.
      */
     val conversation: Conversation
 
