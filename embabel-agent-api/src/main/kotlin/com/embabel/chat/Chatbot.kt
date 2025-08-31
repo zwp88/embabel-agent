@@ -18,26 +18,15 @@ package com.embabel.chat
 import com.embabel.agent.core.ContextId
 
 /**
- * Simplest possible conversation session implementation
+ * A chatbot can conduct multiple chat sessions,
+ * each identified by a contextId.
  */
-interface ChatSession {
+interface Chatbot {
 
-    val contextId: ContextId
-
-    /**
-     * Conversation history. Kept up to date.
-     */
-    val conversation: Conversation
+    fun createSession(systemMessage: String? = null): ChatSession
 
     /**
-     * Update the conversation with a new message
-     * and respond to it.
-     * Any response messages will be sent to the messageListener
-     * @param userMessage message to send
-     * @param messageListener listener to send messages to
+     * Get a chat session.
      */
-    fun respond(
-        userMessage: UserMessage,
-        messageListener: MessageListener,
-    )
+    fun session(contextId: ContextId): ChatSession?
 }

@@ -37,6 +37,10 @@ class InMemoryContextRepository(
     private val accessOrder: ConcurrentLinkedQueue<String> = ConcurrentLinkedQueue()
     private val lock = ReentrantReadWriteLock()
 
+    override fun create(): Context {
+        return save(SimpleContext())
+    }
+
     override fun findById(id: String): Context? = lock.read {
         map[id]
     }

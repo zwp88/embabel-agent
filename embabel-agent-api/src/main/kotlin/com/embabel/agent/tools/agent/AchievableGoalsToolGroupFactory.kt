@@ -24,7 +24,7 @@ import com.embabel.agent.core.ToolGroupMetadata
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.AgenticEventListener
 
-class ToolGroupFactory(
+class AchievableGoalsToolGroupFactory(
     private val autonomy: Autonomy,
     private val goalToolNamingStrategy: GoalToolNamingStrategy = SanitizedGoalNameToolNamingStrategy,
 ) {
