@@ -28,11 +28,25 @@ Use @Nested classes in tests. Use `test complicated thing` instead of @DisplayNa
 In log statements, use placeholders for efficiency at all logging levels.
 E.g. logger.info("{} {}", a, b) instead of logger.info("computed string").
 
+Write new code in Kotlin rather than Java by default.
+If a file is in Java, it should stay in Java.
+
+If in any doubt, add Java tests and test fixtures to ensure that use from Java is idiomatic.
+
 ## Kotlin
 
 Use Kotlin coding conventions and consistent formatting.
+
+Ensure that use from Java is idiomatic. For example, use @JvmOverloads
+to generate overloads for functions with default parameters if appropriate.
+Use @JvmStatic on companion object functions if appropriate.
 
 ## Java
 
 - Use modern Java features like var, records, and switch expressions.
 - Use multiline strings rather than concatenation.
+
+WRONG: String s = "a";
+RIGHT: var s = "a";
+
+
