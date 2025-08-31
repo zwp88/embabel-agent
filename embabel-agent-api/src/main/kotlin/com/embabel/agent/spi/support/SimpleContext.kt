@@ -71,6 +71,7 @@ class SimpleContext(
     }
 
     override fun populate(blackboard: Blackboard) {
-        TODO("Not yet implemented")
+        _map.forEach { (k, v) -> blackboard[k] = v }
+        _entries.filterNot { _map.values.contains(it) }.forEach { blackboard.addObject(it) }
     }
 }
