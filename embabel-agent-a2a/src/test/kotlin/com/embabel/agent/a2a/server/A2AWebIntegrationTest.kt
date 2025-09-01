@@ -17,12 +17,11 @@ package com.embabel.agent.a2a.server
 
 import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.core.AgentPlatform
-import com.embabel.agent.e2e.FakeConfig
-import com.embabel.agent.spi.LlmOperations
-import com.embabel.agent.testing.integration.DummyObjectCreatingLlmOperations
+import com.embabel.agent.a2a.server.config.FakeAiConfiguration
+import com.embabel.agent.a2a.server.config.FakeRankerConfiguration
+import com.embabel.agent.a2a.example.simple.horoscope.TestHoroscopeService
+import com.embabel.agent.a2a.example.simple.horoscope.kotlin.TestStarNewsFinder
 import com.embabel.common.core.types.Semver.Companion.DEFAULT_VERSION
-import com.embabel.example.simple.horoscope.TestHoroscopeService
-import com.embabel.example.simple.horoscope.java.TestStarNewsFinder
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.a2a.spec.AgentCard
 import io.a2a.spec.CancelTaskResponse
@@ -50,10 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Primary
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
@@ -64,23 +60,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-@TestConfiguration
-class DummyLlmOps {
-
-    @Bean
-    @Primary
-    fun llmOperations(): LlmOperations = DummyObjectCreatingLlmOperations.LoremIpsum
-
-}
-
 @SpringBootTest
 @ActiveProfiles(value = ["test", "a2a"])
 @AutoConfigureMockMvc(addFilters = false)
 @EnableAutoConfiguration
 @Import(
     value = [
-        FakeConfig::class,
-        DummyLlmOps::class,
+        FakeAiConfiguration::class,
+        FakeRankerConfiguration::class,
     ]
 )
 class A2AWebIntegrationTest(
@@ -97,12 +84,11 @@ class A2AWebIntegrationTest(
     @BeforeEach
     fun setup() {
         AgentMetadataReader().createAgentScopes(
-            com.embabel.example.simple.horoscope.kotlin.TestStarNewsFinder(
+            TestStarNewsFinder(
                 horoscopeService = horoscopeService,
                 wordCount = 100,
                 storyCount = 5,
             ),
-            TestStarNewsFinder(horoscopeService, 5),
         ).forEach { agentPlatform.deploy(it) }
     }
 
