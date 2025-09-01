@@ -7,7 +7,9 @@
       "Read(/Users/rjohnson/dev/embabel.com/embabel-agent-examples/examples-java/src/main/java/com/embabel/example/horoscope/**)",
       "Read(/Users/rjohnson/dev/embabel.com/embabel-agent-examples/examples-java/src/main/java/com/embabel/example/horoscope/**)",
       "Read(/Users/rjohnson/dev/embabel.com/embabel-agent-examples/examples-kotlin/src/main/kotlin/com/embabel/example/horoscope/**)",
-      "Read(/Users/rjohnson/dev/embabel.com/embabel-agent-examples/examples-java/src/main/java/com/embabel/example/pydantic/banksupport/**)"
+      "Read(/Users/rjohnson/dev/embabel.com/embabel-agent-examples/examples-java/src/main/java/com/embabel/example/pydantic/banksupport/**)",
+      "Bash(mvn test-compile:*)",
+      "Bash(mvn test:*)"
     ],
     "deny": [],
     "ask": []

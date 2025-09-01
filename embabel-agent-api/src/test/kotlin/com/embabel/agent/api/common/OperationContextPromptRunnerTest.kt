@@ -24,13 +24,13 @@ import com.embabel.agent.testing.unit.FakeOperationContext
 import com.embabel.chat.Message
 import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.util.StringTransformer
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -96,6 +96,196 @@ class OperationContextPromptRunnerTest {
         @Test
         @Disabled("test not implemented yet")
         fun `test contextual prompt contributors`() {
+        }
+
+        @Test
+        fun `test withReference`() {
+            val mockReference = mockk<LlmReference>()
+            every { mockReference.name } returns "TestAPI"
+            every { mockReference.contribution() } returns "Test API documentation"
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withReference(mockReference)
+
+            assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for reference")
+            assertEquals(mockReference, ocpr.toolObjects[0].obj, "Reference not set correctly as tool object")
+            assertEquals(1, ocpr.promptContributors.size, "Must have one prompt contributor for reference")
+            assertEquals(mockReference, ocpr.promptContributors[0], "Reference not set correctly as prompt contributor")
+
+            // Test that a naming strategy is set (actual behavior may vary)
+            assertNotNull(ocpr.toolObjects[0].namingStrategy, "Naming strategy should not be null")
+        }
+
+        @Test
+        fun `test withReference with special characters in name`() {
+            val mockReference = mockk<LlmReference>()
+            every { mockReference.name } returns "Test-API@v2!"
+            every { mockReference.contribution() } returns "Test API v2 documentation"
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withReference(mockReference)
+
+            assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for reference")
+
+            // Test that a naming strategy is set for special characters
+            assertNotNull(ocpr.toolObjects[0].namingStrategy, "Naming strategy should not be null even with special characters")
+        }
+
+        @Test
+        fun `test withReferences with multiple references`() {
+            val mockReference1 = mockk<LlmReference>()
+            every { mockReference1.name } returns "API1"
+            every { mockReference1.contribution() } returns "API 1 documentation"
+
+            val mockReference2 = mockk<LlmReference>()
+            every { mockReference2.name } returns "API2"
+            every { mockReference2.contribution() } returns "API 2 documentation"
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withReferences(listOf(mockReference1, mockReference2))
+
+            assertEquals(2, ocpr.toolObjects.size, "Must have two tool objects for references")
+            assertEquals(2, ocpr.promptContributors.size, "Must have two prompt contributors for references")
+
+            assertTrue(ocpr.toolObjects.any { it.obj == mockReference1 }, "Reference 1 not found in tool objects")
+            assertTrue(ocpr.toolObjects.any { it.obj == mockReference2 }, "Reference 2 not found in tool objects")
+            assertTrue(ocpr.promptContributors.contains(mockReference1), "Reference 1 not found in prompt contributors")
+            assertTrue(ocpr.promptContributors.contains(mockReference2), "Reference 2 not found in prompt contributors")
+        }
+
+        @Test
+        fun `test withReferences with varargs`() {
+            val mockReference1 = mockk<LlmReference>()
+            every { mockReference1.name } returns "API1"
+            every { mockReference1.contribution() } returns "API 1 documentation"
+
+            val mockReference2 = mockk<LlmReference>()
+            every { mockReference2.name } returns "API2"
+            every { mockReference2.contribution() } returns "API 2 documentation"
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withReferences(mockReference1, mockReference2)
+
+            assertEquals(2, ocpr.toolObjects.size, "Must have two tool objects for references")
+            assertEquals(2, ocpr.promptContributors.size, "Must have two prompt contributors for references")
+        }
+
+        @Test
+        fun `test withSystemPrompt`() {
+            val systemPrompt = "You are a helpful assistant specialized in testing."
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withSystemPrompt(systemPrompt)
+
+            assertEquals(1, ocpr.promptContributors.size, "Must have one prompt contributor for system prompt")
+            assertEquals(systemPrompt, ocpr.promptContributors[0].contribution(), "System prompt not set correctly")
+        }
+
+        @Test
+        fun `test withSystemPrompt with empty string`() {
+            val systemPrompt = ""
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withSystemPrompt(systemPrompt)
+
+            assertEquals(1, ocpr.promptContributors.size, "Must have one prompt contributor for system prompt")
+            assertEquals(systemPrompt, ocpr.promptContributors[0].contribution(), "Empty system prompt not handled correctly")
+        }
+
+        @Test
+        fun `test withSystemPrompt with multiline content`() {
+            val systemPrompt = """
+                You are a helpful assistant.
+                You should always:
+                1. Be polite
+                2. Be accurate
+                3. Be concise
+            """.trimIndent()
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withSystemPrompt(systemPrompt)
+
+            assertEquals(1, ocpr.promptContributors.size, "Must have one prompt contributor for system prompt")
+            assertEquals(systemPrompt, ocpr.promptContributors[0].contribution(), "Multiline system prompt not set correctly")
+        }
+
+        @Test
+        fun `test withToolGroups with set of strings`() {
+            val toolGroups = setOf("math", "file", "web")
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withToolGroups(toolGroups)
+
+            assertEquals(3, ocpr.toolGroups.size, "Must have three tool groups")
+            assertTrue(ocpr.toolGroups.any { it.role == "math" }, "Math tool group not found")
+            assertTrue(ocpr.toolGroups.any { it.role == "file" }, "File tool group not found")
+            assertTrue(ocpr.toolGroups.any { it.role == "web" }, "Web tool group not found")
+        }
+
+        @Test
+        fun `test withToolGroups with empty set`() {
+            val toolGroups = emptySet<String>()
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withToolGroups(toolGroups)
+
+            assertEquals(0, ocpr.toolGroups.size, "Must have no tool groups")
+        }
+
+        @Test
+        fun `test withTools with varargs`() {
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withTools("math", "file", "web")
+
+            assertEquals(3, ocpr.toolGroups.size, "Must have three tool groups")
+            assertTrue(ocpr.toolGroups.any { it.role == "math" }, "Math tool group not found")
+            assertTrue(ocpr.toolGroups.any { it.role == "file" }, "File tool group not found")
+            assertTrue(ocpr.toolGroups.any { it.role == "web" }, "Web tool group not found")
+        }
+
+        @Test
+        fun `test withTools with no arguments`() {
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withTools()
+
+            assertEquals(0, ocpr.toolGroups.size, "Must have no tool groups when no args provided")
+        }
+
+        @Test
+        fun `test withToolGroup single string`() {
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withToolGroup("math")
+
+            assertEquals(1, ocpr.toolGroups.size, "Must have one tool group")
+            assertEquals("math", ocpr.toolGroups.first().role, "Tool group name not set correctly")
+        }
+
+        @Test
+        fun `test chaining multiple withSystemPrompt calls`() {
+            val systemPrompt1 = "First system prompt"
+            val systemPrompt2 = "Second system prompt"
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withSystemPrompt(systemPrompt1)
+                .withSystemPrompt(systemPrompt2)
+
+            assertEquals(2, ocpr.promptContributors.size, "Must have two prompt contributors")
+            assertTrue(ocpr.promptContributors.any { it.contribution() == systemPrompt1 }, "First system prompt not found")
+            assertTrue(ocpr.promptContributors.any { it.contribution() == systemPrompt2 }, "Second system prompt not found")
+        }
+
+        @Test
+        fun `test combining withReference and withSystemPrompt`() {
+            val mockReference = mockk<LlmReference>()
+            every { mockReference.name } returns "TestAPI"
+            every { mockReference.contribution() } returns "Test API documentation"
+
+            val systemPrompt = "You are a helpful assistant."
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
+                .withReference(mockReference)
+                .withSystemPrompt(systemPrompt)
+
+            assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for reference")
+            assertEquals(2, ocpr.promptContributors.size, "Must have two prompt contributors (reference + system prompt)")
+            assertTrue(ocpr.promptContributors.contains(mockReference), "Reference not found in prompt contributors")
+            assertTrue(ocpr.promptContributors.any { it.contribution() == systemPrompt }, "System prompt not found in prompt contributors")
         }
 
         @Test
@@ -175,6 +365,12 @@ class OperationContextPromptRunnerTest {
             assertTrue(eg.contains("Good dog"), "Should include example description")
             assertTrue(eg.contains("{"), "Should include JSON")
         }
+    }
+
+    // Create a simple mock implementation for testing
+    private class TestLlmReference(override val name: String, private val promptContribution: String) : LlmReference {
+        override val description: String = "Test reference: $name"
+        override fun contribution(): String = promptContribution
     }
 
 }

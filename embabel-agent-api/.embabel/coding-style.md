@@ -35,16 +35,17 @@ If in any doubt, add Java tests and test fixtures to ensure that use from Java i
 
 ## Kotlin
 
-Use Kotlin coding conventions and consistent formatting.
-
-Ensure that use from Java is idiomatic. For example, use @JvmOverloads
-to generate overloads for functions with default parameters if appropriate.
-Use @JvmStatic on companion object functions if appropriate.
+- Use Kotlin coding conventions and consistent formatting.
+- Ensure that use from Java is idiomatic. For example, use @JvmOverloads
+  to generate overloads for functions with default parameters if appropriate.
+  Use @JvmStatic on companion object functions if appropriate.
+- Use mockk for tests.
 
 ## Java
 
 - Use modern Java features like var, records, and switch expressions.
 - Use multiline strings rather than concatenation.
+- Use Mockito for tests.
 
 WRONG: String s = "a";
 RIGHT: var s = "a";

@@ -17,6 +17,10 @@ IMPORTANT: Adhere to coding style in `.embabel/coding-style.md` for coding style
 
 You should work test first.
 
+IMPORTANT: You should build the most relevant project (closest pom.xml) with Maven before
+presenting finished changes. Run the individual tests you have changed
+or that are most relevant.
+
 ## Advice for Documentation in embabel-agent-docs
 
 When working on documentation in the `embabel-agent-docs` module, follow these guidelines:
