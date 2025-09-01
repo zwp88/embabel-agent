@@ -12,10 +12,9 @@
         <module name="embabel-agent-shell" />
         <module name="embabel-agent-starter-bedrock" />
         <module name="embabel-agent-a2a" />
-        <module name="embabel-agent-lucene" />
+        <module name="embabel-agent-rag-lucene" />
         <module name="embabel-agent-starter-shell" />
         <module name="embabel-agent-autoconfigure" />
-        <module name="embabel-agent-rag" />
         <module name="embabel-agent-starter" />
         <module name="embabel-agent-mcpserver" />
         <module name="embabel-agent-api" />
@@ -25,6 +24,7 @@
         <module name="embabel-agent-test" />
         <module name="embabel-agent-eval" />
         <module name="embabel-agent-discord" />
+        <module name="embabel-agent-rag-neo" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -32,7 +32,7 @@
       <module name="embabel-agent-docs" target="21" />
       <module name="embabel-agent-example-dependencies" target="1.5" />
       <module name="embabel-agent-example-parent" target="21" />
-      <module name="embabel-agent-rag-lucene" target="21" />
+      <module name="embabel-agent-lucene" target="21" />
       <module name="embabel-horoscope-example" target="21" />
       <module name="embabel-movie-example" target="21" />
       <module name="example-java-parent" target="21" />
@@ -54,7 +54,9 @@
       <module name="embabel-agent-eval" options="-parameters" />
       <module name="embabel-agent-lucene" options="-parameters" />
       <module name="embabel-agent-mcpserver" options="-parameters" />
-      <module name="embabel-agent-rag" options="-parameters" />
+      <module name="embabel-agent-rag" options="" />
+      <module name="embabel-agent-rag-lucene" options="-parameters" />
+      <module name="embabel-agent-rag-neo" options="-parameters" />
       <module name="embabel-agent-shell" options="-parameters" />
       <module name="embabel-agent-starter" options="-parameters" />
       <module name="embabel-agent-starter-bedrock" options="-parameters" />
