@@ -1,6 +1,11 @@
 
 embabel-agent-api/src/main/resources/mcp/**
 
+.idea
+
+*.iml
+
+
 /target/**
 */target/**
 */*/target/**
