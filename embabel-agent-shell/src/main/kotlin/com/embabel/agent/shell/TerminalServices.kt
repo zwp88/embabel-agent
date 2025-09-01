@@ -70,7 +70,7 @@ class TerminalServices(
             .terminal(terminal)
             .build()
         lineReader.printAbove(
-            welcome?.let { it + "\n" } +
+            (welcome?.let { it + "\n" } ?: "") +
                     """
             Chat session started. Type 'exit' to end the session.
             Type /help for available commands.
