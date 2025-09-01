@@ -18,16 +18,23 @@ package com.embabel.agent.api.common
 import com.embabel.agent.api.annotation.support.Wumpus
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.core.Operation
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.experimental.primitive.Determination
+import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.RagResponse
+import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.tools.RagOptions
+import com.embabel.agent.rag.tools.RagServiceTools
 import com.embabel.agent.support.Dog
 import com.embabel.agent.testing.unit.FakeOperationContext
 import com.embabel.chat.Message
 import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
+import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.StringTransformer
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import io.mockk.slot
 import io.mockk.spyk
 import org.junit.jupiter.api.Assertions.*
@@ -287,6 +294,216 @@ class OperationContextPromptRunnerTest {
             assertTrue(ocpr.promptContributors.contains(mockReference), "Reference not found in prompt contributors")
             assertTrue(ocpr.promptContributors.any { it.contribution() == systemPrompt }, "System prompt not found in prompt contributors")
         }
+
+    @Nested
+    inner class WithRagToolsTests {
+
+        @Test
+        fun `test withRagTools with default options`() {
+            val mockContext = mockk<OperationContext>(relaxed = true)
+            val mockPlatformServices = mockk<PlatformServices>(relaxed = true)
+            val mockAgentPlatform = mockk<AgentPlatform>(relaxed = true)
+            val mockRagService = mockk<RagService>(relaxed = true)
+
+            every { mockContext.agentPlatform() } returns mockAgentPlatform
+            every { mockAgentPlatform.platformServices } returns mockPlatformServices
+            every { mockPlatformServices.ragService } returns mockRagService
+
+            val ragOptions = RagOptions()
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
+                .withRagTools(ragOptions)
+
+            assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
+            assertTrue(ocpr.toolObjects.any { it.obj is RagServiceTools }, "RAG service tools not found in tool objects")
+
+            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceTools }.obj as RagServiceTools
+            assertEquals(mockRagService, ragTools.ragService, "RAG service not set correctly")
+            assertEquals(ragOptions, ragTools.options, "RAG options not set correctly")
+        }
+
+        @Test
+        fun `test withRagTools with custom options`() {
+            val mockContext = mockk<OperationContext>(relaxed = true)
+            val mockPlatformServices = mockk<PlatformServices>(relaxed = true)
+            val mockAgentPlatform = mockk<AgentPlatform>(relaxed = true)
+            val mockRagService = mockk<RagService>(relaxed = true)
+
+            every { mockContext.agentPlatform() } returns mockAgentPlatform
+            every { mockAgentPlatform.platformServices } returns mockPlatformServices
+            every { mockPlatformServices.ragService } returns mockRagService
+
+            val customRagOptions = RagOptions(
+                similarityThreshold = 0.9,
+                topK = 5,
+                labels = setOf("test-label")
+            )
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
+                .withRagTools(customRagOptions)
+
+            assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
+
+            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceTools }.obj as RagServiceTools
+            assertEquals(customRagOptions, ragTools.options, "Custom RAG options not set correctly")
+            assertEquals(0.9, ragTools.options.similarityThreshold.toDouble(), 0.001, "Similarity threshold not set correctly")
+            assertEquals(5, ragTools.options.topK, "TopK not set correctly")
+            assertEquals(setOf("test-label"), ragTools.options.labels, "Labels not set correctly")
+        }
+
+        @Test
+        fun `test withRagTools throws error when added twice`() {
+            val mockContext = mockk<OperationContext>(relaxed = true)
+            val mockPlatformServices = mockk<PlatformServices>(relaxed = true)
+            val mockAgentPlatform = mockk<AgentPlatform>(relaxed = true)
+            val mockRagService = mockk<RagService>(relaxed = true)
+
+            every { mockContext.agentPlatform() } returns mockAgentPlatform
+            every { mockAgentPlatform.platformServices } returns mockPlatformServices
+            every { mockPlatformServices.ragService } returns mockRagService
+
+            val ragOptions1 = RagOptions()
+            val ragOptions2 = RagOptions(topK = 10)
+
+            val ocprWithOneRag = createOperationContextPromptRunnerWithDefaults(mockContext)
+                .withRagTools(ragOptions1)
+
+            assertEquals(1, ocprWithOneRag.toolObjects.size, "Must have one tool object after first withRagTools")
+
+            // Adding RAG tools twice should throw an error
+            val exception = assertThrows(IllegalStateException::class.java) {
+                ocprWithOneRag.withRagTools(ragOptions2)
+            }
+
+            assertEquals("Cannot add Rag Tools twice", exception.message)
+        }
+
+        @Test
+        fun `test withRagTools can be combined with other tools`() {
+            val mockContext = mockk<OperationContext>(relaxed = true)
+            val mockPlatformServices = mockk<PlatformServices>(relaxed = true)
+            val mockAgentPlatform = mockk<AgentPlatform>(relaxed = true)
+            val mockRagService = mockk<RagService>(relaxed = true)
+            val wumpus = Wumpus("test-wumpus")
+
+            every { mockContext.agentPlatform() } returns mockAgentPlatform
+            every { mockAgentPlatform.platformServices } returns mockPlatformServices
+            every { mockPlatformServices.ragService } returns mockRagService
+
+            val ragOptions = RagOptions()
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
+                .withRagTools(ragOptions)
+                .withToolObject(wumpus)
+                .withToolGroup("math")
+
+            assertEquals(2, ocpr.toolObjects.size, "Must have two tool objects (RAG + Wumpus)")
+            assertEquals(1, ocpr.toolGroups.size, "Must have one tool group")
+
+            assertTrue(ocpr.toolObjects.any { it.obj is RagServiceTools }, "RAG service tools not found")
+            assertTrue(ocpr.toolObjects.any { it.obj == wumpus }, "Wumpus not found in tool objects")
+            assertTrue(ocpr.toolGroups.any { it.role == "math" }, "Math tool group not found")
+        }
+
+        @Test
+        fun `test withRagTools order independence with other methods`() {
+            val mockContext = mockk<OperationContext>(relaxed = true)
+            val mockPlatformServices = mockk<PlatformServices>(relaxed = true)
+            val mockAgentPlatform = mockk<AgentPlatform>(relaxed = true)
+            val mockRagService = mockk<RagService>(relaxed = true)
+            val systemPrompt = "You are a helpful RAG-enabled assistant."
+
+            every { mockContext.agentPlatform() } returns mockAgentPlatform
+            every { mockAgentPlatform.platformServices } returns mockPlatformServices
+            every { mockPlatformServices.ragService } returns mockRagService
+
+            val ragOptions = RagOptions()
+
+            // Test RAG tools first, then system prompt
+            val ocpr1 = createOperationContextPromptRunnerWithDefaults(mockContext)
+                .withRagTools(ragOptions)
+                .withSystemPrompt(systemPrompt)
+
+            // Test system prompt first, then RAG tools
+            val ocpr2 = createOperationContextPromptRunnerWithDefaults(mockContext)
+                .withSystemPrompt(systemPrompt)
+                .withRagTools(ragOptions)
+
+            // Both should have the same end result
+            assertEquals(ocpr1.toolObjects.size, ocpr2.toolObjects.size, "Tool object counts should be equal")
+            assertEquals(ocpr1.promptContributors.size, ocpr2.promptContributors.size, "Prompt contributor counts should be equal")
+
+            assertTrue(ocpr1.toolObjects.any { it.obj is RagServiceTools }, "OCPR1: RAG service tools not found")
+            assertTrue(ocpr2.toolObjects.any { it.obj is RagServiceTools }, "OCPR2: RAG service tools not found")
+            assertTrue(ocpr1.promptContributors.any { it.contribution() == systemPrompt }, "OCPR1: System prompt not found")
+            assertTrue(ocpr2.promptContributors.any { it.contribution() == systemPrompt }, "OCPR2: System prompt not found")
+        }
+
+        @Test
+        fun `test withRagTools preserves immutability`() {
+            val mockContext = mockk<OperationContext>(relaxed = true)
+            val mockPlatformServices = mockk<PlatformServices>(relaxed = true)
+            val mockAgentPlatform = mockk<AgentPlatform>(relaxed = true)
+            val mockRagService = mockk<RagService>(relaxed = true)
+
+            every { mockContext.agentPlatform() } returns mockAgentPlatform
+            every { mockAgentPlatform.platformServices } returns mockPlatformServices
+            every { mockPlatformServices.ragService } returns mockRagService
+
+            val ragOptions = RagOptions()
+            val originalOcpr = createOperationContextPromptRunnerWithDefaults(mockContext)
+            val newOcpr = originalOcpr.withRagTools(ragOptions)
+
+            // Original should be unchanged
+            assertEquals(0, originalOcpr.toolObjects.size, "Original OCPR should have no tool objects")
+
+            // New should have the RAG tools
+            assertEquals(1, newOcpr.toolObjects.size, "New OCPR should have RAG tool object")
+            assertTrue(newOcpr.toolObjects.any { it.obj is RagServiceTools }, "New OCPR should have RAG service tools")
+
+            // They should be different instances
+            assertNotSame(originalOcpr, newOcpr, "Should create new instance")
+        }
+
+        @Test
+        fun `test search invokes underlying RagService with correct arguments`() {
+            val mockContext = mockk<OperationContext>(relaxed = true)
+            val mockPlatformServices = mockk<PlatformServices>(relaxed = true)
+            val mockAgentPlatform = mockk<AgentPlatform>(relaxed = true)
+            val mockRagService = mockk<RagService>(relaxed = true)
+
+            every { mockContext.agentPlatform() } returns mockAgentPlatform
+            every { mockAgentPlatform.platformServices } returns mockPlatformServices
+            every { mockPlatformServices.ragService } returns mockRagService
+
+            val mockRagResponse = RagResponse("test-service", emptyList())
+            every { mockRagService.search(any()) } returns mockRagResponse
+
+            val customRagOptions = RagOptions(
+                similarityThreshold = 0.85,
+                topK = 12,
+                labels = setOf("custom-label", "another-label")
+            )
+
+            val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
+                .withRagTools(customRagOptions)
+
+            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceTools }.obj as RagServiceTools
+
+            // Call the search method
+            val query = "test search query"
+            ragTools.search(query)
+
+            // Verify that the underlying RagService was called with the correct request
+            verify {
+                mockRagService.search(match<RagRequest> { request ->
+                    request.query == query &&
+                            request.similarityThreshold == 0.85 &&
+                            request.topK == 12 &&
+                            request.labels == setOf("custom-label", "another-label")
+                })
+            }
+        }
+
+    }
 
         @Test
         @Disabled("test not implemented yet")

@@ -23,6 +23,8 @@ import com.embabel.agent.core.Verbosity
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
+import com.embabel.agent.rag.tools.RagOptions
+import com.embabel.agent.rag.tools.RagServiceTools
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.tools.agent.AgentToolCallback
@@ -166,6 +168,16 @@ internal data class OperationContextPromptRunner(
 
     override fun withToolObject(toolObject: ToolObject): PromptRunner =
         copy(toolObjects = this.toolObjects + toolObject)
+
+    override fun withRagTools(options: RagOptions): PromptRunner {
+        if (toolObjects.any { it.obj is RagServiceTools }) error("Cannot add Rag Tools twice")
+        return withToolObject(
+            RagServiceTools(
+                ragService = context.agentPlatform().platformServices.ragService,
+                options = options,
+            )
+        )
+    }
 
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         val handoffs = Handoffs(

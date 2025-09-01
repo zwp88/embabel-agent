@@ -20,6 +20,9 @@ import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.prompt.element.ContextualPromptElement
+import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.tools.RagOptions
+import com.embabel.agent.rag.tools.RagServiceTools
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.chat.Message
@@ -186,6 +189,12 @@ data class FakePromptRunner(
             templateRenderer = JinjavaTemplateRenderer(),
             promptRunnerOperations = this,
         )
+    }
+
+    override fun withRagTools(options: RagOptions): PromptRunner {
+        logger.warn("RAG tools not implemented in FakePromptRunner")
+        return this.withToolObject(RagServiceTools.create(RagService.empty(), RagOptions()))
+
     }
 
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
