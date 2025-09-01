@@ -26,6 +26,8 @@ import java.time.Instant
  */
 interface RagResponse : Timestamped {
 
+    val request: RagRequest
+
     /**
      * RAG service that produced this result
      */
@@ -36,10 +38,12 @@ interface RagResponse : Timestamped {
     companion object {
 
         operator fun invoke(
+            request: RagRequest,
             service: String,
             results: List<SimilarityResult<out Retrievable>>,
         ): RagResponse {
             return DefaultRagResponse(
+                request = request,
                 service = service,
                 results = results,
             )
@@ -48,24 +52,12 @@ interface RagResponse : Timestamped {
     }
 }
 
-data class DefaultRagResponse(
+data class DefaultRagResponse @JvmOverloads constructor(
+    override val request: RagRequest,
     override val service: String,
     override val results: List<SimilarityResult<out Retrievable>>,
-    override val timestamp: Instant,
-) : RagResponse {
-
-    /**
-     * For use from Java
-     */
-    constructor (
-        service: String,
-        results: List<SimilarityResult<out Retrievable>>,
-    ) : this(
-        service = service,
-        results = results,
-        timestamp = Instant.now(),
-    )
-}
+    override val timestamp: Instant = Instant.now(),
+) : RagResponse
 
 /**
  * Narrowing of RagRequest
@@ -100,7 +92,8 @@ data class RagRequest(
     override val similarityThreshold: ZeroToOne = .8,
     override val topK: Int = 8,
     override val labels: Set<String> = emptySet(),
-) : TextSimilaritySearchRequest, RagRequestRefinement {
+    override val timestamp: Instant = Instant.now(),
+) : TextSimilaritySearchRequest, RagRequestRefinement, Timestamped {
 
     fun withSimilarityThreshold(threshold: ZeroToOne): RagRequest {
         return this.copy(similarityThreshold = threshold)

@@ -62,7 +62,7 @@ class RagServiceToolsTest {
         val searchResults = listOf(
             SimpleSimilaritySearchResult(match = mockChunk, score = 0.9)
         )
-        val mockResponse = RagResponse("test-service", searchResults)
+        val mockResponse = RagResponse(RagRequest("test"), "test-service", searchResults)
 
         every { mockRagService.search(any()) } returns mockResponse
 
@@ -79,7 +79,7 @@ class RagServiceToolsTest {
         val options = RagOptions()
         val ragTools = RagServiceTools(mockRagService, options)
 
-        val mockResponse = RagResponse("test-service", emptyList())
+        val mockResponse = RagResponse(RagRequest("test query"), "test-service", emptyList())
         every { mockRagService.search(any()) } returns mockResponse
 
         val result = ragTools.search("test query")
@@ -98,7 +98,7 @@ class RagServiceToolsTest {
         )
         val ragTools = RagServiceTools(mockRagService, options)
 
-        val mockResponse = RagResponse("test-service", emptyList())
+        val mockResponse = RagResponse(RagRequest("test query"), "test-service", emptyList())
         every { mockRagService.search(any()) } returns mockResponse
 
         ragTools.search("test query")
@@ -185,7 +185,7 @@ class RagServiceToolsTest {
         val options = RagOptions(ragResponseFormatter = customFormatter)
         val ragTools = RagServiceTools(mockRagService, options)
 
-        val mockResponse = RagResponse("test-service", emptyList())
+        val mockResponse = RagResponse(RagRequest("test query"), "test-service", emptyList())
         every { mockRagService.search(any()) } returns mockResponse
         every { customFormatter.format(any()) } returns "Custom formatted response"
 
@@ -213,7 +213,7 @@ class RagServiceToolsTest {
             SimpleSimilaritySearchResult(match = mockChunk1, score = 0.95),
             SimpleSimilaritySearchResult(match = mockChunk2, score = 0.85)
         )
-        val mockResponse = RagResponse("test-service", searchResults)
+        val mockResponse = RagResponse(RagRequest("test query"), "test-service", searchResults)
 
         every { mockRagService.search(any()) } returns mockResponse
 

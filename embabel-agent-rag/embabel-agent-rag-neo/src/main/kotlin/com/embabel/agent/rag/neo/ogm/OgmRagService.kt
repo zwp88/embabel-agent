@@ -82,6 +82,7 @@ class OgmRagService(
             if (results.isNotEmpty()) {
                 logger.info("Cypher query executed successfully, results: {}", results)
                 return RagResponse(
+                    request = ragRequest,
                     service = this.name,
                     results = results.map {
                         // Most similar as we found them by a query
@@ -126,12 +127,14 @@ class OgmRagService(
                 logger,
             )
             RagResponse(
+                request = ragRequest,
                 service = this.name,
                 results = chunkResults + entityResults,
             )
         } ?: run {
             logger.error("Transaction failed or returned null, returning empty RagResponse")
             RagResponse(
+                request = ragRequest,
                 service = this.name,
                 results = emptyList(),
             )

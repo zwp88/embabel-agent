@@ -67,6 +67,7 @@ class LuceneRagService @JvmOverloads constructor(
         refreshReaderIfNeeded()
 
         val reader = directoryReader ?: return RagResponse(
+            request = ragRequest,
             service = name,
             results = emptyList()
         )
@@ -86,6 +87,7 @@ class LuceneRagService @JvmOverloads constructor(
             .sortedByDescending { it.score }
 
         return RagResponse(
+            request = ragRequest,
             service = name,
             results = filteredResults
         )
