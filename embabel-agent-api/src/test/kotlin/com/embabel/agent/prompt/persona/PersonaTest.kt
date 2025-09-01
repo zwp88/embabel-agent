@@ -29,7 +29,7 @@ class PersonaTest {
 
         @Test
         fun `should serialize and deserialize Persona with defaults`() {
-            val persona = Persona.create(
+            val persona = Persona(
                 name = "Alice",
                 persona = "Friendly and helpful",
                 voice = "Calm and clear",
@@ -43,7 +43,7 @@ class PersonaTest {
 
         @Test
         fun `should serialize and deserialize Persona with overrides`() {
-            val persona = Persona.create(
+            val persona = Persona(
                 name = "Alice",
                 persona = "Friendly and helpful",
                 voice = "Calm and clear",
@@ -58,7 +58,7 @@ class PersonaTest {
 
     @Test
     fun `should create persona using create factory method`() {
-        val persona = Persona.create(
+        val persona = Persona(
             name = "TestBot",
             persona = "Helpful assistant",
             voice = "Professional",
@@ -88,7 +88,7 @@ class PersonaTest {
 
     @Test
     fun `should generate correct prompt contribution`() {
-        val persona = Persona.create(
+        val persona = Persona(
             name = "Alice",
             persona = "Friendly and helpful",
             voice = "Calm and clear",
@@ -108,7 +108,7 @@ class PersonaTest {
 
     @Test
     fun `should handle empty strings in fields`() {
-        val persona = Persona.create(
+        val persona = Persona(
             name = "",
             persona = "",
             voice = "",
@@ -126,7 +126,7 @@ class PersonaTest {
 
     @Test
     fun `should handle special characters and newlines`() {
-        val persona = Persona.create(
+        val persona = Persona(
             name = "Test\nBot",
             persona = "Helpful & friendly!",
             voice = "Calm, clear & professional",
@@ -141,13 +141,13 @@ class PersonaTest {
 
     @Test
     fun `should maintain equality for same content`() {
-        val persona1 = Persona.create(
+        val persona1 = Persona(
             name = "Alice",
             persona = "Helpful",
             voice = "Clear",
             objective = "Assist"
         )
-        val persona2 = Persona.create(
+        val persona2 = Persona(
             name = "Alice",
             persona = "Helpful",
             voice = "Clear",
@@ -160,13 +160,13 @@ class PersonaTest {
 
     @Test
     fun `should not be equal for different content`() {
-        val persona1 = Persona.create(
+        val persona1 = Persona(
             name = "Alice",
             persona = "Helpful",
             voice = "Clear",
             objective = "Assist"
         )
-        val persona2 = Persona.create(
+        val persona2 = Persona(
             name = "Bob",
             persona = "Helpful",
             voice = "Clear",
