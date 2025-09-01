@@ -27,86 +27,10 @@ import com.embabel.chat.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptElement
-import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.textio.template.TemplateRenderer
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.jetbrains.annotations.ApiStatus
-
-/**
- * User-facing interface for executing prompts.
- */
-interface PromptRunnerOperations {
-
-    /**
-     * Generate text
-     */
-    infix fun generateText(prompt: String): String =
-        createObject(
-            prompt = prompt,
-            outputClass = String::class.java,
-        )
-
-    /**
-     * Create an object of the given type using the given prompt and LLM options from context
-     * (process context or implementing class).
-     * Prompts are typically created within the scope of an
-     * @Action method that provides access to
-     * domain object instances, offering type safety.
-     */
-    fun <T> createObject(
-        prompt: String,
-        outputClass: Class<T>,
-    ): T = createObject(
-        messages = listOf(UserMessage(prompt)),
-        outputClass = outputClass,
-    )
-
-    /**
-     * Try to create an object of the given type using the given prompt and LLM options from context
-     * (process context or implementing class).
-     * Prompt is typically created within the scope of an
-     * @Action method that provides access to
-     * domain object instances, offering type safety.
-     */
-    fun <T> createObjectIfPossible(
-        prompt: String,
-        outputClass: Class<T>,
-    ): T?
-
-    /**
-     * Create an object from messages
-     */
-    fun <T> createObject(
-        messages: List<Message>,
-        outputClass: Class<T>,
-    ): T
-
-    /**
-     * Respond in a conversation
-     */
-    fun respond(
-        messages: List<Message>,
-    ): AssistantMessage =
-        AssistantMessage(
-            createObject(
-                messages = messages,
-                outputClass = String::class.java,
-            )
-        )
-
-    /**
-     * Use operations from a given template
-     */
-    fun withTemplate(templateName: String): TemplateOperations
-
-    fun evaluateCondition(
-        condition: String,
-        context: String,
-        confidenceThreshold: ZeroToOne = 0.8,
-    ): Boolean
-
-}
 
 /**
  * Llm operations based on a compiled template.
