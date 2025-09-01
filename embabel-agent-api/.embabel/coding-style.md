@@ -6,6 +6,10 @@ The project uses Maven, Kotlin and Spring Boot.
 
 Follow the style of the code you read. Favor clarity.
 
+Do not include blank lines within methods without good reason.
+GOOD REASON: two groups of 5 lines each, with a blank line between them to indicate that they are distinct processes.
+BAD REASON: one line/blank line/another line for no particular reason.
+
 Don't bother putting in licence headers, as build will do that.
 
 Don't comment obvious things, inline or in type headers.
