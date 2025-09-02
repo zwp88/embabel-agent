@@ -31,12 +31,14 @@ import org.springframework.ai.tool.annotation.ToolParam
  * @param labels optional set of labels to filter results. If not set all entities may be
  * returned. If set, only the given entities will be searched for.
  * @param ragResponseFormatter formatter to convert RagResponse to String
+ * @param service optional name of the RAG service to use. If null, the default service will be used.
  */
 data class RagOptions @JvmOverloads constructor(
     override val similarityThreshold: ZeroToOne = 0.7,
     override val topK: Int = 8,
     override val labels: Set<String> = emptySet(),
     val ragResponseFormatter: RagResponseFormatter = SimpleRagResponseFormatter,
+    val service: String? = null,
 ) : RagRequestRefinement {
 
     fun withSimilarityThreshold(similarityThreshold: ZeroToOne): RagOptions {
@@ -45,6 +47,13 @@ data class RagOptions @JvmOverloads constructor(
 
     fun withTopK(topK: Int): RagOptions {
         return copy(topK = topK)
+    }
+
+    /**
+     * Return an instance using the given Rag service name.
+     */
+    fun withService(service: String): RagOptions {
+        return copy(service = service)
     }
 
 }

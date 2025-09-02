@@ -35,6 +35,7 @@ import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
@@ -170,13 +171,37 @@ internal data class OperationContextPromptRunner(
         copy(toolObjects = this.toolObjects + toolObject)
 
     override fun withRagTools(options: RagOptions): PromptRunner {
-        if (toolObjects.any { it.obj is RagServiceTools }) error("Cannot add Rag Tools twice")
-        return withToolObject(
-            RagServiceTools(
-                ragService = context.agentPlatform().platformServices.ragService,
-                options = options,
+        if (toolObjects.map { it.obj }
+                .any { it is RagServiceTools && it.options.service == options.service }
+        ) error("Cannot add Rag Tools against service '${options.service ?: "DEFAULT"}' twice")
+        val ragService =
+            context.agentPlatform().platformServices.ragService(options.service)
+                ?: error("No RAG service named '${options.service}' available")
+        val namingStrategy: StringTransformer = if (options.service == null) {
+            StringTransformer.IDENTITY
+        } else {
+            StringTransformer { s -> "${options.service}-$s" }
+        }
+        val withTools = withToolObject(
+            ToolObject(
+                obj = RagServiceTools(
+                    ragService = ragService,
+                    options = options,
+                ),
+                namingStrategy = namingStrategy,
             )
         )
+        return if (options.service == null) {
+            // Default service, no need to explain
+            withTools
+        } else {
+            withTools.withSystemPrompt(
+                """
+                You have access to retrieval augmented generation (RAG) tools to help you answer questions.
+                The tools prefixed with ${ragService.name} are for ${ragService.description}
+            """.trimIndent()
+            )
+        }
     }
 
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {

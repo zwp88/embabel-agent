@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 class RagServiceToolsTest {
 
     @Test
-    fun `should create RagServiceTools with invoke operator`() {
+    fun `should create RagServiceTools`() {
         val mockRagService = mockk<RagService>()
         val options = RagOptions()
 
@@ -36,17 +36,6 @@ class RagServiceToolsTest {
         assertEquals(mockRagService, ragTools.ragService)
         assertEquals(options, ragTools.options)
         assertEquals(SimpleRagResponseFormatter, ragTools.options.ragResponseFormatter)
-    }
-
-    @Test
-    fun `should create RagServiceTools with static create method`() {
-        val mockRagService = mockk<RagService>()
-        val options = RagOptions()
-
-        val ragTools = RagServiceTools(mockRagService, options)
-
-        assertEquals(mockRagService, ragTools.ragService)
-        assertEquals(options, ragTools.options)
     }
 
     @Test

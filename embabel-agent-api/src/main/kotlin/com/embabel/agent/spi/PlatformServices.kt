@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationContext
  * @param llmOperations operations to use for LLMs
  * @param eventListener event listener for agentic events
  * @param operationScheduler operation scheduler for scheduling operations
+ * @param ragService default rag service
  */
 data class PlatformServices(
     val agentPlatform: AgentPlatform,
@@ -59,5 +60,19 @@ data class PlatformServices(
             throw IllegalStateException("Application context is not available, cannot retrieve ModelProvider bean.")
         }
         return applicationContext.getBean(ModelProvider::class.java)
+    }
+
+    /**
+     * Return the RagService with the given name, or the default if no name is given.
+     */
+    fun ragService(serviceName: String?): RagService? {
+        if (applicationContext == null) {
+            throw IllegalStateException("Application context is not available, cannot retrieve RagService beans.")
+        }
+        if (serviceName.isNullOrBlank()) {
+            return ragService
+        }
+        val services = applicationContext.getBeansOfType(RagService::class.java)
+        return services.values.firstOrNull { it.name == serviceName }
     }
 }
