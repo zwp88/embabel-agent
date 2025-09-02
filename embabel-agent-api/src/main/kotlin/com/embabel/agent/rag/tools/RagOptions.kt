@@ -15,14 +15,10 @@
  */
 package com.embabel.agent.rag.tools
 
-import com.embabel.agent.api.common.support.SelfToolCallbackPublisher
 import com.embabel.agent.rag.RagRequestRefinement
 import com.embabel.agent.rag.RagResponseFormatter
-import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.SimpleRagResponseFormatter
 import com.embabel.common.core.types.ZeroToOne
-import org.springframework.ai.tool.annotation.Tool
-import org.springframework.ai.tool.annotation.ToolParam
 
 /**
  * Operations for RAG use as an LLM tool. Options are immutable and stable.
@@ -54,26 +50,6 @@ data class RagOptions @JvmOverloads constructor(
      */
     fun withService(service: String): RagOptions {
         return copy(service = service)
-    }
-
-}
-
-/**
- * Expose a RagService as tools. Options are stable.
- */
-class RagServiceTools(
-    val ragService: RagService,
-    val options: RagOptions,
-) : SelfToolCallbackPublisher {
-
-    @Tool(description = "Query the RAG service")
-    fun search(
-        @ToolParam(
-            description = "Query to search for",
-        )
-        query: String,
-    ): String {
-        return options.ragResponseFormatter.format(ragService.search(options.toRequest(query)))
     }
 
 }

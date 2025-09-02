@@ -24,7 +24,7 @@ import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.rag.tools.RagOptions
-import com.embabel.agent.rag.tools.RagServiceTools
+import com.embabel.agent.rag.tools.RagServiceSearchTools
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.tools.agent.AgentToolCallback
@@ -172,7 +172,7 @@ internal data class OperationContextPromptRunner(
 
     override fun withRagTools(options: RagOptions): PromptRunner {
         if (toolObjects.map { it.obj }
-                .any { it is RagServiceTools && it.options.service == options.service }
+                .any { it is RagServiceSearchTools && it.options.service == options.service }
         ) error("Cannot add Rag Tools against service '${options.service ?: "DEFAULT"}' twice")
         val ragService =
             context.agentPlatform().platformServices.ragService(options.service)
@@ -184,7 +184,7 @@ internal data class OperationContextPromptRunner(
         }
         val withTools = withToolObject(
             ToolObject(
-                obj = RagServiceTools(
+                obj = RagServiceSearchTools(
                     ragService = ragService,
                     options = options,
                 ),

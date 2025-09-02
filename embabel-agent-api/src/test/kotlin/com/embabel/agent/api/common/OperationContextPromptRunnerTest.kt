@@ -24,7 +24,7 @@ import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.tools.RagOptions
-import com.embabel.agent.rag.tools.RagServiceTools
+import com.embabel.agent.rag.tools.RagServiceSearchTools
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.support.Dog
 import com.embabel.agent.testing.unit.FakeOperationContext
@@ -336,11 +336,11 @@ class OperationContextPromptRunnerTest {
 
             assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
             assertTrue(
-                ocpr.toolObjects.any { it.obj is RagServiceTools },
+                ocpr.toolObjects.any { it.obj is RagServiceSearchTools },
                 "RAG service tools not found in tool objects"
             )
 
-            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceTools }.obj as RagServiceTools
+            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceSearchTools }.obj as RagServiceSearchTools
             assertEquals(mockRagService, ragTools.ragService, "RAG service not set correctly")
             assertEquals(ragOptions, ragTools.options, "RAG options not set correctly")
             assertEquals(
@@ -369,11 +369,11 @@ class OperationContextPromptRunnerTest {
 
             assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
             assertTrue(
-                ocpr.toolObjects.any { it.obj is RagServiceTools },
+                ocpr.toolObjects.any { it.obj is RagServiceSearchTools },
                 "RAG service tools not found in tool objects"
             )
 
-            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceTools }.obj as RagServiceTools
+            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceSearchTools }.obj as RagServiceSearchTools
             assertEquals(mockRagService, ragTools.ragService, "RAG service not set correctly")
             assertEquals(ragOptions, ragTools.options, "RAG options not set correctly")
             assertEquals(
@@ -408,7 +408,7 @@ class OperationContextPromptRunnerTest {
 
             assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
 
-            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceTools }.obj as RagServiceTools
+            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceSearchTools }.obj as RagServiceSearchTools
             assertEquals(customRagOptions, ragTools.options, "Custom RAG options not set correctly")
             assertEquals(
                 0.9,
@@ -488,7 +488,7 @@ class OperationContextPromptRunnerTest {
             assertEquals(2, ocpr.toolObjects.size, "Must have two tool objects (RAG + Wumpus)")
             assertEquals(1, ocpr.toolGroups.size, "Must have one tool group")
 
-            assertTrue(ocpr.toolObjects.any { it.obj is RagServiceTools }, "RAG service tools not found")
+            assertTrue(ocpr.toolObjects.any { it.obj is RagServiceSearchTools }, "RAG service tools not found")
             assertTrue(ocpr.toolObjects.any { it.obj == wumpus }, "Wumpus not found in tool objects")
             assertTrue(ocpr.toolGroups.any { it.role == "math" }, "Math tool group not found")
         }
@@ -525,8 +525,8 @@ class OperationContextPromptRunnerTest {
                 "Prompt contributor counts should be equal"
             )
 
-            assertTrue(ocpr1.toolObjects.any { it.obj is RagServiceTools }, "OCPR1: RAG service tools not found")
-            assertTrue(ocpr2.toolObjects.any { it.obj is RagServiceTools }, "OCPR2: RAG service tools not found")
+            assertTrue(ocpr1.toolObjects.any { it.obj is RagServiceSearchTools }, "OCPR1: RAG service tools not found")
+            assertTrue(ocpr2.toolObjects.any { it.obj is RagServiceSearchTools }, "OCPR2: RAG service tools not found")
             assertTrue(
                 ocpr1.promptContributors.any { it.contribution() == systemPrompt },
                 "OCPR1: System prompt not found"
@@ -558,7 +558,7 @@ class OperationContextPromptRunnerTest {
             // New should have the RAG tools
             assertEquals(1, newOcpr.toolObjects.size, "New OCPR should have RAG tool object")
             assertTrue(
-                newOcpr.toolObjects.any { it.obj is RagServiceTools },
+                newOcpr.toolObjects.any { it.obj is RagServiceSearchTools },
                 "New OCPR should have RAG service tools"
             )
 
@@ -589,7 +589,7 @@ class OperationContextPromptRunnerTest {
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
                 .withRagTools(customRagOptions)
 
-            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceTools }.obj as RagServiceTools
+            val ragTools = ocpr.toolObjects.first { it.obj is RagServiceSearchTools }.obj as RagServiceSearchTools
 
             // Call the search method
             val query = "test search query"

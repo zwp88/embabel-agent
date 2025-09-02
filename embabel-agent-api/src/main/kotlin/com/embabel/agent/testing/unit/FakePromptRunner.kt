@@ -22,7 +22,7 @@ import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.tools.RagOptions
-import com.embabel.agent.rag.tools.RagServiceTools
+import com.embabel.agent.rag.tools.RagServiceSearchTools
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.chat.Message
@@ -193,7 +193,7 @@ data class FakePromptRunner(
 
     override fun withRagTools(options: RagOptions): PromptRunner {
         logger.warn("RAG tools not implemented in FakePromptRunner")
-        return this.withToolObject(RagServiceTools(RagService.empty(), RagOptions()))
+        return this.withToolObject(RagServiceSearchTools(RagService.empty(), RagOptions()))
 
     }
 
