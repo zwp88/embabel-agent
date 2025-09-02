@@ -193,7 +193,7 @@ data class FakePromptRunner(
 
     override fun withRagTools(options: RagOptions): PromptRunner {
         logger.warn("RAG tools not implemented in FakePromptRunner")
-        return this.withToolObject(RagServiceTools.create(RagService.empty(), RagOptions()))
+        return this.withToolObject(RagServiceTools(RagService.empty(), RagOptions()))
 
     }
 

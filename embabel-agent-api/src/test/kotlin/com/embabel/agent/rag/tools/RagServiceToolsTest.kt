@@ -43,7 +43,7 @@ class RagServiceToolsTest {
         val mockRagService = mockk<RagService>()
         val options = RagOptions()
 
-        val ragTools = RagServiceTools.create(mockRagService, options)
+        val ragTools = RagServiceTools(mockRagService, options)
 
         assertEquals(mockRagService, ragTools.ragService)
         assertEquals(options, ragTools.options)

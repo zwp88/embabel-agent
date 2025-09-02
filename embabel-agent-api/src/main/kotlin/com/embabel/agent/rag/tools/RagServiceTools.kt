@@ -25,14 +25,18 @@ import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 
 /**
- * Operations for RAG use as an LLM tool.
+ * Operations for RAG use as an LLM tool. Options are immutable and stable.
+ * @param similarityThreshold minimum similarity threshold for results (0.0 to 1.0)
+ * @param topK maximum number of results to return
+ * @param labels optional set of labels to filter results. If not set all entities may be
+ * returned. If set, only the given entities will be searched for.
+ * @param ragResponseFormatter formatter to convert RagResponse to String
  */
 data class RagOptions @JvmOverloads constructor(
     override val similarityThreshold: ZeroToOne = 0.7,
     override val topK: Int = 8,
     override val labels: Set<String> = emptySet(),
     val ragResponseFormatter: RagResponseFormatter = SimpleRagResponseFormatter,
-    val service: String? = null,
 ) : RagRequestRefinement {
 
     fun withSimilarityThreshold(similarityThreshold: ZeroToOne): RagOptions {
@@ -43,22 +47,15 @@ data class RagOptions @JvmOverloads constructor(
         return copy(topK = topK)
     }
 
-    /**
-     * Use the given RAG service. If not set, the default platform service will be used.
-     */
-    fun using(service: String): RagOptions {
-        return copy(service = service)
-    }
 }
 
 /**
  * Expose a RagService as tools. Options are stable.
  */
-interface RagServiceTools : SelfToolCallbackPublisher {
-
-    val ragService: RagService
-
-    val options: RagOptions
+class RagServiceTools(
+    val ragService: RagService,
+    val options: RagOptions,
+) : SelfToolCallbackPublisher {
 
     @Tool(description = "Query the RAG service")
     fun search(
@@ -70,26 +67,4 @@ interface RagServiceTools : SelfToolCallbackPublisher {
         return options.ragResponseFormatter.format(ragService.search(options.toRequest(query)))
     }
 
-    companion object {
-
-        operator fun invoke(
-            ragService: RagService,
-            options: RagOptions,
-        ): RagServiceTools = RagServiceToolsImpl(
-            ragService = ragService,
-            options = options,
-        )
-
-        @JvmStatic
-        fun create(
-            ragService: RagService,
-            options: RagOptions,
-        ) = invoke(ragService, options)
-    }
-
 }
-
-private class RagServiceToolsImpl(
-    override val ragService: RagService,
-    override val options: RagOptions,
-) : RagServiceTools
