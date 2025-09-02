@@ -26,9 +26,7 @@ interface Context : HasInfoString {
     /**
      * May be null for a new context not yet saved.
      */
-    val id: String?
-
-    fun withId(id: String): Context
+    val id: String
 
     fun bind(
         key: String,

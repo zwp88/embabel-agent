@@ -16,7 +16,6 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.config.ContextRepositoryProperties
-import com.embabel.agent.core.Blackboard
 import com.embabel.agent.spi.Context
 import io.mockk.every
 import io.mockk.mockk
@@ -37,7 +36,6 @@ class InMemoryContextRepositoryTest {
     fun `save and find context`() {
         val context = mockk<Context> {
             every { id } returns "test-id"
-            every { withId(any()) } returns this
         }
 
         val saved = repository.save(context)
@@ -51,8 +49,7 @@ class InMemoryContextRepositoryTest {
     @Test
     fun `save context without id assigns new id`() {
         val context = mockk<Context> {
-            every { id } returns null
-            every { withId(any()) } returns this
+            every { id } returns "1234"
         }
 
         val saved = repository.save(context)
@@ -70,7 +67,6 @@ class InMemoryContextRepositoryTest {
     fun `delete context`() {
         val context = mockk<Context> {
             every { id } returns "test-id"
-            every { withId(any()) } returns this
         }
 
         repository.save(context)
@@ -90,7 +86,6 @@ class InMemoryContextRepositoryTest {
         val contexts = (1..windowSize).map { i ->
             mockk<Context> {
                 every { id } returns "context-$i"
-                every { withId(any()) } returns this
             }
         }
 
@@ -105,7 +100,6 @@ class InMemoryContextRepositoryTest {
         // Add one more context to trigger eviction
         val extraContext = mockk<Context> {
             every { id } returns "extra-context"
-            every { withId(any()) } returns this
         }
         repository.save(extraContext)
 
@@ -130,7 +124,6 @@ class InMemoryContextRepositoryTest {
         val contexts = (1..5).map { i ->
             mockk<Context> {
                 every { id } returns "context-$i"
-                every { withId(any()) } returns this
             }
         }
 
@@ -154,11 +147,9 @@ class InMemoryContextRepositoryTest {
 
         val context1 = mockk<Context> {
             every { id } returns "context-1"
-            every { withId(any()) } returns this
         }
         val context2 = mockk<Context> {
             every { id } returns "context-2"
-            every { withId(any()) } returns this
         }
 
         repository.save(context1)
@@ -168,7 +159,6 @@ class InMemoryContextRepositoryTest {
         // Update context1 (should move it to the end of access order)
         val updatedContext1 = mockk<Context> {
             every { id } returns "context-1"
-            every { withId(any()) } returns this
         }
         repository.save(updatedContext1)
 
@@ -180,7 +170,6 @@ class InMemoryContextRepositoryTest {
         // Add a third context
         val context3 = mockk<Context> {
             every { id } returns "context-3"
-            every { withId(any()) } returns this
         }
         repository.save(context3)
 
@@ -196,7 +185,6 @@ class InMemoryContextRepositoryTest {
         val contexts = (1..5).map { i ->
             mockk<Context> {
                 every { id } returns "context-$i"
-                every { withId(any()) } returns this
             }
         }
 

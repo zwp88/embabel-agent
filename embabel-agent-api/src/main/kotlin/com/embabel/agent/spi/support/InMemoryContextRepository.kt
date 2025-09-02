@@ -38,7 +38,7 @@ class InMemoryContextRepository(
     private val lock = ReentrantReadWriteLock()
 
     override fun create(): Context {
-        return save(SimpleContext())
+        return save(SimpleContext(id = UUID.randomUUID().toString()))
     }
 
     override fun findById(id: String): Context? = lock.read {
@@ -62,7 +62,7 @@ class InMemoryContextRepository(
                 map.remove(oldestId)
             }
         }
-        context.withId(persistentId)
+        context
     }
 
     override fun delete(context: Context) {

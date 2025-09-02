@@ -23,16 +23,11 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class SimpleContext(
-    override var id: String? = null,
+    override var id: String,
 ) : Context {
 
     private val _map: MutableMap<String, Any> = ConcurrentHashMap()
     private val _entries: MutableList<Any> = Collections.synchronizedList(mutableListOf())
-
-    override fun withId(id: String): Context {
-        this.id = id
-        return this
-    }
 
     override fun bind(
         key: String,

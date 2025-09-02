@@ -38,7 +38,7 @@ class GoalAwareChatbot(
 
     override fun createSession(systemMessage: String?): ChatSession {
         val context = contextRepository.create()
-        val conversation = InMemoryConversation(id = context.id!!)
+        val conversation = InMemoryConversation(id = context.id)
         context.addObject(conversation)
         contextRepository.save(context)
         val session = SimpleChatSession(_conversation = conversation)

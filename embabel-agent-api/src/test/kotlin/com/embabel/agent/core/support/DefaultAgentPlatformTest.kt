@@ -77,13 +77,13 @@ class DefaultAgentPlatformTest {
         @Test
         fun `loads context`() {
             val contextRepository = InMemoryContextRepository()
-            var context: Context = SimpleContext()
+            var context: Context = SimpleContext(id = "1234")
             context.bind("otherDog", Dog("Apollo"))
             context = contextRepository.save(context)
             val dap = raw(contextRepository = contextRepository)
             val ap = dap.createAgentProcess(
                 evenMoreEvilWizard(),
-                ProcessOptions(contextId = ContextId(context.id!!)),
+                ProcessOptions(contextId = ContextId(context.id)),
                 mapOf(
                     "dog" to Dog("Duke")
                 ),
