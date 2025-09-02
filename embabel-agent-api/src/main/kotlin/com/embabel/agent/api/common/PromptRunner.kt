@@ -45,6 +45,10 @@ class TemplateOperations(
 
     private val compiledTemplate = templateRenderer.compileLoadedTemplate(templateName)
 
+    /**
+     * Create an object of the given type using the given model to render the template
+     * and LLM options from context
+     */
     fun <T> createObject(
         outputClass: Class<T>,
         model: Map<String, Any>,
@@ -53,6 +57,10 @@ class TemplateOperations(
         outputClass = outputClass,
     )
 
+    /**
+     * Generate text using the given model to render the template
+     * and LLM options from context
+     */
     fun generateText(
         model: Map<String, Any>,
     ): String = promptRunnerOperations.generateText(
@@ -60,7 +68,7 @@ class TemplateOperations(
     )
 
     /**
-     * Respond in the conversation using the template as system prompt.
+     * Respond in the conversation using the rendered template as system prompt.
      * @param conversation the conversation so far
      * @param model the model to render the system prompt template with
      */
@@ -272,7 +280,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     ): PromptRunner
 
     /**
-     * Add a system prompt
+     * Add a literal system prompt
      */
     fun withSystemPrompt(systemPrompt: String): PromptRunner =
         withPromptContributor(
@@ -325,6 +333,8 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     /**
      * Set whether to generate examples of the output in the prompt
      * on a per-PromptRunner basis. This overrides platform defaults.
+     * Note that adding individual examples with [ObjectCreator.withExample]
+     * will always override this.
      */
     fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 
@@ -337,7 +347,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
 }
 
 /**
- * Create an object of the given type from a prompt or messages.
+ * Interface to create objects of the given type from a prompt or messages.
  * Allows setting strongly typed examples.
  */
 interface ObjectCreator<T> {
@@ -345,6 +355,8 @@ interface ObjectCreator<T> {
     /**
      * Add an example of the desired output to the prompt.
      * This will be included in JSON.
+     * It is possible to call this method multiple times.
+     * This will override PromptRunner.withGenerateExamples
      */
     fun withExample(
         description: String,
@@ -352,7 +364,7 @@ interface ObjectCreator<T> {
     ): ObjectCreator<T>
 
     /**
-     * Create an object of the given type using the given prompt and LLM options from context
+     * Create an object of the desired type using the given prompt and LLM options from context
      * (process context or implementing class).
      * Prompts are typically created within the scope of an
      * @Action method that provides access to
@@ -365,7 +377,7 @@ interface ObjectCreator<T> {
     )
 
     /**
-     * Create an object from messages
+     * Create an object of the desired typed from messages
      */
     fun fromMessages(
         messages: List<Message>,
@@ -384,14 +396,16 @@ internal data class PromptRunnerObjectCreator<T>(
         value: T,
     ): ObjectCreator<T> {
         return copy(
-            promptRunner = promptRunner.withPromptContributor(
-                PromptContributor.fixed(
-                    """
+            promptRunner = promptRunner
+                .withGenerateExamples(false)
+                .withPromptContributor(
+                    PromptContributor.fixed(
+                        """
                         Example: $description
                         ${objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value)}
                         """.trimIndent()
+                    )
                 )
-            )
         )
     }
 
