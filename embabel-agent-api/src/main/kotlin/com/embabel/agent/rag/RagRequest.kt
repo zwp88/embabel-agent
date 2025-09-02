@@ -15,49 +15,12 @@
  */
 package com.embabel.agent.rag
 
-import com.embabel.common.core.types.*
+import com.embabel.common.core.types.SimilarityCutoff
+import com.embabel.common.core.types.TextSimilaritySearchRequest
+import com.embabel.common.core.types.Timestamped
+import com.embabel.common.core.types.ZeroToOne
 import org.jetbrains.annotations.ApiStatus
 import java.time.Instant
-
-/**
- * Response to a RAG request.
- * Embabel RagResponses can contain results from multiple RAG services.
- * Results are not necessarily chunks, but can be entities.
- */
-interface RagResponse : Timestamped {
-
-    val request: RagRequest
-
-    /**
-     * RAG service that produced this result
-     */
-    val service: String
-
-    val results: List<SimilarityResult<out Retrievable>>
-
-    companion object {
-
-        operator fun invoke(
-            request: RagRequest,
-            service: String,
-            results: List<SimilarityResult<out Retrievable>>,
-        ): RagResponse {
-            return DefaultRagResponse(
-                request = request,
-                service = service,
-                results = results,
-            )
-        }
-
-    }
-}
-
-data class DefaultRagResponse @JvmOverloads constructor(
-    override val request: RagRequest,
-    override val service: String,
-    override val results: List<SimilarityResult<out Retrievable>>,
-    override val timestamp: Instant = Instant.now(),
-) : RagResponse
 
 /**
  * Narrowing of RagRequest

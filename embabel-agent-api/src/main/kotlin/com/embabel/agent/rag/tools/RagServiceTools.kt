@@ -32,6 +32,7 @@ data class RagOptions @JvmOverloads constructor(
     override val topK: Int = 8,
     override val labels: Set<String> = emptySet(),
     val ragResponseFormatter: RagResponseFormatter = SimpleRagResponseFormatter,
+    val service: String? = null,
 ) : RagRequestRefinement {
 
     fun withSimilarityThreshold(similarityThreshold: ZeroToOne): RagOptions {
@@ -40,6 +41,13 @@ data class RagOptions @JvmOverloads constructor(
 
     fun withTopK(topK: Int): RagOptions {
         return copy(topK = topK)
+    }
+
+    /**
+     * Use the given RAG service. If not set, the default platform service will be used.
+     */
+    fun using(service: String): RagOptions {
+        return copy(service = service)
     }
 }
 

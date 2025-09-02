@@ -225,6 +225,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      * Add tools for RAG. Will use platform RagService
      * @param options options for the RAG tools. Control similarity threshold, topK, labels, and response formatting.
      */
+    @ApiStatus.Experimental
     fun withRagTools(options: RagOptions): PromptRunner
 
     /**

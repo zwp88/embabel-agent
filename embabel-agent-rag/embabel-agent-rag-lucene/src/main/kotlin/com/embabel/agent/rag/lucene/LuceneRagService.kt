@@ -37,9 +37,12 @@ import java.io.Closeable
 import kotlin.math.sqrt
 import org.springframework.ai.document.Document as SpringAiDocument
 
+/**
+ * LuceneRagService with optional vector search support via an EmbeddingModel.
+ */
 class LuceneRagService @JvmOverloads constructor(
-    override val name: String = "lucene-rag",
-    override val description: String = "In-memory Lucene-based RAG service with hybrid text and vector search capabilities",
+    override val name: String,
+    override val description: String,
     private val embeddingModel: EmbeddingModel? = null,
     private val vectorWeight: Double = 0.5, // Balance between text and vector similarity
 ) : WritableRagService, Closeable {

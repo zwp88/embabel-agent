@@ -34,9 +34,10 @@ class LuceneRagServiceTest {
 
     @BeforeEach
     fun setUp() {
-        ragService = LuceneRagService()
+        ragService = LuceneRagService(name = "lucene-rag", description = "Test Lucene RAG Service")
         ragServiceWithEmbedding = LuceneRagService(
             name = "hybrid-lucene-rag",
+            description = "Hybrid Lucene RAG Service with Embeddings",
             embeddingModel = mockEmbeddingModel,
             vectorWeight = 0.5
         )
@@ -224,6 +225,7 @@ class LuceneRagServiceTest {
     fun `should weight vector similarity appropriately`() {
         val ragServiceHighVector = LuceneRagService(
             name = "high-vector-weight",
+            description = "RAG with high vector weight",
             embeddingModel = mockEmbeddingModel,
             vectorWeight = 0.9 // High vector weight
         )

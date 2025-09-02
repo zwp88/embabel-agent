@@ -22,6 +22,7 @@ import com.embabel.agent.rag.neo.common.CypherQuery
 import com.embabel.agent.rag.schema.SchemaResolver
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
+import com.embabel.common.core.types.NamedAndDescribed
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -32,8 +33,10 @@ import org.springframework.transaction.support.TransactionTemplate
 
 @ConfigurationProperties(prefix = "embabel.graphrag.ogm")
 data class OgmRagServiceProperties(
+    override val name: String = "OgmRagService",
+    override val description: String = "RAG service using Neo4j OGM for querying and embedding",
     val vectorIndex: String = "spring-ai-document-index",
-)
+) : NamedAndDescribed
 
 /**
  * Performs RAG queries in readonly transactions using Neo4j OGM.
@@ -54,9 +57,9 @@ class OgmRagService(
         isReadOnly = true
     }
 
-    override val name = "OgmRagService"
+    override val name = properties.name
 
-    override val description = "RAG service using Neo4j OGM for querying and embedding"
+    override val description = properties.description
 
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
