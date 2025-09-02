@@ -23,7 +23,6 @@ import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.support.MultiTransformationAction
 import com.embabel.agent.api.common.support.expandInputBindings
 import com.embabel.agent.core.Action
-import com.embabel.agent.core.IoBinding
 import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.core.ToolGroupRequirement
 import org.slf4j.LoggerFactory
@@ -68,7 +67,7 @@ internal class DefaultActionMethodManager(
             .map {
                 val nameMatchAnnotation = it.getAnnotation(RequireNameMatch::class.java)
                 expandInputBindings(
-                    if (nameMatchAnnotation != null) it.name else IoBinding.DEFAULT_BINDING,
+                    getBindingParameterName(it, nameMatchAnnotation),
                     it.type
                 )
             }
@@ -125,12 +124,7 @@ internal class DefaultActionMethodManager(
 
                 else -> {
                     val requireNameMatch = parameter.getAnnotation(RequireNameMatch::class.java)
-                    val domainTypes = actionContext.processContext.agentProcess.agent.jvmTypes.map { it.clazz }
-                    val variable = if (requireNameMatch != null) {
-                        parameter.name
-                    } else {
-                        IoBinding.DEFAULT_BINDING
-                    }
+                    val variable = getBindingParameterName(parameter, requireNameMatch)
                     val lastArg = actionContext.getValue(
                         variable = variable,
                         type = parameter.type.name,
