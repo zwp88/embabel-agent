@@ -18,16 +18,17 @@ package com.embabel.agent.rag.support
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
 import com.embabel.agent.rag.RagService
-import com.embabel.agent.rag.WritableRagService
-import com.embabel.common.util.loggerFor
-import org.springframework.ai.document.Document
+import org.slf4j.LoggerFactory
 
 /**
  * Rag service that combines multiple RagServices and returns the best results
  */
 class ConsensusRagService(
     private val ragServices: List<RagService>,
-) : WritableRagService {
+) : RagService {
+
+    private val logger = LoggerFactory.getLogger(ConsensusRagService::class.java)
+
     override val name: String
         get() = "consensus: ${ragServices.joinToString(",") { it.name }}"
 
@@ -36,23 +37,13 @@ class ConsensusRagService(
             ragService.search(ragRequest).results
         }
         // TODO Count and commend duplicates
-        return RagResponse(
+        val ragResponse = RagResponse(
             request = ragRequest,
             service = name,
             results = allResults,
         )
-    }
-
-    override fun accept(documents: List<Document>) {
-        val writableRagServices = ragServices.filterIsInstance<WritableRagService>()
-        if (writableRagServices.isEmpty()) {
-            loggerFor<ConsensusRagService>().warn(
-                "No writable RAG services available for accepting {} documents", documents.size,
-            )
-        }
-        writableRagServices.forEach { ragService ->
-            ragService.accept(documents)
-        }
+        logger.debug("RagResponse: {}", ragResponse)
+        return ragResponse
     }
 
     override val description: String

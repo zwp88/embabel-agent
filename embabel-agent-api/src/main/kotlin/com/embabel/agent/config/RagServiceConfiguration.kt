@@ -42,7 +42,7 @@ class RagServiceConfiguration {
     @Primary
     fun consensusRagService(
         ragServices: List<RagService>,
-    ): WritableRagService {
+    ): RagService {
         return ConsensusRagService(ragServices)
     }
 

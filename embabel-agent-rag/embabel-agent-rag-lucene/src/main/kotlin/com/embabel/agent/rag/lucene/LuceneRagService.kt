@@ -39,6 +39,7 @@ import org.springframework.ai.document.Document as SpringAiDocument
 
 /**
  * LuceneRagService with optional vector search support via an EmbeddingModel.
+ * Works in memory.
  */
 class LuceneRagService @JvmOverloads constructor(
     override val name: String,
@@ -78,14 +79,14 @@ class LuceneRagService @JvmOverloads constructor(
         val searcher = IndexSearcher(reader)
 
         // Perform hybrid search: text + vector similarity
-        val hybridResults = if (embeddingModel != null) {
+        val results = if (embeddingModel != null) {
             performHybridSearch(searcher, ragRequest)
         } else {
             performTextSearch(searcher, ragRequest)
         }
 
-        val filteredResults = hybridResults
-            .filter { it.score >= ragRequest.similarityThreshold.toDouble() }
+        val filteredResults = results
+            .filter { it.score >= ragRequest.similarityThreshold }
             .take(ragRequest.topK)
             .sortedByDescending { it.score }
 
@@ -118,7 +119,7 @@ class LuceneRagService @JvmOverloads constructor(
         ragRequest: RagRequest,
     ): List<SimpleSimilaritySearchResult<DocumentRetrievable>> {
         val textQuery: Query = queryParser.parse(QueryParser.escape(ragRequest.query))
-        val textResults: TopDocs = searcher.search(textQuery, Math.max(ragRequest.topK * 2, 20))
+        val textResults: TopDocs = searcher.search(textQuery, (ragRequest.topK * 2).coerceAtLeast(20))
 
         // Get query embedding
         val queryEmbedding = embeddingModel!!.embed(ragRequest.query)

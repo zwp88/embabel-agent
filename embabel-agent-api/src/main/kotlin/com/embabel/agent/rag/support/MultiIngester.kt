@@ -45,7 +45,11 @@ class MultiIngester(
     override fun ingest(resourcePath: String): IngestionResult {
         val sourceDocs = TextReader(resourcePath).get()
         val documents = splitter.split(sourceDocs)
-        logger.info("Split {} into {} documents from {}", sourceDocs.size, documents.size, resourcePath)
+        logger.info(
+            "Split {} source documents at {} into {} indexable chunks: Will write to {} writable rag services",
+            sourceDocs.size, resourcePath, documents.size, ragServices.size
+        )
+        logger.debug("Documents: {}", documents.joinToString("\n"))
         return writeToStores(documents)
     }
 
@@ -70,7 +74,7 @@ class MultiIngester(
         indent: Int,
     ): String =
         if (ragServices.isEmpty()) "No RAG services" else
-            "Multi ingester of ${
+            "${javaClass.simpleName} of ${
                 ragServices.joinToString(",") {
                     it.infoString(verbose = verbose, indent = 1)
                 }

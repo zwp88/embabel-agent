@@ -17,4 +17,7 @@ package com.embabel.agent.rag
 
 import org.springframework.ai.document.DocumentWriter
 
+/**
+ * RagService that can accept documents
+ */
 interface WritableRagService : RagService, DocumentWriter

@@ -39,5 +39,9 @@ interface Ingester : DocumentWriter, HasInfoString {
 
     val ragServices: List<WritableRagService>
 
+    /**
+     * Ingest the resource at the given path.
+     * Use Spring Resource conventions
+     */
     fun ingest(resourcePath: String): IngestionResult
 }
