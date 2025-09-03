@@ -78,7 +78,7 @@ internal class ChatClientLlmOperations(
         val llm = chooseLlm(interaction.llm)
         val chatClient = createChatClient(llm)
         val promptContributions =
-            (interaction.promptContributors + llm.promptContributors).joinToString("\n") { it.contribution() }
+            (interaction.promptContributors + llm.promptContributors).joinToString("\n\n") { it.contribution() }
 
         val springAiPrompt = Prompt(
             buildList {

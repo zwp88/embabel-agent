@@ -344,9 +344,9 @@ class OperationContextPromptRunnerTest {
             assertEquals(mockRagService, ragTools.ragService, "RAG service not set correctly")
             assertEquals(ragOptions, ragTools.options, "RAG options not set correctly")
             assertEquals(
-                0,
+                1,
                 ocpr.promptContributors.size,
-                "Should have no prompt contributors: ${ocpr.promptContributors}",
+                "Should have 1 prompt contributors: ${ocpr.promptContributors}",
             )
         }
 

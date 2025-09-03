@@ -191,15 +191,19 @@ internal data class OperationContextPromptRunner(
                 namingStrategy = namingStrategy,
             )
         )
+        val systemPrompt = """|
+            |You have access to retrieval augmented generation (RAG) tools to help you answer questions
+            |about ${ragService.description}
+            """.trimMargin()
         return if (options.service == null) {
             // Default service, no need to explain
-            withTools
+            withTools.withSystemPrompt(systemPrompt)
         } else {
             withTools.withSystemPrompt(
-                """
-                You have access to retrieval augmented generation (RAG) tools to help you answer questions.
-                The tools prefixed with ${ragService.name} are for ${ragService.description}
-            """.trimIndent()
+                """|
+                    |$systemPrompt
+                    |The tools are prefixed with ${ragService.name}
+                    """.trimMargin()
             )
         }
     }
