@@ -72,7 +72,7 @@ class TerminalServices(
         lineReader.printAbove(
             (welcome?.let { it + "\n" } ?: "") +
                     """
-            Chat session started. Type 'exit' to end the session.
+            Chat session ${chatSession.conversation.id} started. Type 'exit' to end the session.
             Type /help for available commands.
             """.trimIndent().color(colorPalette.highlight)
         )
