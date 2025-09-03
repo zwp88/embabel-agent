@@ -21,8 +21,8 @@ import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.logging.LoggingPersonality
 import com.embabel.agent.event.logging.personality.ColorPalette
-import com.embabel.agent.rag.Ingester
 import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.ingestion.Ingester
 import com.embabel.agent.shell.config.ShellProperties
 import com.embabel.chat.agent.*
 import com.embabel.chat.agent.shell.TerminalServicesProcessWaitingHandler

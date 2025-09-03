@@ -15,11 +15,11 @@
  */
 package com.embabel.agent.config
 
-import com.embabel.agent.rag.Ingester
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.WritableRagService
+import com.embabel.agent.rag.ingestion.Ingester
+import com.embabel.agent.rag.ingestion.MultiIngester
 import com.embabel.agent.rag.support.ConsensusRagService
-import com.embabel.agent.rag.support.MultiIngester
 import com.embabel.agent.rag.support.SpringVectorStoreRagService
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean

@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag.support
+package com.embabel.agent.rag.ingestion
 
-import com.embabel.agent.rag.Ingester
-import com.embabel.agent.rag.IngestionResult
 import com.embabel.agent.rag.WritableRagService
 import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
@@ -24,10 +22,9 @@ import org.springframework.ai.reader.TextReader
 import org.springframework.ai.transformer.splitter.TextSplitter
 import org.springframework.ai.transformer.splitter.TokenTextSplitter
 
-
 /**
- * Write to all RAG services that implement [WritableRagService].
- * Users can override the [TextSplitter] to control how text is split into documents.
+ * Write to all RAG services that implement [com.embabel.agent.rag.WritableRagService].
+ * Users can override the [org.springframework.ai.transformer.splitter.TextSplitter] to control how text is split into documents.
  */
 class MultiIngester(
     override val ragServices: List<WritableRagService>,
@@ -37,7 +34,12 @@ class MultiIngester(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     init {
-        logger.info("Using text splitter {}", splitter)
+        logger.info(
+            "{} with {} writable rag services: Using text splitter {}",
+            javaClass.simpleName,
+            ragServices.size,
+            splitter,
+        )
     }
 
     override fun active(): Boolean = ragServices.isNotEmpty()
