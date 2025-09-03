@@ -614,7 +614,11 @@ class OperationContextPromptRunnerTest {
         fun `test withReference`() {
             val mockReference = mockk<LlmReference>()
             every { mockReference.name } returns "TestAPI"
-            every { mockReference.contribution() } returns "Test API documentation"
+            every { mockReference.description } returns "Test API"
+            every { mockReference.toolPrefix() } returns "testapi"
+            every { mockReference.notes() } returns "Test API documentation"
+            every { mockReference.contribution() } returns "Reference: TestAPI\nDescription: Test API\nTool prefix: testapi\nNotes: Test API documentation"
+            every { mockReference.toolObject() } returns ToolObject(mockReference)
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
                 .withReference(mockReference)
@@ -636,7 +640,11 @@ class OperationContextPromptRunnerTest {
         fun `test withReference with special characters in name`() {
             val mockReference = mockk<LlmReference>()
             every { mockReference.name } returns "Test-API@v2!"
-            every { mockReference.contribution() } returns "Test API v2 documentation"
+            every { mockReference.description } returns "Test API v2"
+            every { mockReference.toolPrefix() } returns "test-api_v2_"
+            every { mockReference.notes() } returns "Test API v2 documentation"
+            every { mockReference.contribution() } returns "Reference: Test-API@v2!\nDescription: Test API v2\nTool prefix: test-api_v2_\nNotes: Test API v2 documentation"
+            every { mockReference.toolObject() } returns ToolObject(mockReference)
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
                 .withReference(mockReference)
@@ -655,11 +663,19 @@ class OperationContextPromptRunnerTest {
         fun `test withReferences with multiple references`() {
             val mockReference1 = mockk<LlmReference>()
             every { mockReference1.name } returns "API1"
-            every { mockReference1.contribution() } returns "API 1 documentation"
+            every { mockReference1.description } returns "API 1"
+            every { mockReference1.toolPrefix() } returns "api1"
+            every { mockReference1.notes() } returns "API 1 documentation"
+            every { mockReference1.contribution() } returns "Reference: API1\nDescription: API 1\nTool prefix: api1\nNotes: API 1 documentation"
+            every { mockReference1.toolObject() } returns ToolObject(mockReference1)
 
             val mockReference2 = mockk<LlmReference>()
             every { mockReference2.name } returns "API2"
-            every { mockReference2.contribution() } returns "API 2 documentation"
+            every { mockReference2.description } returns "API 2"
+            every { mockReference2.toolPrefix() } returns "api2"
+            every { mockReference2.notes() } returns "API 2 documentation"
+            every { mockReference2.contribution() } returns "Reference: API2\nDescription: API 2\nTool prefix: api2\nNotes: API 2 documentation"
+            every { mockReference2.toolObject() } returns ToolObject(mockReference2)
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
                 .withReferences(listOf(mockReference1, mockReference2))
@@ -683,11 +699,19 @@ class OperationContextPromptRunnerTest {
         fun `test withReferences with varargs`() {
             val mockReference1 = mockk<LlmReference>()
             every { mockReference1.name } returns "API1"
-            every { mockReference1.contribution() } returns "API 1 documentation"
+            every { mockReference1.description } returns "API 1"
+            every { mockReference1.toolPrefix() } returns "api1"
+            every { mockReference1.notes() } returns "API 1 documentation"
+            every { mockReference1.contribution() } returns "Reference: API1\nDescription: API 1\nTool prefix: api1\nNotes: API 1 documentation"
+            every { mockReference1.toolObject() } returns ToolObject(mockReference1)
 
             val mockReference2 = mockk<LlmReference>()
             every { mockReference2.name } returns "API2"
-            every { mockReference2.contribution() } returns "API 2 documentation"
+            every { mockReference2.description } returns "API 2"
+            every { mockReference2.toolPrefix() } returns "api2"
+            every { mockReference2.notes() } returns "API 2 documentation"
+            every { mockReference2.contribution() } returns "Reference: API2\nDescription: API 2\nTool prefix: api2\nNotes: API 2 documentation"
+            every { mockReference2.toolObject() } returns ToolObject(mockReference2)
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockk<OperationContext>())
                 .withReferences(mockReference1, mockReference2)
@@ -700,7 +724,11 @@ class OperationContextPromptRunnerTest {
         fun `test combining withReference and withSystemPrompt`() {
             val mockReference = mockk<LlmReference>()
             every { mockReference.name } returns "TestAPI"
-            every { mockReference.contribution() } returns "Test API documentation"
+            every { mockReference.description } returns "Test API"
+            every { mockReference.toolPrefix() } returns "testapi"
+            every { mockReference.notes() } returns "Test API documentation"
+            every { mockReference.contribution() } returns "Reference: TestAPI\nDescription: Test API\nTool prefix: testapi\nNotes: Test API documentation"
+            every { mockReference.toolObject() } returns ToolObject(mockReference)
 
             val systemPrompt = "You are a helpful assistant."
 
@@ -734,5 +762,5 @@ private class TestLlmReference(
     private val promptContribution: String,
 ) : LlmReference {
     override val description: String = "Test reference: $name"
-    override fun contribution(): String = promptContribution
+    override fun notes(): String = promptContribution
 }

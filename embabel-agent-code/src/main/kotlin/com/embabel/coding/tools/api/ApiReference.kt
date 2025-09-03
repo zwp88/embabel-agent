@@ -31,17 +31,17 @@ class ApiReference(
     override val description =
         "API reference for ${api.name} with ${api.totalClasses} classes and ${api.totalMethods} methods."
 
-    override fun contribution(): String {
+    override fun notes(): String {
         if (api.classes.size > classLimit) {
             return """
                 API reference is too large to include here (contains ${api.totalClasses} classes and ${api.totalMethods} methods).
-                Use the tools `findClassSignature` and `findPackageSignature` to look up specific classes or packages by their fully qualified names (FQN).
+                Use tools to look up specific classes or packages by their fully qualified names (FQN).
             """.trimIndent()
         }
         return """
-            The following is an API reference for ${api.totalClasses} classes and ${api.totalMethods} methods.
+            API reference for ${api.totalClasses} classes and ${api.totalMethods} methods.
             Use this reference to answer questions about the API, find class or package signatures, and understand how to use the classes and methods.
-            You can also use the tools `findClassSignature` and `findPackageSignature` to look up specific classes or packages by their fully qualified names (FQN).
+            You can also use tools to look up specific classes or packages by their fully qualified names (FQN).
 
             ${formatAsText()}
         """.trimIndent()

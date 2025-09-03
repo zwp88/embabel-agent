@@ -192,7 +192,7 @@ class ClonedRepositoryReference(
     /**
      * Return a prompt contributor if the repo is small enough
      */
-    override fun contribution(): String {
+    override fun notes(): String {
         if (fileCount() > 1000 || writeAllFilesToString().length > fileFormatLimits.fileSizeLimit) {
             return """
                 Use exposed tools. The repository is too large to include in the prompt.

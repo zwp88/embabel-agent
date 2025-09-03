@@ -28,6 +28,7 @@ This will improve Swagger/OpenAPI documentation.
 Unless there is a specific reason not to, use the latest GA version of all dependencies.
 
 Use @Nested classes in tests. Use `test complicated thing` instead of @DisplayName for test cases.
+Do not couple tests too tightly to implementation.
 
 In log statements, use placeholders for efficiency at all logging levels.
 E.g. logger.info("{} {}", a, b) instead of logger.info("computed string").

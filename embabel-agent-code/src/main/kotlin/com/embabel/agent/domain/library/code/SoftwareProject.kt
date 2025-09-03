@@ -113,7 +113,7 @@ open class SoftwareProject @JvmOverloads constructor(
         return "SoftwareProject($root)"
     }
 
-    override fun contribution() =
+    override fun notes() =
         """
             |Project:
             |${url ?: "No URL"}

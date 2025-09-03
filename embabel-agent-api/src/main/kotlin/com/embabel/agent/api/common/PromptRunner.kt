@@ -241,12 +241,7 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      * Add a reference which provides tools and prompt contribution.
      */
     fun withReference(reference: LlmReference): PromptRunner {
-        val safePrefix = reference.name.replace(Regex("[^a-zA-Z0-9 ]"), "_")
-        val toolObject = ToolObject(
-            obj = reference,
-            namingStrategy = { toolName -> "${safePrefix}_$toolName" },
-        )
-        return withToolObject(toolObject)
+        return withToolObject(reference.toolObject())
             .withPromptContributor(reference)
     }
 

@@ -174,10 +174,9 @@ class ApiReferenceTest {
             val apiRef = ApiReference(smallApi)
             val contribution = apiRef.contribution()
 
-            assertTrue(contribution.contains("The following is an API reference for 4 classes and 4 methods"))
+            assertTrue(contribution.contains(apiRef.name))
             assertTrue(contribution.contains("Use this reference to answer questions about the API"))
-            assertTrue(contribution.contains("findClassSignature"))
-            assertTrue(contribution.contains("findPackageSignature"))
+            assertTrue(contribution.contains(apiRef.toolPrefix()), "Should contain tool prefix: $contribution")
             assertTrue(contribution.contains("com.example.service.UserService"))
             assertTrue(contribution.contains("com.example.controller.UserController"))
         }
@@ -186,10 +185,8 @@ class ApiReferenceTest {
         fun `should return limited contribution for large API`() {
             val apiRef = ApiReference(largeApi)
             val contribution = apiRef.contribution()
-
-            assertTrue(contribution.contains("API reference is too large to include here"))
+            assertTrue(contribution.contains("too large to include here"))
             assertTrue(contribution.contains("contains 150 classes and 150 methods"))
-            assertTrue(contribution.contains("Use the tools `findClassSignature` and `findPackageSignature`"))
             assertFalse(contribution.contains("com.generated.package"))
         }
 
@@ -198,7 +195,7 @@ class ApiReferenceTest {
             val apiRef = ApiReference(smallApi, classLimit = 2)
             val contribution = apiRef.contribution()
 
-            assertTrue(contribution.contains("API reference is too large to include here"))
+            assertTrue(contribution.contains("too large to include here"))
             assertTrue(contribution.contains("contains 4 classes and 4 methods"))
         }
 
@@ -207,7 +204,8 @@ class ApiReferenceTest {
             val apiRef = ApiReference(emptyApi)
             val contribution = apiRef.contribution()
 
-            assertTrue(contribution.contains("The following is an API reference for 0 classes and 0 methods"))
+            assertTrue(contribution.contains(apiRef.name))
+            assertTrue(contribution.contains("0 classes and 0 methods"))
             assertTrue(contribution.contains("API Reference - 0 classes, 0 methods"))
         }
     }

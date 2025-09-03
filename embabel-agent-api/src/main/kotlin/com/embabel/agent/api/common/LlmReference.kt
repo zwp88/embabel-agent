@@ -30,4 +30,36 @@ import com.embabel.common.core.types.NamedAndDescribed
  * If you want a custom naming strategy, use a ToolObject directly,
  * and add the PromptContributor separately.
  */
-interface LlmReference : NamedAndDescribed, PromptContributor
+interface LlmReference : NamedAndDescribed, PromptContributor {
+
+    /**
+     * A safe prefix for LLM tools associated with this reference.
+     * Defaults to the name lowercased with spaces replaced by underscores.
+     * Subclasses can override it
+     */
+    fun toolPrefix(): String = name.replace(Regex("[^a-zA-Z0-9 ]"), "_").lowercase()
+
+    /**
+     * Create a tool object for this reference.
+     */
+    fun toolObject(): ToolObject = ToolObject(
+        obj = this,
+        namingStrategy = { toolName -> "${toolPrefix()}_$toolName" },
+    )
+
+    override fun contribution(): String {
+        return """
+            Reference: $name
+            Description: $description
+            Tool prefix: ${toolPrefix()}
+            Notes: ${notes()}
+        """.trimIndent()
+    }
+
+    /**
+     * Notes about this reference, such as usage guidance.
+     * Does not need to consider prompt prefix, name or description as
+     * they will be added automatically.
+     */
+    fun notes(): String
+}
