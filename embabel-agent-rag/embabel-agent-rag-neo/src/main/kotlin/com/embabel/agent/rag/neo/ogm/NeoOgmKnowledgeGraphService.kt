@@ -19,7 +19,7 @@ import com.embabel.agent.rag.Chunk
 import com.embabel.agent.rag.NamedEntityData
 import com.embabel.agent.rag.Retrievable
 import com.embabel.agent.rag.RetrievableEntity
-import com.embabel.agent.rag.repository.ChunkRepository
+import com.embabel.agent.rag.ingestion.ChunkRepository
 import com.embabel.agent.rag.schema.*
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider

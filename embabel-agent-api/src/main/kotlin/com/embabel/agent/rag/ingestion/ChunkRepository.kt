@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag.repository
+package com.embabel.agent.rag.ingestion
 
 import com.embabel.agent.rag.Chunk
 
-
+/**
+ * Implemented by services that can retrieve Chunks by id.
+ */
 interface ChunkRepository {
 
     fun findChunksById(chunkIds: List<String>): List<Chunk>
