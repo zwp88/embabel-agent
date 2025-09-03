@@ -18,6 +18,9 @@ package com.embabel.coding.tools.api
 import com.embabel.agent.api.common.LlmReference
 import org.springframework.ai.tool.annotation.Tool
 
+/**
+ * API reference that can be exposed to LLMs as a prompt contribution and tools.
+ */
 class ApiReference(
     private val api: Api,
     private val classLimit: Int = 100,
@@ -58,9 +61,27 @@ class ApiReference(
     }
 
     @Tool(description = "find the signature of a class by FQN")
-    fun findClassSignature(fqn: String): String {
+    fun findClassSignatureByFqn(fqn: String): String {
         val clazz = api.classes.find { "${it.packageName}.${it.name}" == fqn }
         return clazz?.let { formatClass(it) } ?: "Class not found: $fqn"
+    }
+
+    @Tool(description = "find the signature of a class by simple name")
+    fun findClassSignatureBySimpleName(simpleName: String): String {
+        val matchingClasses = api.classes.filter { it.name == simpleName }
+
+        return when (matchingClasses.size) {
+            0 -> "Class not found: $simpleName"
+            1 -> formatClass(matchingClasses.first())
+            else -> {
+                val sb = StringBuilder()
+                sb.appendLine("Multiple classes found with name '$simpleName':")
+                matchingClasses.forEach { clazz ->
+                    sb.appendLine("${clazz.packageName}.${clazz.name}")
+                }
+                sb.toString().trimEnd()
+            }
+        }
     }
 
     @Tool(description = "find the signature of a package by FQN")

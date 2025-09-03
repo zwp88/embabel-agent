@@ -25,6 +25,7 @@ import io.github.classgraph.ClassGraph
  */
 class ClassGraphApiReferenceExtractor {
 
+    @JvmOverloads
     fun fromProjectClasspath(
         name: String,
         acceptedPackages: Set<String>,

@@ -30,7 +30,7 @@ class ClassGraphApiReferenceExtractorTest {
             acceptedPackages = setOf("com.embabel.agent"),
         )
         val tools = ApiReference(apiref)
-        val pr = tools.findClassSignature(PromptRunner::class.java.name)
+        val pr = tools.findClassSignatureByFqn(PromptRunner::class.java.name)
         assertFalse(pr.isEmpty())
         val agp = tools.findPackageSignature("com.embabel.agent.api.common")
         assertFalse(agp.isEmpty())
