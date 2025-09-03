@@ -137,7 +137,7 @@ class MultiIngesterTest {
 
             val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2), mockTextSplitter)
 
-            val result = multiIngester.ingest("file://${testFile.absolutePath}")
+            val result = multiIngester.ingest(testFile.toURI().toString())
 
             // Verify result
             assertNotNull(result, "Should return ingestion result")
@@ -159,7 +159,7 @@ class MultiIngesterTest {
 
             val multiIngester = MultiIngester(emptyList())
 
-            val result = multiIngester.ingest("file://${testFile.absolutePath}")
+            val result = multiIngester.ingest(testFile.toURI().toString())
 
             assertNotNull(result, "Should return ingestion result")
             assertTrue(result.storesWrittenTo.isEmpty(), "Should have empty stores when no services")
@@ -181,7 +181,7 @@ class MultiIngesterTest {
 
             val multiIngester = MultiIngester(listOf(mockRagService1), mockTextSplitter)
 
-            val result = multiIngester.ingest("file://${testFile.absolutePath}")
+            val result = multiIngester.ingest(testFile.toURI().toString())
 
             assertTrue(result.success(), "Should succeed with large document")
             assertEquals(5, result.chunkIds.size, "Should have 5 chunks from splitting")
@@ -214,7 +214,7 @@ class MultiIngesterTest {
 
             val multiIngester = MultiIngester(listOf(mockRagService1), mockTextSplitter)
 
-            val result = multiIngester.ingest("file://${emptyFile.absolutePath}")
+            val result = multiIngester.ingest(emptyFile.toURI().toString())
 
             assertTrue(result.success(), "Should succeed with empty file")
             assertEquals(1, result.chunkIds.size, "Should have 1 document even for empty file")
@@ -237,7 +237,7 @@ class MultiIngesterTest {
 
                 val multiIngester = MultiIngester(listOf(mockRagService1), mockTextSplitter)
 
-                val result = multiIngester.ingest("file://${testFile.absolutePath}")
+                val result = multiIngester.ingest(testFile.toURI().toString())
 
                 assertTrue(result.success(), "Should succeed with $ext file")
                 assertEquals(1, result.chunkIds.size, "Should have 1 chunk for $ext file")
@@ -317,7 +317,7 @@ class MultiIngesterTest {
 
             // Should throw exception since writeToStores doesn't handle exceptions
             assertThrows(RuntimeException::class.java) {
-                multiIngester.ingest("file://${testFile.absolutePath}")
+                multiIngester.ingest(testFile.toURI().toString())
             }
 
             verify { mockRagService1.write(listOf(splitDoc)) }
@@ -441,7 +441,7 @@ class MultiIngesterTest {
 
             val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2), mockTextSplitter)
 
-            val result = multiIngester.ingest("file://${markdownFile.absolutePath}")
+            val result = multiIngester.ingest(markdownFile.toURI().toString())
 
             // Verify comprehensive result
             assertTrue(result.success(), "Integration test should succeed")
@@ -482,7 +482,7 @@ class MultiIngesterTest {
                 mockTextSplitter
             )
 
-            val result = multiIngester.ingest("file://${testFile.absolutePath}")
+            val result = multiIngester.ingest(testFile.toURI().toString())
 
             assertTrue(result.success(), "Should succeed with mixed services")
             assertEquals(3, result.storesWrittenTo.size, "Should write to all 3 services")
@@ -516,7 +516,7 @@ class MultiIngesterTest {
             val multiIngester = MultiIngester(services, mockTextSplitter)
 
             val startTime = System.currentTimeMillis()
-            val result = multiIngester.ingest("file://${testFile.absolutePath}")
+            val result = multiIngester.ingest(testFile.toURI().toString())
             val endTime = System.currentTimeMillis()
 
             assertTrue(result.success(), "Should succeed with many services")
