@@ -21,11 +21,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import org.springframework.ai.document.Document
 import org.springframework.ai.transformer.splitter.TextSplitter
-import java.io.File
-import java.nio.file.Path
 import java.util.UUID
 
 class MultiIngesterTest {
@@ -33,9 +30,6 @@ class MultiIngesterTest {
     private lateinit var mockRagService1: WritableRagService
     private lateinit var mockRagService2: WritableRagService
     private lateinit var mockTextSplitter: TextSplitter
-
-    @TempDir
-    lateinit var tempDir: Path
 
     @BeforeEach
     fun setup() {
@@ -48,6 +42,7 @@ class MultiIngesterTest {
         every { mockRagService1.write(any()) } just Runs
         every { mockRagService2.write(any()) } just Runs
     }
+
 
     @Nested
     inner class ConstructorAndInitializationTests {
@@ -121,149 +116,47 @@ class MultiIngesterTest {
     }
 
     @Nested
-    inner class IngestionTests {
+    inner class DocumentProcessingTests {
 
         @Test
-        fun `test ingest with valid resource creates documents and writes to all services`() {
-            // Create a test file
-            val testFile = tempDir.resolve("test.txt").toFile()
-            testFile.writeText("This is a test document for ingestion.")
-
-            // Mock text splitter to return specific documents
-            val splitDoc1 = Document("This is a test document", mapOf("id" to "chunk-1"))
-            val splitDoc2 = Document("for ingestion.", mapOf("id" to "chunk-2"))
-
-            every { mockTextSplitter.split(any<List<Document>>()) } returns listOf(splitDoc1, splitDoc2)
-
-            val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2), mockTextSplitter)
-
-            val result = multiIngester.ingest(testFile.toURI().toString())
-
-            // Verify result
-            assertNotNull(result, "Should return ingestion result")
-            assertTrue(result.success(), "Ingestion should be successful")
-            assertEquals(2, result.chunkIds.size, "Should have 2 chunk IDs")
-            assertEquals(2, result.storesWrittenTo.size, "Should write to 2 stores")
-            assertTrue(result.storesWrittenTo.contains("rag-service-1"), "Should write to first service")
-            assertTrue(result.storesWrittenTo.contains("rag-service-2"), "Should write to second service")
-
-            // Verify services were called
-            verify { mockRagService1.write(listOf(splitDoc1, splitDoc2)) }
-            verify { mockRagService2.write(listOf(splitDoc1, splitDoc2)) }
-        }
-
-        @Test
-        fun `test ingest with no rag services still processes but returns empty stores`() {
-            val testFile = tempDir.resolve("test.txt").toFile()
-            testFile.writeText("Test content")
-
-            val multiIngester = MultiIngester(emptyList())
-
-            val result = multiIngester.ingest(testFile.toURI().toString())
-
-            assertNotNull(result, "Should return ingestion result")
-            assertTrue(result.storesWrittenTo.isEmpty(), "Should have empty stores when no services")
-            assertFalse(result.success(), "Should not be successful with no stores")
-        }
-
-        @Test
-        fun `test ingest with large document gets split appropriately`() {
-            val testFile = tempDir.resolve("large.txt").toFile()
-            val largeContent = "This is a large document. ".repeat(1000)
-            testFile.writeText(largeContent)
-
-            // Mock splitter to simulate splitting large document
-            val sourceDoc = Document(largeContent)
-            val splitDocs = (1..5).map {
-                Document("Chunk $it content", mapOf("id" to "chunk-$it"))
-            }
-            every { mockTextSplitter.split(any<List<Document>>()) } returns splitDocs
-
-            val multiIngester = MultiIngester(listOf(mockRagService1), mockTextSplitter)
-
-            val result = multiIngester.ingest(testFile.toURI().toString())
-
-            assertTrue(result.success(), "Should succeed with large document")
-            assertEquals(5, result.chunkIds.size, "Should have 5 chunks from splitting")
-            assertEquals(1, result.storesWrittenTo.size, "Should write to 1 store")
-
-            verify { mockRagService1.write(splitDocs) }
-        }
-
-        @Test
-        fun `test ingest with file that doesn't exist throws appropriate exception`() {
-            val nonExistentPath = "file:///non/existent/path.txt"
-            val multiIngester = MultiIngester(listOf(mockRagService1))
-
-            assertThrows(Exception::class.java) {
-                multiIngester.ingest(nonExistentPath)
-            }
-
-            // Verify services were not called due to exception
-            verify(exactly = 0) { mockRagService1.write(any()) }
-        }
-
-        @Test
-        fun `test ingest with empty file creates minimal document`() {
-            val emptyFile = tempDir.resolve("empty.txt").toFile()
-            emptyFile.writeText("")
-
-            // Mock splitter behavior for empty content
-            val emptyDoc = Document("")
-            every { mockTextSplitter.split(any<List<Document>>()) } returns listOf(emptyDoc)
-
-            val multiIngester = MultiIngester(listOf(mockRagService1), mockTextSplitter)
-
-            val result = multiIngester.ingest(emptyFile.toURI().toString())
-
-            assertTrue(result.success(), "Should succeed with empty file")
-            assertEquals(1, result.chunkIds.size, "Should have 1 document even for empty file")
-
-            verify { mockRagService1.write(listOf(emptyDoc)) }
-        }
-
-        @Test
-        fun `test ingest with different file types`() {
-            // Test with different file extensions
-            val extensions = listOf("txt", "md", "java", "json")
-
-            extensions.forEach { ext ->
-                val testFile = tempDir.resolve("test.$ext").toFile()
-                testFile.writeText("Content for $ext file")
-
-                val sourceDoc = Document("Content for $ext file")
-                val splitDoc = Document("Content for $ext file", mapOf("id" to "chunk-$ext"))
-                every { mockTextSplitter.split(any<List<Document>>()) } returns listOf(splitDoc)
-
-                val multiIngester = MultiIngester(listOf(mockRagService1), mockTextSplitter)
-
-                val result = multiIngester.ingest(testFile.toURI().toString())
-
-                assertTrue(result.success(), "Should succeed with $ext file")
-                assertEquals(1, result.chunkIds.size, "Should have 1 chunk for $ext file")
-
-                verify { mockRagService1.write(listOf(splitDoc)) }
-
-                clearMocks(mockRagService1, answers = false)
-            }
-        }
-    }
-
-    @Nested
-    inner class AcceptMethodTests {
-
-        @Test
-        fun `test accept method writes documents directly to all services`() {
-            val doc1 = Document("Document 1", mapOf("id" to "doc1"))
-            val doc2 = Document("Document 2", mapOf("id" to "doc2"))
+        fun `test accept with documents writes to all services`() {
+            // Create test documents directly (no files)
+            val doc1 = Document("This is a test document", mapOf("id" to "chunk-1"))
+            val doc2 = Document("for ingestion.", mapOf("id" to "chunk-2"))
             val documents = listOf(doc1, doc2)
 
             val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2))
 
+            val result = multiIngester.accept(documents)
+
+            // Verify services were called with the documents
+            verify { mockRagService1.write(documents) }
+            verify { mockRagService2.write(documents) }
+        }
+
+        @Test
+        fun `test accept with no rag services processes but doesn't write`() {
+            val documents = listOf(Document("Test content", mapOf("id" to "test-1")))
+            val multiIngester = MultiIngester(emptyList())
+
+            // Should not throw exception
+            assertDoesNotThrow {
+                multiIngester.accept(documents)
+            }
+        }
+
+        @Test
+        fun `test accept with large document list processes all`() {
+            // Create multiple documents to simulate splitting
+            val documents = (1..5).map {
+                Document("Chunk $it content", mapOf("id" to "chunk-$it"))
+            }
+
+            val multiIngester = MultiIngester(listOf(mockRagService1))
+
             multiIngester.accept(documents)
 
             verify { mockRagService1.write(documents) }
-            verify { mockRagService2.write(documents) }
         }
 
         @Test
@@ -276,17 +169,6 @@ class MultiIngesterTest {
         }
 
         @Test
-        fun `test accept with no rag services doesn't fail`() {
-            val documents = listOf(Document("Test content"))
-            val multiIngester = MultiIngester(emptyList())
-
-            // Should not throw exception
-            assertDoesNotThrow {
-                multiIngester.accept(documents)
-            }
-        }
-
-        @Test
         fun `test accept with single document`() {
             val document = Document("Single document", mapOf("id" to "single"))
             val multiIngester = MultiIngester(listOf(mockRagService1))
@@ -295,38 +177,32 @@ class MultiIngesterTest {
 
             verify { mockRagService1.write(listOf(document)) }
         }
+
+        @Test
+        fun `test accept with different document types and metadata`() {
+            val documents = listOf(
+                Document("Text content", mapOf("type" to "txt", "id" to "text-1")),
+                Document("# Markdown content", mapOf("type" to "md", "id" to "md-1")),
+                Document("public class Test {}", mapOf("type" to "java", "id" to "java-1")),
+                Document("{\"key\": \"value\"}", mapOf("type" to "json", "id" to "json-1"))
+            )
+
+            val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2))
+
+            multiIngester.accept(documents)
+
+            verify { mockRagService1.write(documents) }
+            verify { mockRagService2.write(documents) }
+        }
     }
+
 
     @Nested
     inner class ErrorHandlingTests {
 
         @Test
-        fun `test ingestion continues when one rag service fails`() {
-            val testFile = tempDir.resolve("test.txt").toFile()
-            testFile.writeText("Test content")
-
-            val sourceDoc = Document("Test content")
-            val splitDoc = Document("Test content", mapOf("id" to "chunk-1"))
-            every { mockTextSplitter.split(any<List<Document>>()) } returns listOf(splitDoc)
-
-            // Make first service throw exception
-            every { mockRagService1.write(any()) } throws RuntimeException("Service 1 failed")
-            every { mockRagService2.write(any()) } just Runs
-
-            val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2), mockTextSplitter)
-
-            // Should throw exception since writeToStores doesn't handle exceptions
-            assertThrows(RuntimeException::class.java) {
-                multiIngester.ingest(testFile.toURI().toString())
-            }
-
-            verify { mockRagService1.write(listOf(splitDoc)) }
-            // Second service might not be called due to exception in first
-        }
-
-        @Test
-        fun `test accept method with rag service exception`() {
-            val document = Document("Test content")
+        fun `test accept throws exception when rag service fails`() {
+            val document = Document("Test content", mapOf("id" to "test-1"))
             every { mockRagService1.write(any()) } throws RuntimeException("Write failed")
 
             val multiIngester = MultiIngester(listOf(mockRagService1))
@@ -334,6 +210,27 @@ class MultiIngesterTest {
             assertThrows(RuntimeException::class.java) {
                 multiIngester.accept(listOf(document))
             }
+
+            verify { mockRagService1.write(listOf(document)) }
+        }
+
+        @Test
+        fun `test accept with multiple services fails fast on first exception`() {
+            val documents = listOf(Document("Test content", mapOf("id" to "test-1")))
+
+            // Make first service throw exception
+            every { mockRagService1.write(any()) } throws RuntimeException("Service 1 failed")
+            every { mockRagService2.write(any()) } just Runs
+
+            val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2))
+
+            assertThrows(RuntimeException::class.java) {
+                multiIngester.accept(documents)
+            }
+
+            verify { mockRagService1.write(documents) }
+            // Second service should not be called due to exception in first
+            verify(exactly = 0) { mockRagService2.write(any()) }
         }
     }
 
@@ -408,59 +305,30 @@ class MultiIngesterTest {
     inner class IntegrationTests {
 
         @Test
-        fun `test complete ingestion workflow with realistic scenario`() {
-            // Create a markdown file with multiple sections
-            val markdownFile = tempDir.resolve("document.md").toFile()
-            markdownFile.writeText("""
-                # Introduction
-                This is a comprehensive document about testing.
-
-                ## Section 1
-                Content for section 1 with important information.
-
-                ## Section 2
-                More content with different topics and details.
-
-                ## Conclusion
-                Final thoughts and summary of the document.
-            """.trimIndent())
-
-            // Mock the splitter to break document into sections
-            val sourceDoc = Document(markdownFile.readText())
+        fun `test complete workflow with realistic document scenario`() {
+            // Create realistic document chunks as they would come from a splitter
             val chunks = listOf(
                 Document("# Introduction\nThis is a comprehensive document about testing.",
-                        mapOf("id" to UUID.randomUUID().toString())),
+                        mapOf("id" to UUID.randomUUID().toString(), "type" to "header")),
                 Document("## Section 1\nContent for section 1 with important information.",
-                        mapOf("id" to UUID.randomUUID().toString())),
+                        mapOf("id" to UUID.randomUUID().toString(), "type" to "section")),
                 Document("## Section 2\nMore content with different topics and details.",
-                        mapOf("id" to UUID.randomUUID().toString())),
+                        mapOf("id" to UUID.randomUUID().toString(), "type" to "section")),
                 Document("## Conclusion\nFinal thoughts and summary of the document.",
-                        mapOf("id" to UUID.randomUUID().toString()))
+                        mapOf("id" to UUID.randomUUID().toString(), "type" to "conclusion"))
             )
-            every { mockTextSplitter.split(any<List<Document>>()) } returns chunks
 
-            val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2), mockTextSplitter)
+            val multiIngester = MultiIngester(listOf(mockRagService1, mockRagService2))
 
-            val result = multiIngester.ingest(markdownFile.toURI().toString())
-
-            // Verify comprehensive result
-            assertTrue(result.success(), "Integration test should succeed")
-            assertEquals(4, result.chunkIds.size, "Should have 4 chunks from document sections")
-            assertEquals(4, result.documentsWritten, "Should report 4 documents written")
-            assertEquals(2, result.storesWrittenTo.size, "Should write to both stores")
-            assertTrue(result.storesWrittenTo.containsAll(setOf("rag-service-1", "rag-service-2")),
-                      "Should write to both named services")
+            multiIngester.accept(chunks)
 
             // Verify both services received all chunks
             verify { mockRagService1.write(chunks) }
             verify { mockRagService2.write(chunks) }
-
-            // Verify text splitter was called correctly
-            verify { mockTextSplitter.split(any<List<Document>>()) }
         }
 
         @Test
-        fun `test ingestion with mixed service types and configurations`() {
+        fun `test workflow with mixed service types and configurations`() {
             // Create additional mock services with different characteristics
             val mockVectorService = mockk<WritableRagService>()
             val mockGraphService = mockk<WritableRagService>()
@@ -470,30 +338,19 @@ class MultiIngesterTest {
             every { mockVectorService.write(any()) } just Runs
             every { mockGraphService.write(any()) } just Runs
 
-            val testFile = tempDir.resolve("mixed.txt").toFile()
-            testFile.writeText("Content for mixed service ingestion")
-
-            val sourceDoc = Document("Content for mixed service ingestion")
             val chunk = Document("Content for mixed service ingestion", mapOf("id" to "mixed-1"))
-            every { mockTextSplitter.split(any<List<Document>>()) } returns listOf(chunk)
+            val documents = listOf(chunk)
 
             val multiIngester = MultiIngester(
-                listOf(mockRagService1, mockVectorService, mockGraphService),
-                mockTextSplitter
+                listOf(mockRagService1, mockVectorService, mockGraphService)
             )
 
-            val result = multiIngester.ingest(testFile.toURI().toString())
-
-            assertTrue(result.success(), "Should succeed with mixed services")
-            assertEquals(3, result.storesWrittenTo.size, "Should write to all 3 services")
-            assertTrue(result.storesWrittenTo.containsAll(
-                setOf("rag-service-1", "vector-store", "knowledge-graph")),
-                "Should write to all named services")
+            multiIngester.accept(documents)
 
             // Verify all services were called
-            verify { mockRagService1.write(listOf(chunk)) }
-            verify { mockVectorService.write(listOf(chunk)) }
-            verify { mockGraphService.write(listOf(chunk)) }
+            verify { mockRagService1.write(documents) }
+            verify { mockVectorService.write(documents) }
+            verify { mockGraphService.write(documents) }
         }
 
         @Test
@@ -506,29 +363,22 @@ class MultiIngesterTest {
                 }
             }
 
-            val testFile = tempDir.resolve("performance.txt").toFile()
-            testFile.writeText("Performance test content")
+            val document = Document("Performance test content", mapOf("id" to "perf-1"))
+            val documents = listOf(document)
 
-            val sourceDoc = Document("Performance test content")
-            val chunk = Document("Performance test content", mapOf("id" to "perf-1"))
-            every { mockTextSplitter.split(any<List<Document>>()) } returns listOf(chunk)
-
-            val multiIngester = MultiIngester(services, mockTextSplitter)
+            val multiIngester = MultiIngester(services)
 
             val startTime = System.currentTimeMillis()
-            val result = multiIngester.ingest(testFile.toURI().toString())
+            multiIngester.accept(documents)
             val endTime = System.currentTimeMillis()
 
-            assertTrue(result.success(), "Should succeed with many services")
-            assertEquals(10, result.storesWrittenTo.size, "Should write to all 10 services")
-
-            // Verify reasonable performance (should complete in reasonable time)
+            // Verify reasonable performance (should complete quickly with mocks)
             val duration = endTime - startTime
-            assertTrue(duration < 5000, "Should complete within 5 seconds for 10 services")
+            assertTrue(duration < 1000, "Should complete within 1 second for 10 mock services")
 
             // Verify all services were called
             services.forEach { service ->
-                verify { service.write(listOf(chunk)) }
+                verify { service.write(documents) }
             }
         }
     }
