@@ -15,10 +15,8 @@
  */
 package com.embabel.agent.rag.lucene
 
-import com.embabel.agent.rag.RagRequest
-import com.embabel.agent.rag.RagResponse
-import com.embabel.agent.rag.Retrievable
-import com.embabel.agent.rag.WritableRagService
+import com.embabel.agent.rag.*
+import com.embabel.agent.rag.ingestion.ChunkRepository
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import com.embabel.common.util.indent
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -34,19 +32,20 @@ import org.apache.lucene.store.ByteBuffersDirectory
 import org.slf4j.LoggerFactory
 import org.springframework.ai.embedding.EmbeddingModel
 import java.io.Closeable
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.sqrt
 import org.springframework.ai.document.Document as SpringAiDocument
 
 /**
  * LuceneRagService with optional vector search support via an EmbeddingModel.
- * Works in memory.
+ * Works in memory. Be careful if loading excessive content!
  */
 class LuceneRagService @JvmOverloads constructor(
     override val name: String,
     override val description: String,
     private val embeddingModel: EmbeddingModel? = null,
     private val vectorWeight: Double = 0.5, // Balance between text and vector similarity
-) : WritableRagService, Closeable {
+) : WritableRagService, ChunkRepository, Closeable {
 
     private val logger = LoggerFactory.getLogger(LuceneRagService::class.java)
 
@@ -66,6 +65,26 @@ class LuceneRagService @JvmOverloads constructor(
     @Volatile
     private var directoryReader: DirectoryReader? = null
 
+    // In-memory storage for chunks - thread-safe for concurrent access
+    private val chunkStorage = ConcurrentHashMap<String, Chunk>()
+
+    override fun findChunksById(chunkIds: List<String>): List<Chunk> {
+        logger.debug("Finding chunks by IDs: {}", chunkIds)
+
+        val foundChunks = chunkIds.mapNotNull { chunkId ->
+            chunkStorage[chunkId]
+        }
+
+        logger.debug("Found {}/{} chunks", foundChunks.size, chunkIds.size)
+        return foundChunks
+    }
+
+    override fun findAll(): List<Chunk> {
+        logger.debug("Retrieving all chunks from storage")
+        val allChunks = chunkStorage.values.toList()
+        logger.debug("Retrieved {} chunks from storage", allChunks.size)
+        return allChunks
+    }
 
     override fun search(ragRequest: RagRequest): RagResponse {
         refreshReaderIfNeeded()
@@ -166,7 +185,21 @@ class LuceneRagService @JvmOverloads constructor(
     }
 
     override fun accept(documents: List<SpringAiDocument>) {
+        logger.info("Indexing {} documents into Lucene RAG service and storing as chunks", documents.size)
+
         documents.forEach { springDoc ->
+            // Create and store chunk in memory
+            val chunk = Chunk(
+                id = springDoc.id,
+                text = springDoc.text ?: "",
+                metadata = springDoc.metadata + mapOf(
+                    "indexed_at" to System.currentTimeMillis(),
+                    "service" to name
+                )
+            )
+            chunkStorage[chunk.id] = chunk
+
+            // Create Lucene document for indexing
             val luceneDoc = Document().apply {
                 add(StringField("id", springDoc.id, Field.Store.YES))
                 add(TextField("content", springDoc.text, Field.Store.YES))
@@ -183,10 +216,17 @@ class LuceneRagService @JvmOverloads constructor(
             }
 
             indexWriter.addDocument(luceneDoc)
+
+            logger.debug("Indexed and stored chunk with id='{}' and text length={}", chunk.id, chunk.text.length)
         }
 
         indexWriter.commit()
         invalidateReader()
+
+        logger.info(
+            "Successfully indexed {} documents. Total chunks in storage: {}",
+            documents.size, chunkStorage.size
+        )
     }
 
     // Vector similarity utility functions
@@ -265,7 +305,16 @@ class LuceneRagService @JvmOverloads constructor(
             0
         }
 
-        return "LuceneRagService: $name (${docCount} documents)".indent(indent)
+        val chunkCount = chunkStorage.size
+        val basicInfo = "LuceneRagService: $name ($docCount documents, $chunkCount chunks)"
+
+        return if (verbose == true) {
+            val embeddingInfo = if (embeddingModel != null) "with embeddings" else "text-only"
+            val vectorWeightInfo = if (embeddingModel != null) ", vector weight: $vectorWeight" else ""
+            "$basicInfo ($embeddingInfo$vectorWeightInfo)".indent(indent)
+        } else {
+            basicInfo.indent(indent)
+        }
     }
 
     override fun close() {
@@ -273,6 +322,47 @@ class LuceneRagService @JvmOverloads constructor(
         indexWriter.close()
         directory.close()
         analyzer.close()
+        chunkStorage.clear()
+    }
+
+    /**
+     * Clear all stored content - useful for testing
+     */
+    fun clear() {
+        logger.info("Clearing all indexed content from Lucene RAG service")
+        synchronized(this) {
+            // Clear chunk storage
+            chunkStorage.clear()
+
+            // Clear Lucene index
+            indexWriter.deleteAll()
+            indexWriter.commit()
+
+            // Invalidate reader
+            invalidateReader()
+        }
+    }
+
+    /**
+     * Get statistics about the current state
+     */
+    fun getStatistics(): LuceneStatistics {
+        val docCount = try {
+            refreshReaderIfNeeded()
+            directoryReader?.numDocs() ?: 0
+        } catch (e: Exception) {
+            0
+        }
+
+        return LuceneStatistics(
+            totalChunks = chunkStorage.size,
+            totalDocuments = docCount,
+            averageChunkLength = if (chunkStorage.isNotEmpty()) {
+                chunkStorage.values.map { it.text.length }.average()
+            } else 0.0,
+            hasEmbeddings = embeddingModel != null,
+            vectorWeight = vectorWeight
+        )
     }
 }
 
@@ -291,3 +381,14 @@ private data class DocumentRetrievable(
         return "Document[$id]: ${content.take(100)}${if (content.length > 100) "..." else ""}".indent(indent)
     }
 }
+
+/**
+ * Statistics about the Lucene RAG service state
+ */
+data class LuceneStatistics(
+    val totalChunks: Int,
+    val totalDocuments: Int,
+    val averageChunkLength: Double,
+    val hasEmbeddings: Boolean,
+    val vectorWeight: Double,
+)

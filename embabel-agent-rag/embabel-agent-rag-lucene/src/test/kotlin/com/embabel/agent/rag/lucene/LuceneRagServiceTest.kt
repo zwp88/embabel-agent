@@ -16,11 +16,8 @@
 package com.embabel.agent.rag.lucene
 
 import com.embabel.agent.rag.RagRequest
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
 import org.springframework.ai.document.Document
 import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.ai.embedding.EmbeddingRequest
@@ -271,6 +268,280 @@ class LuceneRagServiceTest {
             "Should have results for text match. Results: ${response.results.map { it.match.id }}"
         )
         assertEquals("doc1", response.results.first().match.id)
+    }
+
+    @Nested
+    inner class ChunkRepositoryTests {
+
+        @Test
+        fun `should store chunks in memory when accepting documents`() {
+            // Initially no chunks
+            assertTrue(ragService.findAll().isEmpty())
+
+            val documents = listOf(
+                Document("doc1", "Test document 1", emptyMap<String, Any>()),
+                Document("doc2", "Test document 2", emptyMap<String, Any>())
+            )
+
+            ragService.accept(documents)
+
+            // Should have chunks stored
+            val allChunks = ragService.findAll()
+            assertEquals(2, allChunks.size)
+
+            val chunkIds = allChunks.map { it.id }.toSet()
+            assertEquals(setOf("doc1", "doc2"), chunkIds)
+        }
+
+        @Test
+        fun `should find chunks by ID`() {
+            val documents = listOf(
+                Document("ml-doc", "Machine learning content", emptyMap<String, Any>()),
+                Document("ai-doc", "AI content", emptyMap<String, Any>()),
+                Document("ds-doc", "Data science content", emptyMap<String, Any>())
+            )
+
+            ragService.accept(documents)
+
+            // Test finding existing chunks
+            val foundChunks = ragService.findChunksById(listOf("ml-doc", "ai-doc"))
+            assertEquals(2, foundChunks.size)
+
+            val chunkIds = foundChunks.map { it.id }.toSet()
+            assertEquals(setOf("ml-doc", "ai-doc"), chunkIds)
+
+            // Verify chunk content
+            val mlChunk = foundChunks.find { it.id == "ml-doc" }
+            assertNotNull(mlChunk)
+            assertEquals("Machine learning content", mlChunk!!.text)
+        }
+
+        @Test
+        fun `should find chunks by non-existing IDs returns empty list`() {
+            val documents = listOf(
+                Document("existing-doc", "Test content", emptyMap<String, Any>())
+            )
+
+            ragService.accept(documents)
+
+            val foundChunks = ragService.findChunksById(listOf("non-existent-1", "non-existent-2"))
+            assertTrue(foundChunks.isEmpty())
+        }
+
+        @Test
+        fun `should find chunks by mixed existing and non-existing IDs`() {
+            val documents = listOf(
+                Document("doc1", "Content 1", emptyMap<String, Any>()),
+                Document("doc2", "Content 2", emptyMap<String, Any>())
+            )
+
+            ragService.accept(documents)
+
+            val foundChunks = ragService.findChunksById(listOf("doc1", "non-existent", "doc2"))
+            assertEquals(2, foundChunks.size)
+
+            val chunkIds = foundChunks.map { it.id }.toSet()
+            assertEquals(setOf("doc1", "doc2"), chunkIds)
+        }
+
+        @Test
+        fun `should store chunk metadata correctly`() {
+            val metadata = mapOf(
+                "author" to "John Doe",
+                "category" to "AI",
+                "source" to "research-paper"
+            )
+
+            val documents = listOf(
+                Document("research-doc", "Research content", metadata)
+            )
+
+            ragService.accept(documents)
+
+            val chunks = ragService.findChunksById(listOf("research-doc"))
+            assertEquals(1, chunks.size)
+
+            val chunk = chunks[0]
+            assertEquals("John Doe", chunk.metadata["author"])
+            assertEquals("AI", chunk.metadata["category"])
+            assertEquals("research-paper", chunk.metadata["source"])
+
+            // Should also have service-added metadata
+            assertNotNull(chunk.metadata["indexed_at"])
+            assertEquals("lucene-rag", chunk.metadata["service"])
+        }
+
+        @Test
+        fun `should handle empty document list`() {
+            ragService.accept(emptyList())
+
+            val allChunks = ragService.findAll()
+            assertTrue(allChunks.isEmpty())
+        }
+
+        @Test
+        fun `should handle document with empty text`() {
+            val document = Document("empty-doc", "", emptyMap<String, Any>())
+
+            ragService.accept(listOf(document))
+
+            val chunks = ragService.findAll()
+            assertEquals(1, chunks.size)
+            assertEquals("", chunks[0].text) // Should handle empty string correctly
+        }
+
+        @Test
+        fun `should update chunk when document with same ID is added again`() {
+            // Add initial document
+            ragService.accept(listOf(Document("dup-doc", "Initial content", emptyMap<String, Any>())))
+
+            val initialChunks = ragService.findAll()
+            assertEquals(1, initialChunks.size)
+            assertEquals("Initial content", initialChunks[0].text)
+
+            // Add document with same ID
+            ragService.accept(listOf(Document("dup-doc", "Updated content", emptyMap<String, Any>())))
+
+            val updatedChunks = ragService.findAll()
+            assertEquals(1, updatedChunks.size) // Should still have only 1 chunk
+            assertEquals("Updated content", updatedChunks[0].text) // Should be updated
+        }
+
+        @Test
+        fun `should clear all chunks and index when clear is called`() {
+            val documents = listOf(
+                Document("doc1", "Content 1", emptyMap<String, Any>()),
+                Document("doc2", "Content 2", emptyMap<String, Any>())
+            )
+
+            ragService.accept(documents)
+            assertEquals(2, ragService.findAll().size)
+
+            // Clear everything
+            ragService.clear()
+
+            // Should have no chunks
+            assertTrue(ragService.findAll().isEmpty())
+
+            // Should also clear search index
+            val searchResponse = ragService.search(RagRequest.query("content"))
+            assertTrue(searchResponse.results.isEmpty())
+        }
+
+        @Test
+        fun `should get correct statistics`() {
+            val stats = ragService.getStatistics()
+            assertEquals(0, stats.totalChunks)
+            assertEquals(0, stats.totalDocuments)
+            assertEquals(0.0, stats.averageChunkLength)
+            assertFalse(stats.hasEmbeddings)
+            assertEquals(0.5, stats.vectorWeight) // Default vector weight
+
+            // Add some documents
+            val documents = listOf(
+                Document("doc1", "Short", emptyMap<String, Any>()),
+                Document("doc2", "This is a longer document", emptyMap<String, Any>())
+            )
+
+            ragService.accept(documents)
+
+            val updatedStats = ragService.getStatistics()
+            assertEquals(2, updatedStats.totalChunks)
+            assertEquals(2, updatedStats.totalDocuments)
+            assertTrue(updatedStats.averageChunkLength > 0)
+
+            // Average should be (5 + 25) / 2 = 15.0
+            assertEquals(15.0, updatedStats.averageChunkLength, 0.1)
+        }
+
+        @Test
+        fun `should provide meaningful info string with chunk count`() {
+            val infoString = ragService.infoString(verbose = false, indent = 0)
+            assertTrue(infoString.contains("0 documents, 0 chunks"))
+
+            ragService.accept(listOf(Document("test-doc", "Test content", emptyMap<String, Any>())))
+
+            val infoStringAfter = ragService.infoString(verbose = false, indent = 0)
+            assertTrue(infoStringAfter.contains("1 documents, 1 chunks"))
+        }
+
+        @Test
+        fun `should provide verbose info string`() {
+            val infoString = ragService.infoString(verbose = true, indent = 0)
+            assertTrue(infoString.contains("text-only"))
+            assertFalse(infoString.contains("with embeddings"))
+
+            val embeddingServiceInfo = ragServiceWithEmbedding.infoString(verbose = true, indent = 0)
+            assertTrue(embeddingServiceInfo.contains("with embeddings"))
+            assertTrue(embeddingServiceInfo.contains("vector weight: 0.5"))
+        }
+    }
+
+    @Nested
+    inner class ConcurrencyTests {
+
+        @Test
+        fun `should handle concurrent chunk storage operations`() {
+            val numThreads = 10
+            val documentsPerThread = 50
+
+            val threads = (1..numThreads).map { threadIndex ->
+                Thread {
+                    val documents = (1..documentsPerThread).map { docIndex ->
+                        Document(
+                            "thread-${threadIndex}-doc-${docIndex}",
+                            "Content for thread $threadIndex document $docIndex",
+                            emptyMap<String, Any>()
+                        )
+                    }
+                    ragService.accept(documents)
+                }
+            }
+
+            threads.forEach { it.start() }
+            threads.forEach { it.join() }
+
+            val allChunks = ragService.findAll()
+            assertEquals(numThreads * documentsPerThread, allChunks.size)
+
+            // Verify all chunks are present and unique
+            val chunkIds = allChunks.map { it.id }.toSet()
+            assertEquals(numThreads * documentsPerThread, chunkIds.size) // Should be all unique
+        }
+
+        @Test
+        fun `should handle concurrent read and write operations`() {
+            // Pre-populate with some data
+            val initialDocs = (1..100).map {
+                Document("init-$it", "Initial doc $it", emptyMap<String, Any>())
+            }
+            ragService.accept(initialDocs)
+
+            val writerThread = Thread {
+                repeat(50) { i ->
+                    ragService.accept(listOf(
+                        Document("writer-$i", "Writer doc $i", emptyMap<String, Any>())
+                    ))
+                }
+            }
+
+            val readerThread = Thread {
+                repeat(100) {
+                    ragService.findAll()
+                    ragService.findChunksById(listOf("init-1", "init-50", "writer-1"))
+                }
+            }
+
+            writerThread.start()
+            readerThread.start()
+
+            writerThread.join()
+            readerThread.join()
+
+            // Should have initial + writer documents
+            val finalChunks = ragService.findAll()
+            assertTrue(finalChunks.size >= 100) // At least the initial documents
+        }
     }
 
 
