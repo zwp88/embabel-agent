@@ -15,7 +15,10 @@
  */
 package com.embabel.agent.rag.lucene
 
-import com.embabel.agent.rag.*
+import com.embabel.agent.rag.Chunk
+import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.RagResponse
+import com.embabel.agent.rag.WritableRagService
 import com.embabel.agent.rag.ingestion.ChunkRepository
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import com.embabel.common.util.indent
@@ -99,9 +102,13 @@ class LuceneRagService @JvmOverloads constructor(
 
         // Perform hybrid search: text + vector similarity
         val results = if (embeddingModel != null) {
-            performHybridSearch(searcher, ragRequest)
+            val r = performHybridSearch(searcher, ragRequest)
+            logger.debug("Hybrid search for query {} found\n{}", ragRequest.query, r)
+            r
         } else {
-            performTextSearch(searcher, ragRequest)
+            val r = performTextSearch(searcher, ragRequest)
+            logger.debug("Text search for query {} found\n{}", ragRequest.query, r)
+            r
         }
 
         val filteredResults = results
@@ -119,13 +126,13 @@ class LuceneRagService @JvmOverloads constructor(
     private fun performTextSearch(
         searcher: IndexSearcher,
         ragRequest: RagRequest,
-    ): List<SimpleSimilaritySearchResult<DocumentRetrievable>> {
+    ): List<SimpleSimilaritySearchResult<Chunk>> {
         val query: Query = queryParser.parse(QueryParser.escape(ragRequest.query))
         val topDocs: TopDocs = searcher.search(query, ragRequest.topK)
 
         return topDocs.scoreDocs.map { scoreDoc ->
             val doc = searcher.doc(scoreDoc.doc)
-            val retrievable = createRetrievableFromDocument(doc)
+            val retrievable = createChunkFromDocument(doc)
             SimpleSimilaritySearchResult(
                 match = retrievable,
                 score = scoreDoc.score.toDouble()
@@ -136,7 +143,7 @@ class LuceneRagService @JvmOverloads constructor(
     private fun performHybridSearch(
         searcher: IndexSearcher,
         ragRequest: RagRequest,
-    ): List<SimpleSimilaritySearchResult<DocumentRetrievable>> {
+    ): List<SimpleSimilaritySearchResult<Chunk>> {
         val textQuery: Query = queryParser.parse(QueryParser.escape(ragRequest.query))
         val textResults: TopDocs = searcher.search(textQuery, (ragRequest.topK * 2).coerceAtLeast(20))
 
@@ -144,11 +151,11 @@ class LuceneRagService @JvmOverloads constructor(
         val queryEmbedding = embeddingModel!!.embed(ragRequest.query)
 
         // Calculate hybrid scores
-        val hybridResults = mutableListOf<SimpleSimilaritySearchResult<DocumentRetrievable>>()
+        val hybridResults = mutableListOf<SimpleSimilaritySearchResult<Chunk>>()
 
         for (scoreDoc in textResults.scoreDocs) {
             val doc = searcher.doc(scoreDoc.doc)
-            val retrievable = createRetrievableFromDocument(doc)
+            val retrievable = createChunkFromDocument(doc)
 
             // Get text similarity (normalized)
             val textScore = scoreDoc.score.toDouble()
@@ -174,10 +181,10 @@ class LuceneRagService @JvmOverloads constructor(
         return hybridResults
     }
 
-    private fun createRetrievableFromDocument(doc: Document): DocumentRetrievable {
-        return DocumentRetrievable(
+    private fun createChunkFromDocument(doc: Document): Chunk {
+        return Chunk(
             id = doc.get("id"),
-            content = doc.get("content"),
+            text = doc.get("content"),
             metadata = doc.fields
                 .filter { field -> field.name() !in setOf("id", "content", "embedding") }
                 .associate { field -> field.name() to field.stringValue() }
@@ -363,22 +370,6 @@ class LuceneRagService @JvmOverloads constructor(
             hasEmbeddings = embeddingModel != null,
             vectorWeight = vectorWeight
         )
-    }
-}
-
-private data class DocumentRetrievable(
-    override val id: String,
-    val content: String,
-    override val metadata: Map<String, Any?>,
-) : Retrievable {
-
-    override fun embeddableValue(): String = content
-
-    override fun infoString(
-        verbose: Boolean?,
-        indent: Int,
-    ): String {
-        return "Document[$id]: ${content.take(100)}${if (content.length > 100) "..." else ""}".indent(indent)
     }
 }
 

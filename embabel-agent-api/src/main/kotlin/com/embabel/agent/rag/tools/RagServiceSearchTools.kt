@@ -17,6 +17,7 @@ package com.embabel.agent.rag.tools
 
 import com.embabel.agent.api.common.support.SelfToolCallbackPublisher
 import com.embabel.agent.rag.RagService
+import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 
@@ -35,7 +36,10 @@ class RagServiceSearchTools(
         )
         query: String,
     ): String {
-        return options.ragResponseFormatter.format(ragService.search(options.toRequest(query)))
+        val ragResponse = ragService.search(options.toRequest(query))
+        val asString = options.ragResponseFormatter.format(ragResponse)
+        loggerFor<RagServiceSearchTools>().debug("RagResponse for query {}:\n{}", query, asString)
+        return asString
     }
 
 }

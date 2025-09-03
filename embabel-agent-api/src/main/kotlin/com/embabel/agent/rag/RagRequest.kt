@@ -30,6 +30,9 @@ interface RagRequestRefinement : SimilarityCutoff {
     @get:ApiStatus.Experimental
     val labels: Set<String>
 
+    /**
+     * Create a RagRequest from this refinement and a query.
+     */
     fun toRequest(query: String): RagRequest {
         return RagRequest(
             query = query,
