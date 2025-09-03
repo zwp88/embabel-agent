@@ -192,7 +192,7 @@ internal data class OperationContextPromptRunner(
             )
         )
         val systemPrompt = """|
-            |You have access to retrieval augmented generation (RAG) tools to help you answer questions
+            |You have access to a RAG search tool to help you answer questions
             |about ${ragService.description}
             """.trimMargin()
         return if (options.service == null) {

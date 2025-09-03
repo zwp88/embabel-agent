@@ -50,6 +50,8 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
+const val PROMPT_ELEMENT_SEPARATOR = "\n----\n";
+
 /**
  * LlmOperations implementation that uses the Spring AI ChatClient
  * @param modelProvider ModelProvider to get the LLM model
@@ -78,7 +80,7 @@ internal class ChatClientLlmOperations(
         val llm = chooseLlm(interaction.llm)
         val chatClient = createChatClient(llm)
         val promptContributions =
-            (interaction.promptContributors + llm.promptContributors).joinToString("\n\n") { it.contribution() }
+            (interaction.promptContributors + llm.promptContributors).joinToString(PROMPT_ELEMENT_SEPARATOR) { it.contribution() }
 
         val springAiPrompt = Prompt(
             buildList {

@@ -28,7 +28,7 @@ class RagServiceSearchTools(
     val options: RagOptions,
 ) : SelfToolCallbackPublisher {
 
-    @Tool(description = "Query the RAG service. Return details")
+    @Tool(description = "Search for information relating to this query. Returns detailed results")
     fun search(
         @ToolParam(
             description = "Query to search for",

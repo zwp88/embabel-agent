@@ -48,12 +48,12 @@ interface LlmReference : NamedAndDescribed, PromptContributor {
     )
 
     override fun contribution(): String {
-        return """
-            Reference: $name
-            Description: $description
-            Tool prefix: ${toolPrefix()}
-            Notes: ${notes()}
-        """.trimIndent()
+        return """|
+            |Reference: $name
+            |Description: $description
+            |Tool prefix: ${toolPrefix()}
+            |Notes: ${notes()}
+        """.trimMargin()
     }
 
     /**

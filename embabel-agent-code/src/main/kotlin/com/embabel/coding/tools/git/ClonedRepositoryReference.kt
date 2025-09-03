@@ -45,10 +45,10 @@ class ClonedRepositoryReference(
 ) : AutoCloseable, FileReadTools, FileReadLog by DefaultFileReadLog(), LlmReference {
 
     override val name: String
-        get() = root.substringAfterLast('/')
+        get() = url.substringAfterLast('/')
 
     override val description: String
-        get() = "Cloned Git repository from $url"
+        get() = "Git repo: $url"
 
     override val fileContentTransformers: List<StringTransformer>
         get() = listOf(WellKnownFileContentTransformers.removeApacheLicenseHeader)

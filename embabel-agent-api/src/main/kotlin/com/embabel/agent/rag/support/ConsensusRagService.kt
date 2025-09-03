@@ -30,7 +30,7 @@ class ConsensusRagService(
     private val logger = LoggerFactory.getLogger(ConsensusRagService::class.java)
 
     override val name: String
-        get() = "consensus: ${ragServices.joinToString(",") { it.name }}"
+        get() = "sources: " + ragServices.joinToString(" & ") { it.name }
 
     override fun search(ragRequest: RagRequest): RagResponse {
         val allResults = ragServices.flatMap { ragService ->
@@ -47,7 +47,7 @@ class ConsensusRagService(
     }
 
     override val description: String
-        get() = "Consensus of [${ragServices.joinToString(",") { it.description }}]"
+        get() = ragServices.joinToString(" & ") { "[" + it.description + "]" }
 
     override fun infoString(
         verbose: Boolean?,

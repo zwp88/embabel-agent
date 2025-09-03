@@ -22,14 +22,12 @@ import org.springframework.ai.tool.annotation.Tool
  * API reference that can be exposed to LLMs as a prompt contribution and tools.
  */
 class ApiReference(
+    override val description: String,
     private val api: Api,
     private val classLimit: Int = 100,
 ) : LlmReference {
 
     override val name = api.name
-
-    override val description =
-        "API reference for ${api.name} with ${api.totalClasses} classes and ${api.totalMethods} methods."
 
     override fun notes(): String {
         if (api.classes.size > classLimit) {

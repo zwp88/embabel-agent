@@ -143,26 +143,23 @@ class ApiReferenceTest {
 
         @Test
         fun `should initialize with default class limit`() {
-            val apiRef = ApiReference(smallApi)
-
+            val apiRef = ApiReference("API reference for TestAPI", smallApi)
             assertEquals("TestAPI", apiRef.name)
-            assertEquals("API reference for TestAPI with 4 classes and 4 methods.", apiRef.description)
+            assertEquals("API reference for TestAPI", apiRef.description)
         }
 
         @Test
         fun `should initialize with custom class limit`() {
-            val apiRef = ApiReference(smallApi, classLimit = 50)
-
+            val apiRef = ApiReference("description", smallApi, classLimit = 50)
             assertEquals("TestAPI", apiRef.name)
-            assertEquals("API reference for TestAPI with 4 classes and 4 methods.", apiRef.description)
+            assertEquals("description", apiRef.description)
         }
 
         @Test
         fun `should handle empty API`() {
-            val apiRef = ApiReference(emptyApi)
-
+            val apiRef = ApiReference("mt", emptyApi)
             assertEquals("EmptyAPI", apiRef.name)
-            assertEquals("API reference for EmptyAPI with 0 classes and 0 methods.", apiRef.description)
+            assertEquals("mt", apiRef.description)
         }
     }
 
@@ -171,7 +168,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should return full contribution for small API`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val contribution = apiRef.contribution()
 
             assertTrue(contribution.contains(apiRef.name))
@@ -183,7 +180,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should return limited contribution for large API`() {
-            val apiRef = ApiReference(largeApi)
+            val apiRef = ApiReference("large", largeApi)
             val contribution = apiRef.contribution()
             assertTrue(contribution.contains("too large to include here"))
             assertTrue(contribution.contains("contains 150 classes and 150 methods"))
@@ -192,7 +189,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should respect custom class limit`() {
-            val apiRef = ApiReference(smallApi, classLimit = 2)
+            val apiRef = ApiReference("small", smallApi, classLimit = 2)
             val contribution = apiRef.contribution()
 
             assertTrue(contribution.contains("too large to include here"))
@@ -201,7 +198,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should handle empty API contribution`() {
-            val apiRef = ApiReference(emptyApi)
+            val apiRef = ApiReference("mt", emptyApi)
             val contribution = apiRef.contribution()
 
             assertTrue(contribution.contains(apiRef.name))
@@ -215,7 +212,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should format API as text with header`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val formatted = apiRef.formatAsText()
 
             assertTrue(formatted.startsWith("API Reference - 4 classes, 4 methods"))
@@ -227,7 +224,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should sort classes by fully qualified name`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val formatted = apiRef.formatAsText()
 
             val lines = formatted.split("\n")
@@ -242,7 +239,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should handle empty API formatting`() {
-            val apiRef = ApiReference(emptyApi)
+            val apiRef = ApiReference("mt", emptyApi)
             val formatted = apiRef.formatAsText()
 
             assertEquals("API Reference - 0 classes, 0 methods\n\n", formatted)
@@ -254,7 +251,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should find existing class by FQN`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureByFqn("com.example.service.UserService")
 
             assertTrue(signature.contains("com.example.service.UserService"))
@@ -267,9 +264,8 @@ class ApiReferenceTest {
 
         @Test
         fun `should find interface class correctly`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureByFqn("com.example.repository.UserRepository")
-
             assertTrue(signature.contains("com.example.repository.UserRepository (interface)"))
             assertTrue(signature.contains("Repository for user data"))
             assertTrue(signature.contains("extends/implements: JpaRepository<User, Long>"))
@@ -277,9 +273,8 @@ class ApiReferenceTest {
 
         @Test
         fun `should find enum class correctly`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureByFqn("com.example.model.UserStatus")
-
             assertTrue(signature.contains("com.example.model.UserStatus (enum)"))
             assertTrue(signature.contains("User status enumeration"))
             assertFalse(signature.contains("extends/implements"))
@@ -287,25 +282,22 @@ class ApiReferenceTest {
 
         @Test
         fun `should return not found message for non-existent class`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureByFqn("com.example.NonExistentClass")
-
             assertEquals("Class not found: com.example.NonExistentClass", signature)
         }
 
         @Test
         fun `should handle empty FQN`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureByFqn("")
-
             assertEquals("Class not found: ", signature)
         }
 
         @Test
         fun `should handle null-like input`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureByFqn("null")
-
             assertEquals("Class not found: null", signature)
         }
     }
@@ -315,9 +307,8 @@ class ApiReferenceTest {
 
         @Test
         fun `should find unique class by simple name`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureBySimpleName("UserService")
-
             assertTrue(signature.contains("com.example.service.UserService"))
             assertTrue(signature.contains("Service for managing users"))
             assertTrue(signature.contains("extends/implements: BaseService, UserOperations"))
@@ -326,35 +317,31 @@ class ApiReferenceTest {
 
         @Test
         fun `should find interface by simple name`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureBySimpleName("UserRepository")
-
             assertTrue(signature.contains("com.example.repository.UserRepository (interface)"))
             assertTrue(signature.contains("Repository for user data"))
         }
 
         @Test
         fun `should find enum by simple name`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureBySimpleName("UserStatus")
-
             assertTrue(signature.contains("com.example.model.UserStatus (enum)"))
             assertTrue(signature.contains("User status enumeration"))
         }
 
         @Test
         fun `should return not found for non-existent simple name`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureBySimpleName("NonExistentClass")
-
             assertEquals("Class not found: NonExistentClass", signature)
         }
 
         @Test
         fun `should handle empty simple name`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureBySimpleName("")
-
             assertEquals("Class not found: ", signature)
         }
 
@@ -373,7 +360,7 @@ class ApiReferenceTest {
             )
 
             val api = Api("TestAPI", listOf(userModel, userDto), 2, 0)
-            val apiRef = ApiReference(api)
+            val apiRef = ApiReference("test", api)
             val signature = apiRef.findClassSignatureBySimpleName("User")
 
             assertTrue(signature.contains("Multiple classes found with name 'User':"))
@@ -383,15 +370,14 @@ class ApiReferenceTest {
 
         @Test
         fun `should work with large API`() {
-            val apiRef = ApiReference(largeApi)
+            val apiRef = ApiReference("large", largeApi)
             val signature = apiRef.findClassSignatureBySimpleName("GeneratedClass1")
-
             assertTrue(signature.contains("com.generated.package1.GeneratedClass1"))
         }
 
         @Test
         fun `should be case sensitive`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findClassSignatureBySimpleName("userservice")
 
             assertEquals("Class not found: userservice", signature)
@@ -416,7 +402,7 @@ class ApiReferenceTest {
                 totalMethods = 4
             )
 
-            val apiRef = ApiReference(apiWithExtraClass)
+            val apiRef = ApiReference("extra extra extra!", apiWithExtraClass)
             val signature = apiRef.findPackageSignature("com.example.service")
 
             assertTrue(signature.contains("Package: com.example.service"))
@@ -433,7 +419,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should find package with single class`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findPackageSignature("com.example.controller")
 
             assertTrue(signature.contains("Package: com.example.controller"))
@@ -443,25 +429,22 @@ class ApiReferenceTest {
 
         @Test
         fun `should return not found message for non-existent package`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findPackageSignature("com.nonexistent.package")
-
             assertEquals("Package not found: com.nonexistent.package", signature)
         }
 
         @Test
         fun `should handle empty package name`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findPackageSignature("")
-
             assertEquals("Package not found: ", signature)
         }
 
         @Test
         fun `should handle partial package matches correctly`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val signature = apiRef.findPackageSignature("com.example")
-
             assertEquals("Package not found: com.example", signature)
         }
     }
@@ -471,7 +454,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should format class with all features`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val userServiceClass = smallApi.classes.find { it.name == "UserService" }!!
             val formatted = apiRef.formatClass(userServiceClass)
 
@@ -485,7 +468,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should format interface with type indicator`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val repositoryClass = smallApi.classes.find { it.name == "UserRepository" }!!
             val formatted = apiRef.formatClass(repositoryClass)
 
@@ -496,7 +479,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should format enum without extends implements when empty`() {
-            val apiRef = ApiReference(smallApi)
+            val apiRef = ApiReference("small", smallApi)
             val enumClass = smallApi.classes.find { it.name == "UserStatus" }!!
             val formatted = apiRef.formatClass(enumClass)
 
@@ -526,7 +509,8 @@ class ApiReferenceTest {
                 comment = null
             )
 
-            val apiRef = ApiReference(Api("Test", listOf(classWithoutComments), 1, 1))
+            val apiRef = ApiReference("test", Api("Test", listOf(classWithoutComments), 1, 1))
+
             val formatted = apiRef.formatClass(classWithoutComments)
 
             assertTrue(formatted.contains("com.example.controller.EmptyController"))
@@ -554,7 +538,7 @@ class ApiReferenceTest {
                 methods = listOf(method)
             )
 
-            val apiRef = ApiReference(Api("Test", listOf(testClass), 1, 1))
+            val apiRef = ApiReference("test", Api("Test", listOf(testClass), 1, 1))
             val formatted = apiRef.formatClass(testClass)
 
             assertTrue(formatted.contains("// A complex method with multiple annotations"))
@@ -576,7 +560,7 @@ class ApiReferenceTest {
                 methods = listOf(method)
             )
 
-            val apiRef = ApiReference(Api("Simple", listOf(testClass), 1, 1))
+            val apiRef = ApiReference("test", Api("Simple", listOf(testClass), 1, 1))
             val formatted = apiRef.formatClass(testClass)
 
             assertTrue(formatted.contains("simpleMethod(): void"))
@@ -591,7 +575,7 @@ class ApiReferenceTest {
                 methods = emptyList()
             )
 
-            val apiRef = ApiReference(Api("Empty", listOf(testClass), 1, 0))
+            val apiRef = ApiReference("test", Api("Empty", listOf(testClass), 1, 0))
             val formatted = apiRef.formatClass(testClass)
 
             assertTrue(formatted.contains("com.empty.EmptyClass"))
@@ -619,7 +603,7 @@ class ApiReferenceTest {
             )
 
             val api = Api("DuplicateNames", listOf(class1, class2), 2, 0)
-            val apiRef = ApiReference(api)
+            val apiRef = ApiReference("dup", api)
 
             // Both should be findable by FQN
             val modelUser = apiRef.findClassSignatureByFqn("com.example.model.User")
@@ -632,7 +616,7 @@ class ApiReferenceTest {
 
         @Test
         fun `should maintain consistent behavior with large API operations`() {
-            val apiRef = ApiReference(largeApi)
+            val apiRef = ApiReference("description", largeApi)
 
             // Should still be able to find specific classes
             val classSignature = apiRef.findClassSignatureByFqn("com.generated.package1.GeneratedClass1")
@@ -662,7 +646,7 @@ class ApiReferenceTest {
             )
 
             val api = Api("XMLTest", listOf(testClass), 1, 1)
-            val apiRef = ApiReference(api)
+            val apiRef = ApiReference("description", api)
 
             val formatted = apiRef.formatClass(testClass)
             assertTrue(formatted.contains("XMLProcessor"))
@@ -687,7 +671,7 @@ class ApiReferenceTest {
             )
 
             val api = Api("GenericTest", listOf(testClass), 1, 1)
-            val apiRef = ApiReference(api)
+            val apiRef = ApiReference("description", api)
 
             val formatted = apiRef.formatClass(testClass)
             assertTrue(formatted.contains("complexGeneric"))
