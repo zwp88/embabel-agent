@@ -2,6 +2,7 @@
 
 <img align="left" src="https://github.com/embabel/embabel-agent/blob/main/embabel-agent-api/images/315px-Meister_der_Weltenchronik_001.jpg?raw=true" width="180">
 
+[![Docs](https://img.shields.io/badge/docs-live-brightgreen)](https://docs.embabel.com/embabel-agent/guide/0.1.2-SNAPSHOT/)
 ![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent)
 [![Discord](https://img.shields.io/discord/1277751399261798401?logo=discord)](https://discord.gg/t6bjkyj93q)
