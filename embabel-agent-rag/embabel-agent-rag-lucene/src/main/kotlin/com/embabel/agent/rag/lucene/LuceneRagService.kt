@@ -198,7 +198,7 @@ class LuceneRagService @JvmOverloads constructor(
     }
 
     override fun writeContent(root: MaterializedContentRoot): List<String> {
-        val chunker = ContentChunker()
+        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
         val chunks = chunker.chunk(root)
         save(root)
         root.descendants().forEach { save(it) }

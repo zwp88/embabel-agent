@@ -45,23 +45,23 @@ class ContentChunker(
      */
     fun chunk(section: MaterializedContainerSection): List<Chunk> {
         val leaves = section.leaves()
-        val totalContentLength = leaves.sumOf { it.content.length }
+        val totalContentLength = leaves.sumOf { it.content.length + it.title.length + 1 } // +1 for newline after title
 
-        // If total content is small enough, create a single chunk from all leaves
-        if (totalContentLength <= minChunkSize) {
+        // Strategy 1: If total content fits in a single chunk, combine everything
+        if (totalContentLength <= maxChunkSize) {
             logger.debug(
-                "Creating single chunk for container section '{}' with {} leaves (total length: {})",
-                section.title, leaves.size, totalContentLength
+                "Creating single chunk for container section '{}' with {} leaves (total length: {} <= max: {})",
+                section.title, leaves.size, totalContentLength, maxChunkSize
             )
             return listOf(createSingleChunkFromContainer(section, leaves))
         }
 
-        // Container content is too long, process leaves individually
+        // Strategy 2: Try to group leaves intelligently before splitting
         logger.debug(
-            "Processing container section '{}' leaves individually (total length: {})",
-            section.title, totalContentLength
+            "Total content ({} chars) exceeds maxChunkSize ({}), attempting intelligent grouping",
+            totalContentLength, maxChunkSize
         )
-        return splitLeavesIndividually(section, leaves)
+        return chunkLeavesIntelligently(section, leaves)
     }
 
     /**
@@ -96,24 +96,101 @@ class ContentChunker(
         )
     }
 
-    private fun splitLeavesIndividually(
+    private fun chunkLeavesIntelligently(
         containerSection: MaterializedContainerSection,
         leaves: List<LeafSection>,
     ): List<Chunk> {
         val allChunks = mutableListOf<Chunk>()
+        val leafGroups = groupLeavesForOptimalChunking(leaves)
 
-        for (leaf in leaves) {
-            val leafChunks = if (leaf.content.length <= minChunkSize) {
-                // Small leaf - create single chunk
-                listOf(createSingleLeafChunk(containerSection, leaf))
-            } else {
-                // Large leaf - split into multiple chunks
-                splitLeafIntoMultipleChunks(containerSection, leaf)
+        logger.debug("Grouped {} leaves into {} groups for chunking", leaves.size, leafGroups.size)
+
+        for (group in leafGroups) {
+            when {
+                group.size == 1 -> {
+                    // Single leaf group
+                    val leaf = group.first()
+                    val leafContentSize = leaf.content.length + leaf.title.length + 1
+
+                    if (leafContentSize <= maxChunkSize) {
+                        // Small enough for single chunk
+                        allChunks.add(createSingleLeafChunk(containerSection, leaf))
+                    } else {
+                        // Too large, split it
+                        allChunks.addAll(splitLeafIntoMultipleChunks(containerSection, leaf))
+                    }
+                }
+                else -> {
+                    // Multi-leaf group - create combined chunk
+                    allChunks.add(createCombinedLeafChunk(containerSection, group))
+                }
             }
-            allChunks.addAll(leafChunks)
         }
 
         return allChunks
+    }
+
+    private fun groupLeavesForOptimalChunking(leaves: List<LeafSection>): List<List<LeafSection>> {
+        val groups = mutableListOf<List<LeafSection>>()
+        var currentGroup = mutableListOf<LeafSection>()
+        var currentGroupSize = 0
+
+        for (leaf in leaves) {
+            val leafSize = leaf.content.length + leaf.title.length + 1 // +1 for newline
+
+            // If adding this leaf would exceed maxChunkSize, finalize current group
+            if (currentGroup.isNotEmpty() && currentGroupSize + leafSize + 2 > maxChunkSize) { // +2 for separator
+                groups.add(currentGroup.toList())
+                currentGroup.clear()
+                currentGroupSize = 0
+            }
+
+            // If single leaf is too large, it goes in its own group
+            if (leafSize > maxChunkSize) {
+                if (currentGroup.isNotEmpty()) {
+                    groups.add(currentGroup.toList())
+                    currentGroup.clear()
+                    currentGroupSize = 0
+                }
+                groups.add(listOf(leaf))
+            } else {
+                // Add leaf to current group
+                currentGroup.add(leaf)
+                currentGroupSize += leafSize + 2 // +2 for separator between leaves
+            }
+        }
+
+        // Add final group if it has content
+        if (currentGroup.isNotEmpty()) {
+            groups.add(currentGroup.toList())
+        }
+
+        return groups
+    }
+
+    private fun createCombinedLeafChunk(
+        containerSection: MaterializedContainerSection,
+        leaves: List<LeafSection>
+    ): Chunk {
+        val combinedContent = leaves.joinToString("\n\n") { leaf ->
+            if (leaf.title.isNotBlank()) "${leaf.title}\n${leaf.content}" else leaf.content
+        }.trim()
+
+        val combinedMetadata = mutableMapOf<String, Any?>()
+        combinedMetadata.putAll(containerSection.metadata)
+        combinedMetadata["container_section_id"] = containerSection.id
+        combinedMetadata["container_section_title"] = containerSection.title
+        combinedMetadata["container_section_url"] = containerSection.url
+        combinedMetadata["leaf_sections"] = leaves.map { mapOf("id" to it.id, "title" to it.title) }
+        combinedMetadata["chunk_index"] = 0
+        combinedMetadata["total_chunks"] = 1
+
+        return Chunk(
+            id = UUID.randomUUID().toString(),
+            text = combinedContent,
+            metadata = combinedMetadata,
+            parentId = containerSection.id
+        )
     }
 
     private fun createSingleLeafChunk(

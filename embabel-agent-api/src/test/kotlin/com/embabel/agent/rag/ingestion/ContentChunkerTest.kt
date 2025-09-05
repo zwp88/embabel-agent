@@ -330,4 +330,198 @@ class ContentChunkerTest {
             "Most chunks should end at sentence boundaries"
         )
     }
+
+    @Test
+    fun `test chunking too fine with large chunk sizes`() {
+        // Create a chunker with larger chunk sizes that should create fewer, larger chunks
+        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
+
+        // Create medium-sized content that could reasonably fit in one chunk
+        val mediumContent = buildString {
+            repeat(20) { paragraphIndex ->
+                appendLine("This is paragraph $paragraphIndex containing reasonable amounts of text content.")
+                appendLine("Each paragraph has enough substance to be meaningful but not overwhelming.")
+                appendLine("The goal is to test whether the chunker creates appropriately sized chunks.")
+                appendLine("With a max chunk size of 5000 characters, this should not be overly fragmented.")
+                appendLine("")
+            }
+        }
+
+        println("Medium content length: ${mediumContent.length}")
+
+        val leaf = LeafSection(
+            id = "medium-leaf",
+            title = "Medium Section",
+            content = mediumContent
+        )
+
+        val container = MaterializedContentRoot(
+            id = "medium-container",
+            title = "Medium Document",
+            children = listOf(leaf)
+        )
+
+        val chunks = chunker.chunk(container)
+
+        println("Number of chunks created: ${chunks.size}")
+        chunks.forEachIndexed { index, chunk ->
+            println("Chunk $index size: ${chunk.text.length}")
+        }
+
+        // With content around 2000-3000 chars and maxChunkSize=5000, should create fewer chunks
+        assertTrue(chunks.size <= 2, "Should create at most 2 chunks for medium content with large max chunk size, but got ${chunks.size}")
+
+        // Verify chunks are reasonably sized
+        chunks.forEach { chunk ->
+            assertTrue(chunk.text.length <= 5000, "Chunk should not exceed max size: ${chunk.text.length}")
+            assertTrue(chunk.text.length >= 500, "Chunk should be reasonably substantial: ${chunk.text.length}")
+        }
+    }
+
+    @Test
+    fun `test large content with generous chunk settings`() {
+        // Even more generous settings
+        val chunker = ContentChunker(maxChunkSize = 8000, overlapSize = 400, minChunkSize = 2000)
+
+        // Create larger content that should still result in reasonably few chunks
+        val largeContent = buildString {
+            repeat(50) { paragraphIndex ->
+                appendLine("This is substantial paragraph number $paragraphIndex in a comprehensive document.")
+                appendLine("Each paragraph contains detailed information and explanations that provide value.")
+                appendLine("The content is designed to test chunking behavior with generous size limits.")
+                appendLine("We want to ensure that the chunker doesn't over-fragment content needlessly.")
+                appendLine("Good chunking should balance between size constraints and content coherence.")
+                appendLine("")
+            }
+        }
+
+        println("Large content length: ${largeContent.length}")
+
+        val leaf = LeafSection(
+            id = "large-leaf",
+            title = "Large Section",
+            content = largeContent
+        )
+
+        val container = MaterializedContentRoot(
+            id = "large-container",
+            title = "Large Document",
+            children = listOf(leaf)
+        )
+
+        val chunks = chunker.chunk(container)
+
+        println("Number of chunks for large content: ${chunks.size}")
+        chunks.forEachIndexed { index, chunk ->
+            println("Large chunk $index size: ${chunk.text.length}")
+        }
+
+        // Should create reasonable number of chunks, not over-fragment
+        val expectedMaxChunks = (largeContent.length / 6000) + 2 // Rough estimate with some buffer
+        assertTrue(chunks.size <= expectedMaxChunks, "Should not over-fragment large content. Expected max: $expectedMaxChunks, got: ${chunks.size}")
+
+        chunks.forEach { chunk ->
+            assertTrue(chunk.text.length <= 8000, "Chunk should not exceed max size: ${chunk.text.length}")
+        }
+    }
+
+    @Test
+    fun `test multiple medium leaves should not over-fragment`() {
+        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
+
+        // Create several medium-sized leaves
+        val leaves = (1..3).map { leafNum ->
+            val content = buildString {
+                repeat(10) { paraNum ->
+                    appendLine("Leaf $leafNum paragraph $paraNum with moderate content length.")
+                    appendLine("This paragraph provides sufficient detail without being excessive.")
+                    appendLine("The content should be chunked efficiently without over-fragmentation.")
+                    appendLine("")
+                }
+            }
+
+            LeafSection(
+                id = "leaf-$leafNum",
+                title = "Section $leafNum",
+                content = content
+            )
+        }
+
+        val totalContentLength = leaves.sumOf { it.content.length }
+        println("Total content length for multiple leaves: $totalContentLength")
+
+        val container = MaterializedContentRoot(
+            id = "multi-medium-container",
+            title = "Multiple Medium Sections",
+            children = leaves
+        )
+
+        val chunks = chunker.chunk(container)
+
+        println("Number of chunks for multiple medium sections: ${chunks.size}")
+        chunks.forEachIndexed { index, chunk ->
+            println("Multi-medium chunk $index size: ${chunk.text.length}")
+        }
+
+        // Should create fewer chunks by intelligently grouping leaves
+        assertTrue(chunks.size >= 1, "Should create at least one chunk")
+        assertTrue(chunks.size < leaves.size, "Should create fewer chunks than leaves by grouping them intelligently")
+        assertTrue(chunks.size <= 3, "Should not create excessive chunks for medium content")
+
+        chunks.forEach { chunk ->
+            assertTrue(chunk.text.length <= 5000, "Chunk should not exceed max size: ${chunk.text.length}")
+        }
+    }
+
+    @Test
+    fun `demonstrate over-chunking issue with large chunk sizes`() {
+        // This test specifically shows the over-chunking problem
+        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
+
+        // Create content that SHOULD fit in a single large chunk but gets split unnecessarily
+        val content1 = "Section 1 content that is substantial but not huge. ".repeat(30) // ~1600 chars
+        val content2 = "Section 2 content with different but related information. ".repeat(30) // ~1740 chars
+        val content3 = "Section 3 content that complements the other sections. ".repeat(30) // ~1650 chars
+
+        val leaves = listOf(
+            LeafSection(id = "s1", title = "Section 1", content = content1),
+            LeafSection(id = "s2", title = "Section 2", content = content2),
+            LeafSection(id = "s3", title = "Section 3", content = content3)
+        )
+
+        val totalLength = leaves.sumOf { it.content.length + it.title.length + 1 } // +1 for newline after title
+        println("Total combined length: $totalLength")
+
+        val container = MaterializedContentRoot(
+            id = "over-chunk-test",
+            title = "Should Be One Chunk",
+            children = leaves
+        )
+
+        val chunks = chunker.chunk(container)
+
+        println("Over-chunking demo:")
+        println("- Total content length: $totalLength characters")
+        println("- Max chunk size: 5000 characters")
+        println("- Min chunk size: 1500 characters")
+        println("- Content could easily fit in 1 chunk, but got: ${chunks.size} chunks")
+
+        chunks.forEachIndexed { index, chunk ->
+            println("  Chunk $index: ${chunk.text.length} characters")
+        }
+
+        // FIXED: Content that fits in maxChunkSize should now create a single chunk
+        assertTrue(totalLength <= 5000, "Total content should fit in one chunk")
+        assertEquals(1, chunks.size, "Fixed implementation should create 1 chunk for content that fits in maxChunkSize")
+
+        val chunk = chunks.first()
+        assertTrue(chunk.text.length <= 5000, "Chunk should not exceed max size")
+        assertTrue(chunk.text.contains("Section 1"), "Should contain all sections")
+        assertTrue(chunk.text.contains("Section 2"), "Should contain all sections")
+        assertTrue(chunk.text.contains("Section 3"), "Should contain all sections")
+
+        println("\n*** CHUNKING ISSUE FIXED ***")
+        println("Content of ${totalLength} chars now creates ${chunks.size} optimal chunk(s)")
+        println("This improves retrieval effectiveness and reduces storage/processing overhead")
+    }
 }
