@@ -15,11 +15,8 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
-import com.embabel.agent.rag.Chunk
-import com.embabel.agent.rag.NamedEntityData
-import com.embabel.agent.rag.Retrievable
-import com.embabel.agent.rag.RetrievableEntity
-import com.embabel.agent.rag.ingestion.ChunkRepository
+import com.embabel.agent.rag.*
+import com.embabel.agent.rag.ingestion.ContentElementRepository
 import com.embabel.agent.rag.schema.*
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
@@ -48,13 +45,13 @@ class NeoOgmKnowledgeGraphService(
     private val ogmCypherSearch: OgmCypherSearch,
     modelProvider: ModelProvider,
     private val properties: NeoOgmKnowledgeGraphServiceProperties,
-) : SchemaResolver, ChunkRepository {
+) : SchemaResolver, ContentElementRepository {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
-    override fun findAll(): List<Chunk> {
+    fun findAll(): List<Chunk> {
         val rows = ogmCypherSearch.currentSession().query(
             cypherChunkQuery(""),
             emptyMap<String, Any?>(),
@@ -75,6 +72,14 @@ class NeoOgmKnowledgeGraphService(
             true,
         )
         return rows.map(::rowToChunk)
+    }
+
+    override fun findById(id: String): ContentElement? {
+        return findChunksById(listOf(id)).firstOrNull()
+    }
+
+    override fun save(element: ContentElement): ContentElement {
+        TODO("Not yet implemented")
     }
 
     private fun rowToChunk(row: Map<String, Any?>): Chunk {

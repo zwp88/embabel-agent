@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag
+package com.embabel.agent.rag.ingestion
 
-import org.springframework.ai.document.DocumentWriter
+import com.embabel.agent.rag.Chunk
+import com.embabel.agent.rag.ContentElement
 
 /**
- * RagService that can accept documents
+ * Implemented by services that can retrieve Chunks by id.
  */
-interface WritableRagService : RagService, DocumentWriter {
+interface ContentElementRepository {
 
-    /**
-     * Write the given content root and its children to the underlying store.
-     */
-    fun writeContent(root: MaterializedContentRoot): List<String>
+    fun findChunksById(chunkIds: List<String>): List<Chunk>
+
+    fun findById(id: String): ContentElement?
+
+    fun save(element: ContentElement): ContentElement
 }

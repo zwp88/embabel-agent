@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.rag.ingestion
+package com.embabel.agent.rag
 
-import com.embabel.agent.rag.Chunk
+import com.embabel.agent.api.common.OperationContext
 
-/**
- * Implemented by services that can retrieve Chunks by id.
- */
-interface ChunkRepository {
+interface RagServiceEnhancer {
 
-    fun findChunksById(chunkIds: List<String>): List<Chunk>
-
-    fun findAll(): List<Chunk>
+    /**
+     * Create a new Rag Service for use in this operation
+     */
+    fun create(
+        operationContext: OperationContext,
+        delegate: RagService,
+    ): RagService
 }
