@@ -25,6 +25,7 @@ import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
 import com.embabel.agent.spi.support.InMemoryContextRepository
+import com.embabel.agent.spi.support.SpringContextPlatformServices
 import com.embabel.agent.testing.integration.DummyObjectCreatingLlmOperations
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -66,7 +67,7 @@ internal class DefaultAgentPlatform(
 
     private val agents: MutableMap<String, Agent> = ConcurrentHashMap()
 
-    override val platformServices = PlatformServices(
+    override val platformServices = SpringContextPlatformServices(
         llmOperations = llmOperations,
         agentPlatform = this,
         eventListener = eventListener,

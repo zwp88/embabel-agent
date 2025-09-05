@@ -22,47 +22,52 @@ import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
-import com.embabel.agent.rag.RagServiceEnhancer
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.context.ApplicationContext
 
 /**
  * Services used by the platform and available to user-authored code.
- * @param agentPlatform agent platform executing this agent
- * @param llmOperations operations to use for LLMs
- * @param eventListener event listener for agentic events
- * @param operationScheduler operation scheduler for scheduling operations
- * @param ragService default rag service
  */
-data class PlatformServices(
-    val agentPlatform: AgentPlatform,
-    val llmOperations: LlmOperations,
-    val eventListener: AgenticEventListener,
-    val operationScheduler: OperationScheduler,
-    val asyncer: Asyncer,
-    val ragService: RagService,
-    val objectMapper: ObjectMapper,
-    val outputChannel: OutputChannel,
-    val templateRenderer: TemplateRenderer,
-    private val applicationContext: ApplicationContext?,
-) {
+interface PlatformServices {
 
-    // We get this from the context because of circular dependencies
-    fun autonomy(): Autonomy {
-        if (applicationContext == null) {
-            throw IllegalStateException("Application context is not available, cannot retrieve Autonomy bean.")
-        }
-        return applicationContext.getBean(Autonomy::class.java)
-    }
+    /**
+     * The agent platform executing this agent
+     */
+    val agentPlatform: AgentPlatform
 
-    fun modelProvider(): ModelProvider {
-        if (applicationContext == null) {
-            throw IllegalStateException("Application context is not available, cannot retrieve ModelProvider bean.")
-        }
-        return applicationContext.getBean(ModelProvider::class.java)
-    }
+    /**
+     * Operations to use for LLMs
+     */
+    val llmOperations: LlmOperations
+
+    /**
+     * Event listener for agentic events
+     */
+    val eventListener: AgenticEventListener
+
+    /**
+     * Operation scheduler for scheduling operations
+     */
+    val operationScheduler: OperationScheduler
+
+    /**
+     * Asyncer for async operations
+     */
+    val asyncer: Asyncer
+
+    /**
+     * Default RAG service
+     */
+    val ragService: RagService
+
+    val objectMapper: ObjectMapper
+
+    val outputChannel: OutputChannel
+    val templateRenderer: TemplateRenderer
+
+    fun autonomy(): Autonomy
+    fun modelProvider(): ModelProvider
 
     /**
      * Create a RagService with the given name, or the default if no name is given.
@@ -71,28 +76,7 @@ data class PlatformServices(
     fun ragService(
         context: OperationContext,
         serviceName: String?,
-    ): RagService? {
-        if (applicationContext == null) {
-            throw IllegalStateException("Application context is not available, cannot retrieve RagService beans.")
-        }
+    ): RagService?
 
-        val delegate = if (serviceName.isNullOrBlank()) {
-            ragService
-        } else {
-            val services = applicationContext.getBeansOfType(RagService::class.java)
-            services.values.first { it.name == serviceName } ?: return null
-        }
-
-        return ragServiceEnhancer()
-            ?.create(
-                delegate = delegate,
-                operationContext = context,
-            ) ?: run {
-            delegate
-        }
-    }
-
-    private fun ragServiceEnhancer(): RagServiceEnhancer? {
-        return applicationContext?.getBean(RagServiceEnhancer::class.java)
-    }
+    fun withEventListener(agenticEventListener: AgenticEventListener): PlatformServices
 }

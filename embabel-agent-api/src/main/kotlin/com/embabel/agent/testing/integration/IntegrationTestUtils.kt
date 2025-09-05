@@ -28,6 +28,7 @@ import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.ExecutorAsyncer
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
+import com.embabel.agent.spi.support.SpringContextPlatformServices
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -68,7 +69,7 @@ object IntegrationTestUtils {
     @JvmStatic
     @JvmOverloads
     fun dummyPlatformServices(eventListener: AgenticEventListener? = null): PlatformServices {
-        return PlatformServices(
+        return SpringContextPlatformServices(
             agentPlatform = dummyAgentPlatform(),
             llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum,
             eventListener = eventListener ?: EventSavingAgenticEventListener(),
