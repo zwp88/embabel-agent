@@ -239,7 +239,7 @@ internal class OperationContextAi(
     }
 
     override fun rag(service: String): RagService {
-        return context.processContext.platformServices.ragService(service)
+        return context.processContext.platformServices.ragService(context, service)
             ?: error("No RAG service found with name $service")
     }
 }

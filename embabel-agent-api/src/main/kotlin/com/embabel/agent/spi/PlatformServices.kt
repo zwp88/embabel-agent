@@ -16,6 +16,7 @@
 package com.embabel.agent.spi
 
 import com.embabel.agent.api.common.Asyncer
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.AgentPlatform
@@ -64,23 +65,34 @@ data class PlatformServices(
     }
 
     /**
-     * Return the RagService with the given name, or the default if no name is given.
+     * Create a RagService with the given name, or the default if no name is given.
+     * Enhance if necessary
      */
-    fun ragService(serviceName: String?): RagService? {
+    fun ragService(
+        context: OperationContext,
+        serviceName: String?,
+    ): RagService? {
         if (applicationContext == null) {
             throw IllegalStateException("Application context is not available, cannot retrieve RagService beans.")
         }
-        if (serviceName.isNullOrBlank()) {
-            return ragService
+
+        val delegate = if (serviceName.isNullOrBlank()) {
+            ragService
+        } else {
+            val services = applicationContext.getBeansOfType(RagService::class.java)
+            services.values.first { it.name == serviceName } ?: return null
         }
-        val services = applicationContext.getBeansOfType(RagService::class.java)
-        return services.values.firstOrNull { it.name == serviceName }
+
+        return ragServiceEnhancer()
+            ?.create(
+                delegate = delegate,
+                operationContext = context,
+            ) ?: run {
+            delegate
+        }
     }
 
-    fun ragServiceEnhancer(): RagServiceEnhancer {
-        if (applicationContext == null) {
-            throw IllegalStateException("Application context is not available, cannot retrieve RagServiceEnhancer bean.")
-        }
-        return applicationContext.getBean(RagServiceEnhancer::class.java)
+    private fun ragServiceEnhancer(): RagServiceEnhancer? {
+        return applicationContext?.getBean(RagServiceEnhancer::class.java)
     }
 }

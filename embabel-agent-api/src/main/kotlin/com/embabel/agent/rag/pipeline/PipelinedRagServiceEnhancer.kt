@@ -21,6 +21,7 @@ import com.embabel.agent.rag.RagResponse
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.RagServiceEnhancer
 import com.embabel.common.ai.model.LlmOptions
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "embabel.agent.rag")
@@ -36,6 +37,8 @@ data class RagEnhancerProperties(
 class PipelinedRagServiceEnhancer(
     val ragEnhancerProperties: RagEnhancerProperties = RagEnhancerProperties(),
 ) : RagServiceEnhancer {
+
+    private val logger = LoggerFactory.getLogger(PipelinedRagServiceEnhancer::class.java)
 
     override fun create(
         operationContext: OperationContext,
@@ -59,6 +62,7 @@ class PipelinedRagServiceEnhancer(
             get() = "Pipelined RAG service wrapping ${delegate.name}: ${delegate.description}"
 
         override fun search(ragRequest: RagRequest): RagResponse {
+            logger.info("Performing initial rag search for {} using RagService {}", ragRequest, delegate.name)
             val initialResponse = delegate.search(
                 ragRequest.copy(
                     topK = ragRequest.topK * 2,

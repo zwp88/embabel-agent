@@ -21,9 +21,9 @@ import com.embabel.agent.core.ProcessContext
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.PlatformServices
 import com.embabel.common.ai.model.*
-import com.embabel.common.ai.model.ModelProvider
-import com.embabel.common.ai.model.EmbeddingService
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -135,13 +135,13 @@ class OperationContextAiTest {
             val mockRagService = mockk<RagService>()
             val serviceName = "custom-rag-service"
 
-            every { mockContext.processContext.platformServices.ragService(serviceName) } returns mockRagService
+            every { mockContext.processContext.platformServices.ragService(any(), serviceName) } returns mockRagService
 
             val ai = createOperationContextAi(mockContext)
             val result = ai.rag(serviceName)
 
             assertEquals(mockRagService, result, "Named RAG service not returned correctly")
-            verify { mockContext.processContext.platformServices.ragService(serviceName) }
+            verify { mockContext.processContext.platformServices.ragService(any(), serviceName) }
         }
 
         @Test
@@ -149,7 +149,7 @@ class OperationContextAiTest {
             val mockContext = createMockOperationContext()
             val serviceName = "non-existent-rag-service"
 
-            every { mockContext.processContext.platformServices.ragService(serviceName) } returns null
+            every { mockContext.processContext.platformServices.ragService(any(), serviceName) } returns null
 
             val ai = createOperationContextAi(mockContext)
 
@@ -158,7 +158,7 @@ class OperationContextAiTest {
             }
 
             assertEquals("No RAG service found with name $serviceName", exception.message)
-            verify { mockContext.processContext.platformServices.ragService(serviceName) }
+            verify { mockContext.processContext.platformServices.ragService(any(), serviceName) }
         }
     }
 
@@ -280,7 +280,11 @@ class OperationContextAiTest {
             val ai = createOperationContextAi(mockContext)
             val result = ai.withFirstAvailableLlmOf(modelName)
 
-            assertEquals(mockModifiedPromptRunner, result, "Prompt runner with first available LLM not returned correctly")
+            assertEquals(
+                mockModifiedPromptRunner,
+                result,
+                "Prompt runner with first available LLM not returned correctly"
+            )
             verify { mockContext.promptRunner() }
             verify {
                 mockPromptRunner.withLlm(any<LlmOptions>())
@@ -300,7 +304,11 @@ class OperationContextAiTest {
             val ai = createOperationContextAi(mockContext)
             val result = ai.withFirstAvailableLlmOf(*models)
 
-            assertEquals(mockModifiedPromptRunner, result, "Prompt runner with first available LLM not returned correctly")
+            assertEquals(
+                mockModifiedPromptRunner,
+                result,
+                "Prompt runner with first available LLM not returned correctly"
+            )
             verify { mockContext.promptRunner() }
             verify {
                 mockPromptRunner.withLlm(any<LlmOptions>())
@@ -319,7 +327,11 @@ class OperationContextAiTest {
             val ai = createOperationContextAi(mockContext)
             val result = ai.withFirstAvailableLlmOf()
 
-            assertEquals(mockModifiedPromptRunner, result, "Prompt runner with empty fallback list not returned correctly")
+            assertEquals(
+                mockModifiedPromptRunner,
+                result,
+                "Prompt runner with empty fallback list not returned correctly"
+            )
             verify { mockContext.promptRunner() }
             verify {
                 mockPromptRunner.withLlm(any<LlmOptions>())

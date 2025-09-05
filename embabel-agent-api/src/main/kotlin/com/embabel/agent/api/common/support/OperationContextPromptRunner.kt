@@ -174,14 +174,10 @@ internal data class OperationContextPromptRunner(
         if (toolObjects.map { it.obj }
                 .any { it is RagServiceSearchTools && it.options.service == options.service }
         ) error("Cannot add Rag Tools against service '${options.service ?: "DEFAULT"}' twice")
-        val underlyingRagService =
-            context.agentPlatform().platformServices.ragService(options.service)
+        val ragService =
+            context.agentPlatform().platformServices.ragService(context, options.service)
                 ?: error("No RAG service named '${options.service}' available")
-        val ragService = context.agentPlatform().platformServices.ragServiceEnhancer()
-            .create(
-                delegate = underlyingRagService,
-                operationContext = context,
-            )
+
         val namingStrategy: StringTransformer = if (options.service == null) {
             StringTransformer.IDENTITY
         } else {
