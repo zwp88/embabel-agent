@@ -59,7 +59,11 @@ class PipelinedRagServiceEnhancer(
             get() = "Pipelined RAG service wrapping ${delegate.name}: ${delegate.description}"
 
         override fun search(ragRequest: RagRequest): RagResponse {
-            val initialResponse = delegate.search(ragRequest)
+            val initialResponse = delegate.search(
+                ragRequest.copy(
+                    topK = ragRequest.topK * 2,
+                )
+            )
             val pipeline = AdaptivePipelineRagResponseEnhancer(
                 enhancers = buildList {
                     add(DeduplicatingEnhancer)
@@ -74,6 +78,7 @@ class PipelinedRagServiceEnhancer(
                     }
                     // Add reranking enhancer for improved result relevance
                     add(RerankingEnhancer(operationContext, ragEnhancerProperties.rerankingLlm))
+                    add(FilterEnhancer)
                 }
             )
             val enhanced = pipeline.enhance(initialResponse)
