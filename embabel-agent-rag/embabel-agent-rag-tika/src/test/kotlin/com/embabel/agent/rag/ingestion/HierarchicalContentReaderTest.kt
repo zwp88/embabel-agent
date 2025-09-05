@@ -16,13 +16,18 @@
 package com.embabel.agent.rag.ingestion
 
 import com.embabel.agent.rag.LeafSection
+import com.embabel.agent.tools.file.FileReadTools
+import io.mockk.every
+import io.mockk.mockk
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.metadata.TikaCoreProperties
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.ByteArrayInputStream
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 
 class HierarchicalContentReaderTest {
 
@@ -406,5 +411,246 @@ class HierarchicalContentReaderTest {
 
         val deepSection = result.children.find { it.title == "Deep Section" } as LeafSection?
         assertEquals("Deep content.", deepSection?.content?.trim())
+    }
+
+    @Test
+    fun `test parseFromDirectory with mixed file types`(@TempDir tempDir: Path) {
+        // Create test files
+        val mdFile = tempDir.resolve("document.md")
+        Files.writeString(mdFile, """
+            # Test Document
+            This is a test document.
+
+            ## Section 1
+            Content of section 1.
+        """.trimIndent(), StandardOpenOption.CREATE)
+
+        val txtFile = tempDir.resolve("readme.txt")
+        Files.writeString(txtFile, "This is a simple text file.", StandardOpenOption.CREATE)
+
+        val subdirPath = tempDir.resolve("subdir")
+        Files.createDirectory(subdirPath)
+        val subFile = subdirPath.resolve("sub.md")
+        Files.writeString(subFile, """
+            # Sub Document
+            Content in subdirectory.
+        """.trimIndent(), StandardOpenOption.CREATE)
+
+        // Mock FileReadTools
+        val fileTools = mockk<FileReadTools>()
+        every { fileTools.listFiles("") } returns listOf("f:document.md", "f:readme.txt", "d:subdir")
+        every { fileTools.listFiles("subdir") } returns listOf("f:sub.md")
+        every { fileTools.resolvePath("document.md") } returns mdFile
+        every { fileTools.resolvePath("readme.txt") } returns txtFile
+        every { fileTools.resolvePath("subdir/sub.md") } returns subFile
+        every { fileTools.safeReadFile("document.md") } returns Files.readString(mdFile)
+        every { fileTools.safeReadFile("readme.txt") } returns Files.readString(txtFile)
+        every { fileTools.safeReadFile("subdir/sub.md") } returns Files.readString(subFile)
+
+        val config = DirectoryParsingConfig(
+            includedExtensions = setOf("md", "txt"),
+            maxFileSize = 1024 * 1024
+        )
+
+        val result = reader.parseFromDirectory(fileTools, "", config)
+
+        assertTrue(result.success)
+        assertEquals(3, result.totalFilesFound)
+        assertEquals(3, result.filesProcessed)
+        assertEquals(0, result.filesSkipped)
+        assertEquals(0, result.filesErrored)
+        assertEquals(3, result.contentRoots.size)
+        assertTrue(result.errors.isEmpty())
+
+        // Verify parsed content
+        val documentRoot = result.contentRoots.find { it.title == "Test Document" }
+        assertNotNull(documentRoot)
+        assertEquals(2, documentRoot!!.leaves().size) // 2 sections in document.md
+
+        val readmeRoot = result.contentRoots.find { it.title == "This is a simple text file." }
+        assertNotNull(readmeRoot)
+        assertEquals(1, readmeRoot!!.leaves().size) // 1 section in readme.txt
+
+        val subRoot = result.contentRoots.find { it.title == "Sub Document" }
+        assertNotNull(subRoot)
+        assertEquals(1, subRoot!!.leaves().size) // 1 section in sub.md
+    }
+
+    @Test
+    fun `test parseFromDirectory with file size limits`(@TempDir tempDir: Path) {
+        val smallFile = tempDir.resolve("small.md")
+        Files.writeString(smallFile, "# Small\nSmall content", StandardOpenOption.CREATE)
+
+        val largeFile = tempDir.resolve("large.md")
+        Files.writeString(largeFile, "# Large\n" + "X".repeat(2000), StandardOpenOption.CREATE)
+
+        val fileTools = mockk<FileReadTools>()
+        every { fileTools.listFiles("") } returns listOf("f:small.md", "f:large.md")
+        every { fileTools.resolvePath("small.md") } returns smallFile
+        every { fileTools.resolvePath("large.md") } returns largeFile
+        every { fileTools.safeReadFile("small.md") } returns Files.readString(smallFile)
+
+        val config = DirectoryParsingConfig(
+            includedExtensions = setOf("md"),
+            maxFileSize = 100 // Very small limit to exclude large file
+        )
+
+        val result = reader.parseFromDirectory(fileTools, "", config)
+
+        assertTrue(result.success)
+        assertEquals(1, result.totalFilesFound) // Only small file should be discovered
+        assertEquals(1, result.filesProcessed)
+        assertEquals(0, result.filesSkipped)
+        assertEquals(0, result.filesErrored)
+        assertEquals(1, result.contentRoots.size)
+    }
+
+    @Test
+    fun `test parseFromDirectory with excluded directories`(@TempDir tempDir: Path) {
+        val normalFile = tempDir.resolve("normal.md")
+        Files.writeString(normalFile, "# Normal\nNormal content", StandardOpenOption.CREATE)
+
+        val gitDir = tempDir.resolve(".git")
+        Files.createDirectory(gitDir)
+        val gitFile = gitDir.resolve("config")
+        Files.writeString(gitFile, "git config content", StandardOpenOption.CREATE)
+
+        val fileTools = mockk<FileReadTools>()
+        every { fileTools.listFiles("") } returns listOf("f:normal.md", "d:.git")
+        every { fileTools.resolvePath("normal.md") } returns normalFile
+        every { fileTools.safeReadFile("normal.md") } returns Files.readString(normalFile)
+
+        val config = DirectoryParsingConfig(
+            includedExtensions = setOf("md"),
+            excludedDirectories = setOf(".git")
+        )
+
+        val result = reader.parseFromDirectory(fileTools, "", config)
+
+        assertTrue(result.success)
+        assertEquals(1, result.totalFilesFound) // Only normal.md should be found
+        assertEquals(1, result.filesProcessed)
+        assertEquals(1, result.contentRoots.size)
+
+        val contentRoot = result.contentRoots.first()
+        assertEquals("Normal", contentRoot.title)
+    }
+
+    @Test
+    fun `test parseFromDirectory handles file read errors gracefully`(@TempDir tempDir: Path) {
+        // Create a real file first so it passes the file size validation
+        val errorFile = tempDir.resolve("error.md")
+        Files.writeString(errorFile, "# Error\nSome content", StandardOpenOption.CREATE)
+
+        val fileTools = mockk<FileReadTools>()
+        every { fileTools.listFiles("") } returns listOf("f:error.md")
+        every { fileTools.resolvePath("error.md") } returns errorFile
+        every { fileTools.safeReadFile("error.md") } returns null // Simulate read error
+
+        val result = reader.parseFromDirectory(fileTools, "")
+
+        assertTrue(result.success) // Should still be successful overall
+        assertEquals(1, result.totalFilesFound)
+        assertEquals(0, result.filesProcessed)
+        assertEquals(1, result.filesSkipped) // File should be skipped due to read error
+        assertEquals(0, result.filesErrored)
+        assertEquals(0, result.contentRoots.size)
+    }
+
+    @Test
+    fun `test parseFromDirectory with custom extensions`(@TempDir tempDir: Path) {
+        val kotlinFile = tempDir.resolve("Example.kt")
+        Files.writeString(kotlinFile, """
+            /**
+             * Example Kotlin class
+             */
+            class Example {
+                fun doSomething() = "Hello"
+            }
+        """.trimIndent(), StandardOpenOption.CREATE)
+
+        val javaFile = tempDir.resolve("Main.java")
+        Files.writeString(javaFile, """
+            public class Main {
+                public static void main(String[] args) {
+                    System.out.println("Hello World");
+                }
+            }
+        """.trimIndent(), StandardOpenOption.CREATE)
+
+        val ignoredFile = tempDir.resolve("data.csv")
+        Files.writeString(ignoredFile, "name,value\ntest,123", StandardOpenOption.CREATE)
+
+        val fileTools = mockk<FileReadTools>()
+        every { fileTools.listFiles("") } returns listOf("f:Example.kt", "f:Main.java", "f:data.csv")
+        every { fileTools.resolvePath("Example.kt") } returns kotlinFile
+        every { fileTools.resolvePath("Main.java") } returns javaFile
+        every { fileTools.resolvePath("data.csv") } returns Path.of("data.csv")
+        every { fileTools.safeReadFile("Example.kt") } returns Files.readString(kotlinFile)
+        every { fileTools.safeReadFile("Main.java") } returns Files.readString(javaFile)
+
+        val config = DirectoryParsingConfig(
+            includedExtensions = setOf("kt", "java"), // Only include code files
+            maxFileSize = 1024 * 1024
+        )
+
+        val result = reader.parseFromDirectory(fileTools, "", config)
+
+        assertTrue(result.success)
+        assertEquals(2, result.totalFilesFound) // Only kt and java files
+        assertEquals(2, result.filesProcessed)
+        assertEquals(2, result.contentRoots.size)
+
+        val titles = result.contentRoots.map { it.title }
+        // Debug: Print actual titles to understand the issue
+        println("Actual titles: $titles")
+
+        // Since both are plain text files without markdown headers,
+        // they will use the first line as title (truncated to 50 chars)
+        assertTrue(titles.any { it.contains("/**") || it.contains("Example") }) // Kotlin file
+        assertTrue(titles.any { it.contains("public class") || it.contains("Main") }) // Java file
+    }
+
+    @Test
+    fun `test parseFromDirectory with max depth limit`(@TempDir tempDir: Path) {
+        // Create nested directory structure
+        val level1 = tempDir.resolve("level1")
+        Files.createDirectory(level1)
+        val level2 = level1.resolve("level2")
+        Files.createDirectory(level2)
+
+        val rootFile = tempDir.resolve("root.md")
+        Files.writeString(rootFile, "# Root\nRoot content", StandardOpenOption.CREATE)
+
+        val level1File = level1.resolve("level1.md")
+        Files.writeString(level1File, "# Level1\nLevel1 content", StandardOpenOption.CREATE)
+
+        val level2File = level2.resolve("level2.md")
+        Files.writeString(level2File, "# Level2\nLevel2 content", StandardOpenOption.CREATE)
+
+        val fileTools = mockk<FileReadTools>()
+        every { fileTools.listFiles("") } returns listOf("f:root.md", "d:level1")
+        every { fileTools.listFiles("level1") } returns listOf("f:level1.md", "d:level2")
+        every { fileTools.resolvePath("root.md") } returns rootFile
+        every { fileTools.resolvePath("level1/level1.md") } returns level1File
+        every { fileTools.safeReadFile("root.md") } returns Files.readString(rootFile)
+        every { fileTools.safeReadFile("level1/level1.md") } returns Files.readString(level1File)
+
+        val config = DirectoryParsingConfig(
+            includedExtensions = setOf("md"),
+            maxDepth = 1 // Should stop at level1, not go to level2
+        )
+
+        val result = reader.parseFromDirectory(fileTools, "", config)
+
+        assertTrue(result.success)
+        assertEquals(2, result.totalFilesFound) // Only root.md and level1.md
+        assertEquals(2, result.filesProcessed)
+        assertEquals(2, result.contentRoots.size)
+
+        val titles = result.contentRoots.map { it.title }
+        assertTrue(titles.contains("Root"))
+        assertTrue(titles.contains("Level1"))
+        assertFalse(titles.contains("Level2")) // Should not be included due to depth limit
     }
 }

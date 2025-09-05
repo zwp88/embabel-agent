@@ -17,6 +17,7 @@ package com.embabel.agent.rag.ingestion
 
 import com.embabel.agent.rag.LeafSection
 import com.embabel.agent.rag.MaterializedContentRoot
+import com.embabel.agent.tools.file.FileReadTools
 import org.apache.tika.exception.ZeroByteFileException
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.metadata.TikaCoreProperties
@@ -28,7 +29,53 @@ import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.core.io.Resource
 import java.io.File
 import java.io.InputStream
+import java.nio.file.Files
+import java.time.Duration
+import java.time.Instant
 import java.util.*
+
+data class DirectoryParsingConfig(
+    val includedExtensions: Set<String> = setOf(
+        "txt", "md", "rst", "adoc", "asciidoc",
+        "html", "htm", "xml", "json", "yaml", "yml",
+        "java", "kt", "scala", "py", "js", "ts",
+        "go", "rs", "c", "cpp", "h", "hpp",
+        "pdf", "docx", "doc", "odt", "rtf"
+    ),
+    val excludedDirectories: Set<String> = setOf(
+        ".git", ".svn", ".hg",
+        "node_modules", ".npm",
+        "target", "build", "dist", "out",
+        ".gradle", ".m2",
+        "__pycache__", ".pytest_cache",
+        "venv", "env", ".venv",
+        ".idea", ".vscode", ".vs",
+        "bin", "obj",
+        ".next", ".nuxt"
+    ),
+    val maxFileSize: Long = 10 * 1024 * 1024, // 10MB default
+    val followSymlinks: Boolean = false,
+    val maxDepth: Int = Int.MAX_VALUE,
+)
+
+/**
+ * Result of directory parsing operation
+ */
+data class DirectoryParsingResult(
+    val totalFilesFound: Int,
+    val filesProcessed: Int,
+    val filesSkipped: Int,
+    val filesErrored: Int,
+    val contentRoots: List<MaterializedContentRoot>,
+    val processingTime: Duration,
+    val errors: List<String>,
+) {
+    val success: Boolean
+        get() = filesErrored == 0 && errors.isEmpty()
+
+    val totalSectionsExtracted: Int
+        get() = contentRoots.sumOf { it.leaves().size }
+}
 
 /**
  * Reads various content types using Apache Tika and extracts LeafSection objects containing the actual content.
@@ -358,6 +405,225 @@ class HierarchicalContentReader {
             title = "Parse Error",
             children = listOf(errorSection),
             metadata = extractMetadataMap(metadata) + mapOf("error" to errorMessage)
+        )
+    }
+
+    /**
+     * Parse all files from a directory structure using FileTools for safe access.
+     *
+     * @param fileTools The FileTools instance to use for file system operations
+     * @param directoryPath The relative path to the directory to parse (relative to FileTools root)
+     * @param config Configuration for the parsing process
+     * @return Result of the parsing operation
+     */
+    @JvmOverloads
+    fun parseFromDirectory(
+        fileTools: FileReadTools,
+        directoryPath: String = "",
+        config: DirectoryParsingConfig = DirectoryParsingConfig(),
+    ): DirectoryParsingResult {
+        val startTime = Instant.now()
+
+        logger.info("Starting directory parsing from '{}' with config: {}", directoryPath, config)
+
+        return try {
+            val files = discoverFiles(fileTools, directoryPath, config)
+            logger.info("Discovered {} files for parsing", files.size)
+
+            processFiles(fileTools, files, config, startTime)
+
+        } catch (e: Exception) {
+            logger.error("Failed to parse directory '{}': {}", directoryPath, e.message, e)
+            DirectoryParsingResult(
+                totalFilesFound = 0,
+                filesProcessed = 0,
+                filesSkipped = 0,
+                filesErrored = 1,
+                contentRoots = emptyList(),
+                processingTime = Duration.between(startTime, Instant.now()),
+                errors = listOf("Directory parsing failed: ${e.message}")
+            )
+        }
+    }
+
+    /**
+     * Parse a single file using the configured reader.
+     *
+     * @param fileTools The FileTools instance to use for file access
+     * @param filePath The relative path to the file to parse
+     * @return Result of the parsing operation, or null if the file couldn't be processed
+     */
+    fun parseFile(
+        fileTools: FileReadTools,
+        filePath: String,
+    ): MaterializedContentRoot? {
+        return try {
+            logger.debug("Parsing single file: {}", filePath)
+
+            // Validate file exists and is readable through FileTools
+            val content = fileTools.safeReadFile(filePath)
+            if (content == null) {
+                logger.warn("Could not read file: {}", filePath)
+                return null
+            }
+
+            // Use file:// protocol for local files as expected by Spring Resource
+            val resourcePath = "file://" + fileTools.resolvePath(filePath).toAbsolutePath()
+            val result = parseResource(resourcePath)
+
+            logger.info(
+                "Successfully parsed file '{}' - {} sections extracted",
+                filePath, result.leaves().size
+            )
+
+            result
+
+        } catch (e: Exception) {
+            logger.error("Failed to parse file '{}': {}", filePath, e.message, e)
+            null
+        }
+    }
+
+    /**
+     * Discover all files in the directory structure that match the parsing criteria.
+     */
+    private fun discoverFiles(
+        fileTools: FileReadTools,
+        directoryPath: String,
+        config: DirectoryParsingConfig,
+    ): List<String> {
+        val files = mutableListOf<String>()
+        val startPath = if (directoryPath.isEmpty()) "" else directoryPath
+
+        logger.debug("Discovering files in directory: {}", startPath)
+
+        try {
+            discoverFilesRecursive(fileTools, startPath, files, config, 0)
+        } catch (e: Exception) {
+            logger.error("Error discovering files in '{}': {}", startPath, e.message, e)
+        }
+
+        logger.debug("Discovered {} files in directory '{}'", files.size, startPath)
+        return files
+    }
+
+    /**
+     * Recursively discover files in a directory structure.
+     */
+    private fun discoverFilesRecursive(
+        fileTools: FileReadTools,
+        currentPath: String,
+        files: MutableList<String>,
+        config: DirectoryParsingConfig,
+        depth: Int,
+    ) {
+        if (depth > config.maxDepth) {
+            logger.debug("Reached max depth {} at path '{}'", config.maxDepth, currentPath)
+            return
+        }
+
+        try {
+            val entries = fileTools.listFiles(currentPath)
+
+            for (entry in entries) {
+                val isDirectory = entry.startsWith("d:")
+                val name = entry.substring(2) // Remove "d:" or "f:" prefix
+                val fullPath = if (currentPath.isEmpty()) name else "$currentPath/$name"
+
+                if (isDirectory) {
+                    // Check if directory should be excluded
+                    if (name in config.excludedDirectories) {
+                        logger.debug("Skipping excluded directory: {}", fullPath)
+                        continue
+                    }
+
+                    // Recurse into subdirectory
+                    discoverFilesRecursive(fileTools, fullPath, files, config, depth + 1)
+                } else {
+                    // Check file extension
+                    val extension = name.substringAfterLast('.', "").lowercase()
+                    if (extension in config.includedExtensions) {
+                        // Check file size
+                        val resolvedPath = fileTools.resolvePath(fullPath)
+                        if (Files.exists(resolvedPath)) {
+                            val size = Files.size(resolvedPath)
+                            if (size <= config.maxFileSize) {
+                                files.add(fullPath)
+                                logger.trace("Added file for parsing: {} (size: {} bytes)", fullPath, size)
+                            } else {
+                                logger.debug(
+                                    "Skipping large file: {} (size: {} bytes, limit: {} bytes)",
+                                    fullPath, size, config.maxFileSize
+                                )
+                            }
+                        }
+                    } else {
+                        logger.trace("Skipping file with excluded extension: {} (extension: {})", fullPath, extension)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            logger.warn("Could not list files in directory '{}': {}", currentPath, e.message)
+        }
+    }
+
+    /**
+     * Process the discovered files for parsing.
+     */
+    private fun processFiles(
+        fileTools: FileReadTools,
+        files: List<String>,
+        config: DirectoryParsingConfig,
+        startTime: Instant,
+    ): DirectoryParsingResult {
+        var filesProcessed = 0
+        var filesSkipped = 0
+        var filesErrored = 0
+        val contentRoots = mutableListOf<MaterializedContentRoot>()
+        val errors = mutableListOf<String>()
+
+        logger.info("Processing {} files for parsing", files.size)
+
+        for ((index, filePath) in files.withIndex()) {
+            if ((index + 1) % 100 == 0) {
+                logger.info("Progress: {}/{} files processed", index + 1, files.size)
+            }
+
+            try {
+                val result = parseFile(fileTools, filePath)
+                if (result != null) {
+                    contentRoots.add(result)
+                    filesProcessed++
+                    logger.debug(
+                        "Successfully processed file {} ({}/{}): {} sections",
+                        filePath, index + 1, files.size, result.leaves().size
+                    )
+                } else {
+                    filesSkipped++
+                    logger.debug("Skipped file {} ({}/{})", filePath, index + 1, files.size)
+                }
+            } catch (e: Exception) {
+                filesErrored++
+                val error = "Error processing file '$filePath': ${e.message}"
+                errors.add(error)
+                logger.error(error, e)
+            }
+        }
+
+        val processingTime = Duration.between(startTime, Instant.now())
+
+        logger.info("Directory parsing completed in {} ms", processingTime.toMillis())
+        logger.info("Files processed: {}, skipped: {}, errors: {}", filesProcessed, filesSkipped, filesErrored)
+        logger.info("Total sections extracted: {}", contentRoots.sumOf { it.leaves().size })
+
+        return DirectoryParsingResult(
+            totalFilesFound = files.size,
+            filesProcessed = filesProcessed,
+            filesSkipped = filesSkipped,
+            filesErrored = filesErrored,
+            contentRoots = contentRoots,
+            processingTime = processingTime,
+            errors = errors
         )
     }
 }
