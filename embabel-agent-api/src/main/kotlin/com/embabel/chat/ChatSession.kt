@@ -29,7 +29,8 @@ interface ChatSession {
     /**
      * Update the conversation with a new message
      * and respond to it.
-     * Any response messages will be sent to the messageListener
+     * Any response messages will be sent to the messageListener,
+     * but also should be added to the conversation.
      * @param userMessage message to send
      * @param messageListener listener to send messages to
      */

@@ -18,28 +18,28 @@ package com.embabel.chat
 import com.embabel.common.core.MobyNameGenerator
 
 data class InMemoryConversation @JvmOverloads constructor(
-    override val messages: List<Message> = emptyList(),
+    private val _messages: MutableList<Message> = mutableListOf(),
     override val id: String = MobyNameGenerator.generateName(),
     private val persistent: Boolean = false,
 ) : Conversation {
 
-    override fun withMessage(message: Message): Conversation {
-        return copy(
-            messages = messages + message,
-        )
+    override fun addMessage(message: Message): Conversation {
+        _messages += message
+        return this
     }
+
+    override val messages: List<Message>
+        get() = _messages
 
     override fun persistent(): Boolean = persistent
 
     companion object {
 
-        @JvmStatic
-        fun withSystemMessage(systemMessage: String): Conversation {
-            return InMemoryConversation().withMessage(
-                SystemMessage(
-                    content = systemMessage,
-                )
-            )
+        fun of(
+            messages: List<Message>,
+        ): InMemoryConversation {
+            return InMemoryConversation(messages.toMutableList())
         }
     }
+
 }

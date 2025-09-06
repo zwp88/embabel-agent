@@ -45,7 +45,7 @@ class AgentResponseGeneratorTest {
         val arg = AgentResponseGenerator(agentPlatform, agent)
         val msel = MessageSavingMessageListener()
         val m = UserMessage("Hello")
-        val conversation = InMemoryConversation(messages = listOf(m))
+        val conversation = InMemoryConversation.of(messages = listOf(m))
         arg.generateResponses(
             conversation,
             ProcessOptions(),

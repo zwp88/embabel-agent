@@ -17,14 +17,11 @@ package com.embabel.chat
 
 import com.embabel.agent.core.Context
 import com.embabel.agent.spi.ContextRepository
-import org.jetbrains.annotations.ApiStatus
 
 
 /*
  * A chatbot that uses Context to store messages.
  */
-// TODO this is wrong because of failure to update conversation properly
-@ApiStatus.Experimental
 class ContextChatbot(
     private val contextRepository: ContextRepository,
     private val sessionFactory: SessionFactory,

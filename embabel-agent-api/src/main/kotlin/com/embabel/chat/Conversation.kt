@@ -24,7 +24,8 @@ import com.embabel.common.core.types.Timestamped
 import java.time.Instant
 
 /**
- * Conversation shim for agent system
+ * Conversation shim for agent system.
+ * Mutable.
  */
 interface Conversation : StableIdentified, HasInfoString {
 
@@ -35,7 +36,11 @@ interface Conversation : StableIdentified, HasInfoString {
      */
     fun lastMessageMustBeFromUser(): UserMessage? = messages.lastOrNull() as? UserMessage
 
-    fun withMessage(message: Message): Conversation
+    /**
+     * Modify the state of this conversation
+     * This method is mutable, and returns itself only for convenience
+     */
+    fun addMessage(message: Message): Conversation
 
     fun promptContributor(
         conversationFormatter: ConversationFormatter = WindowingConversationFormatter(),

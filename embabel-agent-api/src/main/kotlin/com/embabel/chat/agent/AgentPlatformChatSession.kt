@@ -89,20 +89,16 @@ class AgentPlatformChatSession(
     private val planLister: PlanLister,
     val processOptions: ProcessOptions = ProcessOptions(),
     val responseGenerator: ResponseGenerator,
+    override val conversation: Conversation = InMemoryConversation(),
 ) : ChatSession {
 
-    private var internalConversation: Conversation = InMemoryConversation()
-
     private val blackboard: Blackboard = processOptions.blackboard ?: InMemoryBlackboard()
-
-    override val conversation: Conversation
-        get() = internalConversation
 
     override fun respond(
         userMessage: UserMessage,
         messageListener: MessageListener,
     ) {
-        internalConversation = conversation.withMessage(userMessage)
+        conversation.addMessage(userMessage)
         generateResponses(userMessage = userMessage, messageListener = { message ->
             messageListener.onMessage(message)
         })
