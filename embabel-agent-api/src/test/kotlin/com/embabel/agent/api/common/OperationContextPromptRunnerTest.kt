@@ -332,7 +332,7 @@ class OperationContextPromptRunnerTest {
 
             val ragOptions = RagOptions()
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(ragOptions)
+                .withRag(ragOptions)
 
             assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
             assertTrue(
@@ -366,7 +366,7 @@ class OperationContextPromptRunnerTest {
 
             val ragOptions = RagOptions().withService("foo")
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(ragOptions)
+                .withRag(ragOptions)
 
             assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
             assertTrue(
@@ -405,7 +405,7 @@ class OperationContextPromptRunnerTest {
             )
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(customRagOptions)
+                .withRag(customRagOptions)
 
             assertEquals(1, ocpr.toolObjects.size, "Must have one tool object for RAG service")
 
@@ -436,13 +436,13 @@ class OperationContextPromptRunnerTest {
             val ragOptions2 = RagOptions(topK = 10)
 
             val ocprWithOneRag = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(ragOptions1)
+                .withRag(ragOptions1)
 
             assertEquals(1, ocprWithOneRag.toolObjects.size, "Must have one tool object after first withRagTools")
 
             // Adding RAG tools twice should throw an error
             val exception = assertThrows(IllegalStateException::class.java) {
-                ocprWithOneRag.withRagTools(ragOptions2)
+                ocprWithOneRag.withRag(ragOptions2)
             }
 
             assertEquals("Cannot add Rag Tools against service 'DEFAULT' twice", exception.message)
@@ -462,8 +462,8 @@ class OperationContextPromptRunnerTest {
             val ragOptions1 = RagOptions()
 
             val ocprWithOneRag = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(ragOptions1)
-                .withRagTools(RagOptions().withService("foo"))
+                .withRag(ragOptions1)
+                .withRag(RagOptions().withService("foo"))
 
             assertEquals(2, ocprWithOneRag.toolObjects.size, "Must have one tool object after first withRagTools")
         }
@@ -482,7 +482,7 @@ class OperationContextPromptRunnerTest {
 
             val ragOptions = RagOptions()
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(ragOptions)
+                .withRag(ragOptions)
                 .withToolObject(wumpus)
                 .withToolGroup("math")
 
@@ -510,13 +510,13 @@ class OperationContextPromptRunnerTest {
 
             // Test RAG tools first, then system prompt
             val ocpr1 = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(ragOptions)
+                .withRag(ragOptions)
                 .withSystemPrompt(systemPrompt)
 
             // Test system prompt first, then RAG tools
             val ocpr2 = createOperationContextPromptRunnerWithDefaults(mockContext)
                 .withSystemPrompt(systemPrompt)
-                .withRagTools(ragOptions)
+                .withRag(ragOptions)
 
             // Both should have the same end result
             assertEquals(ocpr1.toolObjects.size, ocpr2.toolObjects.size, "Tool object counts should be equal")
@@ -551,7 +551,7 @@ class OperationContextPromptRunnerTest {
 
             val ragOptions = RagOptions()
             val originalOcpr = createOperationContextPromptRunnerWithDefaults(mockContext)
-            val newOcpr = originalOcpr.withRagTools(ragOptions)
+            val newOcpr = originalOcpr.withRag(ragOptions)
 
             // Original should be unchanged
             assertEquals(0, originalOcpr.toolObjects.size, "Original OCPR should have no tool objects")
@@ -589,7 +589,7 @@ class OperationContextPromptRunnerTest {
             )
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
-                .withRagTools(customRagOptions)
+                .withRag(customRagOptions)
 
             val ragTools = ocpr.toolObjects.first { it.obj is RagServiceSearchTools }.obj as RagServiceSearchTools
 

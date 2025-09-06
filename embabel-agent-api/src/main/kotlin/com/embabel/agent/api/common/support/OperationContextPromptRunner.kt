@@ -170,7 +170,7 @@ internal data class OperationContextPromptRunner(
     override fun withToolObject(toolObject: ToolObject): PromptRunner =
         copy(toolObjects = this.toolObjects + toolObject)
 
-    override fun withRagTools(options: RagOptions): PromptRunner {
+    override fun withRag(options: RagOptions): PromptRunner {
         if (toolObjects.map { it.obj }
                 .any { it is RagServiceSearchTools && it.options.service == options.service }
         ) error("Cannot add Rag Tools against service '${options.service ?: "DEFAULT"}' twice")
