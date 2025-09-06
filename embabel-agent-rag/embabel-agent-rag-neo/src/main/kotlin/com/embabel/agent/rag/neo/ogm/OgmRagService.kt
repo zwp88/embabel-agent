@@ -141,7 +141,7 @@ class OgmRagService(
     }
 
     override fun onNewRetrievables(retrievables: List<Retrievable>) {
-        retrievables.forEach { ::embedRetrievable }
+        retrievables.forEach { embedRetrievable(it) }
     }
 
     private fun embedRetrievable(

@@ -222,30 +222,34 @@ class LuceneRagService @JvmOverloads constructor(
     }
 
     override fun onNewRetrievables(retrievables: List<Retrievable>) {
-        retrievables.forEach { ::onNewChunk }
+        retrievables.forEach { onNewChunk(it) }
     }
 
     private fun onNewChunk(
-        chunk: Chunk,
+        retrievable: Retrievable,
     ) {
-        contentElementStorage[chunk.id] = chunk
+        contentElementStorage[retrievable.id] = retrievable
         // Create Lucene document for indexing
         val luceneDoc = Document().apply {
-            add(StringField("id", chunk.id, Field.Store.YES))
-            add(TextField("content", chunk.text, Field.Store.YES))
+            add(StringField("id", retrievable.id, Field.Store.YES))
+            add(TextField("content", retrievable.embeddableValue(), Field.Store.YES))
 
             if (embeddingModel != null) {
-                val embedding = embeddingModel.embed(chunk.text)
+                val embedding = embeddingModel.embed(retrievable.embeddableValue())
                 val embeddingBytes = floatArrayToBytes(embedding)
                 add(StoredField("embedding", embeddingBytes))
             }
 
-            chunk.metadata.forEach { (key, value) ->
+            retrievable.metadata.forEach { (key, value) ->
                 add(StringField(key, value.toString(), Field.Store.YES))
             }
         }
         indexWriter.addDocument(luceneDoc)
-        logger.debug("Indexed and stored chunk with id='{}' and text length={}", chunk.id, chunk.text.length)
+        logger.debug(
+            "Indexed and stored retrievable with id='{}' and text length={}",
+            retrievable.id,
+            retrievable.embeddableValue().length
+        )
     }
 
     override fun commit() {
