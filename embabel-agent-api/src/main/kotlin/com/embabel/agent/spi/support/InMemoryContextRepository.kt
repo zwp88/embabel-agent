@@ -16,7 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.config.ContextRepositoryProperties
-import com.embabel.agent.spi.Context
+import com.embabel.agent.core.Context
 import com.embabel.agent.spi.ContextRepository
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap

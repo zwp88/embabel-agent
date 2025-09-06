@@ -16,7 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.core.Blackboard
-import com.embabel.agent.spi.Context
+import com.embabel.agent.core.Context
 import com.embabel.common.util.indent
 import com.embabel.common.util.indentLines
 import java.util.*

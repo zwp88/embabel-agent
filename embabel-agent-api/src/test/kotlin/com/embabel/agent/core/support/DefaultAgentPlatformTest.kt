@@ -17,10 +17,10 @@ package com.embabel.agent.core.support
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
 import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.Context
 import com.embabel.agent.core.ContextId
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.event.AgenticEventListener
-import com.embabel.agent.spi.Context
 import com.embabel.agent.spi.ContextRepository
 import com.embabel.agent.spi.support.InMemoryContextRepository
 import com.embabel.agent.spi.support.SimpleContext

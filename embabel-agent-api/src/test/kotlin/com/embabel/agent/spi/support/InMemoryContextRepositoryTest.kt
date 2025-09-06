@@ -16,7 +16,7 @@
 package com.embabel.agent.spi.support
 
 import com.embabel.agent.config.ContextRepositoryProperties
-import com.embabel.agent.spi.Context
+import com.embabel.agent.core.Context
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*

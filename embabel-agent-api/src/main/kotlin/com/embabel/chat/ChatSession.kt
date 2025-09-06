@@ -17,6 +17,7 @@ package com.embabel.chat
 
 /**
  * Simplest possible conversation session implementation
+ * Responsible for keeping its conversation up to date
  */
 interface ChatSession {
 

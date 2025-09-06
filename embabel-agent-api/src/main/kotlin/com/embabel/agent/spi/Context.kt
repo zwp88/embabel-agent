@@ -15,43 +15,7 @@
  */
 package com.embabel.agent.spi
 
-import com.embabel.agent.core.Blackboard
-import com.embabel.common.core.types.HasInfoString
-
-/**
- * Longer-lived interface than a blackboard.
- */
-interface Context : HasInfoString {
-
-    /**
-     * May be null for a new context not yet saved.
-     */
-    val id: String
-
-    fun bind(
-        key: String,
-        value: Any,
-    )
-
-    fun addObject(value: Any)
-
-    /**
-     * Entries in the order they were added.
-     * The default instance of any type is the last one
-     * Objects are immutable and may not be removed.
-     */
-    val objects: List<Any>
-
-    fun <T> last(clazz: Class<T>): T? {
-        return objects.filterIsInstance(clazz).lastOrNull()
-    }
-
-    /**
-     * Populate the given blackboard from the context.
-     */
-    fun populate(blackboard: Blackboard)
-
-}
+import com.embabel.agent.core.Context
 
 /**
  * Load a context
