@@ -22,7 +22,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
-import com.embabel.agent.rag.pipeline.RagEnhancerProperties
+import com.embabel.agent.rag.RagEnhancerProperties
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.*
 import com.embabel.agent.spi.support.springai.DefaultToolDecorator

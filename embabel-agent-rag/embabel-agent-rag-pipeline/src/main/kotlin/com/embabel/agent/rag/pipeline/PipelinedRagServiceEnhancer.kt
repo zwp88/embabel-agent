@@ -16,20 +16,12 @@
 package com.embabel.agent.rag.pipeline
 
 import com.embabel.agent.api.common.OperationContext
+import com.embabel.agent.rag.RagEnhancerProperties
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.rag.RagServiceEnhancer
-import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
-import org.springframework.boot.context.properties.ConfigurationProperties
-
-@ConfigurationProperties(prefix = "embabel.agent.rag")
-data class RagEnhancerProperties(
-    val compressionLlm: LlmOptions = LlmOptions.withAutoLlm(),
-    val rerankingLlm: LlmOptions = LlmOptions.withAutoLlm(),
-    val maxConcurrency: Int = 12,
-)
 
 /**
  * Decorates a Rag Service with an enhancement pipeline.

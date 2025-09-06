@@ -29,6 +29,8 @@ import com.embabel.agent.spi.PlatformServices
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.slf4j.LoggerFactory
+import org.springframework.beans.BeansException
 import org.springframework.context.ApplicationContext
 
 data class SpringContextPlatformServices(
@@ -43,6 +45,8 @@ data class SpringContextPlatformServices(
     override val templateRenderer: TemplateRenderer,
     private val applicationContext: ApplicationContext?,
 ) : PlatformServices {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     override fun withEventListener(agenticEventListener: AgenticEventListener): PlatformServices {
         return copy(
@@ -84,16 +88,26 @@ data class SpringContextPlatformServices(
             services.values.first { it.name == serviceName } ?: return null
         }
 
-        return ragServiceEnhancer()
+        val ragService = ragServiceEnhancer()
             ?.create(
                 delegate = delegate,
                 operationContext = context,
             ) ?: run {
+            logger.info("No RagServiceEnhancer configured, using RagService {} directly", delegate.name)
             delegate
         }
+        logger.info(
+            "Using RAG service {}",
+            ragService.infoString(verbose = context.processContext.processOptions.verbosity.debug)
+        )
+        return ragService
     }
 
     private fun ragServiceEnhancer(): RagServiceEnhancer? {
-        return applicationContext?.getBean(RagServiceEnhancer::class.java)
+        return try {
+            applicationContext?.getBean(RagServiceEnhancer::class.java)
+        } catch (_: BeansException) {
+            null
+        }
     }
 }
