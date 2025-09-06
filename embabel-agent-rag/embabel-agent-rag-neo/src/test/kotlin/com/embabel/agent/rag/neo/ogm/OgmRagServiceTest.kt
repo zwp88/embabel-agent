@@ -19,6 +19,7 @@ import com.embabel.agent.rag.*
 import com.embabel.common.ai.model.Llm
 import com.embabel.test.NeoIntegrationTestSupport
 import io.mockk.every
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
@@ -138,6 +139,18 @@ class OgmRagServiceTest(
                     .single().get("count").asLong()
             }
             assertEquals(0, orphanCount, "Expected no orphans. Orphans make me sad")
+        }
+
+        @Test
+        @Disabled("Needs vector index to work")
+        fun `chunk is retrieved`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+            val results = ragService.search(RagRequest("anything at all").withSimilarityThreshold(.0))
+            assertEquals(1, results.results.size, "Expected one chunk to be retrieved")
+            val r1 = results.results[0]
+            assertTrue(r1 is Chunk, "Expected result to be a Chunk")
+            assertTrue(r1.text.contains("leaf 1"), "Expected chunk to contain text from leaf 1")
         }
 
     }
