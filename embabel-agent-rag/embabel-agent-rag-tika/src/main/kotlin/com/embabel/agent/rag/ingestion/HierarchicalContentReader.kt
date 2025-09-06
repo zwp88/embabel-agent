@@ -264,7 +264,7 @@ class HierarchicalContentReader {
 
         return MaterializedContentRoot(
             id = rootId,
-            url = url,
+            uri = url,
             title = documentTitle,
             children = leafSections,
             metadata = extractMetadataMap(metadata)
@@ -314,7 +314,7 @@ class HierarchicalContentReader {
 
         return MaterializedContentRoot(
             id = rootId,
-            url = url,
+            uri = url,
             title = title,
             children = listOf(leafSection),
             metadata = extractMetadataMap(metadata)
@@ -331,7 +331,7 @@ class HierarchicalContentReader {
     ): LeafSection {
         return LeafSection(
             id = id,
-            url = url,
+            uri = url,
             title = title,
             content = content,
             parentId = parentId,
@@ -379,7 +379,7 @@ class HierarchicalContentReader {
     ): MaterializedContentRoot {
         return MaterializedContentRoot(
             id = UUID.randomUUID().toString(),
-            url = url,
+            uri = url,
             title = metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY) ?: "Empty Document",
             children = emptyList(),
             metadata = extractMetadataMap(metadata)
@@ -394,7 +394,7 @@ class HierarchicalContentReader {
         val rootId = UUID.randomUUID().toString()
         val errorSection = LeafSection(
             id = UUID.randomUUID().toString(),
-            url = url,
+            uri = url,
             title = "Parse Error",
             content = "Error parsing content: $errorMessage",
             parentId = rootId,
@@ -403,7 +403,7 @@ class HierarchicalContentReader {
 
         return MaterializedContentRoot(
             id = rootId,
-            url = url,
+            uri = url,
             title = "Parse Error",
             children = listOf(errorSection),
             metadata = extractMetadataMap(metadata) + mapOf("error" to errorMessage)

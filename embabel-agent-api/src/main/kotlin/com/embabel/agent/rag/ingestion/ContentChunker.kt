@@ -83,7 +83,7 @@ class ContentChunker(
         combinedMetadata.putAll(section.metadata)
         combinedMetadata["container_section_id"] = section.id
         combinedMetadata["container_section_title"] = section.title
-        combinedMetadata["container_section_url"] = section.url
+        combinedMetadata["container_section_url"] = section.uri
         combinedMetadata["leaf_sections"] = leaves.map { mapOf("id" to it.id, "title" to it.title) }
         combinedMetadata["chunk_index"] = 0
         combinedMetadata["total_chunks"] = 1
@@ -120,6 +120,7 @@ class ContentChunker(
                         allChunks.addAll(splitLeafIntoMultipleChunks(containerSection, leaf))
                     }
                 }
+
                 else -> {
                     // Multi-leaf group - create combined chunk
                     allChunks.add(createCombinedLeafChunk(containerSection, group))
@@ -170,7 +171,7 @@ class ContentChunker(
 
     private fun createCombinedLeafChunk(
         containerSection: MaterializedContainerSection,
-        leaves: List<LeafSection>
+        leaves: List<LeafSection>,
     ): Chunk {
         val combinedContent = leaves.joinToString("\n\n") { leaf ->
             if (leaf.title.isNotBlank()) "${leaf.title}\n${leaf.content}" else leaf.content
@@ -180,7 +181,7 @@ class ContentChunker(
         combinedMetadata.putAll(containerSection.metadata)
         combinedMetadata["container_section_id"] = containerSection.id
         combinedMetadata["container_section_title"] = containerSection.title
-        combinedMetadata["container_section_url"] = containerSection.url
+        combinedMetadata["container_section_url"] = containerSection.uri
         combinedMetadata["leaf_sections"] = leaves.map { mapOf("id" to it.id, "title" to it.title) }
         combinedMetadata["chunk_index"] = 0
         combinedMetadata["total_chunks"] = 1
@@ -207,7 +208,7 @@ class ContentChunker(
                 "container_section_title" to containerSection.title,
                 "leaf_section_id" to leaf.id,
                 "leaf_section_title" to leaf.title,
-                "leaf_section_url" to leaf.url,
+                "leaf_section_url" to leaf.uri,
                 "chunk_index" to 0,
                 "total_chunks" to 1
             ),
@@ -234,7 +235,7 @@ class ContentChunker(
                     "container_section_title" to containerSection.title,
                     "leaf_section_id" to leaf.id,
                     "leaf_section_title" to leaf.title,
-                    "leaf_section_url" to leaf.url,
+                    "leaf_section_url" to leaf.uri,
                     "chunk_index" to index,
                     "total_chunks" to textChunks.size
                 ),

@@ -15,13 +15,14 @@
  */
 package com.embabel.agent.rag
 
-import com.embabel.agent.domain.library.HasContent
 import com.embabel.common.util.indent
 import java.util.*
 
 /**
  * A Source object instance is an input
  * such as a Chunk or a Fact.
+ * It was provided to the system as data;
+ * it is not inferred by the system, but a direct piece of data.
  */
 sealed interface Source : Retrievable
 
@@ -32,69 +33,6 @@ interface Sourced {
     val basis: Retrievable
 }
 
-interface HierarchicalContentElement : ContentElement {
-
-    val url: String?
-
-    val parentId: String?
-
-}
-
-interface ContentRoot : HierarchicalContentElement {
-    val title: String
-    override val parentId get() = null
-}
-
-sealed interface Section : HierarchicalContentElement {
-    val title: String
-}
-
-interface MaterializedSection : Section
-
-interface ContainerSection : Section
-
-interface MaterializedContainerSection : Section {
-
-    val children: List<MaterializedSection>
-
-    fun descendants(): List<MaterializedSection> =
-        children + children.filterIsInstance<MaterializedContainerSection>().flatMap { containerChild ->
-            containerChild.descendants()
-        }
-
-    fun leaves(): List<LeafSection> =
-        children.filterIsInstance<LeafSection>() +
-                children.filterIsInstance<MaterializedContainerSection>().flatMap { containerChild ->
-                    containerChild.leaves()
-                }
-}
-
-data class DefaultMaterializedContainerSection(
-    override val id: String,
-    override val url: String? = null,
-    override val title: String,
-    override val children: List<MaterializedSection>,
-    override val parentId: String? = null,
-    override val metadata: Map<String, Any?> = emptyMap(),
-) : ContainerSection, MaterializedContainerSection
-
-data class MaterializedContentRoot(
-    override val id: String,
-    override val url: String? = null,
-    override val title: String,
-    override val children: List<MaterializedSection>,
-    override val metadata: Map<String, Any?> = emptyMap(),
-) : MaterializedContainerSection, ContentRoot
-
-
-data class LeafSection(
-    override val id: String,
-    override val url: String? = null,
-    override val title: String,
-    override val content: String,
-    override val parentId: String? = null,
-    override val metadata: Map<String, Any?> = emptyMap(),
-) : MaterializedSection, HasContent
 
 /**
  * Traditional RAG. Text chunk
@@ -106,7 +44,7 @@ interface Chunk : Source, HierarchicalContentElement {
      */
     val text: String
 
-    override val url: String? get() = metadata["url"] as? String
+    override val uri: String? get() = metadata["url"] as? String
 
     override fun embeddableValue(): String = text
 
@@ -156,6 +94,7 @@ private data class ChunkImpl(
 data class Fact(
     val assertion: String,
     val authority: String,
+    override val uri: String? = null,
     override val metadata: Map<String, Any?> = emptyMap(),
     override val id: String = UUID.randomUUID().toString(),
 ) : Source {

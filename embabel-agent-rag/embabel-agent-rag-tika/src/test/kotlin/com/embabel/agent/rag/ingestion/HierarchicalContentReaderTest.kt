@@ -58,7 +58,7 @@ class HierarchicalContentReaderTest {
         val result = reader.parseContent(inputStream, metadata, "test://example.md")
 
         assertEquals(4, result.children.size) // Introduction + Section 1 + Subsection 1.1 + Section 2
-        assertEquals("test://example.md", result.url)
+        assertEquals("test://example.md", result.uri)
         assertNotNull(result.id)
 
         // Check that all sections have proper titles and content
@@ -70,7 +70,7 @@ class HierarchicalContentReaderTest {
 
         // Check that all sections have the same URL
         result.children.forEach { section ->
-            assertEquals("test://example.md", section.url)
+            assertEquals("test://example.md", section.uri)
             assertNotNull(section.id)
         }
     }
@@ -138,12 +138,12 @@ class HierarchicalContentReaderTest {
         val result = reader.parseContent(inputStream, metadata, "test://plain.txt")
 
         assertEquals(1, result.children.size)
-        assertEquals("test://plain.txt", result.url)
+        assertEquals("test://plain.txt", result.uri)
         assertNotNull(result.id)
 
         val section = result.children.first() as LeafSection
         assertEquals("This is a simple text document.", section.title)
-        assertEquals("test://plain.txt", section.url)
+        assertEquals("test://plain.txt", section.uri)
         assertEquals(text, section.content)
         assertNotNull(section.id)
     }
@@ -174,7 +174,7 @@ class HierarchicalContentReaderTest {
         assertTrue(titles.contains("Second Section"))
 
         result.children.forEach { section ->
-            assertTrue(section.url!!.contains("test.md"))
+            assertTrue(section.uri!!.contains("test.md"))
             assertNotNull(section.id)
         }
     }
@@ -417,13 +417,15 @@ class HierarchicalContentReaderTest {
     fun `test parseFromDirectory with mixed file types`(@TempDir tempDir: Path) {
         // Create test files
         val mdFile = tempDir.resolve("document.md")
-        Files.writeString(mdFile, """
+        Files.writeString(
+            mdFile, """
             # Test Document
             This is a test document.
 
             ## Section 1
             Content of section 1.
-        """.trimIndent(), StandardOpenOption.CREATE)
+        """.trimIndent(), StandardOpenOption.CREATE
+        )
 
         val txtFile = tempDir.resolve("readme.txt")
         Files.writeString(txtFile, "This is a simple text file.", StandardOpenOption.CREATE)
@@ -431,10 +433,12 @@ class HierarchicalContentReaderTest {
         val subdirPath = tempDir.resolve("subdir")
         Files.createDirectory(subdirPath)
         val subFile = subdirPath.resolve("sub.md")
-        Files.writeString(subFile, """
+        Files.writeString(
+            subFile, """
             # Sub Document
             Content in subdirectory.
-        """.trimIndent(), StandardOpenOption.CREATE)
+        """.trimIndent(), StandardOpenOption.CREATE
+        )
 
         // Mock FileReadTools
         val fileTools = mockk<FileReadTools>()
@@ -560,23 +564,27 @@ class HierarchicalContentReaderTest {
     @Test
     fun `test parseFromDirectory with custom extensions`(@TempDir tempDir: Path) {
         val kotlinFile = tempDir.resolve("Example.kt")
-        Files.writeString(kotlinFile, """
+        Files.writeString(
+            kotlinFile, """
             /**
              * Example Kotlin class
              */
             class Example {
                 fun doSomething() = "Hello"
             }
-        """.trimIndent(), StandardOpenOption.CREATE)
+        """.trimIndent(), StandardOpenOption.CREATE
+        )
 
         val javaFile = tempDir.resolve("Main.java")
-        Files.writeString(javaFile, """
+        Files.writeString(
+            javaFile, """
             public class Main {
                 public static void main(String[] args) {
                     System.out.println("Hello World");
                 }
             }
-        """.trimIndent(), StandardOpenOption.CREATE)
+        """.trimIndent(), StandardOpenOption.CREATE
+        )
 
         val ignoredFile = tempDir.resolve("data.csv")
         Files.writeString(ignoredFile, "name,value\ntest,123", StandardOpenOption.CREATE)

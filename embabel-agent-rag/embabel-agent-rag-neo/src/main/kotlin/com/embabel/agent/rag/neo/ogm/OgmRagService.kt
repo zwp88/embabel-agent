@@ -15,9 +15,10 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
+import com.embabel.agent.rag.MaterializedContentRoot
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
-import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.WritableRagService
 import com.embabel.agent.rag.neo.common.CypherQuery
 import com.embabel.agent.rag.schema.SchemaResolver
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
@@ -25,6 +26,7 @@ import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.core.types.NamedAndDescribed
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import org.slf4j.LoggerFactory
+import org.springframework.ai.document.Document
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
@@ -49,7 +51,7 @@ class OgmRagService(
     private val schemaResolver: SchemaResolver,
     platformTransactionManager: PlatformTransactionManager,
     private val properties: OgmRagServiceProperties = OgmRagServiceProperties(),
-) : RagService {
+) : WritableRagService {
 
     private val logger = LoggerFactory.getLogger(OgmRagService::class.java)
 
@@ -62,6 +64,14 @@ class OgmRagService(
     override val description = properties.description
 
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
+
+    override fun writeContent(root: MaterializedContentRoot): List<String> {
+        TODO("Not yet implemented")
+    }
+
+    override fun accept(t: List<Document>) {
+        TODO("Not yet implemented")
+    }
 
     override fun search(ragRequest: RagRequest): RagResponse {
         // TODO this is wrong. Need a better way of determining the schema.

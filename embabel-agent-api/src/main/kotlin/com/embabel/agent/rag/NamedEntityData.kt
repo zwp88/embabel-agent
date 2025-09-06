@@ -23,7 +23,10 @@ import com.embabel.common.util.indent
  */
 interface NamedEntityData : EntityData, Named {
 
-    override fun infoString(verbose: Boolean?, indent: Int): String {
+    override fun infoString(
+        verbose: Boolean?,
+        indent: Int,
+    ): String {
         val labelsString = labels.joinToString(":")
         return "(${labelsString} id='$id', name=$name)".indent(indent)
     }
@@ -31,6 +34,7 @@ interface NamedEntityData : EntityData, Named {
 
 data class SimpleNamedEntityData(
     override val id: String,
+    override val uri: String? = null,
     override val name: String,
     override val description: String,
     override val labels: Set<String>,
