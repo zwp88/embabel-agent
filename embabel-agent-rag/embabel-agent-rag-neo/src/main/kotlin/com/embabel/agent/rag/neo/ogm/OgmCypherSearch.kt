@@ -159,7 +159,7 @@ class OgmCypherSearch(
     /**
      * Return an OGM result
      */
-    fun query(
+    override fun query(
         purpose: String,
         query: String,
         params: Map<String, *>,

@@ -15,26 +15,16 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
-import com.embabel.agent.rag.*
-import com.embabel.agent.rag.ingestion.ContentElementRepository
+import com.embabel.agent.rag.NamedEntityData
+import com.embabel.agent.rag.Retrievable
+import com.embabel.agent.rag.RetrievableEntity
 import com.embabel.agent.rag.schema.*
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
 import org.slf4j.LoggerFactory
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
-
-/**
- * @param chunkNodeName the name of the node representing a chunk in the knowledge graph
- * @param entityNodeName the name of a node representing an entity in the knowledge graph
- */
-@ConfigurationProperties(prefix = "application.neo")
-data class NeoOgmKnowledgeGraphServiceProperties(
-    val chunkNodeName: String = "Document",
-    val entityNodeName: String = "Entity",
-)
 
 /**
  * Implements several interfaces to read and write knowledge graph data to Neo4j using Neo4j OGM.
@@ -44,53 +34,12 @@ class NeoOgmKnowledgeGraphService(
     private val sessionFactory: SessionFactory,
     private val ogmCypherSearch: OgmCypherSearch,
     modelProvider: ModelProvider,
-    private val properties: NeoOgmKnowledgeGraphServiceProperties,
-) : SchemaResolver, ContentElementRepository {
+    private val properties: NeoRagServiceProperties,
+) : SchemaResolver {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
-
-    fun findAll(): List<Chunk> {
-        val rows = ogmCypherSearch.currentSession().query(
-            cypherChunkQuery(""),
-            emptyMap<String, Any?>(),
-            true,
-        )
-        return rows.map(::rowToChunk)
-    }
-
-    private fun cypherChunkQuery(whereClause: String): String =
-        "MATCH (c:${properties.chunkNodeName}) $whereClause RETURN c.id AS id, c.text AS text, c.metadata.source as metadata_source"
-
-
-    override fun findChunksById(chunkIds: List<String>): List<Chunk> {
-        val session = ogmCypherSearch.currentSession()
-        val rows = session.query(
-            cypherChunkQuery(" WHERE c.id IN \$ids "),
-            mapOf("ids" to chunkIds),
-            true,
-        )
-        return rows.map(::rowToChunk)
-    }
-
-    override fun findById(id: String): ContentElement? {
-        return findChunksById(listOf(id)).firstOrNull()
-    }
-
-    override fun save(element: ContentElement): ContentElement {
-        TODO("Not yet implemented")
-    }
-
-    private fun rowToChunk(row: Map<String, Any?>): Chunk {
-        val metadata = mutableMapOf<String, Any>()
-        metadata["source"] = row["metadata_source"] ?: "unknown"
-        return Chunk(
-            id = row["id"] as String,
-            text = row["text"] as String,
-            metadata = metadata,
-        )
-    }
 
     // TODO is not using name
     override fun getSchema(name: String): KnowledgeGraphSchema {

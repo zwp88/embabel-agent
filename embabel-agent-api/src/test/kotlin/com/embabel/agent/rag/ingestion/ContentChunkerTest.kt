@@ -29,12 +29,12 @@ class ContentChunkerTest {
         val leaf1 = LeafSection(
             id = "leaf-1",
             title = "Introduction",
-            content = "This is a short introduction section."
+            text = "This is a short introduction section."
         )
         val leaf2 = LeafSection(
             id = "leaf-2",
             title = "Overview",
-            content = "This is a brief overview section."
+            text = "This is a brief overview section."
         )
 
         val container = MaterializedContentRoot(
@@ -65,7 +65,7 @@ class ContentChunkerTest {
         val smallLeaf = LeafSection(
             id = "leaf-small",
             title = "Small Section",
-            content = "This is small content that won't be split."
+            text = "This is small content that won't be split."
         )
 
         // Create a large leaf that will be split
@@ -83,7 +83,7 @@ class ContentChunkerTest {
         val largeLeaf = LeafSection(
             id = "leaf-large",
             title = "Large Section",
-            content = largeContent,
+            text = largeContent,
             metadata = mapOf("category" to "long")
         )
 
@@ -143,19 +143,19 @@ class ContentChunkerTest {
         val leaf1 = LeafSection(
             id = "leaf-1",
             title = "Section A",
-            content = "Content for section A."
+            text = "Content for section A."
         )
 
         val leaf2 = LeafSection(
             id = "leaf-2",
             title = "Section B",
-            content = "Content for section B."
+            text = "Content for section B."
         )
 
         val leaf3 = LeafSection(
             id = "leaf-3",
             title = "Section C",
-            content = "Content for section C."
+            text = "Content for section C."
         )
 
         val rootContainer = MaterializedContentRoot(
@@ -183,7 +183,7 @@ class ContentChunkerTest {
             id = "container-1",
             title = "Document 1",
             children = listOf(
-                LeafSection(id = "l1", title = "Title 1", content = "Content 1")
+                LeafSection(id = "l1", title = "Title 1", text = "Content 1")
             )
         )
 
@@ -191,7 +191,7 @@ class ContentChunkerTest {
             id = "container-2",
             title = "Document 2",
             children = listOf(
-                LeafSection(id = "l2", title = "Title 2", content = "Content 2")
+                LeafSection(id = "l2", title = "Title 2", text = "Content 2")
             )
         )
 
@@ -223,7 +223,7 @@ class ContentChunkerTest {
         val largeLeaf = LeafSection(
             id = "large-leaf",
             title = "Large Leaf",
-            content = content
+            text = content
         )
 
         val container = MaterializedContentRoot(
@@ -265,14 +265,14 @@ class ContentChunkerTest {
         val leaf1 = LeafSection(
             id = "metadata-leaf-1",
             title = "First Section",
-            content = "First content",
+            text = "First content",
             metadata = mapOf("author" to "John", "type" to "intro")
         )
 
         val leaf2 = LeafSection(
             id = "metadata-leaf-2",
             title = "Second Section",
-            content = "Second content",
+            text = "Second content",
             metadata = mapOf("author" to "Jane", "type" to "body")
         )
 
@@ -293,10 +293,6 @@ class ContentChunkerTest {
         assertEquals("1.0", chunk.metadata["version"])
         assertEquals("metadata-container", chunk.metadata["container_section_id"])
         assertEquals("Metadata Test", chunk.metadata["container_section_title"])
-
-        // Leaf sections info should be tracked
-        val leafSections = chunk.metadata["leaf_sections"] as List<*>
-        assertEquals(2, leafSections.size)
     }
 
     @Test
@@ -310,7 +306,7 @@ class ContentChunkerTest {
         val largeLeaf = LeafSection(
             id = "sentence-test",
             title = "Sentence Test",
-            content = longContent
+            text = longContent
         )
 
         val container = MaterializedContentRoot(
@@ -352,7 +348,7 @@ class ContentChunkerTest {
         val leaf = LeafSection(
             id = "medium-leaf",
             title = "Medium Section",
-            content = mediumContent
+            text = mediumContent
         )
 
         val container = MaterializedContentRoot(
@@ -369,7 +365,10 @@ class ContentChunkerTest {
         }
 
         // With content around 2000-3000 chars and maxChunkSize=5000, should create fewer chunks
-        assertTrue(chunks.size <= 2, "Should create at most 2 chunks for medium content with large max chunk size, but got ${chunks.size}")
+        assertTrue(
+            chunks.size <= 2,
+            "Should create at most 2 chunks for medium content with large max chunk size, but got ${chunks.size}"
+        )
 
         // Verify chunks are reasonably sized
         chunks.forEach { chunk ->
@@ -400,7 +399,7 @@ class ContentChunkerTest {
         val leaf = LeafSection(
             id = "large-leaf",
             title = "Large Section",
-            content = largeContent
+            text = largeContent
         )
 
         val container = MaterializedContentRoot(
@@ -418,7 +417,10 @@ class ContentChunkerTest {
 
         // Should create reasonable number of chunks, not over-fragment
         val expectedMaxChunks = (largeContent.length / 6000) + 2 // Rough estimate with some buffer
-        assertTrue(chunks.size <= expectedMaxChunks, "Should not over-fragment large content. Expected max: $expectedMaxChunks, got: ${chunks.size}")
+        assertTrue(
+            chunks.size <= expectedMaxChunks,
+            "Should not over-fragment large content. Expected max: $expectedMaxChunks, got: ${chunks.size}"
+        )
 
         chunks.forEach { chunk ->
             assertTrue(chunk.text.length <= 8000, "Chunk should not exceed max size: ${chunk.text.length}")
@@ -443,7 +445,7 @@ class ContentChunkerTest {
             LeafSection(
                 id = "leaf-$leafNum",
                 title = "Section $leafNum",
-                content = content
+                text = content
             )
         }
 
@@ -484,9 +486,9 @@ class ContentChunkerTest {
         val content3 = "Section 3 content that complements the other sections. ".repeat(30) // ~1650 chars
 
         val leaves = listOf(
-            LeafSection(id = "s1", title = "Section 1", content = content1),
-            LeafSection(id = "s2", title = "Section 2", content = content2),
-            LeafSection(id = "s3", title = "Section 3", content = content3)
+            LeafSection(id = "s1", title = "Section 1", text = content1),
+            LeafSection(id = "s2", title = "Section 2", text = content2),
+            LeafSection(id = "s3", title = "Section 3", text = content3)
         )
 
         val totalLength = leaves.sumOf { it.content.length + it.title.length + 1 } // +1 for newline after title
@@ -521,7 +523,7 @@ class ContentChunkerTest {
         assertTrue(chunk.text.contains("Section 3"), "Should contain all sections")
 
         println("\n*** CHUNKING ISSUE FIXED ***")
-        println("Content of ${totalLength} chars now creates ${chunks.size} optimal chunk(s)")
+        println("Content of $totalLength chars now creates ${chunks.size} optimal chunk(s)")
         println("This improves retrieval effectiveness and reduces storage/processing overhead")
     }
 }

@@ -25,6 +25,9 @@ interface HierarchicalContentElement : ContentElement {
 
     val parentId: String?
 
+    override fun propertiesToPersist(): Map<String, Any?> = super.propertiesToPersist() + mapOf(
+        "parentId" to parentId,
+    )
 }
 
 /**
@@ -37,13 +40,17 @@ interface ContentRoot : HierarchicalContentElement {
 
 sealed interface Section : HierarchicalContentElement {
     val title: String
+
+    override fun propertiesToPersist(): Map<String, Any?> = super.propertiesToPersist() + mapOf(
+        "title" to title,
+    )
 }
 
 interface MaterializedSection : Section
 
 interface ContainerSection : Section
 
-interface MaterializedContainerSection : Section {
+interface MaterializedContainerSection : ContainerSection, MaterializedSection {
 
     val children: List<MaterializedSection>
 
@@ -66,7 +73,7 @@ data class DefaultMaterializedContainerSection(
     override val children: List<MaterializedSection>,
     override val parentId: String? = null,
     override val metadata: Map<String, Any?> = emptyMap(),
-) : ContainerSection, MaterializedContainerSection
+) : MaterializedContainerSection
 
 data class MaterializedContentRoot(
     override val id: String,
@@ -81,7 +88,14 @@ data class LeafSection(
     override val id: String,
     override val uri: String? = null,
     override val title: String,
-    override val content: String,
+    val text: String,
     override val parentId: String? = null,
     override val metadata: Map<String, Any?> = emptyMap(),
-) : MaterializedSection, HasContent
+) : MaterializedSection, HasContent {
+
+    override val content get() = text
+
+    override fun propertiesToPersist(): Map<String, Any?> = super.propertiesToPersist() + mapOf(
+        "text" to content,
+    )
+}

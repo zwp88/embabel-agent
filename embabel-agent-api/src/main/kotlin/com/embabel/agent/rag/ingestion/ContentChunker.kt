@@ -84,7 +84,6 @@ class ContentChunker(
         combinedMetadata["container_section_id"] = section.id
         combinedMetadata["container_section_title"] = section.title
         combinedMetadata["container_section_url"] = section.uri
-        combinedMetadata["leaf_sections"] = leaves.map { mapOf("id" to it.id, "title" to it.title) }
         combinedMetadata["chunk_index"] = 0
         combinedMetadata["total_chunks"] = 1
 
@@ -182,7 +181,6 @@ class ContentChunker(
         combinedMetadata["container_section_id"] = containerSection.id
         combinedMetadata["container_section_title"] = containerSection.title
         combinedMetadata["container_section_url"] = containerSection.uri
-        combinedMetadata["leaf_sections"] = leaves.map { mapOf("id" to it.id, "title" to it.title) }
         combinedMetadata["chunk_index"] = 0
         combinedMetadata["total_chunks"] = 1
 

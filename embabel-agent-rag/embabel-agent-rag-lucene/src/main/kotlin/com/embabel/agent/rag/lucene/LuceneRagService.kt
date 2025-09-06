@@ -16,8 +16,6 @@
 package com.embabel.agent.rag.lucene
 
 import com.embabel.agent.rag.*
-import com.embabel.agent.rag.ingestion.ContentChunker
-import com.embabel.agent.rag.ingestion.ContentElementRepository
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import com.embabel.common.util.indent
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -46,7 +44,7 @@ class LuceneRagService @JvmOverloads constructor(
     override val description: String,
     private val embeddingModel: EmbeddingModel? = null,
     private val vectorWeight: Double = 0.5, // Balance between text and vector similarity
-) : WritableRagService, ContentElementRepository, Closeable {
+) : AbstractWritableRagService(), Closeable {
 
     private val logger = LoggerFactory.getLogger(LuceneRagService::class.java)
 
@@ -86,6 +84,10 @@ class LuceneRagService @JvmOverloads constructor(
     override fun save(element: ContentElement): ContentElement {
         contentElementStorage[element.id] = element
         return element
+    }
+
+    override fun createRelationships(root: MaterializedContentRoot) {
+        // No op here
     }
 
     fun findAll(): List<Chunk> {
@@ -197,15 +199,6 @@ class LuceneRagService @JvmOverloads constructor(
         )
     }
 
-    override fun writeContent(root: MaterializedContentRoot): List<String> {
-        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
-        val chunks = chunker.chunk(root)
-        save(root)
-        root.descendants().forEach { save(it) }
-        chunks.forEach { chunk -> writeChunk(chunk, chunk.metadata) }
-        commit()
-        return chunks.map { it.id }
-    }
 
     override fun accept(documents: List<SpringAiDocument>) {
         logger.info("Indexing {} documents into Lucene RAG service and storing as chunks", documents.size)
@@ -219,7 +212,7 @@ class LuceneRagService @JvmOverloads constructor(
                     "service" to name
                 )
             )
-            writeChunk(chunk, springDoc.metadata)
+            onNewChunk(chunk)
         }
         commit()
         logger.info(
@@ -228,9 +221,12 @@ class LuceneRagService @JvmOverloads constructor(
         )
     }
 
-    private fun writeChunk(
+    override fun onNewRetrievables(retrievables: List<Retrievable>) {
+        retrievables.forEach { ::onNewChunk }
+    }
+
+    private fun onNewChunk(
         chunk: Chunk,
-        metadata: Map<String, Any?> = emptyMap(),
     ) {
         contentElementStorage[chunk.id] = chunk
         // Create Lucene document for indexing
@@ -244,7 +240,7 @@ class LuceneRagService @JvmOverloads constructor(
                 add(StoredField("embedding", embeddingBytes))
             }
 
-            metadata.forEach { (key, value) ->
+            chunk.metadata.forEach { (key, value) ->
                 add(StringField(key, value.toString(), Field.Store.YES))
             }
         }
@@ -252,7 +248,7 @@ class LuceneRagService @JvmOverloads constructor(
         logger.debug("Indexed and stored chunk with id='{}' and text length={}", chunk.id, chunk.text.length)
     }
 
-    private fun commit() {
+    override fun commit() {
         indexWriter.commit()
         invalidateReader()
     }

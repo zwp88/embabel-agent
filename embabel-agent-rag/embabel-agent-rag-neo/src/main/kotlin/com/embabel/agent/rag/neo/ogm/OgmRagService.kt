@@ -15,30 +15,18 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
-import com.embabel.agent.rag.MaterializedContentRoot
-import com.embabel.agent.rag.RagRequest
-import com.embabel.agent.rag.RagResponse
-import com.embabel.agent.rag.WritableRagService
+import com.embabel.agent.rag.*
 import com.embabel.agent.rag.neo.common.CypherQuery
 import com.embabel.agent.rag.schema.SchemaResolver
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
-import com.embabel.common.core.types.NamedAndDescribed
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 
-
-@ConfigurationProperties(prefix = "embabel.graphrag.ogm")
-data class OgmRagServiceProperties(
-    override val name: String = "OgmRagService",
-    override val description: String = "RAG service using Neo4j OGM for querying and embedding",
-    val vectorIndex: String = "spring-ai-document-index",
-) : NamedAndDescribed
 
 /**
  * Performs RAG queries in readonly transactions using Neo4j OGM.
@@ -47,11 +35,11 @@ data class OgmRagServiceProperties(
 @Service
 class OgmRagService(
     private val modelProvider: ModelProvider,
-    private val queryRunner: OgmCypherSearch,
+    private val ogmCypherSearch: OgmCypherSearch,
     private val schemaResolver: SchemaResolver,
     platformTransactionManager: PlatformTransactionManager,
-    private val properties: OgmRagServiceProperties = OgmRagServiceProperties(),
-) : WritableRagService {
+    private val properties: NeoRagServiceProperties = NeoRagServiceProperties(),
+) : AbstractWritableRagService() {
 
     private val logger = LoggerFactory.getLogger(OgmRagService::class.java)
 
@@ -65,8 +53,135 @@ class OgmRagService(
 
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
-    override fun writeContent(root: MaterializedContentRoot): List<String> {
-        TODO("Not yet implemented")
+    override fun findChunksById(chunkIds: List<String>): List<Chunk> {
+        val session = ogmCypherSearch.currentSession()
+        val rows = session.query(
+            cypherContentElementQuery(" WHERE c.id IN \$ids "),
+            mapOf("ids" to chunkIds),
+            true,
+        )
+        // TODO inefficient
+        return rows.map(::rowToContentElement).filterIsInstance<Chunk>()
+    }
+
+    override fun findById(id: String): ContentElement? {
+        return findChunksById(listOf(id)).firstOrNull()
+    }
+
+    override fun save(element: ContentElement): ContentElement {
+        val labels = setOf("ContentElement") + when (element) {
+            is Chunk -> setOf("Chunk")
+            is LeafSection -> setOf("Section", "LeafSection")
+            is ContentRoot -> setOf("Document")
+            is Section -> setOf("Section")
+            else -> emptySet()
+        }
+        ogmCypherSearch.query(
+            "Save an element with labels ${labels.joinToString(",")}",
+            query = "save_content_element",
+            params = mapOf(
+                "id" to element.id,
+                "labels" to labels,
+                "properties" to element.propertiesToPersist(),
+            )
+        )
+        return element
+    }
+
+    fun findAll(): List<ContentElement> {
+        val rows = ogmCypherSearch.currentSession().query(
+            cypherContentElementQuery(""),
+            emptyMap<String, Any?>(),
+            true,
+        )
+        return rows.map(::rowToContentElement)
+    }
+
+    private fun cypherContentElementQuery(whereClause: String): String =
+        "MATCH (c:ContentElement) $whereClause RETURN c.id AS id, c.text AS text, c.metadata.source as metadata_source, labels(c) as labels"
+
+
+    private fun rowToContentElement(row: Map<String, Any?>): ContentElement {
+        val metadata = mutableMapOf<String, Any>()
+        metadata["source"] = row["metadata_source"] ?: "unknown"
+        val labels = row["labels"] as? Array<String> ?: error("Must have labels")
+        if (labels.contains("Chunk"))
+            return Chunk(
+                id = row["id"] as String,
+                text = row["text"] as String,
+                metadata = metadata,
+            )
+        if (labels.contains("Document"))
+            return MaterializedContentRoot(
+                id = row["id"] as String,
+                title = row["id"] as String,
+                children = emptyList(),
+                metadata = metadata,
+            )
+        if (labels.contains("LeafSection"))
+            return LeafSection(
+                id = row["id"] as String,
+                title = row["id"] as String,
+                text = row["text"] as String,
+                metadata = metadata,
+            )
+        if (labels.contains("Section"))
+            return DefaultMaterializedContainerSection(
+                id = row["id"] as String,
+                title = row["id"] as String,
+                // TODO we don't care about this
+                children = emptyList(),
+                metadata = metadata,
+            )
+        error("Unknown ContentElement type with labels: ${labels.joinToString(",")}")
+    }
+
+    override fun commit() {
+        // No-op for OGM as we use transactions
+    }
+
+    override fun onNewRetrievables(retrievables: List<Retrievable>) {
+        retrievables.forEach { ::embedRetrievable }
+    }
+
+    private fun embedRetrievable(
+        retrievable: Retrievable,
+    ) {
+        val embedding = embeddingService.model.embed(retrievable.embeddableValue())
+        val cypher = """
+                MERGE (n:Chunk {id: ${'$'}id})
+                SET n.embedding = ${'$'}embedding
+                RETURN COUNT(n) as nodesUpdated
+               """.trimIndent()
+        val params = mapOf(
+            "id" to retrievable.id,
+            "embedding" to embedding,
+        )
+        logger.info("Executing embed entity cypher: {},\nparams={}", cypher, params)
+        val result = ogmCypherSearch.query(
+            purpose = "embedding",
+            query = cypher,
+            params = params,
+        )
+        val propertiesSet = result.queryStatistics().propertiesSet
+        if (propertiesSet < 1) {
+            logger.warn(
+                "Expected to set at least 1 embedding property, but set: {}. chunkId={}, cypher={}",
+                propertiesSet,
+                retrievable.id,
+                cypher,
+            )
+        }
+    }
+
+    override fun createRelationships(root: MaterializedContentRoot) {
+        ogmCypherSearch.query(
+            "Create relationships for root ${root.id}",
+            query = "create_content_element_relationships",
+            params = mapOf(
+                "rootId" to root.id,
+            )
+        )
     }
 
     override fun accept(t: List<Document>) {
@@ -118,7 +233,7 @@ class OgmRagService(
 //            ),
 //        )
         return readonlyTransactionTemplate.execute {
-            val chunkResults = queryRunner.chunkSimilaritySearch(
+            val chunkResults = ogmCypherSearch.chunkSimilaritySearch(
                 "searchChunks",
                 query = "chunk_vector_search",
                 params = mapOf(
@@ -129,7 +244,7 @@ class OgmRagService(
                 ),
                 logger = logger,
             )
-            val entityResults = queryRunner.mappedEntitySimilaritySearch(
+            val entityResults = ogmCypherSearch.mappedEntitySimilaritySearch(
                 purpose = "searchMappedEntities",
                 query = "entity_vector_search",
                 params = mapOf(
@@ -162,7 +277,7 @@ class OgmRagService(
     ): Result<List<OgmMappedNamedEntity>> {
         try {
             return Result.success(
-                queryRunner.queryForMappedEntities(
+                ogmCypherSearch.queryForMappedEntities(
                     purpose = "cypherGeneratedQuery",
                     query = query.query
                 )

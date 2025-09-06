@@ -48,6 +48,12 @@ interface Chunk : Source, HierarchicalContentElement {
 
     override fun embeddableValue(): String = text
 
+    override fun propertiesToPersist(): Map<String, Any?> {
+        return super<HierarchicalContentElement>.propertiesToPersist() + mapOf(
+            "text" to text,
+        )
+    }
+
     fun transform(transformed: String): Chunk =
         ChunkImpl(
             id = this.id,

@@ -29,7 +29,7 @@ interface Embedded {
 }
 
 /**
- *
+ * Root of a hierarchy of content elements.
  */
 interface ContentElement {
 
@@ -45,6 +45,16 @@ interface ContentElement {
     val uri: String?
 
     val metadata: Map<String, Any?>
+
+    /**
+     * Subclasses can add their own to this
+     */
+    fun propertiesToPersist(): Map<String, Any?> = mapOf(
+        "id" to id,
+        "uri" to uri,
+    ) + metadata
+
+    fun labels(): Set<String> = setOf("ContentElement")
 }
 
 /**

@@ -15,15 +15,17 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
-import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.*
 import com.embabel.common.ai.model.Llm
 import com.embabel.test.NeoIntegrationTestSupport
 import io.mockk.every
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @DisabledIfEnvironmentVariable(named = "SKIP_TESTCONTAINER_TESTS", matches = "true")
 class OgmRagServiceTest(
@@ -58,18 +60,85 @@ class OgmRagServiceTest(
         }
     }
 
-    @Test
-    fun `should find nothing in empty db`() {
-        createVectorIndexes()
-        every { cypherGenerationLlm.model.call(any<String>()) } returns "MATCH (n) WHERE n.name CONTAINS 'test' RETURN n"
+    @Nested
+    inner class SmokeTest {
+        @Test
+        fun `should find nothing in empty db`() {
+            createVectorIndexes()
+            every { cypherGenerationLlm.model.call(any<String>()) } returns "MATCH (n) WHERE n.name CONTAINS 'test' RETURN n"
 
-        val results = ragService!!.search(
-            RagRequest(
-                query = "test",
-                topK = 10,
+            val results = ragService.search(
+                RagRequest(
+                    query = "test",
+                    topK = 10,
+                )
             )
-        )
-        assertEquals(0, results.results.size, "Expected no results in empty database")
+            assertEquals(0, results.results.size, "Expected no results in empty database")
+        }
     }
 
+
+    @Nested
+    inner class WriteContentTest {
+
+        private fun fakeContent(): MaterializedContentRoot {
+            val leaf1 = LeafSection(
+                id = "leaf1",
+                title = "Leaf 1",
+                text = "This is the content of leaf 1.",
+            )
+            val sec1 = DefaultMaterializedContainerSection(
+                id = "sec1",
+                title = "Section 1",
+                children = listOf(leaf1),
+            )
+            return MaterializedContentRoot(
+                id = "whatever",
+                title = "great",
+                children = listOf(sec1),
+            )
+        }
+
+        @Test
+        fun `write content`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+            val results = ragService.findAll()
+            assertEquals(4, results.size, "Expected 3 nodes (root, section, leaf) plus one chunk")
+        }
+
+        @Test
+        fun `chunks are embedded`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+            val chunks = ragService.findAll().filterIsInstance<Chunk>()
+            assertTrue(chunks.isNotEmpty(), "Expected chunks to be extracted")
+            val emptyChunkCount = driver().session().executeRead { tx ->
+                tx.run("MATCH (c:Chunk) WHERE c.embedding IS NULL RETURN count(c) AS count")
+                    .single().get("count").asLong()
+            }
+            assertEquals(0, emptyChunkCount, "Expected all chunks to have embeddings")
+        }
+
+        @Test
+        fun `families are together`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+            val chunks = ragService.findAll().filterIsInstance<Chunk>()
+            assertTrue(chunks.isNotEmpty(), "Expected chunks to be extracted")
+            val orphanCount = driver().session().executeRead { tx ->
+                tx.run(
+                    """
+                    MATCH (c:Chunk)
+                    WHERE c.parent IS NOT NULL
+                      AND NOT EXISTS((c)-[:HAS_PARENT]->())
+                    RETURN count(c) AS count
+                """.trimIndent()
+                )
+                    .single().get("count").asLong()
+            }
+            assertEquals(0, orphanCount, "Expected no orphans. Orphans make me sad")
+        }
+
+    }
 }

@@ -42,7 +42,7 @@ open class NeoIntegrationTestSupport {
     protected var applicationContext: ApplicationContext? = null
 
     @Autowired
-    protected var ragService: OgmRagService? = null
+    protected var _ragService: OgmRagService? = null
 
     @Autowired
     var testContainer: Neo4jTestContainer? = null
@@ -52,4 +52,6 @@ open class NeoIntegrationTestSupport {
         testContainer!!.boltUrl,
         AuthTokens.basic("neo4j", testContainer!!.adminPassword)
     )
+
+    val ragService: OgmRagService get() = _ragService!!
 }

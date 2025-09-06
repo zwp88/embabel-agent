@@ -333,7 +333,7 @@ class HierarchicalContentReader {
             id = id,
             uri = url,
             title = title,
-            content = content,
+            text = content,
             parentId = parentId,
             metadata = extractMetadataMap(metadata)
         )
@@ -396,7 +396,7 @@ class HierarchicalContentReader {
             id = UUID.randomUUID().toString(),
             uri = url,
             title = "Parse Error",
-            content = "Error parsing content: $errorMessage",
+            text = "Error parsing content: $errorMessage",
             parentId = rootId,
             metadata = extractMetadataMap(metadata) + mapOf("error" to errorMessage)
         )

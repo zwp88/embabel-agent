@@ -19,6 +19,7 @@ import com.embabel.agent.rag.Chunk
 import com.embabel.agent.rag.MappedEntity
 import com.embabel.agent.rag.NamedEntityData
 import com.embabel.common.core.types.SimilarityResult
+import org.neo4j.ogm.model.Result
 import org.slf4j.Logger
 
 /**
@@ -71,4 +72,10 @@ interface CypherSearch {
         logger: Logger?,
     ): List<SimilarityResult<out MappedEntity>>
 
+    fun query(
+        purpose: String,
+        query: String,
+        params: Map<String, *>,
+        logger: Logger? = null,
+    ): Result
 }
