@@ -83,19 +83,12 @@ class OgmRagService(
     }
 
     override fun save(element: ContentElement): ContentElement {
-        val labels = setOf("ContentElement") + when (element) {
-            is Chunk -> setOf("Chunk")
-            is LeafSection -> setOf("Section", "LeafSection")
-            is ContentRoot -> setOf("Document")
-            is Section -> setOf("Section")
-            else -> emptySet()
-        }
         ogmCypherSearch.query(
-            "Save an element with labels ${labels.joinToString(",")}",
+            "Save an element with labels ${element.labels().joinToString(",")}",
             query = "save_content_element",
             params = mapOf(
                 "id" to element.id,
-                "labels" to labels,
+                "labels" to element.labels(),
                 "properties" to element.propertiesToPersist(),
             )
         )

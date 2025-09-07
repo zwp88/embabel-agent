@@ -17,6 +17,7 @@ package com.embabel.agent.rag
 
 import com.embabel.agent.api.common.Embedding
 import com.embabel.common.core.types.HasInfoString
+import io.swagger.v3.oas.annotations.media.Schema
 import org.jetbrains.annotations.ApiStatus
 
 /**
@@ -56,11 +57,21 @@ interface ContentElement {
         "uri" to uri,
     ) + metadata
 
+    /**
+     * Labels of the entity. In Neo, this might include multiple labels.
+     * In a relational database, this might be a single table name.
+     */
+    @Schema(
+        description = "Labels of the content element. In Neo, this might include multiple labels. In a relational database, this might be a single table name.",
+        example = "[\"Person\", \"Customer\"]",
+        required = true,
+    )
     fun labels(): Set<String> = setOf("ContentElement")
 }
 
 /**
- * A Retrievable object instance is a chunk or an entity
+ * A Retrievable object instance is a ContentElement
+ * (normally a chunk or an entity) that can be retrieved by RAG.
  * It has a stable id.
  */
 interface Retrievable : HasInfoString, ContentElement {

@@ -93,7 +93,7 @@ class NeoOgmKnowledgeGraphService(
             "basisId" to basis.id,
             "properties" to entity.properties,
             "chunkNodeName" to properties.chunkNodeName,
-            "entityLabels" to entity.labels + properties.entityNodeName,
+            "entityLabels" to entity.labels() + properties.entityNodeName,
         )
         val result = ogmCypherSearch.query(
             purpose = "Merge entity",
@@ -125,7 +125,7 @@ class NeoOgmKnowledgeGraphService(
     ) {
         val embedding = embeddingService.model.embed(entity.embeddableValue())
         val cypher = """
-                MERGE (n:${entity.labels.joinToString(":")} {id: ${'$'}entityId})
+                MERGE (n:${entity.labels().joinToString(":")} {id: ${'$'}entityId})
                 SET n.embedding = ${'$'}embedding
                 RETURN COUNT(n) as nodesUpdated
                """.trimIndent()

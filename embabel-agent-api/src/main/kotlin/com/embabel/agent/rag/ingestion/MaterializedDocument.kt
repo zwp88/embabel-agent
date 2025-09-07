@@ -54,4 +54,8 @@ data class MaterializedDocument(
     override val title: String,
     override val children: List<MaterializedSection>,
     override val metadata: Map<String, Any?> = emptyMap(),
-) : MaterializedContainerSection, ContentRoot
+) : MaterializedContainerSection, ContentRoot {
+
+    override fun labels(): Set<String> = super<ContentRoot>.labels() + super<MaterializedContainerSection>.labels()
+
+}

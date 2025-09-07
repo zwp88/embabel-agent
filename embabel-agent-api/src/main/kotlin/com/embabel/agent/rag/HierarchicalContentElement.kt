@@ -36,6 +36,10 @@ interface HierarchicalContentElement : ContentElement {
 interface ContentRoot : HierarchicalContentElement {
     val title: String
     override val parentId get() = null
+
+    override fun labels(): Set<String> {
+        return super.labels() + setOf("Document")
+    }
 }
 
 sealed interface Section : HierarchicalContentElement {
@@ -44,11 +48,20 @@ sealed interface Section : HierarchicalContentElement {
     override fun propertiesToPersist(): Map<String, Any?> = super.propertiesToPersist() + mapOf(
         "title" to title,
     )
+
+    override fun labels(): Set<String> {
+        return super.labels() + setOf("Section")
+    }
 }
 
 interface MaterializedSection : Section
 
-interface ContainerSection : Section
+interface ContainerSection : Section {
+
+    override fun labels(): Set<String> {
+        return super.labels() + setOf("ContainerSection")
+    }
+}
 
 /**
  * Contains content
@@ -67,4 +80,8 @@ data class LeafSection(
     override fun propertiesToPersist(): Map<String, Any?> = super.propertiesToPersist() + mapOf(
         "text" to content,
     )
+
+    override fun labels(): Set<String> {
+        return super.labels() + setOf("LeafSection")
+    }
 }
