@@ -15,7 +15,11 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
-import com.embabel.agent.rag.*
+import com.embabel.agent.rag.Chunk
+import com.embabel.agent.rag.LeafSection
+import com.embabel.agent.rag.RagRequest
+import com.embabel.agent.rag.ingestion.DefaultMaterializedContainerSection
+import com.embabel.agent.rag.ingestion.MaterializedDocument
 import com.embabel.common.ai.model.Llm
 import com.embabel.test.NeoIntegrationTestSupport
 import io.mockk.every
@@ -60,7 +64,7 @@ class OgmRagServiceTest(
     @Nested
     inner class WriteContentTest {
 
-        private fun fakeContent(): MaterializedContentRoot {
+        private fun fakeContent(): MaterializedDocument {
             val rootId = "whatever"
             val sec1Id = "sec1"
 
@@ -76,7 +80,7 @@ class OgmRagServiceTest(
                 parentId = rootId,
                 children = listOf(leaf1),
             )
-            return MaterializedContentRoot(
+            return MaterializedDocument(
                 id = rootId,
                 title = "great",
                 children = listOf(sec1),

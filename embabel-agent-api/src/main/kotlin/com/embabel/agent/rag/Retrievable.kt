@@ -47,7 +47,9 @@ interface ContentElement {
     val metadata: Map<String, Any?>
 
     /**
-     * Subclasses can add their own to this
+     * Properties to persist
+     * Subclasses can add their own properties
+     * but must call super to include these.
      */
     fun propertiesToPersist(): Map<String, Any?> = mapOf(
         "id" to id,

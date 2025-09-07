@@ -50,40 +50,9 @@ interface MaterializedSection : Section
 
 interface ContainerSection : Section
 
-interface MaterializedContainerSection : ContainerSection, MaterializedSection {
-
-    val children: List<MaterializedSection>
-
-    fun descendants(): List<MaterializedSection> =
-        children + children.filterIsInstance<MaterializedContainerSection>().flatMap { containerChild ->
-            containerChild.descendants()
-        }
-
-    fun leaves(): List<LeafSection> =
-        children.filterIsInstance<LeafSection>() +
-                children.filterIsInstance<MaterializedContainerSection>().flatMap { containerChild ->
-                    containerChild.leaves()
-                }
-}
-
-data class DefaultMaterializedContainerSection(
-    override val id: String,
-    override val uri: String? = null,
-    override val title: String,
-    override val children: List<MaterializedSection>,
-    override val parentId: String? = null,
-    override val metadata: Map<String, Any?> = emptyMap(),
-) : MaterializedContainerSection
-
-data class MaterializedContentRoot(
-    override val id: String,
-    override val uri: String? = null,
-    override val title: String,
-    override val children: List<MaterializedSection>,
-    override val metadata: Map<String, Any?> = emptyMap(),
-) : MaterializedContainerSection, ContentRoot
-
-
+/**
+ * Contains content
+ */
 data class LeafSection(
     override val id: String,
     override val uri: String? = null,

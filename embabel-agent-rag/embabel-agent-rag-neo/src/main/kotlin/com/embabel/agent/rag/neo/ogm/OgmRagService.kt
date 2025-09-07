@@ -16,6 +16,8 @@
 package com.embabel.agent.rag.neo.ogm
 
 import com.embabel.agent.rag.*
+import com.embabel.agent.rag.ingestion.DefaultMaterializedContainerSection
+import com.embabel.agent.rag.ingestion.MaterializedDocument
 import com.embabel.agent.rag.neo.common.CypherQuery
 import com.embabel.agent.rag.schema.SchemaResolver
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
@@ -125,7 +127,7 @@ class OgmRagService(
                 metadata = metadata,
             )
         if (labels.contains("Document"))
-            return MaterializedContentRoot(
+            return MaterializedDocument(
                 id = row["id"] as String,
                 title = row["id"] as String,
                 children = emptyList(),
@@ -189,7 +191,7 @@ class OgmRagService(
         }
     }
 
-    override fun createRelationships(root: MaterializedContentRoot) {
+    override fun createRelationships(root: MaterializedDocument) {
         ogmCypherSearch.query(
             "Create relationships for root ${root.id}",
             query = "create_content_element_relationships",
