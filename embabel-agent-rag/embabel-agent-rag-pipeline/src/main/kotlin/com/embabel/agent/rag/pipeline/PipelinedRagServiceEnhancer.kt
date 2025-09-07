@@ -22,6 +22,8 @@ import com.embabel.agent.event.RagEventListener
 import com.embabel.agent.event.RagRequestReceivedEvent
 import com.embabel.agent.event.RagResponseEvent
 import com.embabel.agent.rag.*
+import com.embabel.agent.rag.pipeline.event.InitialRequestRagPipelineEvent
+import com.embabel.agent.rag.pipeline.event.InitialResponseRagPipelineEvent
 import org.slf4j.LoggerFactory
 
 /**
@@ -69,11 +71,13 @@ class PipelinedRagServiceEnhancer(
         override fun search(ragRequest: RagRequest): RagResponse {
             listener.onRagEvent(RagRequestReceivedEvent(ragRequest))
             logger.info("Performing initial rag search for {} using RagService {}", ragRequest, delegate.name)
-            val initialResponse = delegate.search(
-                ragRequest.copy(
-                    topK = ragRequest.topK * 2,
-                )
+            val initialRequest = ragRequest.copy(
+                topK = ragRequest.topK * 2,
             )
+            listener.onRagEvent(InitialRequestRagPipelineEvent(initialRequest, delegate.name))
+            val initialResponse = delegate.search(initialRequest)
+            listener.onRagEvent(InitialResponseRagPipelineEvent(initialResponse, delegate.name))
+
             val pipeline = AdaptivePipelineRagResponseEnhancer(
                 enhancers = buildList {
                     add(DeduplicatingEnhancer)
@@ -89,7 +93,8 @@ class PipelinedRagServiceEnhancer(
                     // Add reranking enhancer for improved result relevance
                     add(RerankingEnhancer(operationContext, ragServiceEnhancerProperties.rerankingLlm))
                     add(FilterEnhancer)
-                }
+                },
+                listener = listener,
             )
             val enhancedRagResponse = pipeline.enhance(initialResponse)
             listener.onRagEvent(RagResponseEvent(enhancedRagResponse))
