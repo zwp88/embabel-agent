@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.support.TransactionTemplate
 
 
@@ -47,6 +48,7 @@ class OgmRagService(
 
     private val readonlyTransactionTemplate = TransactionTemplate(platformTransactionManager).apply {
         isReadOnly = true
+        propagationBehavior = TransactionDefinition.PROPAGATION_REQUIRED
     }
 
     override val name = properties.name
@@ -252,8 +254,8 @@ class OgmRagService(
                 params = mapOf(
                     "vectorIndex" to properties.contentElementIndex,
                     "queryVector" to embedding,
-                    "topK" to 2,
-                    "similarityThreshold" to 0.0,
+                    "topK" to ragRequest.topK,
+                    "similarityThreshold" to ragRequest.similarityThreshold,
                 ),
                 logger = logger,
             )

@@ -15,6 +15,7 @@
  */
 package com.embabel.test
 
+import com.embabel.agent.rag.neo.ogm.OgmCypherSearch
 import com.embabel.agent.rag.neo.ogm.OgmRagService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.neo4j.driver.AuthTokens
@@ -41,6 +42,9 @@ open class NeoIntegrationTestSupport {
     protected var objectMapper: ObjectMapper? = null
 
     @Autowired
+    protected var _cypherSearch: OgmCypherSearch? = null
+
+    @Autowired
     protected var resourceLoader: ResourceLoader? = null
 
     @Autowired
@@ -60,14 +64,6 @@ open class NeoIntegrationTestSupport {
 
     val ragService: OgmRagService get() = _ragService!!
 
-    /**
-     * For debugging
-     */
-    protected fun allNodes(): List<Map<String, Any>> {
-        return driver().session().use { session ->
-            session.run("MATCH (n) RETURN n").list { record ->
-                record["n"].asNode().asMap()
-            }
-        }
-    }
+    val ogmCypherSearch: OgmCypherSearch get() = _cypherSearch!!
+
 }
