@@ -11,6 +11,7 @@ How to contribute:
 - Familiarize yourself with the project by reading the documentation.
 - Familiarize yourself with the issue tracker and open pull requests to ensure you're not duplicating something.
 - Sign your commits
+- Always include a description with your pull requests. *PRs without descriptions will be closed.*
 - Join the Embabel community on Discord at https://discord.gg/t6bjkyj93q.
 
 Contributions are not limited to code.
