@@ -23,9 +23,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties(prefix = "embabel.agent.rag.neo")
 data class NeoRagServiceProperties(
-    val chunkNodeName: String = "Document",
+    val chunkNodeName: String = "Chunk",
     val entityNodeName: String = "Entity",
     val name: String = "OgmRagService",
     val description: String = "RAG service using Neo4j OGM for querying and embedding",
-    val vectorIndex: String = "spring-ai-document-index",
+    val contentElementIndex: String = "embabel-content-index",
+    val entityIndex: String = "embabel-entity-index",
 )

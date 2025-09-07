@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Profile
@@ -32,6 +34,9 @@ import org.springframework.core.io.ResourceLoader
 @NeoIntegrationTest
 @Profile("test")
 open class NeoIntegrationTestSupport {
+
+    protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
+
     @Autowired
     protected var objectMapper: ObjectMapper? = null
 
@@ -54,4 +59,15 @@ open class NeoIntegrationTestSupport {
     )
 
     val ragService: OgmRagService get() = _ragService!!
+
+    /**
+     * For debugging
+     */
+    protected fun allNodes(): List<Map<String, Any>> {
+        return driver().session().use { session ->
+            session.run("MATCH (n) RETURN n").list { record ->
+                record["n"].asNode().asMap()
+            }
+        }
+    }
 }

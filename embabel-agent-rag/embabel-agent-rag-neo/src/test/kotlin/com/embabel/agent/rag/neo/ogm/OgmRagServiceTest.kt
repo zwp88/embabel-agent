@@ -19,7 +19,7 @@ import com.embabel.agent.rag.*
 import com.embabel.common.ai.model.Llm
 import com.embabel.test.NeoIntegrationTestSupport
 import io.mockk.every
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
@@ -34,38 +34,15 @@ class OgmRagServiceTest(
     private val cypherGenerationLlm: Llm,
 ) : NeoIntegrationTestSupport() {
 
-    private fun createVectorIndexes() {
-        driver().session().executeWrite { tx ->
-            tx.run(
-                """
-            CREATE VECTOR INDEX `spring-ai-document-index` IF NOT EXISTS
-            FOR (n:Document) ON (n.embedding)
-            OPTIONS {indexConfig: {
-            `vector.dimensions`: 1536,
-            `vector.similarity_function`: 'cosine'
-            }};
-        """.trimIndent()
-            ).consume()
-
-            tx.run(
-                """
-            CREATE VECTOR INDEX entity_embeddings IF NOT EXISTS
-            FOR (n:Entity)
-            ON (n.embedding)
-            OPTIONS {indexConfig: {
-            `vector.dimensions`: 1536,
-            `vector.similarity_function`: 'cosine'
-            }};
-        """.trimIndent()
-            ).consume()
-        }
+    @BeforeEach
+    fun setup() {
+        ragService.provision()
     }
 
     @Nested
     inner class SmokeTest {
         @Test
         fun `should find nothing in empty db`() {
-            createVectorIndexes()
             every { cypherGenerationLlm.model.call(any<String>()) } returns "MATCH (n) WHERE n.name CONTAINS 'test' RETURN n"
 
             val results = ragService.search(
@@ -114,11 +91,33 @@ class OgmRagServiceTest(
             ragService.writeContent(mcr)
             val chunks = ragService.findAll().filterIsInstance<Chunk>()
             assertTrue(chunks.isNotEmpty(), "Expected chunks to be extracted")
+            logger.info("Chunks: {}", chunks)
+            val chunkCount = driver().session().executeRead { tx ->
+                tx.run("MATCH (c:Chunk) RETURN count(c) AS count")
+                    .single().get("count").asLong()
+            }
+            assertEquals(
+                chunks.size.toLong(),
+                chunkCount,
+                "Expected chunk count to match: ${allNodes()}"
+            )
             val emptyChunkCount = driver().session().executeRead { tx ->
                 tx.run("MATCH (c:Chunk) WHERE c.embedding IS NULL RETURN count(c) AS count")
                     .single().get("count").asLong()
             }
             assertEquals(0, emptyChunkCount, "Expected all chunks to have embeddings")
+        }
+
+        @Test
+        fun `chunks have parents`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+            val chunks = ragService.findAll().filterIsInstance<Chunk>()
+            assertTrue(chunks.isNotEmpty(), "Expected chunks to be extracted")
+            logger.info("Chunks: {}", chunks)
+            chunks.forEach {
+                assertTrue(it.parentId != null, "Expected chunk to have a parent: $it")
+            }
         }
 
         @Test
@@ -142,8 +141,7 @@ class OgmRagServiceTest(
         }
 
         @Test
-        @Disabled("Needs vector index to work")
-        fun `chunk is retrieved`() {
+        fun `single chunk is retrieved`() {
             val mcr = fakeContent()
             ragService.writeContent(mcr)
             val results = ragService.search(RagRequest("anything at all").withSimilarityThreshold(.0))

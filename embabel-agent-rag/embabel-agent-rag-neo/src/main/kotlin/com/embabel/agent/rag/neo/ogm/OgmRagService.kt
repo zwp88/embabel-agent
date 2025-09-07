@@ -21,6 +21,7 @@ import com.embabel.agent.rag.schema.SchemaResolver
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
+import org.neo4j.ogm.session.SessionFactory
 import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
 import org.springframework.stereotype.Service
@@ -37,6 +38,7 @@ class OgmRagService(
     private val modelProvider: ModelProvider,
     private val ogmCypherSearch: OgmCypherSearch,
     private val schemaResolver: SchemaResolver,
+    private val sessionFactory: SessionFactory,
     platformTransactionManager: PlatformTransactionManager,
     private val properties: NeoRagServiceProperties = NeoRagServiceProperties(),
 ) : AbstractWritableRagService() {
@@ -53,6 +55,14 @@ class OgmRagService(
 
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
+    override fun provision() {
+        logger.info("Provisioning OgmRagService with properties {}", properties)
+        // TODO do we want this on ContentElement?
+        createVectorIndex(properties.contentElementIndex, "Chunk")
+        createVectorIndex(properties.entityIndex, properties.entityNodeName)
+        logger.info("Provisioned OgmRagService")
+    }
+
     override fun findChunksById(chunkIds: List<String>): List<Chunk> {
         val session = ogmCypherSearch.currentSession()
         val rows = session.query(
@@ -60,7 +70,7 @@ class OgmRagService(
             mapOf("ids" to chunkIds),
             true,
         )
-        // TODO inefficient
+        // TODO inefficient: Filter in DB
         return rows.map(::rowToContentElement).filterIsInstance<Chunk>()
     }
 
@@ -98,7 +108,7 @@ class OgmRagService(
     }
 
     private fun cypherContentElementQuery(whereClause: String): String =
-        "MATCH (c:ContentElement) $whereClause RETURN c.id AS id, c.text AS text, c.metadata.source as metadata_source, labels(c) as labels"
+        "MATCH (c:ContentElement) $whereClause RETURN c.id AS id, c.text AS text, c.parentId as parentId, c.metadata.source as metadata_source, labels(c) as labels"
 
 
     private fun rowToContentElement(row: Map<String, Any?>): ContentElement {
@@ -109,6 +119,7 @@ class OgmRagService(
             return Chunk(
                 id = row["id"] as String,
                 text = row["text"] as String,
+                parentId = row["parentId"] as String,
                 metadata = metadata,
             )
         if (labels.contains("Document"))
@@ -123,12 +134,14 @@ class OgmRagService(
                 id = row["id"] as String,
                 title = row["id"] as String,
                 text = row["text"] as String,
+                parentId = row["parentId"] as String,
                 metadata = metadata,
             )
         if (labels.contains("Section"))
             return DefaultMaterializedContainerSection(
                 id = row["id"] as String,
                 title = row["id"] as String,
+                parentId = row["parentId"] as String?,
                 // TODO we don't care about this
                 children = emptyList(),
                 metadata = metadata,
@@ -164,9 +177,9 @@ class OgmRagService(
             params = params,
         )
         val propertiesSet = result.queryStatistics().propertiesSet
-        if (propertiesSet < 1) {
+        if (propertiesSet != 1) {
             logger.warn(
-                "Expected to set at least 1 embedding property, but set: {}. chunkId={}, cypher={}",
+                "Expected to set 1 embedding property, but set: {}. chunkId={}, cypher={}",
                 propertiesSet,
                 retrievable.id,
                 cypher,
@@ -237,7 +250,7 @@ class OgmRagService(
                 "searchChunks",
                 query = "chunk_vector_search",
                 params = mapOf(
-                    "vectorIndex" to properties.vectorIndex,
+                    "vectorIndex" to properties.contentElementIndex,
                     "queryVector" to embedding,
                     "topK" to 2,
                     "similarityThreshold" to 0.0,
@@ -248,6 +261,7 @@ class OgmRagService(
                 purpose = "searchMappedEntities",
                 query = "entity_vector_search",
                 params = mapOf(
+                    "index" to properties.entityIndex,
                     "queryVector" to embedding,
                     "topK" to ragRequest.topK,
                     "similarityThreshold" to ragRequest.similarityThreshold,
@@ -297,5 +311,20 @@ class OgmRagService(
                 verbose
             )
         }"
+    }
+
+    private fun createVectorIndex(
+        name: String,
+        on: String,
+    ) {
+        sessionFactory.openSession().query(
+            """
+            CREATE VECTOR INDEX `$name` IF NOT EXISTS
+            FOR (n:$on) ON (n.embedding)
+            OPTIONS {indexConfig: {
+            `vector.dimensions`: ${embeddingService.model.dimensions()},
+            `vector.similarity_function`: 'cosine'
+            }}""", emptyMap<String, Any>()
+        )
     }
 }
