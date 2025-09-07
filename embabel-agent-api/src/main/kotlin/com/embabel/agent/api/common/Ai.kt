@@ -108,7 +108,7 @@ interface Ai {
  * Use when you want custom configuration.
  */
 interface AiBuilder : LlmVerbosity {
-    
+
     /**
      * Build an Ai instance according to the configuration.
      */
