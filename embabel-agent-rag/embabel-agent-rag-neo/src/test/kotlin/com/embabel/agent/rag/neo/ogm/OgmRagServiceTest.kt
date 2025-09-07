@@ -60,18 +60,23 @@ class OgmRagServiceTest(
     inner class WriteContentTest {
 
         private fun fakeContent(): MaterializedContentRoot {
+            val rootId = "whatever"
+            val sec1Id = "sec1"
+
             val leaf1 = LeafSection(
                 id = "leaf1",
                 title = "Leaf 1",
                 text = "This is the content of leaf 1.",
+                parentId = sec1Id
             )
             val sec1 = DefaultMaterializedContainerSection(
-                id = "sec1",
+                id = sec1Id,
                 title = "Section 1",
+                parentId = rootId,
                 children = listOf(leaf1),
             )
             return MaterializedContentRoot(
-                id = "whatever",
+                id = rootId,
                 title = "great",
                 children = listOf(sec1),
             )
