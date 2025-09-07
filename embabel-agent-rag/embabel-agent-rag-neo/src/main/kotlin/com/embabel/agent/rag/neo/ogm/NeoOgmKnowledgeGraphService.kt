@@ -42,7 +42,7 @@ class NeoOgmKnowledgeGraphService(
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
     // TODO is not using name
-    override fun getSchema(name: String): KnowledgeGraphSchema {
+    override fun getSchema(name: String): KnowledgeGraphSchema? {
         val metadata = sessionFactory.metaData()
         val relationships = mutableListOf<RelationshipDefinition>()
         val entityDefinitions = metadata.persistentEntities()
@@ -72,6 +72,10 @@ class NeoOgmKnowledgeGraphService(
                 }
                 entityDefinition
             }
+        if (entityDefinitions.size == 2 && relationships.isEmpty()) {
+            // Special case of superclasses only
+            return null
+        }
         return KnowledgeGraphSchema(
             entities = entityDefinitions,
             relationships = relationships,

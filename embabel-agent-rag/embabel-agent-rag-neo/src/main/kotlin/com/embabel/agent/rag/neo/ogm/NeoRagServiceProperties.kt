@@ -35,6 +35,6 @@ data class NeoRagServiceProperties(
     val contentElementIndex: String = "embabel-content-index",
     val entityIndex: String = "embabel-entity-index",
 
-    // Empty packages causes strange failures
+    // Empty packages causes a strange failure within Neo4j OGM
     val packages: List<String> = listOf("not.a.real.package"),
 )

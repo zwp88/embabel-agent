@@ -204,37 +204,40 @@ class OgmRagService(
     }
 
     override fun search(ragRequest: RagRequest): RagResponse {
+        val embedding = embeddingService.model.embed(ragRequest.query)
+
         // TODO this is wrong. Need a better way of determining the schema.
         val schema = schemaResolver.getSchema("default")
 
-        val embedding = embeddingService.model.embed(ragRequest.query)
-        val cypherRagQueryGenerator = SchemaDrivenCypherRagQueryGenerator(
-            modelProvider,
-            schema,
-        )
-        val cypher = cypherRagQueryGenerator.generateQuery(
-            request = ragRequest,
-        )
-        logger.info("Generated Cypher query: $cypher")
+        if (schema !== null) {
+            val cypherRagQueryGenerator = SchemaDrivenCypherRagQueryGenerator(
+                modelProvider,
+                schema,
+            )
+            val cypher = cypherRagQueryGenerator.generateQuery(
+                request = ragRequest,
+            )
+            logger.info("Generated Cypher query: $cypher")
 
-        val cypherResults = readonlyTransactionTemplate.execute { executeGeneratedQuery(cypher) } ?: Result.failure(
-            IllegalStateException("Transaction failed or returned null while executing Cypher query: $cypher")
-        )
-        if (cypherResults.isSuccess) {
-            val results = cypherResults.getOrThrow()
-            if (results.isNotEmpty()) {
-                logger.info("Cypher query executed successfully, results: {}", results)
-                return RagResponse(
-                    request = ragRequest,
-                    service = this.name,
-                    results = results.map {
-                        // Most similar as we found them by a query
-                        SimpleSimilaritySearchResult(
-                            it,
-                            score = 1.0,
-                        )
-                    },
-                )
+            val cypherResults = readonlyTransactionTemplate.execute { executeGeneratedQuery(cypher) } ?: Result.failure(
+                IllegalStateException("Transaction failed or returned null while executing Cypher query: $cypher")
+            )
+            if (cypherResults.isSuccess) {
+                val results = cypherResults.getOrThrow()
+                if (results.isNotEmpty()) {
+                    logger.info("Cypher query executed successfully, results: {}", results)
+                    return RagResponse(
+                        request = ragRequest,
+                        service = this.name,
+                        results = results.map {
+                            // Most similar as we found them by a query
+                            SimpleSimilaritySearchResult(
+                                it,
+                                score = 1.0,
+                            )
+                        },
+                    )
+                }
             }
         }
 
