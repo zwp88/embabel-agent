@@ -45,7 +45,7 @@ class LuceneRagService @JvmOverloads constructor(
     override val description: String,
     private val embeddingModel: EmbeddingModel? = null,
     private val vectorWeight: Double = 0.5, // Balance between text and vector similarity
-) : AbstractWritableRagService(), Closeable {
+) : AbstractRepositoryRagService(), Closeable {
 
     private val logger = LoggerFactory.getLogger(LuceneRagService::class.java)
 

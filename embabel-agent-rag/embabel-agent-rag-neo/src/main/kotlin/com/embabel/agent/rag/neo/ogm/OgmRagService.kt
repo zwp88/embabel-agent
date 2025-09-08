@@ -45,7 +45,7 @@ class OgmRagService(
     private val sessionFactory: SessionFactory,
     platformTransactionManager: PlatformTransactionManager,
     private val properties: NeoRagServiceProperties = NeoRagServiceProperties(),
-) : AbstractWritableRagService() {
+) : AbstractRepositoryRagService() {
 
     private val logger = LoggerFactory.getLogger(OgmRagService::class.java)
 
