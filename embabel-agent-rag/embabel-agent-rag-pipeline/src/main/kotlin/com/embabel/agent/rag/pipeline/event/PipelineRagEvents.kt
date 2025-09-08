@@ -20,30 +20,40 @@ import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
 import java.time.Instant
 
+/**
+ * Events emitted by the RAG pipeline
+ * @param description A short human-readable description of the event
+ */
 abstract class RagPipelineEvent(
+    val description: String,
     override val timestamp: Instant = Instant.now(),
 ) : RagEvent
 
 class InitialRequestRagPipelineEvent(
     override val request: RagRequest,
     val service: String,
-) : RagPipelineEvent()
+) : RagPipelineEvent("Initial RAG request to $service")
 
 class InitialResponseRagPipelineEvent(
     val response: RagResponse,
     val service: String,
-) : RagPipelineEvent() {
+) : RagPipelineEvent("Initial RAG response from $service") {
 
     override val request: RagRequest
         get() = response.request
 }
 
-abstract class EnhancementRagPipelineEvent(val enhancerName: String) : RagPipelineEvent()
+abstract class EnhancementRagPipelineEvent(
+    val enhancerName: String,
+    description: String,
+) : RagPipelineEvent(
+    description,
+)
 
 class EnhancementStartingRagPipelineEvent(
     val basis: RagResponse,
     enhancerName: String,
-) : EnhancementRagPipelineEvent(enhancerName) {
+) : EnhancementRagPipelineEvent(enhancerName, "Starting enhancement with $enhancerName") {
 
     override val request: RagRequest
         get() = basis.request
@@ -52,7 +62,7 @@ class EnhancementStartingRagPipelineEvent(
 class EnhancementCompletedRagPipelineEvent(
     val response: RagResponse,
     enhancerName: String,
-) : EnhancementRagPipelineEvent(enhancerName) {
+) : EnhancementRagPipelineEvent(enhancerName, "Completed enhancement with $enhancerName") {
 
     override val request: RagRequest
         get() = response.request
