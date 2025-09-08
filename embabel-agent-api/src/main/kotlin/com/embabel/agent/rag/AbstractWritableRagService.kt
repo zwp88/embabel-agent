@@ -16,14 +16,13 @@
 package com.embabel.agent.rag
 
 import com.embabel.agent.rag.ingestion.ContentChunker
-import com.embabel.agent.rag.ingestion.ContentElementRepository
 import com.embabel.agent.rag.ingestion.MaterializedDocument
 
 /**
  * Convenience base class for WritableRagService implementations.
  */
 // TODO inject configuration for chunking
-abstract class AbstractWritableRagService : WritableRagService, ContentElementRepository {
+abstract class AbstractWritableRagService : RepositoryRagService {
 
     /**
      * Will call save on the root and all descendants.

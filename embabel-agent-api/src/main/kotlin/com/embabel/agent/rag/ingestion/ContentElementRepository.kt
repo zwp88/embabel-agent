@@ -28,4 +28,6 @@ interface ContentElementRepository {
     fun findById(id: String): ContentElement?
 
     fun save(element: ContentElement): ContentElement
+
+    fun count(): Int
 }

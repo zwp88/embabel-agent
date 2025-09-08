@@ -78,6 +78,10 @@ class LuceneRagService @JvmOverloads constructor(
         return foundChunks
     }
 
+    override fun count(): Int =
+        contentElementStorage.size
+
+
     override fun findById(id: String): ContentElement? {
         return contentElementStorage[id]
     }

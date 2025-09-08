@@ -73,11 +73,10 @@ class OgmRagService(
     override fun findChunksById(chunkIds: List<String>): List<Chunk> {
         val session = ogmCypherSearch.currentSession()
         val rows = session.query(
-            cypherContentElementQuery(" WHERE c.id IN \$ids "),
+            cypherContentElementQuery(" WHERE c:Chunk AND c.id IN \$ids "),
             mapOf("ids" to chunkIds),
             true,
         )
-        // TODO inefficient: Filter in DB
         return rows.map(::rowToContentElement).filterIsInstance<Chunk>()
     }
 
@@ -107,9 +106,12 @@ class OgmRagService(
         return rows.map(::rowToContentElement)
     }
 
+    override fun count(): Int {
+        return ogmCypherSearch.queryForInt("MATCH (c:ContentElement) RETURN count(c) AS count")
+    }
+
     private fun cypherContentElementQuery(whereClause: String): String =
         "MATCH (c:ContentElement) $whereClause RETURN c.id AS id, c.text AS text, c.parentId as parentId, c.metadata.source as metadata_source, labels(c) as labels"
-
 
     private fun rowToContentElement(row: Map<String, Any?>): ContentElement {
         val metadata = mutableMapOf<String, Any>()

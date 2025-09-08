@@ -15,19 +15,9 @@
  */
 package com.embabel.agent.rag
 
-import org.jetbrains.annotations.ApiStatus
+import com.embabel.agent.rag.ingestion.ContentElementRepository
 
 /**
- * RagService comparable to a Spring Data repository.
+ * WritableRagService that also allows us to load and save ContentElements.
  */
-@ApiStatus.Experimental
-interface RepositoryRagService : RagService {
-
-    fun findById(
-        id: String,
-        label: String,
-        explorationRequest: ExplorationRequest,
-    ): EntityData?
-
-    fun save(entityData: EntityData): EntityData
-}
+interface RepositoryRagService : WritableRagService, ContentElementRepository
