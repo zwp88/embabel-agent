@@ -147,7 +147,7 @@ class OgmRagServiceTest(
         }
 
         @Test
-        @Disabled("This works in th wild, but not in testcontainers for some reason: Possibly index provisioning")
+        @Disabled
         fun `single chunk is retrieved`() {
             val mcr = fakeContent()
             ragService.writeContent(mcr)

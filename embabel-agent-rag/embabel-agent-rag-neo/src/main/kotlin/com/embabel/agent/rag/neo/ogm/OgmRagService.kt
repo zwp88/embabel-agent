@@ -203,7 +203,7 @@ class OgmRagService(
         val embedding = embeddingService.model.embed(ragRequest.query)
 
         val cypherResults = executeCypher(ragRequest)
-        logger.info("{} Cypher results found for query '{}'", cypherResults.size, ragRequest.query)
+        logger.info("{} Cypher results for query '{}'", cypherResults.size, ragRequest.query)
 
 //        val genericEntityResults = queryRunner.entityDataSimilaritySearch(
 //            "searchEntities",
@@ -226,6 +226,8 @@ class OgmRagService(
                 ),
                 logger = logger,
             )
+            logger.info("{} chunk results for query '{}'", chunkResults.size, ragRequest.query)
+
             val entityResults = ogmCypherSearch.mappedEntitySimilaritySearch(
                 purpose = "searchMappedEntities",
                 query = "entity_vector_search",
@@ -237,6 +239,7 @@ class OgmRagService(
                 ),
                 logger,
             )
+            logger.info("{} entity results for query '{}'", entityResults.size, ragRequest.query)
             // TODO should reward multiple matches
             val mergedResults = (chunkResults + entityResults + cypherResults).distinctBy { it.match.id }
             RagResponse(
