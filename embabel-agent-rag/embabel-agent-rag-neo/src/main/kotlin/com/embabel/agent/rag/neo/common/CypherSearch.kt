@@ -72,6 +72,20 @@ interface CypherSearch {
         logger: Logger?,
     ): List<SimilarityResult<out MappedEntity>>
 
+    fun chunkFullTextSearch(
+        purpose: String,
+        query: String,
+        params: Map<String, *>,
+        logger: Logger?,
+    ): List<SimilarityResult<Chunk>>
+
+    fun entityFullTextSearch(
+        purpose: String,
+        query: String,
+        params: Map<String, *>,
+        logger: Logger?,
+    ): List<SimilarityResult<out MappedEntity>>
+
     fun queryForInt(
         query: String,
         params: Map<String, *> = emptyMap<String, String>(),

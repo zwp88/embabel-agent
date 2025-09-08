@@ -34,6 +34,8 @@ data class NeoRagServiceProperties(
     val description: String = "RAG service using Neo4j OGM for querying and embedding",
     val contentElementIndex: String = "embabel-content-index",
     val entityIndex: String = "embabel-entity-index",
+    val contentElementFullTextIndex: String = "embabel-content-fulltext-index",
+    val entityFullTextIndex: String = "embabel-entity-fulltext-index",
 
     // Empty packages causes a strange failure within Neo4j OGM
     val packages: List<String> = listOf("not.a.real.package"),

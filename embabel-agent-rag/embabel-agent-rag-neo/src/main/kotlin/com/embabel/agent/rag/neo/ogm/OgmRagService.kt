@@ -61,11 +61,13 @@ class OgmRagService(
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
     override fun provision() {
-        logger.info("Provisioning OgmRagService with properties {}", properties)
+        logger.info("Provisioning with properties {}", properties)
         // TODO do we want this on ContentElement?
         createVectorIndex(properties.contentElementIndex, "Chunk")
         createVectorIndex(properties.entityIndex, properties.entityNodeName)
-        logger.info("Provisioned OgmRagService")
+        createFullTextIndex(properties.contentElementFullTextIndex, "Chunk", listOf("text"))
+        createFullTextIndex(properties.entityFullTextIndex, properties.entityNodeName, listOf("name", "description"))
+        logger.info("Provisioning complete")
     }
 
     override fun findChunksById(chunkIds: List<String>): List<Chunk> {
@@ -240,8 +242,35 @@ class OgmRagService(
                 logger,
             )
             logger.info("{} entity results for query '{}'", entityResults.size, ragRequest.query)
+
+            // Full-text search
+            val chunkFullTextResults = ogmCypherSearch.chunkFullTextSearch(
+                purpose = "searchChunksFullText",
+                query = "chunk_fulltext_search",
+                params = mapOf(
+                    "fulltextIndex" to properties.contentElementFullTextIndex,
+                    "searchText" to ragRequest.query,
+                    "similarityThreshold" to ragRequest.similarityThreshold,
+                ),
+                logger = logger,
+            )
+            logger.info("{} chunk full-text results for query '{}'", chunkFullTextResults.size, ragRequest.query)
+
+            val entityFullTextResults = ogmCypherSearch.entityFullTextSearch(
+                purpose = "searchEntitiesFullText",
+                query = "entity_fulltext_search",
+                params = mapOf(
+                    "fulltextIndex" to properties.entityFullTextIndex,
+                    "searchText" to ragRequest.query,
+                    "similarityThreshold" to ragRequest.similarityThreshold,
+                ),
+                logger = logger,
+            )
+            logger.info("{} entity full-text results for query '{}'", entityFullTextResults.size, ragRequest.query)
+
             // TODO should reward multiple matches
-            val mergedResults = (chunkResults + entityResults + cypherResults).distinctBy { it.match.id }
+            val mergedResults =
+                (chunkResults + entityResults + chunkFullTextResults + entityFullTextResults + cypherResults).distinctBy { it.match.id }
             RagResponse(
                 request = ragRequest,
                 service = this.name,
@@ -333,5 +362,18 @@ class OgmRagService(
             `vector.similarity_function`: 'cosine'
             }}""", emptyMap<String, Any>()
         )
+    }
+
+    private fun createFullTextIndex(
+        name: String,
+        on: String,
+        properties: List<String>,
+    ) {
+        val propertiesString = properties.joinToString(", ") { "n.$it" }
+        sessionFactory.openSession().query(
+            "CREATE FULLTEXT INDEX `$name` IF NOT EXISTS FOR (n:$on) ON EACH [$propertiesString]",
+            emptyMap<String, Any>()
+        )
+        logger.info("Created full-text index {} for {} on properties {}", name, on, properties)
     }
 }

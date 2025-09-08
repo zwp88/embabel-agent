@@ -108,6 +108,36 @@ class OgmCypherSearch(
         return rowsToMappedEntitySimilarityResult(result)
     }
 
+    override fun chunkFullTextSearch(
+        purpose: String,
+        query: String,
+        params: Map<String, *>,
+        logger: Logger?,
+    ): List<SimilarityResult<Chunk>> {
+        val result = query(purpose = purpose, query = query, params = params, logger = logger)
+        return result.map { row ->
+            SimpleSimilaritySearchResult(
+                match = Chunk(
+                    id = row["id"] as String,
+                    text = row["text"] as String,
+                    parentId = "unknown", // parentId not available from full-text search
+                    metadata = mapOf("source" to "unknown"),
+                ),
+                score = row["score"] as Double,
+            )
+        }
+    }
+
+    override fun entityFullTextSearch(
+        purpose: String,
+        query: String,
+        params: Map<String, *>,
+        logger: Logger?,
+    ): List<SimilarityResult<OgmMappedNamedEntity>> {
+        val result = query(purpose = purpose, query = query, params = params, logger = logger)
+        return rowsToMappedEntitySimilarityResult(result)
+    }
+
     private fun rowsToNamedEntityData(
         result: Result,
     ): List<SimpleNamedEntityData> = result.map { row ->

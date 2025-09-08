@@ -44,27 +44,8 @@ class OgmRagServiceTest(
         ragService.provision()
     }
 
-    @Nested
-    inner class SmokeTest {
-        @Test
-        fun `should find nothing in empty db`() {
-            every { cypherGenerationLlm.model.call(any<String>()) } returns "MATCH (n) WHERE n.name CONTAINS 'test' RETURN n"
-
-            val results = ragService.search(
-                RagRequest(
-                    query = "test",
-                    topK = 10,
-                )
-            )
-            assertEquals(0, results.results.size, "Expected no results in empty database")
-        }
-    }
-
-
-    @Nested
-    inner class WriteContentTest {
-
-        private fun fakeContent(): MaterializedDocument {
+    companion object {
+        fun fakeContent(): MaterializedDocument {
             val rootId = "whatever"
             val sec1Id = "sec1"
 
@@ -86,6 +67,113 @@ class OgmRagServiceTest(
                 children = listOf(sec1),
             )
         }
+    }
+
+    @Nested
+    inner class FullTextSearchTest {
+        @Test
+        fun `should find chunk by full-text search`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+
+            val results = ragService.search(
+                RagRequest("leaf").withSimilarityThreshold(.0)
+            )
+
+            assertTrue(results.results.isNotEmpty(), "Expected results from full-text search")
+            val chunkResult = results.results.find { it.match is Chunk }
+            assertTrue(chunkResult != null, "Expected to find chunk in results")
+            assertTrue((chunkResult!!.match as Chunk).text.contains("leaf"), "Expected chunk to contain search term")
+        }
+
+        @Test
+        fun `should find chunk by exact text match`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+
+            val results = ragService.search(
+                RagRequest("content of leaf 1").withSimilarityThreshold(.0)
+            )
+
+            assertTrue(results.results.isNotEmpty(), "Expected results from full-text search for exact match")
+            val chunkResult = results.results.find { it.match is Chunk }
+            assertTrue(chunkResult != null, "Expected to find chunk in results")
+        }
+
+        @Test
+        fun `full-text search should work with low similarity threshold`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+
+            val results = ragService.search(
+                RagRequest("leaf").withSimilarityThreshold(0.1)
+            )
+
+            assertTrue(results.results.isNotEmpty(), "Expected results with low similarity threshold")
+        }
+    }
+
+    @Nested
+    inner class HybridSearchTest {
+        @Test
+        fun `hybrid search should combine vector and full-text results`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+
+            val results = ragService.search(
+                RagRequest("leaf content").withSimilarityThreshold(.0)
+            )
+
+            assertTrue(results.results.isNotEmpty(), "Expected results from hybrid search")
+
+            // The search should find chunks through multiple methods
+            // Log the number of results to understand what's happening
+            logger.info("Hybrid search returned {} results", results.results.size)
+            results.results.forEach { result ->
+                logger.info("Result: {} - {}", result.match.javaClass.simpleName,
+                    if (result.match is Chunk) (result.match as Chunk).text.take(50) + "..." else result.match.toString())
+            }
+
+            val chunkResults = results.results.filter { it.match is Chunk }
+            assertTrue(chunkResults.isNotEmpty(), "Expected at least one chunk from hybrid search")
+        }
+
+        @Test
+        fun `hybrid search should not duplicate results`() {
+            val mcr = fakeContent()
+            ragService.writeContent(mcr)
+
+            val results = ragService.search(
+                RagRequest("leaf").withSimilarityThreshold(.0)
+            )
+
+            // Check that results are deduplicated by ID
+            val ids = results.results.map { it.match.id }
+            val uniqueIds = ids.distinct()
+
+            assertEquals(ids.size, uniqueIds.size, "Expected no duplicate results in hybrid search")
+        }
+    }
+
+    @Nested
+    inner class SmokeTest {
+        @Test
+        fun `should find nothing in empty db`() {
+            every { cypherGenerationLlm.model.call(any<String>()) } returns "MATCH (n) WHERE n.name CONTAINS 'test' RETURN n"
+
+            val results = ragService.search(
+                RagRequest(
+                    query = "test",
+                    topK = 10,
+                )
+            )
+            assertEquals(0, results.results.size, "Expected no results in empty database")
+        }
+    }
+
+
+    @Nested
+    inner class WriteContentTest {
 
         @Test
         fun `write content`() {
