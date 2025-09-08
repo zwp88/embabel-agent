@@ -99,8 +99,8 @@ class AgentPlatformChatSession(
         messageListener: MessageListener,
     ) {
         conversation.addMessage(userMessage)
-        generateResponses(userMessage = userMessage, messageListener = { message ->
-            messageListener.onMessage(message)
+        generateResponses(userMessage = userMessage, messageListener = { message, conversation ->
+            messageListener.onMessage(message, conversation)
         })
     }
 
@@ -134,7 +134,7 @@ class AgentPlatformChatSession(
         }
         val handledCommand = handleAsCommand(userMessage)
         if (handledCommand != null) {
-            messageListener.onMessage(handledCommand)
+            messageListener.onMessage(handledCommand, conversation)
         } else {
             responseGenerator.generateResponses(
                 conversation = conversation,

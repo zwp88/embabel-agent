@@ -70,7 +70,7 @@ class GoalAwareChatbot(
             val assistantMessage = agentProcess.lastResult() as? AssistantMessage
                 ?: AssistantMessage("Internal error: Agent did not return an AssistantMessage")
             conversation.addMessage(assistantMessage)
-            messageListener.onMessage(assistantMessage)
+            messageListener.onMessage(assistantMessage, conversation)
         }
     }
 }
