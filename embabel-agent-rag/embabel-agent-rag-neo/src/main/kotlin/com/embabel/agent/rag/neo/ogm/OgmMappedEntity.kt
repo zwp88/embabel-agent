@@ -16,8 +16,8 @@
 package com.embabel.agent.rag.neo.ogm
 
 import com.embabel.agent.rag.MappedEntity
+import com.embabel.agent.rag.NamedEntityData
 import com.embabel.common.core.types.Described
-import com.embabel.common.core.types.Named
 import org.neo4j.ogm.annotation.Id
 
 /**
@@ -40,7 +40,7 @@ abstract class OgmMappedEntity(
 abstract class OgmMappedNamedEntity(
     override val name: String,
     id: String,
-) : OgmMappedEntity(id), Named, Described {
+) : OgmMappedEntity(id), Described, NamedEntityData {
 
     override fun infoString(
         verbose: Boolean?,

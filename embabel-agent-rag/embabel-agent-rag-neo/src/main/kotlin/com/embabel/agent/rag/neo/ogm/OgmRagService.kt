@@ -22,6 +22,7 @@ import com.embabel.agent.rag.neo.common.CypherQuery
 import com.embabel.agent.rag.schema.SchemaResolver
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria
 import com.embabel.common.ai.model.ModelProvider
+import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import org.neo4j.ogm.session.SessionFactory
 import org.slf4j.LoggerFactory
@@ -201,40 +202,8 @@ class OgmRagService(
     override fun search(ragRequest: RagRequest): RagResponse {
         val embedding = embeddingService.model.embed(ragRequest.query)
 
-        // TODO this is wrong. Need a better way of determining the schema.
-        val schema = schemaResolver.getSchema("default")
-
-        if (schema !== null) {
-            val cypherRagQueryGenerator = SchemaDrivenCypherRagQueryGenerator(
-                modelProvider,
-                schema,
-            )
-            val cypher = cypherRagQueryGenerator.generateQuery(
-                request = ragRequest,
-            )
-            logger.info("Generated Cypher query: $cypher")
-
-            val cypherResults = readonlyTransactionTemplate.execute { executeGeneratedQuery(cypher) } ?: Result.failure(
-                IllegalStateException("Transaction failed or returned null while executing Cypher query: $cypher")
-            )
-            if (cypherResults.isSuccess) {
-                val results = cypherResults.getOrThrow()
-                if (results.isNotEmpty()) {
-                    logger.info("Cypher query executed successfully, results: {}", results)
-                    return RagResponse(
-                        request = ragRequest,
-                        service = this.name,
-                        results = results.map {
-                            // Most similar as we found them by a query
-                            SimpleSimilaritySearchResult(
-                                it,
-                                score = 1.0,
-                            )
-                        },
-                    )
-                }
-            }
-        }
+        val cypherResults = executeCypher(ragRequest)
+        logger.info("{} Cypher results found for query '{}'", cypherResults.size, ragRequest.query)
 
 //        val genericEntityResults = queryRunner.entityDataSimilaritySearch(
 //            "searchEntities",
@@ -268,10 +237,12 @@ class OgmRagService(
                 ),
                 logger,
             )
+            // TODO should reward multiple matches
+            val mergedResults = (chunkResults + entityResults + cypherResults).distinctBy { it.match.id }
             RagResponse(
                 request = ragRequest,
                 service = this.name,
-                results = chunkResults + entityResults,
+                results = mergedResults,
             )
         } ?: run {
             logger.error("Transaction failed or returned null, returning empty RagResponse")
@@ -281,6 +252,39 @@ class OgmRagService(
                 results = emptyList(),
             )
         }
+    }
+
+    private fun executeCypher(request: RagRequest): List<SimilarityResult<out NamedEntityData>> {
+        // TODO this is wrong. Need a better way of determining the schema.
+        val schema = schemaResolver.getSchema("default")
+        if (schema !== null) {
+            val cypherRagQueryGenerator = SchemaDrivenCypherRagQueryGenerator(
+                modelProvider,
+                schema,
+            )
+            val cypher = cypherRagQueryGenerator.generateQuery(
+                request = request,
+            )
+            logger.info("Generated Cypher query: $cypher")
+
+            val cypherResults = readonlyTransactionTemplate.execute { executeGeneratedQuery(cypher) } ?: Result.failure(
+                IllegalStateException("Transaction failed or returned null while executing Cypher query: $cypher")
+            )
+            if (cypherResults.isSuccess) {
+                val results = cypherResults.getOrThrow()
+                if (results.isNotEmpty()) {
+                    logger.info("Cypher query executed successfully, results: {}", results)
+                    return results.map {
+                        // Most similar as we found them by a query
+                        SimpleSimilaritySearchResult(
+                            it,
+                            score = 1.0,
+                        )
+                    }
+                }
+            }
+        }
+        return emptyList()
     }
 
     /**
