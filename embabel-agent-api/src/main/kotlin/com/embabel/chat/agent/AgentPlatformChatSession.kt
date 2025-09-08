@@ -26,6 +26,7 @@ import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.AgentProcessEvent
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectBindingEvent
+import com.embabel.agent.identity.User
 import com.embabel.chat.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.loggerFor
@@ -86,6 +87,7 @@ interface ProcessWaitingHandler {
  * Support for chat sessions leveraging an AgentPlatform.
  */
 class AgentPlatformChatSession(
+    override val user: User?,
     private val planLister: PlanLister,
     val processOptions: ProcessOptions = ProcessOptions(),
     val responseGenerator: ResponseGenerator,
