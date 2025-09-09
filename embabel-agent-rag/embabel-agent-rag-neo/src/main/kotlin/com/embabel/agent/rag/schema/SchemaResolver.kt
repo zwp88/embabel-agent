@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.rag.schema
 
+import com.embabel.agent.rag.EntitySearch
+
 /**
  * Resolve schema by name
  */
@@ -23,5 +25,5 @@ interface SchemaResolver {
     /**
      * Resolve the schema of the knowledge graph, if possible
      */
-    fun getSchema(name: String): KnowledgeGraphSchema?
+    fun getSchema(entitySearch: EntitySearch): KnowledgeGraphSchema?
 }

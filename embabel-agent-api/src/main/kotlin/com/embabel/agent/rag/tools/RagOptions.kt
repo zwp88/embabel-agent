@@ -16,10 +16,7 @@
 package com.embabel.agent.rag.tools
 
 import com.embabel.agent.event.RagEventListener
-import com.embabel.agent.rag.CompressionConfig
-import com.embabel.agent.rag.RagRequestRefinement
-import com.embabel.agent.rag.RagResponseFormatter
-import com.embabel.agent.rag.SimpleRagResponseFormatter
+import com.embabel.agent.rag.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.ZeroToOne
 
@@ -37,7 +34,7 @@ data class RagOptions @JvmOverloads constructor(
     override val topK: Int = 8,
     override val compressionConfig: CompressionConfig = CompressionConfig(),
     val llm: LlmOptions = LlmOptions.withAutoLlm(),
-    override val labels: Set<String> = emptySet(),
+    override val entitySearch: EntitySearch? = null,
     val ragResponseFormatter: RagResponseFormatter = SimpleRagResponseFormatter,
     val service: String? = null,
     val listener: RagEventListener = RagEventListener.NOOP,
@@ -55,8 +52,12 @@ data class RagOptions @JvmOverloads constructor(
         return copy(listener = this.listener + listener)
     }
 
-    fun withCompressionConfig(compressionConfig: CompressionConfig): RagOptions {
+    fun withCompression(compressionConfig: CompressionConfig): RagOptions {
         return copy(compressionConfig = compressionConfig)
+    }
+
+    fun withEntitySearch(entitySearch: EntitySearch?): RagOptions {
+        return copy(entitySearch = entitySearch)
     }
 
     /**

@@ -206,8 +206,14 @@ class OgmRagService(
     override fun search(ragRequest: RagRequest): RagResponse {
         val embedding = embeddingService.model.embed(ragRequest.query)
 
-        val cypherResults = executeCypher(ragRequest)
-        logger.info("{} Cypher results for query '{}'", cypherResults.size, ragRequest.query)
+        val cypherResults = if (ragRequest.entitySearch != null) {
+            executeCypher(ragRequest, ragRequest.entitySearch!!).also { cypherResults ->
+                logger.info("{} Cypher results for query '{}'", cypherResults.size, ragRequest.query)
+            }
+        } else {
+            logger.info("No entity search specified, skipping Cypher execution")
+            emptyList()
+        }
 
 //        val genericEntityResults = queryRunner.entityDataSimilaritySearch(
 //            "searchEntities",
@@ -288,33 +294,38 @@ class OgmRagService(
         }
     }
 
-    private fun executeCypher(request: RagRequest): List<SimilarityResult<out NamedEntityData>> {
-        // TODO this is wrong. Need a better way of determining the schema.
-        val schema = schemaResolver.getSchema("default")
-        if (schema !== null) {
-            val cypherRagQueryGenerator = SchemaDrivenCypherRagQueryGenerator(
-                modelProvider,
-                schema,
-            )
-            val cypher = cypherRagQueryGenerator.generateQuery(
-                request = request,
-            )
-            logger.info("Generated Cypher query: $cypher")
+    private fun executeCypher(
+        request: RagRequest,
+        entitySearch: EntitySearch,
+    ): List<SimilarityResult<out NamedEntityData>> {
+        val schema = schemaResolver.getSchema(entitySearch)
+        if (schema == null) {
+            logger.info("No schema found for entity search {}, skipping Cypher execution", entitySearch)
+            return emptyList()
+        }
 
-            val cypherResults = readonlyTransactionTemplate.execute { executeGeneratedQuery(cypher) } ?: Result.failure(
-                IllegalStateException("Transaction failed or returned null while executing Cypher query: $cypher")
-            )
-            if (cypherResults.isSuccess) {
-                val results = cypherResults.getOrThrow()
-                if (results.isNotEmpty()) {
-                    logger.info("Cypher query executed successfully, results: {}", results)
-                    return results.map {
-                        // Most similar as we found them by a query
-                        SimpleSimilaritySearchResult(
-                            it,
-                            score = 1.0,
-                        )
-                    }
+        val cypherRagQueryGenerator = SchemaDrivenCypherRagQueryGenerator(
+            modelProvider,
+            schema,
+        )
+        val cypher = cypherRagQueryGenerator.generateQuery(
+            request = request,
+        )
+        logger.info("Generated Cypher query: $cypher")
+
+        val cypherResults = readonlyTransactionTemplate.execute { executeGeneratedQuery(cypher) } ?: Result.failure(
+            IllegalStateException("Transaction failed or returned null while executing Cypher query: $cypher")
+        )
+        if (cypherResults.isSuccess) {
+            val results = cypherResults.getOrThrow()
+            if (results.isNotEmpty()) {
+                logger.info("Cypher query executed successfully, results: {}", results)
+                return results.map {
+                    // Most similar as we found them by a query
+                    SimpleSimilaritySearchResult(
+                        it,
+                        score = 1.0,
+                    )
                 }
             }
         }

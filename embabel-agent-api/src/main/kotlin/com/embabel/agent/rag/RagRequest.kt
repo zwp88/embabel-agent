@@ -27,10 +27,10 @@ import java.time.Instant
  */
 interface RagRequestRefinement : SimilarityCutoff {
 
-    @get:ApiStatus.Experimental
-    val labels: Set<String>
-
     val compressionConfig: CompressionConfig
+
+    @get:ApiStatus.Experimental
+    val entitySearch: EntitySearch?
 
     /**
      * Create a RagRequest from this refinement and a query.
@@ -40,14 +40,33 @@ interface RagRequestRefinement : SimilarityCutoff {
             query = query,
             similarityThreshold = similarityThreshold,
             topK = topK,
-            labels = labels,
+            entitySearch = entitySearch,
             compressionConfig = compressionConfig,
         )
     }
 
 }
 
-data class CompressionConfig(
+/**
+ * Controls entity search
+ * Open to allow specializations
+ *
+ */
+sealed interface EntitySearch
+
+open class TypedEntitySearch(
+    val entities: List<Class<*>>,
+) : EntitySearch
+
+open class LabeledEntitySearch(
+    val labels: Set<String>,
+) : EntitySearch
+
+open class SchemaEntitySearch(
+    val schema: String,
+) : EntitySearch
+
+open class CompressionConfig(
     val enabled: Boolean = true,
 )
 
@@ -65,7 +84,7 @@ data class RagRequest(
     override val similarityThreshold: ZeroToOne = .8,
     override val topK: Int = 8,
     override val compressionConfig: CompressionConfig = CompressionConfig(),
-    override val labels: Set<String> = emptySet(),
+    override val entitySearch: EntitySearch? = null,
     override val timestamp: Instant = Instant.now(),
 ) : TextSimilaritySearchRequest, RagRequestRefinement, Timestamped {
 
@@ -82,8 +101,8 @@ data class RagRequest(
     }
 
     @ApiStatus.Experimental
-    fun matchingLabels(vararg labels: String): RagRequest {
-        return this.copy(labels = this.labels + labels)
+    fun withEntitySearch(entitySearch: EntitySearch): RagRequest {
+        return this.copy(entitySearch = entitySearch)
     }
 
     companion object {

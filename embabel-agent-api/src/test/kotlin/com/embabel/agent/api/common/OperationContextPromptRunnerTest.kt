@@ -20,6 +20,7 @@ import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.Operation
 import com.embabel.agent.experimental.primitive.Determination
+import com.embabel.agent.rag.LabeledEntitySearch
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
 import com.embabel.agent.rag.RagService
@@ -401,7 +402,7 @@ class OperationContextPromptRunnerTest {
             val customRagOptions = RagOptions(
                 similarityThreshold = 0.9,
                 topK = 5,
-                labels = setOf("test-label")
+                entitySearch = LabeledEntitySearch(setOf("test-label"))
             )
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
@@ -418,7 +419,11 @@ class OperationContextPromptRunnerTest {
                 "Similarity threshold not set correctly"
             )
             assertEquals(5, ragTools.options.topK, "TopK not set correctly")
-            assertEquals(setOf("test-label"), ragTools.options.labels, "Labels not set correctly")
+            assertEquals(
+                setOf("test-label"),
+                (ragTools.options.entitySearch as? LabeledEntitySearch)?.labels,
+                "Labels not set correctly"
+            )
         }
 
         @Test
@@ -582,10 +587,11 @@ class OperationContextPromptRunnerTest {
             val mockRagResponse = RagResponse(RagRequest("test"), "test-service", emptyList())
             every { mockRagService.search(any()) } returns mockRagResponse
 
+            val entitySearch = LabeledEntitySearch(setOf("custom-label", "another-label"))
             val customRagOptions = RagOptions(
                 similarityThreshold = 0.85,
                 topK = 12,
-                labels = setOf("custom-label", "another-label")
+                entitySearch = entitySearch
             )
 
             val ocpr = createOperationContextPromptRunnerWithDefaults(mockContext)
@@ -605,7 +611,7 @@ class OperationContextPromptRunnerTest {
                             // but there are rules
                             request.similarityThreshold <= 0.85 &&
                             request.topK >= 12 &&
-                            request.labels == setOf("custom-label", "another-label")
+                            request.entitySearch == entitySearch
                 })
             }
         }

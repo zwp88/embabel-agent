@@ -23,6 +23,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNull
 
 class RagServiceSearchToolsTest {
 
@@ -79,11 +80,12 @@ class RagServiceSearchToolsTest {
 
     @Test
     fun `should pass correct parameters to RagService search`() {
+        val entitySearch = LabeledEntitySearch(setOf("label1", "label2"))
         val mockRagService = mockk<RagService>()
         val options = RagOptions(
             similarityThreshold = 0.8,
             topK = 5,
-            labels = setOf("label1", "label2")
+            entitySearch = entitySearch,
         )
         val ragTools = RagServiceSearchTools(mockRagService, options)
 
@@ -97,7 +99,7 @@ class RagServiceSearchToolsTest {
                 request.query == "test query" &&
                         request.similarityThreshold == 0.8 &&
                         request.topK == 5 &&
-                        request.labels == setOf("label1", "label2")
+                        request.entitySearch == entitySearch
             })
         }
     }
@@ -108,23 +110,24 @@ class RagServiceSearchToolsTest {
 
         assertEquals(0.7, options.similarityThreshold.toDouble(), 0.001)
         assertEquals(8, options.topK)
-        assertTrue(options.labels.isEmpty())
+        assertNull(options.entitySearch)
         assertEquals(SimpleRagResponseFormatter, options.ragResponseFormatter)
     }
 
     @Test
     fun `should create RagServiceToolsOptions with custom values`() {
+        val entitySearch = LabeledEntitySearch(setOf("custom-label"))
         val customFormatter = mockk<RagResponseFormatter>()
         val options = RagOptions(
             similarityThreshold = 0.9,
             topK = 10,
-            labels = setOf("custom-label"),
+            entitySearch = entitySearch,
             ragResponseFormatter = customFormatter
         )
 
         assertEquals(0.9, options.similarityThreshold.toDouble(), 0.001)
         assertEquals(10, options.topK)
-        assertEquals(setOf("custom-label"), options.labels)
+        assertEquals(entitySearch, options.entitySearch)
         assertEquals(customFormatter, options.ragResponseFormatter)
     }
 
@@ -137,7 +140,7 @@ class RagServiceSearchToolsTest {
 
         assertEquals(newThreshold, updatedOptions.similarityThreshold)
         assertEquals(options.topK, updatedOptions.topK)
-        assertEquals(options.labels, updatedOptions.labels)
+        assertEquals(options.entitySearch, updatedOptions.entitySearch)
         assertEquals(options.ragResponseFormatter, updatedOptions.ragResponseFormatter)
     }
 
@@ -150,7 +153,7 @@ class RagServiceSearchToolsTest {
 
         assertEquals(options.similarityThreshold, updatedOptions.similarityThreshold)
         assertEquals(newTopK, updatedOptions.topK)
-        assertEquals(options.labels, updatedOptions.labels)
+        assertEquals(options.entitySearch, updatedOptions.entitySearch)
         assertEquals(options.ragResponseFormatter, updatedOptions.ragResponseFormatter)
     }
 
@@ -164,7 +167,7 @@ class RagServiceSearchToolsTest {
 
         assertEquals(0.95, updatedOptions.similarityThreshold.toDouble(), 0.001)
         assertEquals(20, updatedOptions.topK)
-        assertEquals(options.labels, updatedOptions.labels)
+        assertEquals(options.entitySearch, updatedOptions.entitySearch)
     }
 
     @Test
@@ -220,7 +223,8 @@ class RagServiceSearchToolsTest {
         val options = RagOptions(
             similarityThreshold = 0.85,
             topK = 12,
-            labels = setOf("test-label")
+            entitySearch = LabeledEntitySearch(setOf("test-label"))
+
         )
 
         // Test that it properly implements RagRequestRefinement interface
@@ -229,6 +233,6 @@ class RagServiceSearchToolsTest {
         assertEquals("test query", request.query)
         assertEquals(0.85, request.similarityThreshold)
         assertEquals(12, request.topK)
-        assertEquals(setOf("test-label"), request.labels)
+        assertEquals(setOf("test-label"), (request.entitySearch as? LabeledEntitySearch)?.labels)
     }
 }

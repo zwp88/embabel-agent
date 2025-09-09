@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
+import com.embabel.agent.rag.EntitySearch
 import com.embabel.agent.rag.NamedEntityData
 import com.embabel.agent.rag.Retrievable
 import com.embabel.agent.rag.RetrievableEntity
@@ -42,7 +43,8 @@ class NeoOgmKnowledgeGraphService(
     private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
     // TODO is not using name
-    override fun getSchema(name: String): KnowledgeGraphSchema? {
+    // TODO not filtering entities
+    override fun getSchema(entitySearch: EntitySearch): KnowledgeGraphSchema? {
         val metadata = sessionFactory.metaData()
         val relationships = mutableListOf<RelationshipDefinition>()
         val entityDefinitions = metadata.persistentEntities()
