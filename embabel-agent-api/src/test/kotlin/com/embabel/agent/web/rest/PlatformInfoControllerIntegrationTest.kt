@@ -69,6 +69,18 @@ class PlatformInfoControllerIntegrationTest(
     }
 
     @Test
+    fun `should return conditions`() {
+        agentPlatform.deploy(evenMoreEvilWizard())
+        val result = mockMvc.get("/api/v1/platform-info/conditions")
+            .andExpect {
+                status().isOk()
+            }.andReturn()
+        val content = result.response.contentAsString
+        val retrievedGoals = objectMapper.readValue(content, object : TypeReference<List<ConditionMetadata>>() {})
+        assertTrue(retrievedGoals.isNotEmpty(), "Must have some conditions in $content")
+    }
+
+    @Test
     fun `should return actions`() {
         agentPlatform.deploy(evenMoreEvilWizard())
         val result = mockMvc.get("/api/v1/platform-info/actions")

@@ -133,7 +133,8 @@ class PlatformInfoController(
             ApiResponse(responseCode = "200", description = "List of conditions returned successfully")
         ]
     )
-    fun getConditions(): Set<Condition> = agentPlatform.conditions
+    fun getConditions(): Set<ConditionMetadata> =
+        agentPlatform.conditions.map { ConditionMetadata(it.name, it.cost) }.toSet()
 
     /**
      * Returns a list of all models available on the platform (across all agents).
