@@ -55,7 +55,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.CONTENT_TYPE_HINT, "text/markdown")
         }
 
-        val result = reader.parseContent(inputStream, metadata, "test://example.md")
+        val result = reader.parseContent(inputStream, metadata = metadata, uri = "test://example.md")
 
         assertEquals(4, result.children.size) // Introduction + Section 1 + Subsection 1.1 + Section 2
         assertEquals("test://example.md", result.uri)
@@ -102,7 +102,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.RESOURCE_NAME_KEY, "document.md")
         }
 
-        val result = reader.parseContent(inputStream, metadata)
+        val result = reader.parseContent(inputStream, "x", metadata)
 
         assertEquals(6, result.children.size) // All leaf sections
         assertNotNull(result.id)
@@ -135,7 +135,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.CONTENT_TYPE_HINT, "text/plain")
         }
 
-        val result = reader.parseContent(inputStream, metadata, "test://plain.txt")
+        val result = reader.parseContent(inputStream, "test://plain.txt", metadata)
 
         assertEquals(1, result.children.size)
         assertEquals("test://plain.txt", result.uri)
@@ -188,7 +188,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.TITLE, "Custom Title from Metadata")
         }
 
-        val result = reader.parseContent(inputStream, metadata)
+        val result = reader.parseContent(inputStream, "x", metadata)
 
         assertEquals(1, result.children.size)
         assertEquals("Custom Title from Metadata", (result.children.first() as LeafSection).title)
@@ -203,7 +203,7 @@ class HierarchicalContentReaderTest {
 
         val inputStream = ByteArrayInputStream(content.toByteArray())
 
-        val result = reader.parseContent(inputStream)
+        val result = reader.parseContent(inputStream, uri = "foo")
 
         assertEquals(1, result.children.size)
         assertEquals("This should become the title", (result.children.first() as LeafSection).title)
@@ -220,7 +220,7 @@ class HierarchicalContentReaderTest {
             set("custom-field", "custom-value")
         }
 
-        val result = reader.parseContent(inputStream, metadata)
+        val result = reader.parseContent(inputStream, "uri", metadata)
 
         assertEquals(1, result.children.size)
         val section = result.children.first() as LeafSection
@@ -234,7 +234,7 @@ class HierarchicalContentReaderTest {
         // Create an input stream with empty content
         val inputStream = ByteArrayInputStream(ByteArray(0))
 
-        val result = reader.parseContent(inputStream)
+        val result = reader.parseContent(inputStream, "uri")
 
         // Should return empty content root for empty content
         assertTrue(result.children.isEmpty())
@@ -260,7 +260,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.CONTENT_TYPE_HINT, "text/html")
         }
 
-        val result = reader.parseContent(inputStream, metadata)
+        val result = reader.parseContent(inputStream, metadata = metadata, uri = "Test")
 
         assertEquals(1, result.children.size) // HTML content treated as single section
         val section = result.children.first() as LeafSection
@@ -293,7 +293,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.RESOURCE_NAME_KEY, "code.md")
         }
 
-        val result = reader.parseContent(inputStream, metadata)
+        val result = reader.parseContent(inputStream, "x", metadata)
 
         assertEquals(2, result.children.size)
         val titles = result.children.map { it.title }
@@ -316,7 +316,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.RESOURCE_NAME_KEY, "empty.md")
         }
 
-        val result = reader.parseContent(inputStream, metadata)
+        val result = reader.parseContent(inputStream, "y", metadata)
 
         // Empty content should return empty content root
         assertTrue(result.children.isEmpty())
@@ -336,7 +336,7 @@ class HierarchicalContentReaderTest {
             set(TikaCoreProperties.RESOURCE_NAME_KEY, "plain.md")
         }
 
-        val result = reader.parseContent(inputStream, metadata)
+        val result = reader.parseContent(inputStream, "a", metadata)
 
         assertEquals(1, result.children.size)
         val section = result.children.first() as LeafSection
@@ -363,7 +363,7 @@ class HierarchicalContentReaderTest {
 
         val inputStream = ByteArrayInputStream(markdown.toByteArray())
 
-        val result = reader.parseContent(inputStream)
+        val result = reader.parseContent(inputStream, "uri")
 
         assertEquals(4, result.children.size)
         val titles = result.children.map { it.title }
@@ -393,7 +393,7 @@ class HierarchicalContentReaderTest {
 
         val inputStream = ByteArrayInputStream(markdown.toByteArray())
 
-        val result = reader.parseContent(inputStream)
+        val result = reader.parseContent(inputStream, "uri")
 
         assertEquals(3, result.children.size)
 

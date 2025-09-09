@@ -65,6 +65,7 @@ class OgmRagServiceTest(
                 id = rootId,
                 title = "great",
                 children = listOf(sec1),
+                uri = "file:///great"
             )
         }
     }
@@ -130,8 +131,10 @@ class OgmRagServiceTest(
             // Log the number of results to understand what's happening
             logger.info("Hybrid search returned {} results", results.results.size)
             results.results.forEach { result ->
-                logger.info("Result: {} - {}", result.match.javaClass.simpleName,
-                    if (result.match is Chunk) (result.match as Chunk).text.take(50) + "..." else result.match.toString())
+                logger.info(
+                    "Result: {} - {}", result.match.javaClass.simpleName,
+                    if (result.match is Chunk) (result.match as Chunk).text.take(50) + "..." else result.match.toString()
+                )
             }
 
             val chunkResults = results.results.filter { it.match is Chunk }

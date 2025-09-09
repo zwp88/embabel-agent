@@ -32,9 +32,14 @@ interface HierarchicalContentElement : ContentElement {
 
 /**
  * Root of a structured document
+ * It must have a non-null URI
  */
 interface ContentRoot : HierarchicalContentElement {
+
+    override val uri: String
+
     val title: String
+
     override val parentId get() = null
 
     override fun labels(): Set<String> {

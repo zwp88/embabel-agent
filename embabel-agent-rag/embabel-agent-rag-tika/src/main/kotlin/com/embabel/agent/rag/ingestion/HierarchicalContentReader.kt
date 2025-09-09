@@ -87,19 +87,21 @@ class HierarchicalContentReader {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val parser = AutoDetectParser()
 
+    @JvmOverloads
     fun parseResource(
         resourcePath: String,
         metadata: Metadata = Metadata(),
     ): MaterializedDocument {
         val resource: Resource = DefaultResourceLoader().getResource(resourcePath)
         return resource.inputStream.use { inputStream ->
-            parseContent(inputStream, metadata, resource.uri.toString())
+            parseContent(inputStream, resource.uri.toString(), metadata)
         }
     }
 
     /**
      * Parse content from a file and return materialized content root
      */
+    @JvmOverloads
     fun parseFile(
         file: File,
         url: String? = null,
@@ -110,17 +112,18 @@ class HierarchicalContentReader {
         metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, file.name)
 
         return file.inputStream().use { inputStream ->
-            parseContent(inputStream, metadata, url ?: file.toURI().toString())
+            parseContent(inputStream, metadata = metadata, uri = url ?: file.toURI().toString())
         }
     }
 
     /**
      * Parse content from an InputStream with optional metadata
      */
+    @JvmOverloads
     fun parseContent(
         inputStream: InputStream,
+        uri: String,
         metadata: Metadata = Metadata(),
-        url: String? = null,
     ): MaterializedDocument {
         val handler = BodyContentHandler(-1) // No limit on content size
         val parseContext = ParseContext()
@@ -140,25 +143,25 @@ class HierarchicalContentReader {
             return when {
                 mimeType.contains("markdown") || metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY)
                     ?.endsWith(".md") == true || hasMarkdownHeaders -> {
-                    parseMarkdown(content, metadata, url)
+                    parseMarkdown(content, metadata, uri)
                 }
 
                 mimeType.contains("html") -> {
-                    parseHtml(content, metadata, url)
+                    parseHtml(content, metadata, uri)
                 }
 
                 else -> {
-                    parsePlainText(content, metadata, url)
+                    parsePlainText(content, metadata, uri)
                 }
             }
 
         } catch (e: ZeroByteFileException) {
             // Handle empty files gracefully
             logger.debug("Empty content detected, returning empty content root")
-            return createEmptyContentRoot(metadata, url)
+            return createEmptyContentRoot(metadata, uri)
         } catch (e: Exception) {
             logger.error("Error parsing content", e)
-            return createErrorContentRoot(e.message ?: "Unknown parsing error", metadata, url)
+            return createErrorContentRoot(e.message ?: "Unknown parsing error", metadata, uri)
         }
     }
 
@@ -168,7 +171,7 @@ class HierarchicalContentReader {
     private fun parseMarkdown(
         content: String,
         metadata: Metadata,
-        url: String?,
+        uri: String,
     ): MaterializedDocument {
         val lines = content.lines()
         val leafSections = mutableListOf<LeafSection>()
@@ -190,7 +193,7 @@ class HierarchicalContentReader {
                                 currentTitle,
                                 currentSection.toString().trim(),
                                 parentId,
-                                url,
+                                uri,
                                 metadata
                             )
                         )
@@ -234,7 +237,7 @@ class HierarchicalContentReader {
                     currentTitle,
                     currentSection.toString().trim(),
                     parentId,
-                    url,
+                    uri,
                     metadata
                 )
             )
@@ -249,7 +252,7 @@ class HierarchicalContentReader {
                     title,
                     content.trim(),
                     rootId,
-                    url,
+                    uri,
                     metadata
                 )
             )
@@ -263,7 +266,7 @@ class HierarchicalContentReader {
 
         return MaterializedDocument(
             id = rootId,
-            uri = url,
+            uri = uri,
             title = documentTitle,
             children = leafSections,
             metadata = extractMetadataMap(metadata)
@@ -276,7 +279,7 @@ class HierarchicalContentReader {
     private fun parseHtml(
         content: String,
         metadata: Metadata,
-        url: String?,
+        uri: String,
     ): MaterializedDocument {
         // For HTML, we'll use a simplified approach similar to markdown
         // In a full implementation, you might want to use JSoup or similar
@@ -285,7 +288,7 @@ class HierarchicalContentReader {
             .replace(Regex("\\s+"), " ") // Normalize whitespace
             .trim()
 
-        return parsePlainText(cleanContent, metadata, url)
+        return parsePlainText(cleanContent, metadata, uri)
     }
 
     /**
@@ -294,10 +297,10 @@ class HierarchicalContentReader {
     private fun parsePlainText(
         content: String,
         metadata: Metadata,
-        url: String?,
+        uri: String,
     ): MaterializedDocument {
         if (content.isBlank()) {
-            return createEmptyContentRoot(metadata, url)
+            return createEmptyContentRoot(metadata, uri)
         }
 
         val rootId = UUID.randomUUID().toString()
@@ -307,13 +310,13 @@ class HierarchicalContentReader {
             title = title,
             content = content.trim(),
             parentId = rootId,
-            url = url,
+            url = uri,
             metadata = metadata
         )
 
         return MaterializedDocument(
             id = rootId,
-            uri = url,
+            uri = uri,
             title = title,
             children = listOf(leafSection),
             metadata = extractMetadataMap(metadata)
@@ -374,11 +377,11 @@ class HierarchicalContentReader {
 
     private fun createEmptyContentRoot(
         metadata: Metadata,
-        url: String?,
+        uri: String,
     ): MaterializedDocument {
         return MaterializedDocument(
             id = UUID.randomUUID().toString(),
-            uri = url,
+            uri = uri,
             title = metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY) ?: "Empty Document",
             children = emptyList(),
             metadata = extractMetadataMap(metadata)
@@ -388,12 +391,12 @@ class HierarchicalContentReader {
     private fun createErrorContentRoot(
         errorMessage: String,
         metadata: Metadata,
-        url: String?,
+        uri: String,
     ): MaterializedDocument {
         val rootId = UUID.randomUUID().toString()
         val errorSection = LeafSection(
             id = UUID.randomUUID().toString(),
-            uri = url,
+            uri = uri,
             title = "Parse Error",
             text = "Error parsing content: $errorMessage",
             parentId = rootId,
@@ -402,7 +405,7 @@ class HierarchicalContentReader {
 
         return MaterializedDocument(
             id = rootId,
-            uri = url,
+            uri = uri,
             title = "Parse Error",
             children = listOf(errorSection),
             metadata = extractMetadataMap(metadata) + mapOf("error" to errorMessage)

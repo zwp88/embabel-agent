@@ -48,9 +48,12 @@ data class DefaultMaterializedContainerSection(
     override val metadata: Map<String, Any?> = emptyMap(),
 ) : MaterializedContainerSection
 
+/**
+ * MaterializedDocument is the in-memory representation of a document with sections.
+ */
 data class MaterializedDocument(
     override val id: String,
-    override val uri: String? = null,
+    override val uri: String,
     override val title: String,
     override val children: List<MaterializedSection>,
     override val metadata: Map<String, Any?> = emptyMap(),

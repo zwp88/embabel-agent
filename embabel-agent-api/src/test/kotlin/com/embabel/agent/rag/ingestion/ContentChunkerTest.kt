@@ -40,7 +40,8 @@ class ContentChunkerTest {
             id = "container-1",
             title = "Small Document",
             children = listOf(leaf1, leaf2),
-            metadata = mapOf("source" to "test")
+            metadata = mapOf("source" to "test"),
+            uri = "foo",
         )
 
         val chunks = chunker.chunk(container)
@@ -90,7 +91,8 @@ class ContentChunkerTest {
             id = "container-2",
             title = "Mixed Document",
             children = listOf(smallLeaf, largeLeaf),
-            metadata = mapOf("source" to "test")
+            metadata = mapOf("source" to "test"),
+            uri = "foo",
         )
 
         val chunks = chunker.chunk(container)
@@ -125,7 +127,8 @@ class ContentChunkerTest {
         val container = MaterializedDocument(
             id = "empty-container",
             title = "Empty Document",
-            children = emptyList()
+            children = emptyList(),
+            uri = "foo",
         )
 
         val chunks = chunker.chunk(container)
@@ -160,7 +163,8 @@ class ContentChunkerTest {
         val rootContainer = MaterializedDocument(
             id = "root-1",
             title = "Multi-Section Document",
-            children = listOf(leaf1, leaf2, leaf3)
+            children = listOf(leaf1, leaf2, leaf3),
+            uri = "foo",
         )
 
         val chunks = chunker.chunk(rootContainer)
@@ -179,6 +183,7 @@ class ContentChunkerTest {
     @Test
     fun `test multiple containers processing`() {
         val container1 = MaterializedDocument(
+            uri = "foo",
             id = "container-1",
             title = "Document 1",
             children = listOf(
@@ -187,6 +192,7 @@ class ContentChunkerTest {
         )
 
         val container2 = MaterializedDocument(
+            uri = "foo",
             id = "container-2",
             title = "Document 2",
             children = listOf(
@@ -227,6 +233,7 @@ class ContentChunkerTest {
 
         val container = MaterializedDocument(
             id = "custom-container",
+            uri = "custom-container",
             title = "Custom Config Test",
             children = listOf(largeLeaf)
         )
@@ -277,6 +284,7 @@ class ContentChunkerTest {
 
         val container = MaterializedDocument(
             id = "metadata-container",
+            uri = "mc",
             title = "Metadata Test",
             children = listOf(leaf1, leaf2),
             metadata = mapOf("document" to "test", "version" to "1.0")
@@ -311,7 +319,8 @@ class ContentChunkerTest {
         val container = MaterializedDocument(
             id = "sentence-container",
             title = "Sentence Boundary Test",
-            children = listOf(largeLeaf)
+            children = listOf(largeLeaf),
+            uri = "sentence-container"
         )
 
         val chunks = chunker.chunk(container)
@@ -353,7 +362,8 @@ class ContentChunkerTest {
         val container = MaterializedDocument(
             id = "medium-container",
             title = "Medium Document",
-            children = listOf(leaf)
+            children = listOf(leaf),
+            uri = "medium-container",
         )
 
         val chunks = chunker.chunk(container)
@@ -404,7 +414,8 @@ class ContentChunkerTest {
         val container = MaterializedDocument(
             id = "large-container",
             title = "Large Document",
-            children = listOf(leaf)
+            children = listOf(leaf),
+            uri = "large-container",
         )
 
         val chunks = chunker.chunk(container)
@@ -454,7 +465,8 @@ class ContentChunkerTest {
         val container = MaterializedDocument(
             id = "multi-medium-container",
             title = "Multiple Medium Sections",
-            children = leaves
+            children = leaves,
+            uri = "multi-medium-container",
         )
 
         val chunks = chunker.chunk(container)
@@ -496,7 +508,8 @@ class ContentChunkerTest {
         val container = MaterializedDocument(
             id = "over-chunk-test",
             title = "Should Be One Chunk",
-            children = leaves
+            children = leaves,
+            uri = "over-chunk-test",
         )
 
         val chunks = chunker.chunk(container)

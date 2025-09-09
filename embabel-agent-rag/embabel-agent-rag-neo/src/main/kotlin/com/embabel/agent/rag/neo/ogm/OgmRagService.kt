@@ -111,7 +111,7 @@ class OgmRagService(
     }
 
     private fun cypherContentElementQuery(whereClause: String): String =
-        "MATCH (c:ContentElement) $whereClause RETURN c.id AS id, c.text AS text, c.parentId as parentId, c.metadata.source as metadata_source, labels(c) as labels"
+        "MATCH (c:ContentElement) $whereClause RETURN c.id AS id, c.uri as uri, c.text AS text, c.parentId as parentId, c.metadata.source as metadata_source, labels(c) as labels"
 
     private fun rowToContentElement(row: Map<String, Any?>): ContentElement {
         val metadata = mutableMapOf<String, Any>()
@@ -130,6 +130,7 @@ class OgmRagService(
                 title = row["id"] as String,
                 children = emptyList(),
                 metadata = metadata,
+                uri = row["uri"] as String,
             )
         if (labels.contains("LeafSection"))
             return LeafSection(
@@ -138,6 +139,7 @@ class OgmRagService(
                 text = row["text"] as String,
                 parentId = row["parentId"] as String,
                 metadata = metadata,
+                uri = row["uri"] as String?,
             )
         if (labels.contains("Section"))
             return DefaultMaterializedContainerSection(
@@ -147,6 +149,7 @@ class OgmRagService(
                 // TODO we don't care about this
                 children = emptyList(),
                 metadata = metadata,
+                uri = row["uri"] as String?,
             )
         error("Unknown ContentElement type with labels: ${labels.joinToString(",")}")
     }
