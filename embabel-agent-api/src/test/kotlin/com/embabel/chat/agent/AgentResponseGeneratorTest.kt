@@ -19,7 +19,11 @@ import com.embabel.agent.api.common.workflow.control.SimpleAgentBuilder
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.last
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentPlatform
-import com.embabel.chat.*
+import com.embabel.chat.AssistantMessage
+import com.embabel.chat.Conversation
+import com.embabel.chat.MessageSavingMessageListener
+import com.embabel.chat.UserMessage
+import com.embabel.chat.support.InMemoryConversation
 import org.junit.jupiter.api.Test
 
 class AgentResponseGeneratorTest {

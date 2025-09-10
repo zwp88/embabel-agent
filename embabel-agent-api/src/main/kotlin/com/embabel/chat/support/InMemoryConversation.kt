@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.chat
+package com.embabel.chat.support
 
+import com.embabel.chat.Conversation
+import com.embabel.chat.Message
 import com.embabel.common.core.MobyNameGenerator
 
 data class InMemoryConversation @JvmOverloads constructor(

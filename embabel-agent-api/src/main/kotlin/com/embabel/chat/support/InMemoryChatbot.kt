@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.chat
+package com.embabel.chat.support
 
 import com.embabel.agent.identity.User
+import com.embabel.chat.ChatSession
+import com.embabel.chat.Chatbot
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 /**
- * Abstract implementation of [Chatbot] that maintains sessions in memory.
+ * Abstract implementation of [com.embabel.chat.Chatbot] that maintains sessions in memory.
  * This implementation is thread-safe and supports configurable maximum number of sessions.
  * When the maximum number of sessions is reached, the oldest sessions are evicted to make room for new ones.
  *
@@ -50,7 +52,7 @@ abstract class InMemoryChatbot(
      * Subclasses must implement [doCreateSession] to provide their specific session implementation.
      *
      * @param systemMessage Optional system message to initialize the session with
-     * @return A new [ChatSession] instance
+     * @return A new [com.embabel.chat.ChatSession] instance
      */
     final override fun createSession(
         user: User?,

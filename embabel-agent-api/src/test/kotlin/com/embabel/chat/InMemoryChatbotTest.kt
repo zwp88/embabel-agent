@@ -16,6 +16,7 @@
 package com.embabel.chat
 
 import com.embabel.agent.identity.User
+import com.embabel.chat.support.InMemoryChatbot
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*

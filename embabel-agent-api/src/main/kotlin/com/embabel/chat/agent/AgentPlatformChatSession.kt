@@ -28,6 +28,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.ObjectBindingEvent
 import com.embabel.agent.identity.User
 import com.embabel.chat.*
+import com.embabel.chat.support.InMemoryConversation
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.util.loggerFor
 

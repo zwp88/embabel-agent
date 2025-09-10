@@ -15,6 +15,7 @@
  */
 package com.embabel.chat
 
+import com.embabel.chat.support.InMemoryConversation
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

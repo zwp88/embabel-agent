@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.chat
+package com.embabel.chat.support
 
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.identity.User
 import com.embabel.agent.spi.ContextRepository
+import com.embabel.chat.*
 import com.embabel.chat.agent.DefaultChatAgentBuilder
 import com.embabel.common.ai.model.LlmOptions
 

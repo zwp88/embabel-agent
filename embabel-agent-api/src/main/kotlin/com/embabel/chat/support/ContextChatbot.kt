@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.chat
+package com.embabel.chat.support
 
 import com.embabel.agent.core.Context
 import com.embabel.agent.identity.User
 import com.embabel.agent.spi.ContextRepository
-
+import com.embabel.chat.ChatSession
+import com.embabel.chat.Chatbot
+import com.embabel.chat.Conversation
 
 /*
  * A chatbot that uses Context to store messages.
