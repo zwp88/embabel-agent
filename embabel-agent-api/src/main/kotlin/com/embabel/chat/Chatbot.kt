@@ -15,7 +15,6 @@
  */
 package com.embabel.chat
 
-import com.embabel.agent.channel.DevNullOutputChannel
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.identity.User
 
@@ -35,7 +34,7 @@ interface Chatbot {
      */
     fun createSession(
         user: User?,
-        outputChannel: OutputChannel = DevNullOutputChannel,
+        outputChannel: OutputChannel,
         systemMessage: String? = null,
     ): ChatSession
 

@@ -28,7 +28,9 @@ interface OutputChannel {
     fun send(event: OutputChannelEvent)
 
     operator fun plus(other: OutputChannel): OutputChannel =
-        if (other == DevNullOutputChannel) this else MulticastOutputChannel(listOf(this, other))
+        if (this == DevNullOutputChannel) other else if (other == DevNullOutputChannel) this else MulticastOutputChannel(
+            listOf(this, other)
+        )
 }
 
 object DevNullOutputChannel : OutputChannel {
@@ -47,7 +49,7 @@ interface OutputChannelEvent : InProcess
  * Most likely an Assistant message, but could also be a User message in some cases.
  * @param processId Process that generated this message
  */
-class MessageOutputChannelEvent(
+data class MessageOutputChannelEvent(
     override val processId: String,
     val message: Message,
 ) : OutputChannelEvent

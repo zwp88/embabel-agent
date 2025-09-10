@@ -15,6 +15,7 @@
  */
 package com.embabel.chat
 
+import com.embabel.agent.channel.DevNullOutputChannel
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.identity.User
 import com.embabel.chat.support.InMemoryChatbot
@@ -97,7 +98,11 @@ class InMemoryChatbotTest {
         fun `test createSession creates and registers session`() {
             val chatbot = createTestChatbot()
 
-            val session = chatbot.createSession(user = null, systemMessage = "Test system message")
+            val session = chatbot.createSession(
+                user = null,
+                outputChannel = DevNullOutputChannel,
+                systemMessage = "Test system message"
+            )
 
             assertNotNull(session, "Session should not be null")
             assertEquals(1, chatbot.getActiveSessionCount(), "Should have one active session")
@@ -110,7 +115,7 @@ class InMemoryChatbotTest {
         fun `test createSession with null system message`() {
             val chatbot = createTestChatbot()
 
-            val session = chatbot.createSession(null)
+            val session = chatbot.createSession(null, outputChannel = DevNullOutputChannel)
 
             assertNotNull(session, "Session should not be null")
             assertEquals(1, chatbot.getActiveSessionCount(), "Should have one active session")
@@ -128,7 +133,7 @@ class InMemoryChatbotTest {
         @Test
         fun `test findSession updates last accessed time`() {
             val chatbot = createTestChatbot()
-            val session = chatbot.createSession(user = null)
+            val session = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
 
             Thread.sleep(10) // Ensure time difference
             val foundSession1 = chatbot.findSession(session.conversation.id)
@@ -142,7 +147,7 @@ class InMemoryChatbotTest {
         @Test
         fun `test removeSession removes existing session`() {
             val chatbot = createTestChatbot()
-            val session = chatbot.createSession(user = null)
+            val session = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
 
             val removed = chatbot.removeSession(session.conversation.id)
 
@@ -163,7 +168,7 @@ class InMemoryChatbotTest {
         @Test
         fun `test clearAllSessions removes all sessions`() {
             val chatbot = createTestChatbot()
-            repeat(5) { chatbot.createSession(user = null) }
+            repeat(5) { chatbot.createSession(user = null, outputChannel = DevNullOutputChannel) }
             assertEquals(5, chatbot.getActiveSessionCount(), "Should have 5 sessions")
 
             chatbot.clearAllSessions()
@@ -175,7 +180,7 @@ class InMemoryChatbotTest {
         fun `test getActiveConversationIds returns correct IDs`() {
             val chatbot = createTestChatbot()
             val sessions = mutableListOf<ChatSession>()
-            repeat(3) { sessions.add(chatbot.createSession(user = null)) }
+            repeat(3) { sessions.add(chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)) }
 
             val conversationIds = chatbot.getActiveConversationIds()
 
@@ -198,7 +203,7 @@ class InMemoryChatbotTest {
             val sessions = mutableListOf<ChatSession>()
 
             // Create sessions up to the limit
-            repeat(5) { sessions.add(chatbot.createSession(user = null)) }
+            repeat(5) { sessions.add(chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)) }
             assertEquals(5, chatbot.getActiveSessionCount(), "Should have 5 sessions at limit")
 
             // Access some sessions to update their last accessed time
@@ -209,7 +214,7 @@ class InMemoryChatbotTest {
             Thread.sleep(10)
 
             // Create a new session, which should trigger eviction
-            val newSession = chatbot.createSession(user = null)
+            val newSession = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
 
             assertEquals(4, chatbot.getActiveSessionCount(), "Should have 4 sessions after eviction")
             assertTrue(
@@ -225,7 +230,7 @@ class InMemoryChatbotTest {
 
             // Create sessions
             repeat(3) {
-                sessions.add(chatbot.createSession(user = null))
+                sessions.add(chatbot.createSession(user = null, outputChannel = DevNullOutputChannel))
                 Thread.sleep(10) // Ensure different timestamps
             }
 
@@ -235,7 +240,7 @@ class InMemoryChatbotTest {
             Thread.sleep(10)
 
             // Create a new session, which should evict the oldest (sessions[0])
-            val newSession = chatbot.createSession(user = null)
+            val newSession = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
 
             assertEquals(3, chatbot.getActiveSessionCount(), "Should still have 3 sessions")
             assertNull(
@@ -261,11 +266,11 @@ class InMemoryChatbotTest {
             val chatbot = createTestChatbot(maxSessions = 10, evictionBatchSize = 3)
 
             // Fill up to the limit
-            repeat(10) { chatbot.createSession(user = null) }
+            repeat(10) { chatbot.createSession(user = null, outputChannel = DevNullOutputChannel) }
             assertEquals(10, chatbot.getActiveSessionCount(), "Should have 10 sessions")
 
             // Create a new session, which should evict 3 sessions
-            chatbot.createSession(user = null)
+            chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
 
             assertEquals(8, chatbot.getActiveSessionCount(), "Should have 8 sessions after evicting 3")
         }
@@ -285,7 +290,7 @@ class InMemoryChatbotTest {
             repeat(50) {
                 executor.submit {
                     try {
-                        val session = chatbot.createSession(user = null)
+                        val session = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
                         synchronized(createdSessions) {
                             createdSessions.add(session.conversation.id)
                         }
@@ -310,7 +315,7 @@ class InMemoryChatbotTest {
         @Test
         fun `test concurrent findSession calls`() {
             val chatbot = createTestChatbot()
-            val session = chatbot.createSession(user = null)
+            val session = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
             val conversationId = session.conversation.id
 
             val executor = Executors.newFixedThreadPool(10)
@@ -355,7 +360,7 @@ class InMemoryChatbotTest {
                     try {
                         if (i % 3 == 0) {
                             // Create session
-                            chatbot.createSession(user = null)
+                            chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
                         } else if (i % 3 == 1) {
                             // Try to remove random session
                             val activeIds = chatbot.getActiveConversationIds()
@@ -400,12 +405,12 @@ class InMemoryChatbotTest {
             val chatbot = TestInMemoryChatbotWithDuplicateId()
 
             // First creation should succeed
-            val session1 = chatbot.createSession(user = null)
+            val session1 = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
             assertEquals(1, chatbot.getActiveSessionCount(), "Should have one session")
 
             // Second creation with same ID should fail
             assertThrows<IllegalArgumentException> {
-                chatbot.createSession(user = null)
+                chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
             }
         }
 
@@ -413,7 +418,7 @@ class InMemoryChatbotTest {
         fun `test session with very large maxSessions`() {
             val chatbot = createTestChatbot(maxSessions = Int.MAX_VALUE, evictionBatchSize = 1000)
 
-            repeat(1000) { chatbot.createSession(user = null) }
+            repeat(1000) { chatbot.createSession(user = null, outputChannel = DevNullOutputChannel) }
 
             assertEquals(1000, chatbot.getActiveSessionCount(), "Should handle large number of sessions")
         }
@@ -422,10 +427,10 @@ class InMemoryChatbotTest {
         fun `test session with minimal configuration`() {
             val chatbot = createTestChatbot(maxSessions = 1, evictionBatchSize = 1)
 
-            val session1 = chatbot.createSession(user = null)
+            val session1 = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
             assertEquals(1, chatbot.getActiveSessionCount(), "Should have one session")
 
-            val session2 = chatbot.createSession(user = null)
+            val session2 = chatbot.createSession(user = null, outputChannel = DevNullOutputChannel)
             assertEquals(1, chatbot.getActiveSessionCount(), "Should still have one session")
 
             assertNull(chatbot.findSession(session1.conversation.id), "First session should be evicted")

@@ -17,8 +17,10 @@ package com.embabel.agent.api.common
 
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.api.dsl.AgentScopeBuilder
+import com.embabel.agent.channel.MessageOutputChannelEvent
 import com.embabel.agent.core.*
 import com.embabel.agent.prompt.element.ContextualPromptElement
+import com.embabel.chat.Message
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.CurrentDate
 import com.embabel.common.ai.prompt.PromptContributor
@@ -28,6 +30,15 @@ import com.embabel.common.ai.prompt.PromptContributor
  * An ExecutingOperationContext can execute agents as sub-processes.
  */
 interface ExecutingOperationContext : OperationContext {
+
+    /**
+     * Convenience method to send a message to the output channel of the process.
+     */
+    fun sendMessage(message: Message) {
+        processContext.outputChannel.send(
+            MessageOutputChannelEvent(agentProcess.id, message)
+        )
+    }
 
     /**
      * Run the given agent as a sub-process of this operation context.
