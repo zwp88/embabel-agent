@@ -21,6 +21,7 @@ import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.StableIdentified
 import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timestamped
+import com.embabel.common.util.trim
 import java.time.Instant
 
 /**
@@ -89,7 +90,12 @@ class UserMessage @JvmOverloads constructor(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Message(role = Role.USER, content = content, name = name, timestamp = timestamp)
+) : Message(role = Role.USER, content = content, name = name, timestamp = timestamp) {
+
+    override fun toString(): String {
+        return "UserMessage(from='${sender}', content='${trim(content, 80, 10)}')"
+    }
+}
 
 /**
  * Message sent by the assistant.
@@ -100,12 +106,23 @@ open class AssistantMessage @JvmOverloads constructor(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Message(role = Role.ASSISTANT, content = content, name = name, timestamp = timestamp)
+) : Message(role = Role.ASSISTANT, content = content, name = name, timestamp = timestamp) {
+
+    override fun toString(): String {
+        return "AssistantMessage(from='${sender}', content='${trim(content, 80, 10)}')"
+    }
+}
 
 class SystemMessage @JvmOverloads constructor(
     content: String,
     override val timestamp: Instant = Instant.now(),
-) : Message(role = Role.SYSTEM, content = content, name = null, timestamp = timestamp)
+) : Message(role = Role.SYSTEM, content = content, name = null, timestamp = timestamp) {
+
+    override fun toString(): String {
+        return "SystemMessage(content='${trim(content, 80, 10)}')"
+    }
+
+}
 
 /**
  * Assistant message resulting from an agentic execution
