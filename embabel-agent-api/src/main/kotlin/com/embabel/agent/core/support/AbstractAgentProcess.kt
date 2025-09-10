@@ -75,7 +75,7 @@ abstract class AbstractAgentProcess(
         ),
         agentProcess = this,
         processOptions = processOptions,
-        outputChannel = platformServices.outputChannel,
+        outputChannel = platformServices.outputChannel + processOptions.outputChannel,
     )
 
     /**

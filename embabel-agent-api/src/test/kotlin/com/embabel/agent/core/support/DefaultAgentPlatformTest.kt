@@ -16,6 +16,7 @@
 package com.embabel.agent.core.support
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
+import com.embabel.agent.channel.DevNullOutputChannel
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.Context
 import com.embabel.agent.core.ContextId
@@ -47,7 +48,7 @@ class DefaultAgentPlatformTest {
             ragService = mockk(),
             asyncer = mockk(),
             objectMapper = mockk(),
-            outputChannel = mockk(),
+            outputChannel = DevNullOutputChannel,
             templateRenderer = mockk(),
         )
     }
