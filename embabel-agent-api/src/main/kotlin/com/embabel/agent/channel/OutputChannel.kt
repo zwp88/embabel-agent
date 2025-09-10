@@ -40,27 +40,6 @@ object DevNullOutputChannel : OutputChannel {
     }
 }
 
-object TerminalOutputChannel : OutputChannel {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
-
-    override fun send(event: OutputChannelEvent) {
-        when (event) {
-            is AssistantMessageOutputChannelEvent -> {
-                println("${event.message.name ?: "Assistant"}: ${event.message.content}")
-            }
-
-            is ContentOutputChannelEvent -> {
-                println("Content event: ${event.content}")
-            }
-
-            else -> {
-                logger.warn("Unhandled OutputChannelEvent: $event")
-            }
-        }
-    }
-}
-
 interface OutputChannelEvent : InProcess {
 
     // TODO priority
