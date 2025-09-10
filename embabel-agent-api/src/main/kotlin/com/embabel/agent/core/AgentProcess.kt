@@ -79,6 +79,14 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
      */
     val goal: com.embabel.plan.Goal?
 
+    val finished: Boolean
+        get() = status in setOf(
+            AgentProcessStatusCode.COMPLETED,
+            AgentProcessStatusCode.FAILED,
+            AgentProcessStatusCode.KILLED,
+            AgentProcessStatusCode.TERMINATED,
+        )
+
     /**
      * Return a serializable status report for this process.
      */

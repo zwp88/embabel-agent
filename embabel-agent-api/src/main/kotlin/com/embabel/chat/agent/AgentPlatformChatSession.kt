@@ -98,7 +98,7 @@ class AgentPlatformChatSession(
 
     private val blackboard: Blackboard = processOptions.blackboard ?: InMemoryBlackboard()
 
-    override fun respond(
+    override fun onUserMessage(
         userMessage: UserMessage,
     ) {
         conversation.addMessage(userMessage)

@@ -49,9 +49,14 @@ interface ChatSession {
      * but also should be added to the conversation.
      * @param userMessage message to send
      */
-    fun respond(
+    fun onUserMessage(
         userMessage: UserMessage,
     )
+
+    /**
+     * Is the conversation finished?
+     */
+    fun isFinished(): Boolean = false
 
     /**
      * Convenience method to add a message to the conversation

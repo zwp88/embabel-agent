@@ -66,7 +66,7 @@ class GoalAwareChatbot(
         override val conversation: Conversation,
     ) : ChatSession {
 
-        override fun respond(
+        override fun onUserMessage(
             userMessage: UserMessage,
         ) {
             conversation.addMessage(userMessage)

@@ -28,13 +28,21 @@ import com.embabel.chat.Conversation
 import com.embabel.chat.UserMessage
 import com.embabel.chat.support.InMemoryConversation
 
+fun interface AgentSource {
+
+    fun resolveAgent(user: User?): Agent
+}
+
 /**
  * Chatbot implementation backed by an AgentProcess
  * The AgentProcess must react to messages and respond on its output channel
+ * @param agentPlatform the agent platform to create and manage agent processes
+ * @param agentSource factory for agents. The factory is called for each new session.
+ * This allows lazy loading and more flexible usage patterns
  */
 class AgentProcessChatbot(
     private val agentPlatform: AgentPlatform,
-    private val agent: Agent,
+    private val agentSource: AgentSource,
 ) : Chatbot {
 
     override fun createSession(
@@ -43,14 +51,13 @@ class AgentProcessChatbot(
         systemMessage: String?,
     ): ChatSession {
         val agentProcess = agentPlatform.createAgentProcess(
-            agent = agent,
+            agent = agentSource.resolveAgent(user),
             processOptions = ProcessOptions(
                 outputChannel = outputChannel,
             ),
             bindings = emptyMap(),
         )
-        // Should end up waiting
-        agentPlatform.start(agentProcess)
+        // We don't yet start the process, it will be started when the first message is received
         return AgentProcessChatSession(agentProcess)
     }
 
@@ -60,16 +67,35 @@ class AgentProcessChatbot(
         }
     }
 
+    companion object {
+
+        /**
+         * Create a chatbot with the given agent. The agent is looked up by name from the agent platform.
+         * @param agentPlatform the agent platform to create and manage agent processes
+         * @param agentName the name of the agent to
+         */
+        @JvmStatic
+        fun withAgentByName(
+            agentPlatform: AgentPlatform,
+            agentName: String,
+        ): Chatbot = AgentProcessChatbot(agentPlatform, {
+            agentPlatform.agents().find { it.name == agentName }
+                ?: throw IllegalArgumentException("No agent found with name $agentName")
+        })
+    }
+
 }
 
 /**
  * Many instances for one AgentProcess
  */
-class AgentProcessChatSession(
+private class AgentProcessChatSession(
     private val agentProcess: AgentProcess,
 ) : ChatSession {
 
     override val processId: String = agentProcess.id
+
+    override fun isFinished(): Boolean = agentProcess.finished
 
     override val outputChannel: OutputChannel
         get() = agentProcess.processContext.outputChannel
@@ -93,11 +119,11 @@ class AgentProcessChatSession(
     override val user: User?
         get() = agentProcess.processContext.processOptions.identities.forUser
 
-    override fun respond(
+    override fun onUserMessage(
         userMessage: UserMessage,
     ) {
         agentProcess.addObject(userMessage)
-        TODO()
+        agentProcess.run()
     }
 
     companion object {

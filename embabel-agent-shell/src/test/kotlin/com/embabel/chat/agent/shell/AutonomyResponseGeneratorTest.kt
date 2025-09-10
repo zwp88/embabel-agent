@@ -71,7 +71,7 @@ class AutonomyResponseGeneratorTest {
             ),
         )
         val userMessage = UserMessage("Hello, world!")
-        chatSession.respond(userMessage)
+        chatSession.onUserMessage(userMessage)
 //        assertEquals(1, l.messages().size)
 //        assertTrue(l.messages()[0] is AssistantMessage, "Should have a new AssistantMessage")
 //        assertTrue(

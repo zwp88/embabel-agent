@@ -86,7 +86,7 @@ class TerminalServices(
                 break
             }
             val userMessage = UserMessage(userInput)
-            chatSession.respond(userMessage)
+            chatSession.onUserMessage(userMessage)
         }
 
         return "Conversation finished"
