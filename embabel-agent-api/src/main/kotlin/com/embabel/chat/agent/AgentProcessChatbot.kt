@@ -122,6 +122,7 @@ private class AgentProcessChatSession(
     override fun onUserMessage(
         userMessage: UserMessage,
     ) {
+        conversation.addMessage(userMessage)
         agentProcess.addObject(userMessage)
         agentProcess.run()
     }
