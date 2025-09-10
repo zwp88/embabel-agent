@@ -47,7 +47,7 @@ object TerminalOutputChannel : OutputChannel {
     override fun send(event: OutputChannelEvent) {
         when (event) {
             is AssistantMessageOutputChannelEvent -> {
-                println("${event.name ?: "Assistant"}: ${event.content}")
+                println("${event.message.name ?: "Assistant"}: ${event.message.content}")
             }
 
             is ContentOutputChannelEvent -> {
@@ -68,12 +68,12 @@ interface OutputChannelEvent : InProcess {
 
 /**
  * Message relation to this process
+ * @param processId Process that generated this message
  */
-class AssistantMessageOutputChannelEvent(
+class AssistantMessageOutputChannelEvent constructor(
     override val processId: String,
-    content: String,
-    name: String? = null,
-) : AssistantMessage(content = content, name = name), OutputChannelEvent
+    val message: AssistantMessage,
+) : OutputChannelEvent
 
 data class ContentOutputChannelEvent(
     override val processId: String,
@@ -83,7 +83,7 @@ data class ContentOutputChannelEvent(
 /**
  * Not meant to be part of a conversation
  */
-data class DiagnosticOutputChannelEvent(
+data class DiagnosticOutputChannelEvent @JvmOverloads constructor(
     override val processId: String,
     val message: String,
     val level: Level = Level.INFO,

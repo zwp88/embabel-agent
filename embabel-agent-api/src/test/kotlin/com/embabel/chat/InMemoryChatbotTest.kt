@@ -15,6 +15,7 @@
  */
 package com.embabel.chat
 
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.identity.User
 import com.embabel.chat.support.InMemoryChatbot
 import io.mockk.every
@@ -440,6 +441,7 @@ class InMemoryChatbotTest {
 
         override fun doCreateSession(
             user: User?,
+            outputChannel: OutputChannel,
             systemMessage: String?,
         ): ChatSession {
             val mockConversation = mockk<Conversation>()
@@ -458,6 +460,7 @@ class InMemoryChatbotTest {
 
         override fun doCreateSession(
             user: User?,
+            outputChannel: OutputChannel,
             systemMessage: String?,
         ): ChatSession {
             val mockConversation = mockk<Conversation>()

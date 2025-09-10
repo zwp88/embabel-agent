@@ -17,6 +17,7 @@ package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.autonomy.PlanLister
 import com.embabel.agent.api.common.autonomy.ProcessWaitingException
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.Goal
@@ -64,12 +65,11 @@ interface ResponseGenerator {
      * @param conversation Current conversation state, hopefully including new message
      * from the user
      * @param processOptions Options for the process, including blackboard
-     * @param messageListener Listener to send created messages to
      */
     fun generateResponses(
         conversation: Conversation,
         processOptions: ProcessOptions,
-        messageListener: MessageListener,
+        outputChannel: OutputChannel,
     )
 }
 
@@ -89,6 +89,7 @@ interface ProcessWaitingHandler {
  */
 class AgentPlatformChatSession(
     override val user: User?,
+    override val outputChannel: OutputChannel,
     private val planLister: PlanLister,
     val processOptions: ProcessOptions = ProcessOptions(),
     val responseGenerator: ResponseGenerator,
@@ -99,17 +100,13 @@ class AgentPlatformChatSession(
 
     override fun respond(
         userMessage: UserMessage,
-        messageListener: MessageListener,
     ) {
         conversation.addMessage(userMessage)
-        generateResponses(userMessage = userMessage, messageListener = { message, conversation ->
-            messageListener.onMessage(message, conversation)
-        })
+        generateResponses(userMessage = userMessage)
     }
 
     private fun generateResponses(
         userMessage: UserMessage,
-        messageListener: MessageListener,
     ) {
         // TODO could this be generic with subprocesses?
         val outerBindingListener = object : AgenticEventListener {
@@ -137,7 +134,8 @@ class AgentPlatformChatSession(
         }
         val handledCommand = handleAsCommand(userMessage)
         if (handledCommand != null) {
-            messageListener.onMessage(handledCommand, conversation)
+            TODO("handle diagnostic messages")
+//            outputChannel.onMessage(handledCommand, conversation)
         } else {
             responseGenerator.generateResponses(
                 conversation = conversation,
@@ -145,7 +143,7 @@ class AgentPlatformChatSession(
                     blackboard = blackboard,
                     listeners = listOf(outerBindingListener),
                 ),
-                messageListener = messageListener
+                outputChannel = outputChannel,
             )
         }
     }

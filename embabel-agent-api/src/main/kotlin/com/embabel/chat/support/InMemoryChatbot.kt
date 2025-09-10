@@ -66,7 +66,7 @@ abstract class InMemoryChatbot(
                 evictOldestSessions()
             }
 
-            val session = doCreateSession(user = user, systemMessage = systemMessage)
+            val session = doCreateSession(user = user, outputChannel = outputChannel, systemMessage = systemMessage)
             val conversationId = session.conversation.id
 
             if (sessions.containsKey(conversationId)) {
@@ -87,6 +87,7 @@ abstract class InMemoryChatbot(
      */
     protected abstract fun doCreateSession(
         user: User?,
+        outputChannel: OutputChannel,
         systemMessage: String?,
     ): ChatSession
 

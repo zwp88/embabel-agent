@@ -17,6 +17,7 @@ package com.embabel.agent.shell
 
 import com.embabel.agent.api.common.ToolsStats
 import com.embabel.agent.api.common.autonomy.*
+import com.embabel.agent.channel.TerminalOutputChannel
 import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.logging.LoggingPersonality
@@ -133,6 +134,7 @@ class ShellCommands(
             user = null,
             planLister = planLister,
             processOptions = processOptions,
+            outputChannel = TerminalOutputChannel,
             responseGenerator = if (shellProperties.chat.bindConversation) AgentResponseGenerator(
                 agentPlatform = agentPlatform,
                 agent = DefaultChatAgentBuilder(

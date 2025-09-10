@@ -22,7 +22,10 @@ import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.identity.User
-import com.embabel.chat.*
+import com.embabel.chat.ChatSession
+import com.embabel.chat.Chatbot
+import com.embabel.chat.Conversation
+import com.embabel.chat.UserMessage
 import com.embabel.chat.support.InMemoryConversation
 
 /**
@@ -66,6 +69,11 @@ class AgentProcessChatSession(
     private val agentProcess: AgentProcess,
 ) : ChatSession {
 
+    override val processId: String = agentProcess.id
+
+    override val outputChannel: OutputChannel
+        get() = agentProcess.processContext.outputChannel
+
     override val conversation = run {
         agentProcess[KEY] as? Conversation
             ?: run {
@@ -87,9 +95,9 @@ class AgentProcessChatSession(
 
     override fun respond(
         userMessage: UserMessage,
-        messageListener: MessageListener,
     ) {
         agentProcess.addObject(userMessage)
+        TODO()
     }
 
     companion object {

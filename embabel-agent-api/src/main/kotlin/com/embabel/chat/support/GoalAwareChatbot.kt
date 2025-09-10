@@ -47,7 +47,7 @@ class GoalAwareChatbot(
         val conversation = InMemoryConversation(id = context.id)
         context.addObject(conversation)
         contextRepository.save(context)
-        val session = SimpleChatSession(user = user, conversation = conversation)
+        val session = SimpleChatSession(user = user, outputChannel = outputChannel, conversation = conversation)
         return session
     }
 
@@ -56,18 +56,18 @@ class GoalAwareChatbot(
             val conversation = context.last(Conversation::class.java)
                 ?: error("Conversation not found in context ${context.id}")
             val user = context.last(User::class.java)
-            SimpleChatSession(user = user, conversation = conversation)
+            SimpleChatSession(user = user, outputChannel = TODO(), conversation = conversation)
         }
     }
 
     internal inner class SimpleChatSession(
+        override val outputChannel: OutputChannel,
         override val user: User?,
         override val conversation: Conversation,
     ) : ChatSession {
 
         override fun respond(
             userMessage: UserMessage,
-            messageListener: MessageListener,
         ) {
             conversation.addMessage(userMessage)
             val agentProcess = autonomy.agentPlatform.runAgentFrom(
@@ -78,7 +78,9 @@ class GoalAwareChatbot(
             val assistantMessage = agentProcess.lastResult() as? AssistantMessage
                 ?: AssistantMessage("Internal error: Agent did not return an AssistantMessage")
             conversation.addMessage(assistantMessage)
-            messageListener.onMessage(assistantMessage, conversation)
+//            messageListener.onMessage(assistantMessage, conversation)
+            TODO()
         }
+
     }
 }

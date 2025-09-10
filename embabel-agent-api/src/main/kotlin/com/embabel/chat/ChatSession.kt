@@ -15,6 +15,8 @@
  */
 package com.embabel.chat
 
+import com.embabel.agent.channel.AssistantMessageOutputChannelEvent
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.identity.User
 
 /**
@@ -22,6 +24,8 @@ import com.embabel.agent.identity.User
  * Responsible for keeping its conversation up to date
  */
 interface ChatSession {
+
+    val outputChannel: OutputChannel
 
     /**
      * The Embabel User if known, null if not.
@@ -34,15 +38,34 @@ interface ChatSession {
     val conversation: Conversation
 
     /**
+     * Subclasses should override this to provide a process ID if available.
+     */
+    val processId: String? get() = null
+
+    /**
      * Update the conversation with a new message
      * and respond to it.
      * Any response messages will be sent to the messageListener,
      * but also should be added to the conversation.
      * @param userMessage message to send
-     * @param messageListener listener to send messages to
      */
     fun respond(
         userMessage: UserMessage,
-        messageListener: MessageListener,
     )
+
+    /**
+     * Convenience method to add a message to the conversation
+     */
+    fun saveAndSend(message: AssistantMessage) {
+        conversation.addMessage(message)
+        outputChannel.send(
+            AssistantMessageOutputChannelEvent(
+                processId = processId ?: "anonymous",
+                AssistantMessage(
+                    content = message.content,
+                    name = null,
+                ),
+            )
+        )
+    }
 }

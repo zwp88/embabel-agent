@@ -16,12 +16,13 @@
 package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.autonomy.AgentInvocation
+import com.embabel.agent.channel.AssistantMessageOutputChannelEvent
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.chat.AssistantMessage
 import com.embabel.chat.Conversation
-import com.embabel.chat.MessageListener
 
 /**
  * Respond to user messages using an agent.
@@ -39,14 +40,19 @@ class AgentResponseGenerator(
     override fun generateResponses(
         conversation: Conversation,
         processOptions: ProcessOptions,
-        messageListener: MessageListener,
+        outputChannel: OutputChannel,
     ) {
         val invocation = AgentInvocation
             .builder(agentPlatform)
             .options(processOptions)
             .build(AssistantMessage::class.java)
         val message = invocation.invoke(conversation)
-        messageListener.onMessage(message, conversation)
+        outputChannel.send(
+            AssistantMessageOutputChannelEvent(
+                "TODO right process id",
+                message,
+            )
+        )
     }
 
 }
