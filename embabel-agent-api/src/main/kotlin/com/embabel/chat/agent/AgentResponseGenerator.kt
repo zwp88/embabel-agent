@@ -16,7 +16,7 @@
 package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.autonomy.AgentInvocation
-import com.embabel.agent.channel.AssistantMessageOutputChannelEvent
+import com.embabel.agent.channel.MessageOutputChannelEvent
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
@@ -48,7 +48,7 @@ class AgentResponseGenerator(
             .build(AssistantMessage::class.java)
         val message = invocation.invoke(conversation)
         outputChannel.send(
-            AssistantMessageOutputChannelEvent(
+            MessageOutputChannelEvent(
                 "TODO right process id",
                 message,
             )

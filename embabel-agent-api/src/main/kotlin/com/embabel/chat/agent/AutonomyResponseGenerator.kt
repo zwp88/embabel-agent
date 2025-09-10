@@ -16,7 +16,7 @@
 package com.embabel.chat.agent
 
 import com.embabel.agent.api.common.autonomy.*
-import com.embabel.agent.channel.AssistantMessageOutputChannelEvent
+import com.embabel.agent.channel.MessageOutputChannelEvent
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.UserInput
@@ -43,7 +43,7 @@ class AutonomyResponseGenerator(
         val userMessage = conversation.lastMessageMustBeFromUser()
         if (userMessage == null) {
             outputChannel.send(
-                AssistantMessageOutputChannelEvent(
+                MessageOutputChannelEvent(
                     "TODO right process id",
                     AssistantMessage(
                         content = "I'm not sure what to respond to",
@@ -73,7 +73,7 @@ class AutonomyResponseGenerator(
             // Bind the result to the blackboard.
             dynamicExecutionResult.agentProcess += result
             outputChannel.send(
-                AssistantMessageOutputChannelEvent(
+                MessageOutputChannelEvent(
                     dynamicExecutionResult.agentProcess.id,
                     AgenticResultAssistantMessage(
                         agentProcessExecution = dynamicExecutionResult,
@@ -84,14 +84,14 @@ class AutonomyResponseGenerator(
         } catch (pwe: ProcessWaitingException) {
             val assistantMessage = processWaitingHandler.handleProcessWaitingException(pwe, userMessage.content)
             outputChannel.send(
-                AssistantMessageOutputChannelEvent(
+                MessageOutputChannelEvent(
                     pwe.agentProcess.id,
                     assistantMessage,
                 )
             )
         } catch (_: NoGoalFound) {
             outputChannel.send(
-                AssistantMessageOutputChannelEvent(
+                MessageOutputChannelEvent(
                     "no process",
                     AssistantMessage(
                         content = """|
@@ -105,7 +105,7 @@ class AutonomyResponseGenerator(
             )
         } catch (_: GoalNotApproved) {
             outputChannel.send(
-                AssistantMessageOutputChannelEvent(
+                MessageOutputChannelEvent(
                     "no process",
                     AssistantMessage(
                         content = "I obey. That action will not be executed.",

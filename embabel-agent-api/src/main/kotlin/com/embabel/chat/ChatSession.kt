@@ -15,7 +15,7 @@
  */
 package com.embabel.chat
 
-import com.embabel.agent.channel.AssistantMessageOutputChannelEvent
+import com.embabel.agent.channel.MessageOutputChannelEvent
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.identity.User
 
@@ -64,7 +64,7 @@ interface ChatSession {
     fun saveAndSend(message: AssistantMessage) {
         conversation.addMessage(message)
         outputChannel.send(
-            AssistantMessageOutputChannelEvent(
+            MessageOutputChannelEvent(
                 processId = processId ?: "anonymous",
                 AssistantMessage(
                     content = message.content,

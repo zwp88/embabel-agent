@@ -16,8 +16,8 @@
 package com.embabel.agent.shell
 
 import com.embabel.agent.api.common.autonomy.*
-import com.embabel.agent.channel.AssistantMessageOutputChannelEvent
 import com.embabel.agent.channel.ContentOutputChannelEvent
+import com.embabel.agent.channel.MessageOutputChannelEvent
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.channel.OutputChannelEvent
 import com.embabel.agent.core.hitl.*
@@ -232,7 +232,7 @@ class TerminalServices(
 
         override fun send(event: OutputChannelEvent) {
             when (event) {
-                is AssistantMessageOutputChannelEvent -> {
+                is MessageOutputChannelEvent -> {
                     val formattedResponse = WordUtils.wrap(
                         "${event.message.sender}: ${event.message.content.color(colorPalette.color2)}",
                         shellProperties.lineLength,

@@ -17,7 +17,7 @@ package com.embabel.agent.channel
 
 import com.embabel.agent.core.InProcess
 import com.embabel.agent.domain.library.HasContent
-import com.embabel.chat.AssistantMessage
+import com.embabel.chat.Message
 import org.slf4j.LoggerFactory
 
 /**
@@ -40,18 +40,16 @@ object DevNullOutputChannel : OutputChannel {
     }
 }
 
-interface OutputChannelEvent : InProcess {
-
-    // TODO priority
-}
+interface OutputChannelEvent : InProcess
 
 /**
- * Message relation to this process
+ * Chat message event relating to this process.
+ * Most likely an Assistant message, but could also be a User message in some cases.
  * @param processId Process that generated this message
  */
-class AssistantMessageOutputChannelEvent constructor(
+class MessageOutputChannelEvent(
     override val processId: String,
-    val message: AssistantMessage,
+    val message: Message,
 ) : OutputChannelEvent
 
 data class ContentOutputChannelEvent(
