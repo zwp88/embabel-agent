@@ -15,6 +15,8 @@
  */
 package com.embabel.chat
 
+import com.embabel.agent.channel.DevNullOutputChannel
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.identity.User
 
 /**
@@ -27,9 +29,13 @@ interface Chatbot {
      * Create a new chat session.
      * If user is provided, the session will be associated with that user.
      * Optionally, a system message can be provided to set the context for the session.
+     * @param user the user to associate the session with, or null for anonymous
+     * @param outputChannel the output channel to send messages to
+     * @param systemMessage optional system message to set the context for the session
      */
     fun createSession(
         user: User?,
+        outputChannel: OutputChannel = DevNullOutputChannel,
         systemMessage: String? = null,
     ): ChatSession
 

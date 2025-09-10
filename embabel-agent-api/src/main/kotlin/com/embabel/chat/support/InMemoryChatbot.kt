@@ -15,6 +15,7 @@
  */
 package com.embabel.chat.support
 
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.identity.User
 import com.embabel.chat.ChatSession
 import com.embabel.chat.Chatbot
@@ -56,6 +57,7 @@ abstract class InMemoryChatbot(
      */
     final override fun createSession(
         user: User?,
+        outputChannel: OutputChannel,
         systemMessage: String?,
     ): ChatSession {
         return lock.write {

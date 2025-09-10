@@ -65,6 +65,7 @@ interface PlatformServices {
     val objectMapper: ObjectMapper
 
     val outputChannel: OutputChannel
+
     val templateRenderer: TemplateRenderer
 
     fun autonomy(): Autonomy

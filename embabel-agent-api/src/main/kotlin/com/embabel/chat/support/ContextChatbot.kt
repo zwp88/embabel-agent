@@ -15,6 +15,7 @@
  */
 package com.embabel.chat.support
 
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.Context
 import com.embabel.agent.identity.User
 import com.embabel.agent.spi.ContextRepository
@@ -44,6 +45,7 @@ class ContextChatbot(
 
     override fun createSession(
         user: User?,
+        outputChannel: OutputChannel,
         systemMessage: String?,
     ): ChatSession {
         val context = contextRepository.create()

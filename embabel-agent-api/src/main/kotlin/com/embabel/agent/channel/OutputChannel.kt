@@ -17,16 +17,18 @@ package com.embabel.agent.channel
 
 import com.embabel.agent.core.InProcess
 import com.embabel.agent.domain.library.HasContent
-import com.embabel.chat.AgenticResultAssistantMessage
 import com.embabel.chat.AssistantMessage
 import org.slf4j.LoggerFactory
 
 /**
- * Allows agents to interact with the outside world
+ * Allows agents to interact with the outside world through multiple channels
  */
 interface OutputChannel {
 
     fun send(event: OutputChannelEvent)
+
+    operator fun plus(other: OutputChannel): OutputChannel =
+        if (other == DevNullOutputChannel) this else MulticastOutputChannel(listOf(this, other))
 }
 
 object DevNullOutputChannel : OutputChannel {
@@ -71,19 +73,27 @@ class AssistantMessageOutputChannelEvent(
     override val processId: String,
     content: String,
     name: String? = null,
-) : AssistantMessage(content = content, name = name), OutputChannelEvent {
-
-    constructor(aram: AgenticResultAssistantMessage) : this(
-        processId = aram.agentProcessExecution.agentProcess.id,
-        content = aram.content,
-        name = aram.name,
-    )
-}
+) : AssistantMessage(content = content, name = name), OutputChannelEvent
 
 data class ContentOutputChannelEvent(
     override val processId: String,
     val content: HasContent,
 ) : OutputChannelEvent
+
+/**
+ * Not meant to be part of a conversation
+ */
+data class DiagnosticOutputChannelEvent(
+    override val processId: String,
+    val message: String,
+    val level: Level = Level.INFO,
+    val throwable: Throwable? = null,
+) : OutputChannelEvent {
+
+    enum class Level {
+        TRACE, DEBUG, INFO, WARN, ERROR
+    }
+}
 
 /**
  * Send to all channels

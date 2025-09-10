@@ -18,6 +18,7 @@ package com.embabel.agent.support
 import com.embabel.agent.api.annotation.support.PersonWithReverseTool
 import com.embabel.agent.api.common.Aggregation
 import com.embabel.agent.api.dsl.agent
+import com.embabel.agent.channel.DevNullOutputChannel
 import com.embabel.agent.core.AgentProcess
 import com.embabel.agent.core.Blackboard
 import com.embabel.agent.core.ProcessContext
@@ -79,7 +80,7 @@ class BlackboardWorldStateDeterminerTest {
     init {
         every { mockPlatformServices.eventListener } returns eventListener
         every { mockPlatformServices.llmOperations } returns mockk()
-        every { mockPlatformServices.outputChannel } returns mockk()
+        every { mockPlatformServices.outputChannel } returns DevNullOutputChannel
     }
 
     private fun createBlackboardWorldStateDeterminer(blackboard: Blackboard): BlackboardWorldStateDeterminer {

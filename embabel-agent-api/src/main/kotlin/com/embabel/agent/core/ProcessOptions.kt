@@ -15,6 +15,8 @@
  */
 package com.embabel.agent.core
 
+import com.embabel.agent.channel.DevNullOutputChannel
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.identity.User
 import java.util.function.Consumer
@@ -155,7 +157,7 @@ data class ProcessControl(
          * @param delay the new delay
          * @return this [Builder]
          */
-        fun toolDelay(delay: Delay) : Builder {
+        fun toolDelay(delay: Delay): Builder {
             this.processControl = processControl.copy(toolDelay = delay)
             return this
         }
@@ -165,7 +167,7 @@ data class ProcessControl(
          * @param delay the new delay
          * @return this [Builder]
          */
-        fun operationDelay(delay: Delay) : Builder {
+        fun operationDelay(delay: Delay): Builder {
             this.processControl = processControl.copy(operationDelay = delay)
             return this
         }
@@ -328,6 +330,7 @@ data class ProcessOptions(
     ),
     val prune: Boolean = false,
     val listeners: List<AgenticEventListener> = emptyList(),
+    val outputChannel: OutputChannel = DevNullOutputChannel,
 ) {
 
     companion object {
@@ -471,7 +474,8 @@ data class ProcessOptions(
          */
         fun control(consumer: Consumer<ProcessControl.Builder>): Builder {
             val controlBuilder = ProcessControl.builder(
-                this.processOptions.budget.earlyTerminationPolicy())
+                this.processOptions.budget.earlyTerminationPolicy()
+            )
             consumer.accept(controlBuilder)
             this.processOptions = processOptions.copy(control = controlBuilder.build())
             return this

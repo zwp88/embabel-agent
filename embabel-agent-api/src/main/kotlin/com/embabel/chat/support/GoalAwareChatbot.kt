@@ -16,6 +16,7 @@
 package com.embabel.chat.support
 
 import com.embabel.agent.api.common.autonomy.Autonomy
+import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.identity.User
@@ -39,6 +40,7 @@ class GoalAwareChatbot(
 
     override fun createSession(
         user: User?,
+        outputChannel: OutputChannel,
         systemMessage: String?,
     ): ChatSession {
         val context = contextRepository.create()
