@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.DatabindException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import jakarta.annotation.PostConstruct
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.client.ResponseEntity
 import org.springframework.ai.chat.messages.SystemMessage
@@ -43,7 +44,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.retry.support.RetrySynchronizationManager
 import org.springframework.stereotype.Service
-import jakarta.annotation.PostConstruct
 import java.lang.reflect.ParameterizedType
 import java.time.Duration
 import java.time.Instant
@@ -185,9 +185,10 @@ internal class ChatClientLlmOperations(
             if (outputClass == String::class.java) {
                 val chatResponse = callResponse.chatResponse()
                 chatResponse?.let { recordUsage(llm, it, llmRequestEvent) }
-                chatResponse!!.result.output.text as O
+                val rawText = chatResponse!!.result.output.text as String
+                stringWithoutThinkBlocks(rawText) as O
             } else {
-                val re = callResponse.responseEntity<O>(
+                val re = callResponse.responseEntity(
                     ExceptionWrappingConverter(
                         expectedType = outputClass,
                         delegate = WithExampleConverter(
@@ -325,7 +326,7 @@ internal class ChatClientLlmOperations(
             }
 
             val responseEntity: ResponseEntity<ChatResponse, MaybeReturn<*>> = callResponse
-                .responseEntity<MaybeReturn<*>>(
+                .responseEntity(
                     ExceptionWrappingConverter(
                         expectedType = MaybeReturn::class.java,
                         delegate = WithExampleConverter(

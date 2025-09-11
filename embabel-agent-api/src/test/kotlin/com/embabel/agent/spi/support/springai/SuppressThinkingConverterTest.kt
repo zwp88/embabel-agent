@@ -25,7 +25,7 @@ import org.springframework.ai.converter.BeanOutputConverter
 class SuppressThinkingConverterTest {
 
     @Nested
-    inner class WithoutTinkingBlock {
+    inner class WithoutThinkingBlock {
 
         @Test
         fun `works with no thinking`() {
@@ -57,6 +57,31 @@ class SuppressThinkingConverterTest {
         @Test
         fun `with preface think blog`() {
             checkThinkContent("I am thinking")
+        }
+    }
+
+    @Nested
+    inner class StringWithoutThinkBlocks {
+
+        fun checkStringThinkContent(thinkContent: String) {
+            val input = """$thinkContent
+                You are a dog""".trimMargin()
+            val result = stringWithoutThinkBlocks(input)
+            assertNotNull(result)
+            assertEquals("You are a dog", result.trim())
+        }
+
+        @Test
+        fun `with think markup block`() {
+            checkStringThinkContent("<think>I am thinking</think>")
+        }
+
+        @Test
+        fun `simple string without think block`() {
+            val input = "fake response"
+            val result = stringWithoutThinkBlocks(input)
+            assertNotNull(result)
+            assertEquals("fake response", result.trim())
         }
     }
 
