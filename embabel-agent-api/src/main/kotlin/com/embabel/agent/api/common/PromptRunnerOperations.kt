@@ -30,9 +30,19 @@ interface PromptRunnerOperations {
      * Generate text
      */
     infix fun generateText(prompt: String): String =
+        generateText(
+            prompt = prompt,
+            interactionId = null,
+        )
+
+    fun generateText(
+        prompt: String,
+        interactionId: String?,
+    ): String =
         createObject(
             prompt = prompt,
             outputClass = String::class.java,
+            interactionId = interactionId,
         )
 
     /**
@@ -46,8 +56,23 @@ interface PromptRunnerOperations {
         prompt: String,
         outputClass: Class<T>,
     ): T = createObject(
+        prompt = prompt,
+        outputClass = outputClass,
+        interactionId = null,
+    )
+
+    /**
+     * Create an object, specifying a custom interaction id
+     * for clearer logging
+     */
+    fun <T> createObject(
+        prompt: String,
+        outputClass: Class<T>,
+        interactionId: String?,
+    ): T = createObject(
         messages = listOf(UserMessage(prompt)),
         outputClass = outputClass,
+        interactionId = interactionId,
     )
 
     /**
@@ -68,6 +93,12 @@ interface PromptRunnerOperations {
     fun <T> createObject(
         messages: List<Message>,
         outputClass: Class<T>,
+    ): T = createObject(messages, outputClass, null)
+
+    fun <T> createObject(
+        messages: List<Message>,
+        outputClass: Class<T>,
+        interactionId: String?,
     ): T
 
     /**
@@ -76,10 +107,17 @@ interface PromptRunnerOperations {
     fun respond(
         messages: List<Message>,
     ): AssistantMessage =
+        respond(messages = messages, interactionId = null)
+
+    fun respond(
+        messages: List<Message>,
+        interactionId: String?,
+    ): AssistantMessage =
         AssistantMessage(
             createObject(
                 messages = messages,
                 outputClass = String::class.java,
+                interactionId = interactionId,
             )
         )
 

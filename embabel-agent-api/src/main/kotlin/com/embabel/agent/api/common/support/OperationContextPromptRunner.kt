@@ -66,6 +66,7 @@ internal data class OperationContextPromptRunner(
     override fun <T> createObject(
         messages: List<Message>,
         outputClass: Class<T>,
+        interactionId: String?,
     ): T {
         return context.processContext.createObject(
             messages = messages,
@@ -78,7 +79,7 @@ internal data class OperationContextPromptRunner(
                         context
                     )
                 },
-                id = idForPrompt(messages, outputClass),
+                id = interactionId?.let { InteractionId(it) } ?: idForPrompt(messages, outputClass),
                 generateExamples = generateExamples,
             ),
             outputClass = outputClass,

@@ -217,7 +217,7 @@ open class LoggingAgenticEventListener(
         "[${e.processId}] object bound ${e.name}:${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName}"
 
     protected open fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
-        "[${e.processId}] requesting LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+        "[${e.processId}] (${e.interaction.id.value}) using LLM ${e.llm.name}, creating ${e.outputClass.simpleName}: ${e.interaction.llm}"
 
     protected open fun getChatModelCallEventMessage(e: ChatModelCallEvent<*>): String {
         val promptInfo = "using ${e.llm.name.color(colorPalette.highlight)}\n${

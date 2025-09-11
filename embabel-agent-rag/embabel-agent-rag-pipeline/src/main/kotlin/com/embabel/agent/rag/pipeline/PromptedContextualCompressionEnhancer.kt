@@ -38,6 +38,7 @@ class PromptedContextualCompressionEnhancer(
     val maxConcurrency: Int = 15,
     override val name: String = "contextual_compression",
     private val targetRatio: Double = 0.3,
+    private val minLengthToCompress: Int = 1500,
     private val preserveEntities: Boolean = true,
 ) : RagResponseEnhancer {
 
@@ -51,7 +52,7 @@ class PromptedContextualCompressionEnhancer(
             maxConcurrency = maxConcurrency,
         ) { result ->
             val chunk = result.match as? Chunk
-            if (chunk != null && chunk.text.length > 1500) {
+            if (chunk != null && chunk.text.length > minLengthToCompress) {
                 val compressed = compressWithQuestionAwareness(
                     content = chunk.text,
                     query = query,
@@ -59,12 +60,12 @@ class PromptedContextualCompressionEnhancer(
                     preserveEntities = preserveEntities
                 )
 
-                val c2 = chunk.transform(
+                val compressedChunk = chunk.transform(
                     compressed
                     // Add compression metadata
 //                    contextualRelevance = ZeroToOne(assessCompressionQuality(compressed, query))
                 )
-                SimpleSimilaritySearchResult(c2, result.score)
+                SimpleSimilaritySearchResult(compressedChunk, result.score)
             } else {
                 result
             }
@@ -95,10 +96,11 @@ class PromptedContextualCompressionEnhancer(
         preserveEntities: Boolean = true,
         dynamicRatio: Boolean = true,
     ): String {
-        return operationContext.ai()
+        return operationContext
+            .ai()
             .withLlm(llm)
             .generateText(
-                """
+                prompt = """
                 Given the query, compress the content to include only what
                 is relevant.
 
@@ -107,7 +109,8 @@ class PromptedContextualCompressionEnhancer(
 
                 # CONTENT
                 $content
-            """.trimIndent()
+            """.trimIndent(),
+                interactionId = name,
             )
     }
 }

@@ -23,68 +23,14 @@ import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.agent.rag.tools.RagOptions
 import com.embabel.agent.spi.LlmUse
-import com.embabel.chat.*
+import com.embabel.chat.Message
+import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.ai.prompt.PromptElement
-import com.embabel.common.textio.template.TemplateRenderer
 import com.embabel.common.util.loggerFor
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.jetbrains.annotations.ApiStatus
-
-/**
- * Llm operations based on a compiled template.
- * Similar to [PromptRunnerOperations], but taking a model instead of a template string.
- * Template names will be resolved by the [TemplateRenderer] provided.
- */
-class TemplateOperations(
-    templateName: String,
-    templateRenderer: TemplateRenderer,
-    private val promptRunnerOperations: PromptRunnerOperations,
-) {
-
-    private val compiledTemplate = templateRenderer.compileLoadedTemplate(templateName)
-
-    /**
-     * Create an object of the given type using the given model to render the template
-     * and LLM options from context
-     */
-    fun <T> createObject(
-        outputClass: Class<T>,
-        model: Map<String, Any>,
-    ): T = promptRunnerOperations.createObject(
-        prompt = compiledTemplate.render(model = model),
-        outputClass = outputClass,
-    )
-
-    /**
-     * Generate text using the given model to render the template
-     * and LLM options from context
-     */
-    fun generateText(
-        model: Map<String, Any>,
-    ): String = promptRunnerOperations.generateText(
-        prompt = compiledTemplate.render(model = model),
-    )
-
-    /**
-     * Respond in the conversation using the rendered template as system prompt.
-     * @param conversation the conversation so far
-     * @param model the model to render the system prompt template with.
-     * Defaults to the empty map (which is appropriate for static templates)
-     */
-    @JvmOverloads
-    fun respondWithSystemPrompt(
-        conversation: Conversation,
-        model: Map<String, Any> = emptyMap(),
-    ): AssistantMessage = promptRunnerOperations.respond(
-        listOf(
-            SystemMessage(
-                content = compiledTemplate.render(model = model)
-            )
-        ) + conversation.messages
-    )
-}
 
 /**
  * Define a handoff to a subagent.

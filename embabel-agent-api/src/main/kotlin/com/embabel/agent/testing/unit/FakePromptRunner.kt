@@ -105,6 +105,7 @@ data class FakePromptRunner(
     override fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,
+        interactionId: String?,
     ): T {
         _llmInvocations += LlmInvocation(
             interaction = createLlmInteraction(),
@@ -129,6 +130,7 @@ data class FakePromptRunner(
     override fun <T> createObject(
         messages: List<Message>,
         outputClass: Class<T>,
+        interactionId: String?,
     ): T {
         return createObject(prompt = messages.joinToString(), outputClass = outputClass)
     }
