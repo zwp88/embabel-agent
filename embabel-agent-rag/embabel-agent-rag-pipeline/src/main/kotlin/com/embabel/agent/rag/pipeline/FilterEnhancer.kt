@@ -17,6 +17,10 @@ package com.embabel.agent.rag.pipeline
 
 import com.embabel.agent.rag.*
 
+/**
+ * Filter out sub-par results. Runs at the end
+ * after reranking.
+ */
 object FilterEnhancer : RagResponseEnhancer {
 
     override val name: String = "dedupe"

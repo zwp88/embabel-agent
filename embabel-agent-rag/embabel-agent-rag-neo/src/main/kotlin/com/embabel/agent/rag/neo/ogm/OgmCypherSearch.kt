@@ -38,8 +38,6 @@ class OgmCypherSearch(
     private val queryResolver: LogicalQueryResolver,
 ) : CypherSearch {
 
-    // TODO add doInSession if necessary
-
     private val ogmCypherSearchLogger = LoggerFactory.getLogger(OgmCypherSearch::class.java)
 
     override fun queryForEntities(

@@ -261,6 +261,7 @@ class OgmRagService(
                 params = mapOf(
                     "fulltextIndex" to properties.contentElementFullTextIndex,
                     "searchText" to ragRequest.query,
+                    "topK" to ragRequest.topK,
                     "similarityThreshold" to ragRequest.similarityThreshold,
                 ),
                 logger = logger,

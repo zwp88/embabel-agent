@@ -18,29 +18,22 @@ package com.embabel.agent.rag.neo.ogm
 import com.embabel.agent.rag.EntitySearch
 import com.embabel.agent.rag.NamedEntityData
 import com.embabel.agent.rag.Retrievable
-import com.embabel.agent.rag.RetrievableEntity
 import com.embabel.agent.rag.schema.*
-import com.embabel.common.ai.model.DefaultModelSelectionCriteria
-import com.embabel.common.ai.model.ModelProvider
-import org.neo4j.ogm.session.Session
 import org.neo4j.ogm.session.SessionFactory
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 /**
- * Implements several interfaces to read and write knowledge graph data to Neo4j using Neo4j OGM.
+ * Infers schema from OGM metadata
  */
 @Service
-class NeoOgmKnowledgeGraphService(
+class OgmMetadataSchemaResolver(
     private val sessionFactory: SessionFactory,
     private val ogmCypherSearch: OgmCypherSearch,
-    modelProvider: ModelProvider,
     private val properties: NeoRagServiceProperties,
 ) : SchemaResolver {
 
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    private val embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria)
 
     // TODO is not using name
     // TODO not filtering entities
@@ -112,42 +105,4 @@ class NeoOgmKnowledgeGraphService(
         }
     }
 
-    fun embedEntities(
-        entities: List<RetrievableEntity>,
-    ) {
-        val session = ogmCypherSearch.currentSession()
-        entities.forEach { entity ->
-            embedEntity(session, entity)
-        }
-    }
-
-    private fun embedEntity(
-        session: Session,
-        entity: RetrievableEntity,
-    ) {
-        val embedding = embeddingService.model.embed(entity.embeddableValue())
-        val cypher = """
-                MERGE (n:${entity.labels().joinToString(":")} {id: ${'$'}entityId})
-                SET n.embedding = ${'$'}embedding
-                RETURN COUNT(n) as nodesUpdated
-               """.trimIndent()
-        val params = mapOf(
-            "entityId" to entity.id,
-            "embedding" to embedding,
-        )
-        logger.info("Executing embed entity cypher: {},\nparams={}", cypher, params)
-        val result = session.query(
-            cypher,
-            params,
-        )
-        val propertiesSet = result.queryStatistics().propertiesSet
-        if (propertiesSet < 1) {
-            logger.warn(
-                "Expected to set at least 1 embedding property, but set: {}. entityId={}, cypher={}",
-                propertiesSet,
-                entity,
-                cypher,
-            )
-        }
-    }
 }

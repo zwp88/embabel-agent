@@ -4,3 +4,4 @@ YIELD node AS chunk, score
 RETURN chunk.text AS text, chunk.id AS id,
        score
   ORDER BY score DESC
+LIMIT $topK
