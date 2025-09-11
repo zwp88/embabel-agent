@@ -42,7 +42,7 @@ class RagServiceSearchTools(
     ): String {
         val ragResponse = ragService.search(options.toRequest(query))
         val asString = options.ragResponseFormatter.format(ragResponse)
-        loggerFor<RagServiceSearchTools>().debug("RagResponse for query {}:\n{}", query, asString)
+        loggerFor<RagServiceSearchTools>().debug("RagResponse for query [{}]:\n{}", query, asString)
         return asString
     }
 

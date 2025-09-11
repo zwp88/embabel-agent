@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.rag.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
+import org.slf4j.LoggerFactory
 
 // TODO could we not compress all chunks together?
 
@@ -42,6 +43,8 @@ class PromptedContextualCompressionEnhancer(
     private val preserveEntities: Boolean = true,
 ) : RagResponseEnhancer {
 
+    private val logger = LoggerFactory.getLogger(PromptedContextualCompressionEnhancer::class.java)
+
     override val enhancementType = EnhancementType.COMPRESSION
 
     override fun enhance(response: RagResponse): RagResponse {
@@ -53,24 +56,37 @@ class PromptedContextualCompressionEnhancer(
         ) { result ->
             val chunk = result.match as? Chunk
             if (chunk != null && chunk.text.length > minLengthToCompress) {
-                val compressed = compressWithQuestionAwareness(
+                val compressionResult = compressWithQuestionAwareness(
                     content = chunk.text,
                     query = query,
                     targetRatio = targetRatio,
                     preserveEntities = preserveEntities
                 )
+                when (compressionResult) {
+                    is Irrelevant -> {
+                        logger.debug("Discarding irrelevant content")
+                        null
+                    }
 
-                val compressedChunk = chunk.transform(
-                    compressed
-                    // Add compression metadata
+                    is Compressed -> {
+                        val compressedChunk = chunk.transform(
+                            compressionResult.compressed
+                            // Add compression metadata
 //                    contextualRelevance = ZeroToOne(assessCompressionQuality(compressed, query))
-                )
-                SimpleSimilaritySearchResult(compressedChunk, result.score)
+                        )
+                        logger.debug("Compressed chunk:\n{}\n----->\n{}", chunk.text, compressedChunk.text)
+                        SimpleSimilaritySearchResult(compressedChunk, result.score)
+                    }
+                }
             } else {
                 result
             }
-        }
-
+        }.filterNotNull()
+        logger.info(
+            "Eliminated {} irrelevant results from {}",
+            response.results.size - compressedResults.size,
+            response.results.size,
+        )
         return response.copy(results = compressedResults)
     }
 
@@ -95,22 +111,40 @@ class PromptedContextualCompressionEnhancer(
         targetRatio: Double = 0.3,
         preserveEntities: Boolean = true,
         dynamicRatio: Boolean = true,
-    ): String {
-        return operationContext
+    ): CompressionResult {
+        val result = operationContext
             .ai()
             .withLlm(llm)
             .generateText(
                 prompt = """
                 Given the query, compress the content to include only what
-                is relevant.
+                is relevant. If there is nothing relevant, return only
+                '$IRRELEVANT'
 
-                # QUERY
+                <query>
                 $query
+                </query>
 
-                # CONTENT
+                <content>
                 $content
+                </content>
             """.trimIndent(),
                 interactionId = name,
             )
+        return if (result.contains(IRRELEVANT)) {
+            Irrelevant
+        } else {
+            Compressed(result)
+        }
+    }
+
+    companion object {
+        private const val IRRELEVANT = "IRRELEVANT[$$$]"
     }
 }
+
+private sealed interface CompressionResult
+
+private data class Compressed(val compressed: String) : CompressionResult
+
+private object Irrelevant : CompressionResult
