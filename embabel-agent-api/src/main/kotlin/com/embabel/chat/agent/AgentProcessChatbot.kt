@@ -15,7 +15,7 @@
  */
 package com.embabel.chat.agent
 
-import com.embabel.agent.channel.DiagnosticOutputChannelEvent
+import com.embabel.agent.channel.LoggingOutputChannelEvent
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.Agent
 import com.embabel.agent.core.AgentPlatform
@@ -107,9 +107,10 @@ private class AgentProcessChatSession(
                 agentProcess[KEY] = conversation
                 conversation.also {
                     agentProcess.processContext.outputChannel.send(
-                        DiagnosticOutputChannelEvent(
+                        LoggingOutputChannelEvent(
                             processId = agentProcess.id,
-                            message = "Chat session started with conversationId=${conversation.id}",
+                            message = "Chat session started: conversation <${conversation.id}>",
+                            level = LoggingOutputChannelEvent.Level.DEBUG,
                         )
                     )
                 }

@@ -22,7 +22,11 @@ import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 
 /**
- * Expose a RagService as tools. Options are stable.
+ * Expose a RagService as tools.
+ * Once the tools instance is created,
+ * options such as similarity cutoff are immutable
+ * and will be used consistently in all calls.
+ * The LLM needs to provide only the search query.
  */
 class RagServiceSearchTools(
     val ragService: RagService,
@@ -32,7 +36,7 @@ class RagServiceSearchTools(
     @Tool(description = "Search for information relating to this query. Returns detailed results")
     fun search(
         @ToolParam(
-            description = "Query to search for",
+            description = "Standalone query to search for. Include sufficient context",
         )
         query: String,
     ): String {

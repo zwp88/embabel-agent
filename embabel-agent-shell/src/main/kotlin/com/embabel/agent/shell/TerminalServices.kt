@@ -16,10 +16,7 @@
 package com.embabel.agent.shell
 
 import com.embabel.agent.api.common.autonomy.*
-import com.embabel.agent.channel.ContentOutputChannelEvent
-import com.embabel.agent.channel.MessageOutputChannelEvent
-import com.embabel.agent.channel.OutputChannel
-import com.embabel.agent.channel.OutputChannelEvent
+import com.embabel.agent.channel.*
 import com.embabel.agent.core.hitl.*
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
@@ -244,8 +241,12 @@ class TerminalServices(
                     println("Content event: ${event.content}")
                 }
 
+                is ProgressOutputChannelEvent -> {
+                    println("Progress update: ${event.message}")
+                }
+
                 else -> {
-                    logger.warn("Unhandled OutputChannelEvent: $event")
+                    println(event.toString())
                 }
             }
         }

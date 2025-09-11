@@ -60,19 +60,32 @@ data class ContentOutputChannelEvent(
 ) : OutputChannelEvent
 
 /**
+ * Logging or progress event
+ */
+interface InformativeOutputChannelEvent : OutputChannelEvent {
+    val message: String
+}
+
+/**
+ * Ephemeral message.
  * Not meant to be part of a conversation
  */
-data class DiagnosticOutputChannelEvent @JvmOverloads constructor(
+data class LoggingOutputChannelEvent @JvmOverloads constructor(
     override val processId: String,
-    val message: String,
+    override val message: String,
     val level: Level = Level.INFO,
     val throwable: Throwable? = null,
-) : OutputChannelEvent {
+) : InformativeOutputChannelEvent {
 
     enum class Level {
         TRACE, DEBUG, INFO, WARN, ERROR
     }
 }
+
+data class ProgressOutputChannelEvent(
+    override val processId: String,
+    override val message: String,
+) : InformativeOutputChannelEvent
 
 /**
  * Send to all channels

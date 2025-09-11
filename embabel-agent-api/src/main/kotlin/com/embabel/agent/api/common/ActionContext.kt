@@ -18,6 +18,8 @@ package com.embabel.agent.api.common
 import com.embabel.agent.api.common.support.OperationContextPromptRunner
 import com.embabel.agent.api.dsl.AgentScopeBuilder
 import com.embabel.agent.channel.MessageOutputChannelEvent
+import com.embabel.agent.channel.OutputChannelEvent
+import com.embabel.agent.channel.ProgressOutputChannelEvent
 import com.embabel.agent.core.*
 import com.embabel.agent.prompt.element.ContextualPromptElement
 import com.embabel.chat.Message
@@ -37,6 +39,16 @@ interface ExecutingOperationContext : OperationContext {
     fun sendMessage(message: Message) {
         processContext.outputChannel.send(
             MessageOutputChannelEvent(agentProcess.id, message)
+        )
+    }
+
+    fun updateProgress(message: String) {
+        sendOutputChannelEvent(ProgressOutputChannelEvent(agentProcess.id, message))
+    }
+
+    fun sendOutputChannelEvent(event: OutputChannelEvent) {
+        processContext.outputChannel.send(
+            event
         )
     }
 

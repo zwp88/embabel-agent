@@ -105,7 +105,7 @@ class PipelinedRagServiceEnhancer(
             verbose: Boolean?,
             indent: Int,
         ): String {
-            return "PipelinedRagService wrapping:\n${delegate.infoString(verbose, indent + 2)}"
+            return "PipelinedRagService wrapping ${delegate.infoString(verbose, indent + 2)}"
         }
     }
 }

@@ -15,6 +15,9 @@
  */
 package com.embabel.agent.core
 
+/**
+ * Superclass for events that relate to an AgentProcess
+ */
 interface InProcess {
 
     /**

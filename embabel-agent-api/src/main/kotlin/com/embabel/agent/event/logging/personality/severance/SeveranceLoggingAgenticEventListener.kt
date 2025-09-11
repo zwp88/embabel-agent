@@ -45,7 +45,7 @@ val MdrFiles = listOf(
 )
 
 val TransformSuccessResponses = MdrFiles.map {
-    "$it 100% Complete"
+    "LLM call $it 100% Complete"
 } +
         kier("I knew you could do it. Even in your darkest moments I could see you arriving here")
 
@@ -179,8 +179,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
 
     override fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String =
         """
-        [${e.processId}] received LLM response ${e.request.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
-        ${TransformSuccessResponses.random()}
+        [${e.processId}] (${e.request.interaction.id.value}) received LLM response of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
         """.trimIndent()
 
     override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =

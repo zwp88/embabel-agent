@@ -231,7 +231,7 @@ open class LoggingAgenticEventListener(
 
     protected open fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String {
         var message =
-            "[${e.processId}] received LLM response ${e.request.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds"
+            "[${e.processId}] (${e.request.interaction.id.value}) received LLM response of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds"
 
         if (e.agentProcess.processContext.processOptions.verbosity.showLlmResponses) {
             message += "\nResponse from prompt ${e.request.interaction.id}:\n${
