@@ -343,6 +343,7 @@ class AgentMetadataReader(
             }
         }
         return try {
+            method.trySetAccessible()
             val evaluationResult = ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray()) as Boolean
             logger.debug(
                 "Condition evaluated to {}, calling {} on {} using args {}",
