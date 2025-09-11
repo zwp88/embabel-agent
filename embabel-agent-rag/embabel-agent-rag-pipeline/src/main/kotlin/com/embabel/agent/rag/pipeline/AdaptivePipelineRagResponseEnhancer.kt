@@ -27,13 +27,11 @@ import org.slf4j.LoggerFactory
  * @param enhancers List of RagResponseEnhancers to apply in sequence
  * @param adaptiveExecution If true, adaptively skip enhancers based on quality and latency
  * @param qualityThreshold Quality score above which to skip expensive enhancers
- * @param maxLatencyMs Maximum total latency in milliseconds before stopping further enhancements
  */
 data class AdaptivePipelineRagResponseEnhancer @JvmOverloads constructor(
     val enhancers: List<RagResponseEnhancer>,
     val adaptiveExecution: Boolean = true,
     val qualityThreshold: Double = 0.7,
-    val maxLatencyMs: Long = 5000,
     val listener: RagEventListener,
 ) : RagResponseEnhancer {
 
@@ -50,21 +48,31 @@ data class AdaptivePipelineRagResponseEnhancer @JvmOverloads constructor(
         val startTime = System.currentTimeMillis()
 
         for (enhancer in enhancers) {
-            // Adaptive execution based on research insights
             if (adaptiveExecution) {
                 val estimate = enhancer.estimateImpact(current)
-                val elapsed = System.currentTimeMillis() - startTime
+                val elapsedMs = System.currentTimeMillis() - startTime
 
                 when {
-                    // Skip if already high quality and expensive enhancer
                     current.qualityMetrics?.let { it.overallScore > qualityThreshold } == true &&
-                            (estimate?.estimatedLatencyMs ?: 0) > 1000 -> continue
+                            (estimate?.estimatedLatencyMs ?: 0) > 1000 -> {
+                        logger.info("Skipping expensive enhancer {} as quality is already high enough", enhancer.name)
+                        continue
+                    }
 
-                    // Skip if approaching latency limit
-                    elapsed > maxLatencyMs -> break
+                    elapsedMs > response.request.desiredMaxLatency.toMillis() -> {
+                        logger.info(
+                            "Skipping enhancer {} as elapsed time is {}ms with latency limit of {}ms",
+                            estimate,
+                            enhancer.name,
+                            response.request.desiredMaxLatency,
+                        )
+                        break
+                    }
 
-                    // Skip if enhancement estimate says to
-                    estimate?.recommendation == EnhancementRecommendation.SKIP -> continue
+                    estimate?.recommendation == EnhancementRecommendation.SKIP -> {
+                        logger.info("Skipping enhancer {} it recommends skipping", enhancer.name)
+                        continue
+                    }
                 }
             }
 

@@ -20,6 +20,7 @@ import com.embabel.common.core.types.TextSimilaritySearchRequest
 import com.embabel.common.core.types.Timestamped
 import com.embabel.common.core.types.ZeroToOne
 import org.jetbrains.annotations.ApiStatus
+import java.time.Duration
 import java.time.Instant
 
 /**
@@ -32,6 +33,8 @@ interface RagRequestRefinement : SimilarityCutoff {
     @get:ApiStatus.Experimental
     val entitySearch: EntitySearch?
 
+    val desiredMaxLatency: Duration
+
     /**
      * Create a RagRequest from this refinement and a query.
      */
@@ -42,6 +45,7 @@ interface RagRequestRefinement : SimilarityCutoff {
             topK = topK,
             entitySearch = entitySearch,
             compressionConfig = compressionConfig,
+            desiredMaxLatency = desiredMaxLatency,
         )
     }
 
@@ -76,13 +80,13 @@ open class CompressionConfig(
  * @param query the query string to search for
  * @param similarityThreshold the minimum similarity score for results (default is 0.8)
  * @param topK the maximum number of results to return (default is 8)
- * @param labels optional set of labels to filter results. If not set all entities may be returned.
  * If set, only the given entities will be searched for.
  */
 data class RagRequest(
     override val query: String,
     override val similarityThreshold: ZeroToOne = .8,
     override val topK: Int = 8,
+    override val desiredMaxLatency: Duration = Duration.ofMillis(5000),
     override val compressionConfig: CompressionConfig = CompressionConfig(),
     override val entitySearch: EntitySearch? = null,
     override val timestamp: Instant = Instant.now(),

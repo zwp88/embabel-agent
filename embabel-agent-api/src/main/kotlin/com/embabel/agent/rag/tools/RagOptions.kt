@@ -19,12 +19,12 @@ import com.embabel.agent.event.RagEventListener
 import com.embabel.agent.rag.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.ZeroToOne
+import java.time.Duration
 
 /**
  * Operations for RAG use as an LLM tool. Options are immutable and stable.
  * @param similarityThreshold minimum similarity threshold for results (0.0 to 1.0)
  * @param topK maximum number of results to return
- * @param labels optional set of labels to filter results. If not set all entities may be
  * returned. If set, only the given entities will be searched for.
  * @param ragResponseFormatter formatter to convert RagResponse to String
  * @param service optional name of the RAG service to use. If null, the default service will be used.
@@ -32,6 +32,7 @@ import com.embabel.common.core.types.ZeroToOne
 data class RagOptions @JvmOverloads constructor(
     override val similarityThreshold: ZeroToOne = 0.7,
     override val topK: Int = 8,
+    override val desiredMaxLatency: Duration = Duration.ofMillis(5000),
     override val compressionConfig: CompressionConfig = CompressionConfig(),
     val llm: LlmOptions = LlmOptions.withAutoLlm(),
     override val entitySearch: EntitySearch? = null,
@@ -46,6 +47,10 @@ data class RagOptions @JvmOverloads constructor(
 
     fun withTopK(topK: Int): RagOptions {
         return copy(topK = topK)
+    }
+
+    fun withDesiredMaxLatency(desiredMaxLatency: Duration): RagOptions {
+        return copy(desiredMaxLatency = desiredMaxLatency)
     }
 
     fun withListener(listener: RagEventListener): RagOptions {
