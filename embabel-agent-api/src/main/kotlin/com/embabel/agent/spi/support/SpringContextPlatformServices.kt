@@ -40,7 +40,7 @@ data class SpringContextPlatformServices(
     override val eventListener: AgenticEventListener,
     override val operationScheduler: OperationScheduler,
     override val asyncer: Asyncer,
-    override val ragService: RagService,
+    private val defaultRagService: RagService,
     override val objectMapper: ObjectMapper,
     override val outputChannel: OutputChannel,
     override val templateRenderer: TemplateRenderer,
@@ -84,7 +84,7 @@ data class SpringContextPlatformServices(
         }
 
         val delegate = if (serviceName.isNullOrBlank()) {
-            ragService
+            defaultRagService
         } else {
             val services = applicationContext.getBeansOfType(RagService::class.java)
             services.values.first { it.name == serviceName } ?: return null

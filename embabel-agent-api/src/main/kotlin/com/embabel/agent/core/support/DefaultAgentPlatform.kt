@@ -72,7 +72,7 @@ internal class DefaultAgentPlatform(
         agentPlatform = this,
         eventListener = eventListener,
         operationScheduler = operationScheduler,
-        ragService = ragService,
+        defaultRagService = ragService,
         asyncer = asyncer,
         objectMapper = objectMapper,
         applicationContext = applicationContext,

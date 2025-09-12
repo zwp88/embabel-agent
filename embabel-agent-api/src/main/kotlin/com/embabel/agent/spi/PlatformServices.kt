@@ -57,10 +57,6 @@ interface PlatformServices {
      */
     val asyncer: Asyncer
 
-    /**
-     * Default RAG service
-     */
-    val ragService: RagService
 
     val objectMapper: ObjectMapper
 
@@ -69,6 +65,7 @@ interface PlatformServices {
     val templateRenderer: TemplateRenderer
 
     fun autonomy(): Autonomy
+
     fun modelProvider(): ModelProvider
 
     /**

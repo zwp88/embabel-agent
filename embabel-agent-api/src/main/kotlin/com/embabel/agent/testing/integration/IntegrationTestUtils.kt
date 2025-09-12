@@ -74,7 +74,7 @@ object IntegrationTestUtils {
             llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum,
             eventListener = eventListener ?: EventSavingAgenticEventListener(),
             operationScheduler = OperationScheduler.PRONTO,
-            ragService = RagService.empty(),
+            defaultRagService = RagService.empty(),
             asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor()),
             objectMapper = jacksonObjectMapper(),
             applicationContext = null,

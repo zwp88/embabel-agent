@@ -21,7 +21,6 @@ import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.logging.LoggingPersonality
 import com.embabel.agent.event.logging.personality.ColorPalette
-import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.ingestion.Ingester
 import com.embabel.agent.shell.config.ShellProperties
 import com.embabel.chat.agent.*
@@ -249,20 +248,6 @@ class ShellCommands(
     @ShellMethod("List available models")
     fun models(): String =
         modelProvider.infoString(true)
-
-    @ShellMethod("List available rag services")
-    fun ragService(): String =
-        autonomy.agentPlatform.platformServices.ragService.infoString(verbose = true)
-
-    @ShellMethod("Perform a RAG query")
-    fun rag(
-        @ShellOption(help = "Rag query") query: String,
-    ): String {
-        val ragRequest = RagRequest(query = query, similarityThreshold = 0.0)
-        val ragResponse = autonomy.agentPlatform.platformServices.ragService.search(ragRequest)
-        logger.info("RAG response: {}", ragResponse)
-        return ragResponse.results.joinToString("\n") { it.toString() }
-    }
 
     @ShellMethod("ingest")
     fun ingest(
