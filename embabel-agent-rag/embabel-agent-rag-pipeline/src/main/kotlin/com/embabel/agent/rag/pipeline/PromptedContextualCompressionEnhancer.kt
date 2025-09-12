@@ -19,6 +19,7 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.rag.*
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import org.slf4j.LoggerFactory
 
 // TODO could we not compress all chunks together?
@@ -62,21 +63,17 @@ class PromptedContextualCompressionEnhancer(
                     targetRatio = targetRatio,
                     preserveEntities = preserveEntities
                 )
-                when (compressionResult) {
-                    is Irrelevant -> {
-                        logger.debug("Discarding irrelevant content")
-                        null
-                    }
-
-                    is Compressed -> {
-                        val compressedChunk = chunk.transform(
-                            compressionResult.compressed
-                            // Add compression metadata
+                if (compressionResult.irrelevant || compressionResult.compressed.isNullOrBlank()) {
+                    logger.debug("Discarding irrelevant content")
+                    null
+                } else {
+                    val compressedChunk = chunk.transform(
+                        compressionResult.compressed
+                        // Add compression metadata
 //                    contextualRelevance = ZeroToOne(assessCompressionQuality(compressed, query))
-                        )
-                        logger.debug("Compressed chunk:\n{}\n----->\n{}", chunk.text, compressedChunk.text)
-                        SimpleSimilaritySearchResult(compressedChunk, result.score)
-                    }
+                    )
+                    logger.debug("Compressed chunk:\n{}\n----->\n{}", chunk.text, compressedChunk.text)
+                    SimpleSimilaritySearchResult(compressedChunk, result.score)
                 }
             } else {
                 result
@@ -114,8 +111,7 @@ class PromptedContextualCompressionEnhancer(
     ): CompressionResult {
         val prompt = """
                 Given the query, compress the content to include only what
-                is relevant. If there is nothing relevant, return only
-                '$IRRELEVANT'
+                is relevant. If you cannot compress, set 'irrelevant' to true.
 
                 <query>
                 $query
@@ -125,35 +121,43 @@ class PromptedContextualCompressionEnhancer(
                 $content
                 </content>
             """.trimIndent()
-        val result = operationContext
+        return operationContext
             .ai()
             .withLlm(llm)
-            .generateText(
+            .creating(CompressionResult::class.java)
+            .withExample(
+                "relevant content", CompressionResult(
+                    compressed = "This is the compressed content that is relevant."
+                )
+            )
+            .withExample(
+                "irrelevant content", CompressionResult(
+                    irrelevant = true,
+                )
+            )
+            .fromPrompt(
                 prompt = prompt,
                 interactionId = name,
             )
-        return if (result.contains(IRRELEVANT)) {
-            logger.debug(
-                "{}\nContent deemed irrelevant: Query=[{}], Content:\n{}\nPrompt was\n{}\n{}",
-                "*".repeat(140),
-                query,
-                content,
-                prompt,
-                "*".repeat(140)
-            )
-            Irrelevant
-        } else {
-            Compressed(result)
-        }
+            .also {
+                if (it.irrelevant) {
+                    logger.debug(
+                        "{}\nContent deemed irrelevant: Query=[{}], Content:\n{}\nPrompt was\n{}\n{}",
+                        "*".repeat(140),
+                        query,
+                        content,
+                        prompt,
+                        "*".repeat(140)
+                    )
+                }
+            }
     }
 
-    companion object {
-        private const val IRRELEVANT = "<irrelevant/>"
-    }
 }
 
-private sealed interface CompressionResult
-
-private data class Compressed(val compressed: String) : CompressionResult
-
-private object Irrelevant : CompressionResult
+private data class CompressionResult(
+    @get:JsonPropertyDescription("Return only if the content is irrelevant")
+    val irrelevant: Boolean = false,
+    @get:JsonPropertyDescription("Return only if the content is valid")
+    val compressed: String? = null,
+)
