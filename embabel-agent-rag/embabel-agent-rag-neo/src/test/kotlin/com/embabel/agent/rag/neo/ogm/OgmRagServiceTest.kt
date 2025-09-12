@@ -122,7 +122,7 @@ class OgmRagServiceTest(
             ragService.writeContent(mcr)
 
             val results = ragService.search(
-                RagRequest("leaf content").withSimilarityThreshold(.0)
+                RagRequest("leaf").withSimilarityThreshold(.0)
             )
 
             assertTrue(results.results.isNotEmpty(), "Expected results from hybrid search")

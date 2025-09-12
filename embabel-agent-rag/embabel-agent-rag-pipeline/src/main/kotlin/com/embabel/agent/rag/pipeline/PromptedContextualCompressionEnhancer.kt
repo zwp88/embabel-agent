@@ -139,7 +139,7 @@ class PromptedContextualCompressionEnhancer(
     }
 
     companion object {
-        private const val IRRELEVANT = "IRRELEVANT[$$$]"
+        private const val IRRELEVANT = "<irrelevant/>"
     }
 }
 

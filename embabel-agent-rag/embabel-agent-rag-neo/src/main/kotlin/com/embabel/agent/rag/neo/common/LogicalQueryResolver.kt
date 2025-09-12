@@ -54,6 +54,7 @@ data class FixedLocationLogicalQueryResolver(
             logger.debug("Resource Loader in use = {}", resourceLoader::class.java.name)
             resourceLoader.getResource("$location/$name.cypher")
                 .getContentAsString(Charset.defaultCharset())
+                .trim()
         } catch (e: IOException) {
             logger.warn("Could not load logical query '$name' from '$location'", e)
             null

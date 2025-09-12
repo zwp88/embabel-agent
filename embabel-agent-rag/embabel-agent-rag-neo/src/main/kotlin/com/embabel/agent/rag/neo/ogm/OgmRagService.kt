@@ -210,19 +210,20 @@ class OgmRagService(
 
     override fun search(ragRequest: RagRequest): RagResponse {
         val embedding = embeddingService.model.embed(ragRequest.query)
+        val allResults = mutableListOf<SimilarityResult<out Retrievable>>()
 
         val commonParameters = mapOf(
             "topK" to ragRequest.topK,
             "similarityThreshold" to ragRequest.similarityThreshold,
         )
 
-        val cypherResults = if (ragRequest.entitySearch != null) {
-            generateAndExecuteCypher(ragRequest, ragRequest.entitySearch!!).also { cypherResults ->
+        if (ragRequest.entitySearch != null) {
+            val cypherResults = generateAndExecuteCypher(ragRequest, ragRequest.entitySearch!!).also { cypherResults ->
                 logger.info("{} Cypher results for query '{}'", cypherResults.size, ragRequest.query)
             }
+            allResults += cypherResults
         } else {
             logger.info("No entity search specified, skipping Cypher execution")
-            emptyList()
         }
 
 //        val genericEntityResults = queryRunner.entityDataSimilaritySearch(
@@ -234,7 +235,9 @@ class OgmRagService(
 //                "similarityThreshold" to ragRequest.similarityThreshold,
 //            ),
 //        )
+
         return readonlyTransactionTemplate.execute {
+
             val chunkResults = ogmCypherSearch.chunkSimilaritySearch(
                 "Chunk similarity search",
                 query = "chunk_vector_search",
@@ -245,46 +248,50 @@ class OgmRagService(
                 logger = logger,
             )
             logger.info("{} chunk similarity results for query '{}'", chunkResults.size, ragRequest.query)
-
-            val entityResults = ogmCypherSearch.mappedEntitySimilaritySearch(
-                purpose = "Mapped entity search",
-                query = "entity_vector_search",
-                params = commonParameters + mapOf(
-                    "index" to properties.entityIndex,
-                    "queryVector" to embedding,
-                ),
-                logger,
-            )
-            logger.info("{} mapped entity results for query '{}'", entityResults.size, ragRequest.query)
+            allResults += chunkResults
 
             val chunkFullTextResults = ogmCypherSearch.chunkFullTextSearch(
                 purpose = "Chunk full text search",
                 query = "chunk_fulltext_search",
                 params = commonParameters + mapOf(
                     "fulltextIndex" to properties.contentElementFullTextIndex,
-                    "searchText" to ragRequest.query,
+                    "searchText" to "\"${ragRequest.query}\"",
                 ),
                 logger = logger,
             )
             logger.info("{} chunk full-text results for query '{}'", chunkFullTextResults.size, ragRequest.query)
+            allResults += chunkFullTextResults
 
-            val entityFullTextResults = ogmCypherSearch.entityFullTextSearch(
-                purpose = "Entity full text search",
-                query = "entity_fulltext_search",
-                params = commonParameters + mapOf(
-                    "fulltextIndex" to properties.entityFullTextIndex,
-                    "searchText" to ragRequest.query,
-                ),
-                logger = logger,
-            )
-            logger.info("{} entity full-text results for query '{}'", entityFullTextResults.size, ragRequest.query)
+            if (ragRequest.entitySearch != null) {
+                val entityResults = ogmCypherSearch.mappedEntitySimilaritySearch(
+                    purpose = "Mapped entity search",
+                    query = "entity_vector_search",
+                    params = commonParameters + mapOf(
+                        "index" to properties.entityIndex,
+                        "queryVector" to embedding,
+                    ),
+                    logger,
+                )
+                allResults += entityResults
+                logger.info("{} mapped entity results for query '{}'", entityResults.size, ragRequest.query)
+                val entityFullTextResults = ogmCypherSearch.entityFullTextSearch(
+                    purpose = "Entity full text search",
+                    query = "entity_fulltext_search",
+                    params = commonParameters + mapOf(
+                        "fulltextIndex" to properties.entityFullTextIndex,
+                        "searchText" to ragRequest.query,
+                    ),
+                    logger = logger,
+                )
+                logger.info("{} entity full-text results for query '{}'", entityFullTextResults.size, ragRequest.query)
+                allResults += entityFullTextResults
+            }
 
             // TODO should reward multiple matches
-            val mergedResults =
-                (chunkResults + entityResults + chunkFullTextResults + entityFullTextResults + cypherResults)
-                    .distinctBy { it.match.id }
-                    .sortedByDescending { it.score }
-                    .take(ragRequest.topK)
+            val mergedResults = allResults
+                .distinctBy { it.match.id }
+                .sortedByDescending { it.score }
+                .take(ragRequest.topK)
             RagResponse(
                 request = ragRequest,
                 service = this.name,
@@ -390,7 +397,15 @@ class OgmRagService(
     ) {
         val propertiesString = properties.joinToString(", ") { "n.$it" }
         sessionFactory.openSession().query(
-            "CREATE FULLTEXT INDEX `$name` IF NOT EXISTS FOR (n:$on) ON EACH [$propertiesString]",
+            """|
+                |CREATE FULLTEXT INDEX `$name` IF NOT EXISTS
+                |FOR (n:$on) ON EACH [$propertiesString]
+                |OPTIONS {
+                |indexConfig: {
+                |
+                |   }
+                |}
+                """.trimMargin(),
             emptyMap<String, Any>()
         )
         logger.info("Created full-text index {} for {} on properties {}", name, on, properties)
