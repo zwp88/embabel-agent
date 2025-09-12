@@ -39,29 +39,25 @@ data class RagOptions @JvmOverloads constructor(
     val ragResponseFormatter: RagResponseFormatter = SimpleRagResponseFormatter,
     val service: String? = null,
     val listener: RagEventListener = RagEventListener.NOOP,
-) : RagRequestRefinement {
+) : RagRequestRefinement<RagOptions> {
 
-    fun withSimilarityThreshold(similarityThreshold: ZeroToOne): RagOptions {
+    override fun withSimilarityThreshold(similarityThreshold: ZeroToOne): RagOptions {
         return copy(similarityThreshold = similarityThreshold)
     }
 
-    fun withTopK(topK: Int): RagOptions {
+    override fun withTopK(topK: Int): RagOptions {
         return copy(topK = topK)
     }
 
-    fun withDesiredMaxLatency(desiredMaxLatency: Duration): RagOptions {
+    override fun withDesiredMaxLatency(desiredMaxLatency: Duration): RagOptions {
         return copy(desiredMaxLatency = desiredMaxLatency)
     }
 
-    fun withListener(listener: RagEventListener): RagOptions {
-        return copy(listener = this.listener + listener)
-    }
-
-    fun withCompression(compressionConfig: CompressionConfig): RagOptions {
+    override fun withCompression(compressionConfig: CompressionConfig): RagOptions {
         return copy(compressionConfig = compressionConfig)
     }
 
-    fun withEntitySearch(entitySearch: EntitySearch?): RagOptions {
+    override fun withEntitySearch(entitySearch: EntitySearch): RagOptions {
         return copy(entitySearch = entitySearch)
     }
 
@@ -70,6 +66,10 @@ data class RagOptions @JvmOverloads constructor(
      */
     fun withService(service: String): RagOptions {
         return copy(service = service)
+    }
+
+    fun withListener(listener: RagEventListener): RagOptions {
+        return copy(listener = this.listener + listener)
     }
 
 }

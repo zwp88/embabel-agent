@@ -26,7 +26,7 @@ import java.time.Instant
 /**
  * Narrowing of RagRequest
  */
-interface RagRequestRefinement : SimilarityCutoff {
+interface RagRequestRefinement<T : RagRequestRefinement<T>> : SimilarityCutoff {
 
     val compressionConfig: CompressionConfig
 
@@ -48,6 +48,18 @@ interface RagRequestRefinement : SimilarityCutoff {
             desiredMaxLatency = desiredMaxLatency,
         )
     }
+
+    // Java-friendly builders
+
+    fun withSimilarityThreshold(similarityThreshold: ZeroToOne): T
+
+    fun withTopK(topK: Int): T
+
+    fun withDesiredMaxLatency(desiredMaxLatency: Duration): T
+
+    fun withCompression(compressionConfig: CompressionConfig): T
+
+    fun withEntitySearch(entitySearch: EntitySearch): T
 
 }
 
@@ -90,23 +102,27 @@ data class RagRequest(
     override val compressionConfig: CompressionConfig = CompressionConfig(),
     override val entitySearch: EntitySearch? = null,
     override val timestamp: Instant = Instant.now(),
-) : TextSimilaritySearchRequest, RagRequestRefinement, Timestamped {
+) : TextSimilaritySearchRequest, RagRequestRefinement<RagRequest>, Timestamped {
 
-    fun withSimilarityThreshold(threshold: ZeroToOne): RagRequest {
-        return this.copy(similarityThreshold = threshold)
+    override fun withSimilarityThreshold(similarityThreshold: ZeroToOne): RagRequest {
+        return this.copy(similarityThreshold = similarityThreshold)
     }
 
-    fun withTopK(topK: Int): RagRequest {
+    override fun withTopK(topK: Int): RagRequest {
         return this.copy(topK = topK)
     }
 
-    fun withCompression(compressionConfig: CompressionConfig): RagRequest {
+    override fun withCompression(compressionConfig: CompressionConfig): RagRequest {
         return this.copy(compressionConfig = compressionConfig)
     }
 
     @ApiStatus.Experimental
-    fun withEntitySearch(entitySearch: EntitySearch): RagRequest {
+    override fun withEntitySearch(entitySearch: EntitySearch): RagRequest {
         return this.copy(entitySearch = entitySearch)
+    }
+
+    override fun withDesiredMaxLatency(desiredMaxLatency: Duration): RagRequest {
+        return this.copy(desiredMaxLatency = desiredMaxLatency)
     }
 
     companion object {
