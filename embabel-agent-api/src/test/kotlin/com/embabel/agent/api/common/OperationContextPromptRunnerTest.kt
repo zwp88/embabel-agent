@@ -293,10 +293,25 @@ class OperationContextPromptRunnerTest {
             val context = FakeOperationContext()
             val pr = spyk(createOperationContextPromptRunnerWithDefaults(context))
             val um = slot<List<Message>>()
-            every { pr.createObject(capture(um), Dog::class.java) } returns duke
+            every { pr.createObject(capture(um), Dog::class.java, null) } returns duke
             val result = pr
                 .creating(Dog::class.java)
                 .fromPrompt("foo bar")
+            assertEquals(duke, result, "Dog instance not returned correctly")
+            assertEquals(1, um.captured.size, "Must be one message")
+            assertEquals(um.captured[0].content, "foo bar", "Example not included in prompt")
+        }
+
+        @Test
+        fun `test no examples preserves interaction id`() {
+            val duke = Dog("Duke")
+            val context = FakeOperationContext()
+            val pr = spyk(createOperationContextPromptRunnerWithDefaults(context))
+            val um = slot<List<Message>>()
+            every { pr.createObject(capture(um), Dog::class.java, "iid") } returns duke
+            val result = pr
+                .creating(Dog::class.java)
+                .fromPrompt("foo bar", "iid")
             assertEquals(duke, result, "Dog instance not returned correctly")
             assertEquals(1, um.captured.size, "Must be one message")
             assertEquals(um.captured[0].content, "foo bar", "Example not included in prompt")
