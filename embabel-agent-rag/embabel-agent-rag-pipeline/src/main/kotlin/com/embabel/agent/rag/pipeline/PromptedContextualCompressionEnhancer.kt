@@ -112,11 +112,7 @@ class PromptedContextualCompressionEnhancer(
         preserveEntities: Boolean = true,
         dynamicRatio: Boolean = true,
     ): CompressionResult {
-        val result = operationContext
-            .ai()
-            .withLlm(llm)
-            .generateText(
-                prompt = """
+        val prompt = """
                 Given the query, compress the content to include only what
                 is relevant. If there is nothing relevant, return only
                 '$IRRELEVANT'
@@ -128,10 +124,23 @@ class PromptedContextualCompressionEnhancer(
                 <content>
                 $content
                 </content>
-            """.trimIndent(),
+            """.trimIndent()
+        val result = operationContext
+            .ai()
+            .withLlm(llm)
+            .generateText(
+                prompt = prompt,
                 interactionId = name,
             )
         return if (result.contains(IRRELEVANT)) {
+            logger.debug(
+                "{}\nContent deemed irrelevant: Query=[{}], Content:\n{}\nPrompt was\n{}\n{}",
+                "*".repeat(140),
+                query,
+                content,
+                prompt,
+                "*".repeat(140)
+            )
             Irrelevant
         } else {
             Compressed(result)
