@@ -27,7 +27,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class NeoRagServiceProperties(
     val uri: String = "bolt://localhost:7687",
     val username: String = "neo4j",
-    internal val password: String = "brahmsian",
+    internal val password: String,
 
     val chunkNodeName: String = "Chunk",
     val entityNodeName: String = "Entity",
