@@ -21,8 +21,9 @@ import com.embabel.agent.rag.ingestion.MaterializedDocument
 /**
  * Convenience base class for WritableRagService implementations.
  */
-// TODO inject configuration for chunking
-abstract class AbstractRepositoryRagService : RepositoryRagService {
+abstract class AbstractRepositoryRagService(
+    private val chunkerConfig: ContentChunker.Config,
+) : RepositoryRagService {
 
     /**
      * Will call save on the root and all descendants.
@@ -30,7 +31,7 @@ abstract class AbstractRepositoryRagService : RepositoryRagService {
      * rather than otherwise consider the entire structure.
      */
     final override fun writeContent(root: MaterializedDocument): List<String> {
-        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
+        val chunker = ContentChunker(chunkerConfig)
         val chunks = chunker.chunk(root)
         save(root)
         root.descendants().forEach { save(it) }

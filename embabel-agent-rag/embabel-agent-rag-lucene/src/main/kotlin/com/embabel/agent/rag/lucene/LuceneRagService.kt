@@ -16,6 +16,7 @@
 package com.embabel.agent.rag.lucene
 
 import com.embabel.agent.rag.*
+import com.embabel.agent.rag.ingestion.ContentChunker
 import com.embabel.agent.rag.ingestion.MaterializedDocument
 import com.embabel.common.core.types.SimpleSimilaritySearchResult
 import com.embabel.common.util.indent
@@ -45,7 +46,8 @@ class LuceneRagService @JvmOverloads constructor(
     override val description: String,
     private val embeddingModel: EmbeddingModel? = null,
     private val vectorWeight: Double = 0.5, // Balance between text and vector similarity
-) : AbstractRepositoryRagService(), Closeable {
+    chunkerConfig: ContentChunker.Config = ContentChunker.DefaultConfig(),
+) : AbstractRepositoryRagService(chunkerConfig), Closeable {
 
     private val logger = LoggerFactory.getLogger(LuceneRagService::class.java)
 

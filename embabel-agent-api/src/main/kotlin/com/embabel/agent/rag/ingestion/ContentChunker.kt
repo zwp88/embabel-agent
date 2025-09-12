@@ -26,15 +26,9 @@ import java.util.*
  * For container sections with small total content (aggregated from leaves), creates a single chunk
  * containing all leaf content. For large leaf sections within containers, splits them individually
  * into multiple chunks.
- *
- * @param maxChunkSize Maximum characters per chunk (default: 1500)
- * @param overlapSize Characters of overlap between chunks (default: 200)
- * @param minChunkSize Minimum characters to warrant splitting (default: 2000)
  */
 class ContentChunker(
-    private val maxChunkSize: Int = 1500,
-    private val overlapSize: Int = 200,
-    private val minChunkSize: Int = 2000,
+    val config: Config = DefaultConfig(),
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -47,10 +41,10 @@ class ContentChunker(
         val totalContentLength = leaves.sumOf { it.content.length + it.title.length + 1 } // +1 for newline after title
 
         // Strategy 1: If total content fits in a single chunk, combine everything
-        if (totalContentLength <= maxChunkSize) {
+        if (totalContentLength <= config.maxChunkSize) {
             logger.debug(
                 "Creating single chunk for container section '{}' with {} leaves (total length: {} <= max: {})",
-                section.title, leaves.size, totalContentLength, maxChunkSize
+                section.title, leaves.size, totalContentLength, config.maxChunkSize
             )
             return listOf(createSingleChunkFromContainer(section, leaves))
         }
@@ -58,7 +52,7 @@ class ContentChunker(
         // Strategy 2: Try to group leaves intelligently before splitting
         logger.debug(
             "Total content ({} chars) exceeds maxChunkSize ({}), attempting intelligent grouping",
-            totalContentLength, maxChunkSize
+            totalContentLength, config.maxChunkSize
         )
         return chunkLeavesIntelligently(section, leaves)
     }
@@ -110,7 +104,7 @@ class ContentChunker(
                     val leaf = group.first()
                     val leafContentSize = leaf.content.length + leaf.title.length + 1
 
-                    if (leafContentSize <= maxChunkSize) {
+                    if (leafContentSize <= config.maxChunkSize) {
                         // Small enough for single chunk
                         allChunks.add(createSingleLeafChunk(containerSection, leaf))
                     } else {
@@ -138,14 +132,14 @@ class ContentChunker(
             val leafSize = leaf.content.length + leaf.title.length + 1 // +1 for newline
 
             // If adding this leaf would exceed maxChunkSize, finalize current group
-            if (currentGroup.isNotEmpty() && currentGroupSize + leafSize + 2 > maxChunkSize) { // +2 for separator
+            if (currentGroup.isNotEmpty() && currentGroupSize + leafSize + 2 > config.maxChunkSize) { // +2 for separator
                 groups.add(currentGroup.toList())
                 currentGroup.clear()
                 currentGroupSize = 0
             }
 
             // If single leaf is too large, it goes in its own group
-            if (leafSize > maxChunkSize) {
+            if (leafSize > config.maxChunkSize) {
                 if (currentGroup.isNotEmpty()) {
                     groups.add(currentGroup.toList())
                     currentGroup.clear()
@@ -254,7 +248,7 @@ class ContentChunker(
         for (paragraph in paragraphs) {
             // If adding this paragraph would exceed the limit, finalize current chunk
             if (currentChunk.isNotEmpty() &&
-                currentChunk.length + paragraph.length + 2 > maxChunkSize
+                currentChunk.length + paragraph.length + 2 > config.maxChunkSize
             ) {
 
                 chunks.add(currentChunk.toString().trim())
@@ -263,18 +257,18 @@ class ContentChunker(
                 currentChunk = StringBuilder()
                 if (chunks.isNotEmpty()) {
                     val overlap = getOverlapText(chunks.last())
-                    if (overlap.isNotEmpty() && overlap.length + paragraph.length + 2 <= maxChunkSize) {
+                    if (overlap.isNotEmpty() && overlap.length + paragraph.length + 2 <= config.maxChunkSize) {
                         currentChunk.append(overlap).append("\n\n")
                     }
                 }
             }
 
             // If single paragraph is too long, split it by sentences
-            if (paragraph.length > maxChunkSize) {
+            if (paragraph.length > config.maxChunkSize) {
                 val sentenceChunks = splitBySentences(paragraph)
                 for (sentenceChunk in sentenceChunks) {
                     if (currentChunk.isNotEmpty() &&
-                        currentChunk.length + sentenceChunk.length + 2 > maxChunkSize
+                        currentChunk.length + sentenceChunk.length + 2 > config.maxChunkSize
                     ) {
 
                         chunks.add(currentChunk.toString().trim())
@@ -283,7 +277,7 @@ class ContentChunker(
                         // Add overlap
                         if (chunks.isNotEmpty()) {
                             val overlap = getOverlapText(chunks.last())
-                            if (overlap.isNotEmpty() && overlap.length + sentenceChunk.length + 2 <= maxChunkSize) {
+                            if (overlap.isNotEmpty() && overlap.length + sentenceChunk.length + 2 <= config.maxChunkSize) {
                                 currentChunk.append(overlap).append("\n\n")
                             }
                         }
@@ -310,11 +304,11 @@ class ContentChunker(
 
         // Safety check: ensure no chunk exceeds max size and filter out empty chunks
         val finalChunks = chunks.flatMap { chunk ->
-            if (chunk.length <= maxChunkSize) {
+            if (chunk.length <= config.maxChunkSize) {
                 listOf(chunk)
             } else {
                 // Emergency fallback: split oversized chunk by character count
-                chunk.chunked(maxChunkSize).filter { it.trim().isNotEmpty() }
+                chunk.chunked(config.maxChunkSize).filter { it.trim().isNotEmpty() }
             }
         }.filter { it.trim().isNotEmpty() }
 
@@ -333,7 +327,7 @@ class ContentChunker(
 
         for (sentence in sentences) {
             if (currentChunk.isNotEmpty() &&
-                currentChunk.length + sentence.length + 1 > maxChunkSize
+                currentChunk.length + sentence.length + 1 > config.maxChunkSize
             ) {
 
                 chunks.add(currentChunk.toString().trim())
@@ -342,7 +336,7 @@ class ContentChunker(
                 // Add overlap from previous chunk
                 if (chunks.isNotEmpty()) {
                     val overlap = getOverlapText(chunks.last())
-                    if (overlap.isNotEmpty() && overlap.length + sentence.length + 1 <= maxChunkSize) {
+                    if (overlap.isNotEmpty() && overlap.length + sentence.length + 1 <= config.maxChunkSize) {
                         currentChunk.append(overlap).append(" ")
                     }
                 }
@@ -360,11 +354,11 @@ class ContentChunker(
 
         // Safety check: ensure no chunk exceeds max size and filter out empty chunks
         val finalChunks = chunks.flatMap { chunk ->
-            if (chunk.length <= maxChunkSize) {
+            if (chunk.length <= config.maxChunkSize) {
                 listOf(chunk)
             } else {
                 // Emergency fallback: split oversized chunk by character count
-                chunk.chunked(maxChunkSize).filter { it.trim().isNotEmpty() }
+                chunk.chunked(config.maxChunkSize).filter { it.trim().isNotEmpty() }
             }
         }.filter { it.trim().isNotEmpty() }
 
@@ -374,12 +368,12 @@ class ContentChunker(
     }
 
     private fun getOverlapText(previousChunk: String): String {
-        if (previousChunk.length <= overlapSize) {
+        if (previousChunk.length <= config.overlapSize) {
             return ""
         }
 
         // Try to get overlap at a sentence boundary
-        val overlap = previousChunk.takeLast(overlapSize)
+        val overlap = previousChunk.takeLast(config.overlapSize)
         val sentenceStart = overlap.indexOf(". ") + 2
 
         return if (sentenceStart > 1 && sentenceStart < overlap.length) {
@@ -395,32 +389,23 @@ class ContentChunker(
         }
     }
 
+    interface Config {
+        val maxChunkSize: Int
+        val overlapSize: Int
+    }
+
     /**
      * Configuration for the splitter
      */
-    data class SplitterConfig(
-        val maxChunkSize: Int = 1500,
-        val overlapSize: Int = 200,
-        val minChunkSize: Int = 2000,
-    ) {
+    data class DefaultConfig @JvmOverloads constructor(
+        override val maxChunkSize: Int = 1500,
+        override val overlapSize: Int = 200,
+    ) : Config {
         init {
             require(maxChunkSize > 0) { "maxChunkSize must be positive" }
             require(overlapSize >= 0) { "overlapSize must be non-negative" }
-            require(minChunkSize >= maxChunkSize) { "minChunkSize must be >= maxChunkSize" }
             require(overlapSize < maxChunkSize) { "overlapSize must be < maxChunkSize" }
         }
     }
 
-    companion object {
-        /**
-         * Create a SectionSplitter with custom configuration
-         */
-        fun withConfig(config: SplitterConfig): ContentChunker {
-            return ContentChunker(
-                maxChunkSize = config.maxChunkSize,
-                overlapSize = config.overlapSize,
-                minChunkSize = config.minChunkSize
-            )
-        }
-    }
 }

@@ -15,6 +15,7 @@
  */
 package com.embabel.agent.rag.neo.ogm
 
+import com.embabel.agent.rag.ingestion.ContentChunker
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
@@ -39,4 +40,6 @@ data class NeoRagServiceProperties(
 
     // Empty packages causes a strange failure within Neo4j OGM
     val packages: List<String> = listOf("not.a.real.package"),
-)
+    override val maxChunkSize: Int = 1500,
+    override val overlapSize: Int = 200,
+) : ContentChunker.Config

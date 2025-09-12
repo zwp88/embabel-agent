@@ -211,12 +211,11 @@ class ContentChunkerTest {
 
     @Test
     fun `test custom splitter configuration`() {
-        val config = ContentChunker.SplitterConfig(
+        val config = ContentChunker.DefaultConfig(
             maxChunkSize = 100,
             overlapSize = 20,
-            minChunkSize = 150
         )
-        val customSplitter = ContentChunker.withConfig(config)
+        val customSplitter = ContentChunker(config)
 
         // Create content longer than minChunkSize (150) in a single leaf
         val content = buildString {
@@ -250,19 +249,19 @@ class ContentChunkerTest {
     fun `test configuration validation`() {
         // Test invalid configurations
         assertThrows(IllegalArgumentException::class.java) {
-            ContentChunker.SplitterConfig(maxChunkSize = 0)
+            ContentChunker.DefaultConfig(maxChunkSize = 0)
         }
 
         assertThrows(IllegalArgumentException::class.java) {
-            ContentChunker.SplitterConfig(overlapSize = -1)
+            ContentChunker.DefaultConfig(overlapSize = -1)
         }
 
         assertThrows(IllegalArgumentException::class.java) {
-            ContentChunker.SplitterConfig(maxChunkSize = 100, minChunkSize = 50)
+            ContentChunker.DefaultConfig(maxChunkSize = 100)
         }
 
         assertThrows(IllegalArgumentException::class.java) {
-            ContentChunker.SplitterConfig(maxChunkSize = 100, overlapSize = 150)
+            ContentChunker.DefaultConfig(maxChunkSize = 100, overlapSize = 150)
         }
     }
 
@@ -338,7 +337,12 @@ class ContentChunkerTest {
     @Test
     fun `test chunking too fine with large chunk sizes`() {
         // Create a chunker with larger chunk sizes that should create fewer, larger chunks
-        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
+        val chunker = ContentChunker(
+            ContentChunker.DefaultConfig(
+                maxChunkSize = 5000,
+                overlapSize = 200,
+            )
+        )
 
         // Create medium-sized content that could reasonably fit in one chunk
         val mediumContent = buildString {
@@ -389,7 +393,12 @@ class ContentChunkerTest {
     @Test
     fun `test large content with generous chunk settings`() {
         // Even more generous settings
-        val chunker = ContentChunker(maxChunkSize = 8000, overlapSize = 400, minChunkSize = 2000)
+        val chunker = ContentChunker(
+            ContentChunker.DefaultConfig(
+                maxChunkSize = 8000,
+                overlapSize = 400,
+            )
+        )
 
         // Create larger content that should still result in reasonably few chunks
         val largeContent = buildString {
@@ -439,7 +448,12 @@ class ContentChunkerTest {
 
     @Test
     fun `test multiple medium leaves should not over-fragment`() {
-        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
+        val chunker = ContentChunker(
+            ContentChunker.DefaultConfig(
+                maxChunkSize = 5000,
+                overlapSize = 200,
+            )
+        )
 
         // Create several medium-sized leaves
         val leaves = (1..3).map { leafNum ->
@@ -489,7 +503,9 @@ class ContentChunkerTest {
     @Test
     fun `demonstrate over-chunking issue with large chunk sizes`() {
         // This test specifically shows the over-chunking problem
-        val chunker = ContentChunker(maxChunkSize = 5000, overlapSize = 200, minChunkSize = 1500)
+        val chunker = ContentChunker(
+            ContentChunker.DefaultConfig(maxChunkSize = 5000, overlapSize = 200)
+        )
 
         // Create content that SHOULD fit in a single large chunk but gets split unnecessarily
         val content1 = "Section 1 content that is substantial but not huge. ".repeat(30) // ~1600 chars
