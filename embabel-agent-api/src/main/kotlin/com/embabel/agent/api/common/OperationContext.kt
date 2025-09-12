@@ -235,11 +235,7 @@ internal class OperationContextAi(
         return context.promptRunner().withLlm(llm)
     }
 
-    override fun rag(): RagService {
-        return context.processContext.platformServices.ragService
-    }
-
-    override fun rag(service: String): RagService {
+    override fun rag(service: String?): RagService {
         return context.processContext.platformServices.ragService(context, service, RagEventListener.NOOP)
             ?: error("No RAG service found with name $service")
     }

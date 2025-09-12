@@ -120,13 +120,19 @@ class OperationContextAiTest {
             val mockContext = createMockOperationContext()
             val mockRagService = mockk<RagService>()
 
-            every { mockContext.processContext.platformServices.ragService } returns mockRagService
+            every {
+                mockContext.processContext.platformServices.ragService(
+                    mockContext,
+                    null,
+                    any()
+                )
+            } returns mockRagService
 
             val ai = createOperationContextAi(mockContext)
             val result = ai.rag()
 
             assertEquals(mockRagService, result, "RAG service not returned correctly")
-            verify { mockContext.processContext.platformServices.ragService }
+            verify { mockContext.processContext.platformServices.ragService(mockContext, null, any()) }
         }
 
         @Test
@@ -364,14 +370,20 @@ class OperationContextAiTest {
             val mockContext = createMockOperationContext()
             val mockRagService = mockk<RagService>()
 
-            every { mockContext.processContext.platformServices.ragService } returns mockRagService
+            every {
+                mockContext.processContext.platformServices.ragService(
+                    mockContext,
+                    null,
+                    any()
+                )
+            } returns mockRagService
 
             val ai = createOperationContextAi(mockContext)
             val result1 = ai.rag()
             val result2 = ai.rag()
 
             assertEquals(result1, result2, "Multiple calls to rag() should return same service")
-            verify(exactly = 2) { mockContext.processContext.platformServices.ragService }
+            verify(exactly = 2) { mockContext.processContext.platformServices.ragService(mockContext, null, any()) }
         }
     }
 }
