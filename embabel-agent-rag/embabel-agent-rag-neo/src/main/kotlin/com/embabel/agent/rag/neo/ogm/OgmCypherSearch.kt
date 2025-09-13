@@ -55,10 +55,10 @@ class OgmCypherSearch(
         query: String,
         params: Map<String, Any>,
         logger: Logger?,
-    ): List<OgmMappedNamedEntity> {
+    ): List<OgmMappedNamedAndDescribedEntity> {
         val result = query(purpose = purpose, query = query, params = params, logger = logger)
         return result.mapNotNull { row ->
-            val match = row["n"] as? OgmMappedNamedEntity
+            val match = row["n"] as? OgmMappedNamedAndDescribedEntity
             if (match == null) {
                 ogmCypherSearchLogger.warn("Match is null for row: {}", row)
                 return@mapNotNull null
@@ -101,7 +101,7 @@ class OgmCypherSearch(
         query: String,
         params: Map<String, *>,
         logger: Logger?,
-    ): List<SimilarityResult<OgmMappedNamedEntity>> {
+    ): List<SimilarityResult<OgmMappedNamedAndDescribedEntity>> {
         val result = query(purpose = purpose, query = query, params = params, logger = logger)
         return rowsToMappedEntitySimilarityResult(result)
     }
@@ -131,7 +131,7 @@ class OgmCypherSearch(
         query: String,
         params: Map<String, *>,
         logger: Logger?,
-    ): List<SimilarityResult<OgmMappedNamedEntity>> {
+    ): List<SimilarityResult<OgmMappedNamedAndDescribedEntity>> {
         val result = query(purpose = purpose, query = query, params = params, logger = logger)
         return rowsToMappedEntitySimilarityResult(result)
     }
@@ -150,8 +150,8 @@ class OgmCypherSearch(
 
     private fun rowsToMappedEntitySimilarityResult(
         result: Result,
-    ): List<SimilarityResult<OgmMappedNamedEntity>> = result.mapNotNull { row ->
-        val match = row["match"] as? OgmMappedNamedEntity
+    ): List<SimilarityResult<OgmMappedNamedAndDescribedEntity>> = result.mapNotNull { row ->
+        val match = row["match"] as? OgmMappedNamedAndDescribedEntity
         if (match == null) {
             ogmCypherSearchLogger.warn("Match is null for row: $row")
             return@mapNotNull null

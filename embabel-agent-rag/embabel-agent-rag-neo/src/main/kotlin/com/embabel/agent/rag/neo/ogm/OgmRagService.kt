@@ -310,7 +310,7 @@ class OgmRagService(
     private fun generateAndExecuteCypher(
         request: RagRequest,
         entitySearch: EntitySearch,
-    ): List<SimilarityResult<out NamedEntityData>> {
+    ): List<SimilarityResult<out Retrievable>> {
         val schema = schemaResolver.getSchema(entitySearch)
         if (schema == null) {
             logger.info("No schema found for entity search {}, skipping Cypher execution", entitySearch)
@@ -350,7 +350,7 @@ class OgmRagService(
      */
     private fun executeGeneratedCypher(
         query: CypherQuery,
-    ): Result<List<OgmMappedNamedEntity>> {
+    ): Result<List<OgmMappedNamedAndDescribedEntity>> {
         try {
             return Result.success(
                 ogmCypherSearch.queryForMappedEntities(
