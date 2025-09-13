@@ -15,7 +15,9 @@
  */
 package com.embabel.agent.rag.tools
 
-import com.embabel.agent.api.common.support.SelfToolCallbackPublisher
+import com.embabel.agent.core.AgentProcess
+import com.embabel.agent.rag.RagResponse
+import com.embabel.agent.rag.RagResponseSummarizer
 import com.embabel.agent.rag.RagService
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.annotation.Tool
@@ -28,12 +30,13 @@ import org.springframework.ai.tool.annotation.ToolParam
  * and will be used consistently in all calls.
  * The LLM needs to provide only the search query.
  */
-class RagServiceSearchTools(
+class DualShotRagServiceSearchTools(
     val ragService: RagService,
     val options: RagOptions,
-) : SelfToolCallbackPublisher {
+    val summarizer: RagResponseSummarizer,
+) {
 
-    @Tool(description = "Search for information relating to this query. Returns detailed results")
+    @Tool(description = "Search for information relating to this query. Returns summary results")
     fun search(
         @ToolParam(
             description = "Standalone query to search for. Include sufficient context",
@@ -41,8 +44,26 @@ class RagServiceSearchTools(
         query: String,
     ): String {
         val ragResponse = ragService.search(options.toRequest(query))
+        val agentProcess = AgentProcess.get()
+        if (agentProcess == null) {
+            return "RagResponse for query [$query]:\n${options.ragResponseFormatter.format(ragResponse)}"
+        }
+        agentProcess.addObject(ragResponse.withoutHistory())
+        val summary = summarizer.summarize(ragResponse)
+        loggerFor<DualShotRagServiceSearchTools>().debug("Summary of RAG response: {}", summary)
+        return summary
+    }
+
+    @Tool(description = "Drill deep into the details of the last search result")
+    fun searchDetails(
+        @ToolParam(
+            description = "Standalone query to search for. Include sufficient context",
+        )
+        query: String,
+    ): String {
+        val ragResponse = AgentProcess.get()?.lastResult() as? RagResponse
+            ?: return "No RagResponse available, call search tool before"
         val asString = options.ragResponseFormatter.format(ragResponse)
-        loggerFor<RagServiceSearchTools>().debug("RagResponse for query [{}]:\n{}", query, asString)
         return asString
     }
 

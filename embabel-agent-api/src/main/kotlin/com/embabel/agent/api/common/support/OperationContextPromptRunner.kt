@@ -23,8 +23,10 @@ import com.embabel.agent.core.Verbosity
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
+import com.embabel.agent.rag.PromptRunnerRagResponseSummarizer
+import com.embabel.agent.rag.tools.DualShotRagServiceSearchTools
 import com.embabel.agent.rag.tools.RagOptions
-import com.embabel.agent.rag.tools.RagServiceSearchTools
+import com.embabel.agent.rag.tools.SingleShotRagServiceSearchTools
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.tools.agent.AgentToolCallback
@@ -173,7 +175,7 @@ internal data class OperationContextPromptRunner(
 
     override fun withRag(options: RagOptions): PromptRunner {
         if (toolObjects.map { it.obj }
-                .any { it is RagServiceSearchTools && it.options.service == options.service }
+                .any { it is SingleShotRagServiceSearchTools && it.options.service == options.service }
         ) error("Cannot add Rag Tools against service '${options.service ?: "DEFAULT"}' twice")
         val ragService =
             context.agentPlatform().platformServices.ragService(context, options.service, options.listener)
@@ -184,17 +186,26 @@ internal data class OperationContextPromptRunner(
         } else {
             StringTransformer { s -> "${options.service}-$s" }
         }
+        val toolInstance = if (options.dualShot != null) {
+            DualShotRagServiceSearchTools(
+                ragService = ragService,
+                options = options,
+                summarizer = PromptRunnerRagResponseSummarizer(this, options)
+            )
+        } else {
+            SingleShotRagServiceSearchTools(
+                ragService = ragService,
+                options = options,
+            )
+        }
         val withTools = withToolObject(
             ToolObject(
-                obj = RagServiceSearchTools(
-                    ragService = ragService,
-                    options = options,
-                ),
+                obj = toolInstance,
                 namingStrategy = namingStrategy,
             )
         )
         val systemPrompt = """|
-            |You have access to a RAG search tool to help you answer questions
+            |You have access to RAG search tools to help you answer questions
             |about ${ragService.description}
             """.trimMargin()
         return if (options.service == null) {

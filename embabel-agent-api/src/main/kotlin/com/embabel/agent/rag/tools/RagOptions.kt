@@ -21,6 +21,10 @@ import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.ZeroToOne
 import java.time.Duration
 
+data class DualShotConfig(
+    val summaryWords: Int = 100,
+)
+
 /**
  * Operations for RAG use as an LLM tool. Options are immutable and stable.
  * @param similarityThreshold minimum similarity threshold for results (0.0 to 1.0)
@@ -28,6 +32,8 @@ import java.time.Duration
  * returned. If set, only the given entities will be searched for.
  * @param ragResponseFormatter formatter to convert RagResponse to String
  * @param service optional name of the RAG service to use. If null, the default service will be used.
+ * @param dualShot whether to use dual-shot RAG,
+ * where the first tool returns a summary and the second tool returns detailed results.
  */
 data class RagOptions @JvmOverloads constructor(
     override val similarityThreshold: ZeroToOne = 0.7,
@@ -39,6 +45,7 @@ data class RagOptions @JvmOverloads constructor(
     val ragResponseFormatter: RagResponseFormatter = SimpleRagResponseFormatter,
     val service: String? = null,
     val listener: RagEventListener = RagEventListener.NOOP,
+    val dualShot: DualShotConfig? = null,
 ) : RagRequestRefinement<RagOptions> {
 
     override fun withSimilarityThreshold(similarityThreshold: ZeroToOne): RagOptions {
@@ -70,6 +77,10 @@ data class RagOptions @JvmOverloads constructor(
 
     fun withListener(listener: RagEventListener): RagOptions {
         return copy(listener = this.listener + listener)
+    }
+
+    fun withDualShot(dualShot: DualShotConfig): RagOptions {
+        return copy(dualShot = dualShot)
     }
 
 }

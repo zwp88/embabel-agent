@@ -35,7 +35,17 @@ data class RagResponse(
     val qualityMetrics: QualityMetrics? = null,
 
     val timestamp: Instant = Instant.now(),
-)
+) {
+
+    /**
+     * Return only the final response, without the history of enhancements
+     */
+    fun withoutHistory(): RagResponse {
+        return copy(
+            enhancement = null,
+        )
+    }
+}
 
 /**
  * RAGAS quality metrics

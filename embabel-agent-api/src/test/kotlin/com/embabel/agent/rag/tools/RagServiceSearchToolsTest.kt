@@ -32,7 +32,7 @@ class RagServiceSearchToolsTest {
         val mockRagService = mockk<RagService>()
         val options = RagOptions()
 
-        val ragTools = RagServiceSearchTools(mockRagService, options)
+        val ragTools = SingleShotRagServiceSearchTools(mockRagService, options)
 
         assertEquals(mockRagService, ragTools.ragService)
         assertEquals(options, ragTools.options)
@@ -43,7 +43,7 @@ class RagServiceSearchToolsTest {
     fun `should search with default options`() {
         val mockRagService = mockk<RagService>()
         val options = RagOptions()
-        val ragTools = RagServiceSearchTools(mockRagService, options)
+        val ragTools = SingleShotRagServiceSearchTools(mockRagService, options)
 
         val mockChunk = mockk<Chunk>()
         every { mockChunk.text } returns "Test chunk content"
@@ -67,7 +67,7 @@ class RagServiceSearchToolsTest {
     fun `should search with empty results`() {
         val mockRagService = mockk<RagService>()
         val options = RagOptions()
-        val ragTools = RagServiceSearchTools(mockRagService, options)
+        val ragTools = SingleShotRagServiceSearchTools(mockRagService, options)
 
         val mockResponse = RagResponse(RagRequest("test query"), "test-service", emptyList())
         every { mockRagService.search(any()) } returns mockResponse
@@ -87,7 +87,7 @@ class RagServiceSearchToolsTest {
             topK = 5,
             entitySearch = entitySearch,
         )
-        val ragTools = RagServiceSearchTools(mockRagService, options)
+        val ragTools = SingleShotRagServiceSearchTools(mockRagService, options)
 
         val mockResponse = RagResponse(RagRequest("test query"), "test-service", emptyList())
         every { mockRagService.search(any()) } returns mockResponse
@@ -175,7 +175,7 @@ class RagServiceSearchToolsTest {
         val mockRagService = mockk<RagService>()
         val customFormatter = mockk<RagResponseFormatter>()
         val options = RagOptions(ragResponseFormatter = customFormatter)
-        val ragTools = RagServiceSearchTools(mockRagService, options)
+        val ragTools = SingleShotRagServiceSearchTools(mockRagService, options)
 
         val mockResponse = RagResponse(RagRequest("test query"), "test-service", emptyList())
         every { mockRagService.search(any()) } returns mockResponse
@@ -191,7 +191,7 @@ class RagServiceSearchToolsTest {
     fun `should handle multiple search results with different types`() {
         val mockRagService = mockk<RagService>()
         val options = RagOptions()
-        val ragTools = RagServiceSearchTools(mockRagService, options)
+        val ragTools = SingleShotRagServiceSearchTools(mockRagService, options)
 
         val mockChunk1 = mockk<Chunk>()
         every { mockChunk1.text } returns "First chunk"
