@@ -16,6 +16,7 @@
 package com.embabel.coding.tools.git
 
 import com.embabel.agent.api.common.LlmReference
+import com.embabel.agent.domain.library.code.SymbolSearch
 import com.embabel.agent.tools.file.DefaultFileReadLog
 import com.embabel.agent.tools.file.FileReadLog
 import com.embabel.agent.tools.file.FileReadTools
@@ -42,7 +43,7 @@ class ClonedRepositoryReference(
     val localPath: Path,
     val shouldDeleteOnClose: Boolean = true,
     val fileFormatLimits: FileFormatLimits = FileFormatLimits(),
-) : AutoCloseable, FileReadTools, FileReadLog by DefaultFileReadLog(), LlmReference {
+) : AutoCloseable, FileReadTools, SymbolSearch, FileReadLog by DefaultFileReadLog(), LlmReference {
 
     override val name: String
         get() = url.substringAfterLast('/')
@@ -193,14 +194,14 @@ class ClonedRepositoryReference(
      * Return a prompt contributor if the repo is small enough
      */
     override fun notes(): String {
-        if (fileCount() > 1000 || writeAllFilesToString().length > fileFormatLimits.fileSizeLimit) {
+        if (fileCount() > fileFormatLimits.fileCountLimit || writeAllFilesToString().length > fileFormatLimits.fileSizeLimit) {
             return """
                 Use exposed tools. The repository is too large to include in the prompt.
             """.trimIndent()
         }
         return """
-                |Cloned repository at: $localPath
-                |Use file tools to read files in the repository.
+                |Cloned repository.
+                |Use file tools to read files in the repository relative to the root.
                 |Read limit is set to ${fileFormatLimits.fileSizeLimit} bytes.
                 """.trimMargin()
     }

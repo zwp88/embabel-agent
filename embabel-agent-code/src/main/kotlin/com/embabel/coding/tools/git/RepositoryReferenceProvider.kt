@@ -28,7 +28,7 @@ import java.nio.file.Path
  * @param fileSizeLimit Limit of the size of file that will be included in the prompt contribution.
  */
 data class FileFormatLimits(
-    val fileCountLimit: Int = 200,
+    val fileCountLimit: Int = 100,
     val fileSizeLimit: Long = 200_000,
 )
 
