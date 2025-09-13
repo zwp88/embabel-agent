@@ -16,8 +16,7 @@
 package com.embabel.agent.rag.neo.ogm
 
 import com.embabel.agent.rag.MappedEntity
-import com.embabel.agent.rag.NamedEntityData
-import com.embabel.common.core.types.Described
+import com.embabel.common.core.types.NamedAndDescribed
 import org.neo4j.ogm.annotation.Id
 
 /**
@@ -26,6 +25,7 @@ import org.neo4j.ogm.annotation.Id
 abstract class OgmMappedEntity(
     @Id
     override val id: String,
+    override val uri: String? = null,
 ) : MappedEntity {
 
     override fun labels() =
@@ -35,12 +35,19 @@ abstract class OgmMappedEntity(
         get() = emptyMap()
 
     override fun toString() = infoString(verbose = false)
+
+    override fun infoString(
+        verbose: Boolean?,
+        indent: Int,
+    ): String {
+        return "${javaClass.simpleName}:(${labels().joinToString(":")} id='$id')"
+    }
 }
 
-abstract class OgmMappedNamedEntity(
+abstract class OgmMappedNamedAndDescribedEntity(
     override val name: String,
     id: String,
-) : OgmMappedEntity(id), Described, NamedEntityData {
+) : OgmMappedEntity(id), NamedAndDescribed {
 
     override fun infoString(
         verbose: Boolean?,

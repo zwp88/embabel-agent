@@ -22,15 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 /**
  * Any retrievable entity, whether mapped or generic.
  */
-interface RetrievableEntity : Retrievable {
-
-    /**
-     * EmbeddableValue defaults to infoString
-     */
-    override fun embeddableValue(): String {
-        return infoString(verbose = true)
-    }
-}
+interface RetrievableEntity : Retrievable
 
 /**
  * Generic retrieved entity

@@ -21,7 +21,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 /**
  * @param chunkNodeName the name of the node representing a chunk in the knowledge graph
  * @param entityNodeName the name of a node representing an entity in the knowledge graph
- * @param packages the packages to scan for Neo4j OGM entities. Defaults to none
+ * @param ogmPackages the packages to scan for Neo4j OGM entities. Defaults to none
  */
 @ConfigurationProperties(prefix = "embabel.agent.rag.neo")
 data class NeoRagServiceProperties(
@@ -39,7 +39,7 @@ data class NeoRagServiceProperties(
     val entityFullTextIndex: String = "embabel-entity-fulltext-index",
 
     // Empty packages causes a strange failure within Neo4j OGM
-    val packages: List<String> = listOf("not.a.real.package"),
+    val ogmPackages: List<String> = listOf("not.a.real.package"),
     override val maxChunkSize: Int = 1500,
     override val overlapSize: Int = 200,
 ) : ContentChunker.Config

@@ -50,7 +50,7 @@ class NeoOgmConfig(
     fun sessionFactory(): SessionFactory {
         return SessionFactory(
             ogmConfiguration(),
-            *properties.packages.toTypedArray(),
+            *properties.ogmPackages.toTypedArray(),
         )
     }
 
