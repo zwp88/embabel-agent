@@ -15,26 +15,62 @@
  */
 package com.embabel.chat
 
+import com.embabel.agent.channel.MessageOutputChannelEvent
+import com.embabel.agent.channel.OutputChannel
+import com.embabel.agent.identity.User
+
 /**
  * Simplest possible conversation session implementation
+ * Responsible for keeping its conversation up to date
  */
 interface ChatSession {
 
+    val outputChannel: OutputChannel
+
     /**
-     * Conversation history
+     * The Embabel User if known, null if not.
+     */
+    val user: User?
+
+    /**
+     * Conversation history. Kept up to date.
      */
     val conversation: Conversation
 
     /**
-     * Listener that will always be active
+     * Subclasses should override this to provide a process ID if available.
      */
-    val messageListener: MessageListener
+    val processId: String? get() = null
 
     /**
-     * Any response messages will be sent to the messageListener
-     * @param message message to send
-     * @param additionalListener any additional listener to send the message to,
-     * in addition to the messageListener
+     * Update the conversation with a new message
+     * and respond to it.
+     * Any response messages will be sent to the messageListener,
+     * but also should be added to the conversation.
+     * @param userMessage message to send
      */
-    fun respond(message: UserMessage, additionalListener: MessageListener? = null)
+    fun onUserMessage(
+        userMessage: UserMessage,
+    )
+
+    /**
+     * Is the conversation finished?
+     */
+    fun isFinished(): Boolean = false
+
+    /**
+     * Convenience method to add a message to the conversation
+     */
+    fun saveAndSend(message: AssistantMessage) {
+        conversation.addMessage(message)
+        outputChannel.send(
+            MessageOutputChannelEvent(
+                processId = processId ?: "anonymous",
+                AssistantMessage(
+                    content = message.content,
+                    name = null,
+                ),
+            )
+        )
+    }
 }

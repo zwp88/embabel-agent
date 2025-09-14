@@ -23,5 +23,6 @@ https://research.nvidia.com/labs/lpr/slm-agents/[paper from NVIDIA Research].
 
 Further reading:
 
-- [Embabel: A new Agent Platform For the JVM](https://medium.com/@springrod/embabel-a-new-agent-platform-for-the-jvm-1c83402e0014)
-- [The Embabel Vision](https://medium.com/@springrod/the-embabel-vision-967654f13793)
+* link:https://medium.com/@springrod/embabel-a-new-agent-platform-for-the-jvm-1c83402e0014[Embabel: A new Agent Platform For the JVM]
+
+* link:https://medium.com/@springrod/the-embabel-vision-967654f13793[The Embabel Vision]

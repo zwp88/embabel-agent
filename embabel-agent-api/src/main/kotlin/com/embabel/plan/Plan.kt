@@ -53,7 +53,7 @@ interface Action : Step {
 interface Goal : Step
 
 /**
- * Plan to achieve a goal
+ * Plan to achieve a goal. A plan is a chain of actions.
  * The plan should be reassessed after each action each perform.
  * @param actions The actions to perform, in order
  * @param goal The goal to achieve

@@ -17,28 +17,17 @@ package com.embabel.agent.core
 
 import com.embabel.agent.api.annotation.AwaitableResponseException
 import com.embabel.common.util.time
-import com.fasterxml.jackson.annotation.JsonSubTypes
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "type",
-)
-@JsonSubTypes(
-)
 interface ActionRunner {
 
     /**
      * Execute an action
      * @param processContext process moment
-     * @param action action we're executing under
      */
     fun execute(
         processContext: ProcessContext,
-        action: Action,
     ): ActionStatus
 
     /**

@@ -19,7 +19,9 @@ class SimpleRagRagResponseFormatterTest {
     @Test
     fun chunksOnly() {
         val results = RagResponse(
-            service = "test", results = listOf(
+            request = RagRequest("any query at all"),
+            service = "test",
+            results = listOf(
                 DocumentSimilarityResult(
                     Document("foo"),
                     1.0,
@@ -28,6 +30,23 @@ class SimpleRagRagResponseFormatterTest {
         )
         val output = SimpleRagResponseFormatter.format(results)
         assertTrue(output.contains("foo"))
+    }
+
+    @Test
+    fun `chunks only with big content`() {
+        val longContent = "foo ".repeat(10000).trim()
+        val results = RagResponse(
+            request = RagRequest("any query at all"),
+            service = "test",
+            results = listOf(
+                DocumentSimilarityResult(
+                    Document(longContent),
+                    1.0,
+                )
+            )
+        )
+        val output = SimpleRagResponseFormatter.format(results)
+        assertTrue(output.contains(longContent))
     }
 
 }

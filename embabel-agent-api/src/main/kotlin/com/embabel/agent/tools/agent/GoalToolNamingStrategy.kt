@@ -29,7 +29,7 @@ interface GoalToolNamingStrategy {
  * to create a tool name.
  * For example, "com.myco.MyAgent.myGoal" becomes "MyAgent_myGoal".
  */
-object SimpleGoalClassAndNameToolNamingStrategy : GoalToolNamingStrategy {
+object SanitizedGoalNameToolNamingStrategy : GoalToolNamingStrategy {
     override fun nameForGoal(goal: Goal): String {
         return goal.name.split(".").takeLast(2).joinToString("_")
     }
@@ -39,7 +39,7 @@ open class PrefixedGoalToolNamingStrategy(
     private val prefix: String,
 ) : GoalToolNamingStrategy {
     override fun nameForGoal(goal: Goal): String {
-        return "${prefix}_${SimpleGoalClassAndNameToolNamingStrategy.nameForGoal(goal)}"
+        return "${prefix}_${SanitizedGoalNameToolNamingStrategy.nameForGoal(goal)}"
     }
 }
 

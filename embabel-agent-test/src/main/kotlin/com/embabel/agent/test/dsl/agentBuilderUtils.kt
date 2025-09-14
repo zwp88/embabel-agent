@@ -18,8 +18,8 @@ package com.embabel.agent.test.dsl
 import com.embabel.agent.api.common.support.Branch
 import com.embabel.agent.api.dsl.*
 import com.embabel.agent.domain.io.UserInput
-import com.embabel.agent.test.annotation.support.Wumpus
 import com.embabel.agent.test.domain.*
+import com.embabel.agent.test.type.Wumpus
 import com.embabel.common.core.MobyNameGenerator
 
 fun splitGarden() = agent("splitter", description = "splitter0") {

@@ -24,7 +24,6 @@ import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ProntoActionExecutionSchedule
 import com.embabel.agent.spi.ScheduledActionExecutionSchedule
 import com.embabel.agent.spi.support.AgenticEventListenerToolsStats
-import com.embabel.plan.Planner
 import com.embabel.plan.WorldState
 import com.embabel.plan.goap.WorldStateDeterminer
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -71,23 +70,18 @@ abstract class AbstractAgentProcess(
     override val goal: com.embabel.plan.Goal? get() = _goal
 
     override val processContext = ProcessContext(
-        platformServices = platformServices.copy(
-            eventListener = AgenticEventListener.of(platformServices.eventListener, agenticEventListenerToolsStats),
+        platformServices = platformServices.withEventListener(
+            agenticEventListenerToolsStats,
         ),
         agentProcess = this,
         processOptions = processOptions,
-        outputChannel = platformServices.outputChannel,
+        outputChannel = platformServices.outputChannel + processOptions.outputChannel,
     )
 
     /**
      * Get the WorldStateDeterminer for this process
      */
     protected abstract val worldStateDeterminer: WorldStateDeterminer
-
-    /**
-     * Get the planner for this process
-     */
-    protected abstract val planner: Planner<*, *, *>
 
     override val status: AgentProcessStatusCode
         get() = _status.get()
@@ -203,11 +197,11 @@ abstract class AbstractAgentProcess(
             }
 
             AgentProcessStatusCode.COMPLETED -> {
-                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
+                platformServices.eventListener.onProcessEvent(AgentProcessCompletedEvent(this))
             }
 
             AgentProcessStatusCode.FAILED -> {
-                platformServices.eventListener.onProcessEvent(AgentProcessFinishedEvent(this))
+                platformServices.eventListener.onProcessEvent(AgentProcessFailedEvent(this))
             }
 
             AgentProcessStatusCode.TERMINATED, AgentProcessStatusCode.KILLED -> {
@@ -346,7 +340,6 @@ abstract class AbstractAgentProcess(
         val actionStatus = action.qos.retryTemplate("Action-${action.name}").execute<ActionStatus, Throwable> {
             action.execute(
                 processContext = processContext,
-                action = action,
             )
         }
         val runningTime = Duration.between(timestamp, Instant.now())

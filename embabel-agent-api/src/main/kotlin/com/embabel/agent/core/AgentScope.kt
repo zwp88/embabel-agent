@@ -43,6 +43,12 @@ interface ActionSource {
  */
 interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSource, DataDictionary, HasInfoString {
 
+    /**
+     * Whether to hide the agent's actions and conditions
+     * from the outside world, defaults to false.
+     */
+    val opaque: Boolean
+
     @get:JsonIgnore
     override val domainTypes: Collection<DomainType>
         get() = actions.flatMap { it.domainTypes }.distinct()
@@ -77,10 +83,11 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
         val newAgent = Agent(
             name = name,
             provider = provider,
-            description = name,
+            description = description,
             actions = actions,
             goals = goals,
             conditions = conditions,
+            opaque = opaque,
         )
         return newAgent
     }
@@ -98,6 +105,7 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
             actions: List<Action> = emptyList(),
             goals: Set<Goal> = emptySet(),
             conditions: Set<Condition> = emptySet(),
+            opaque: Boolean = false,
         ): AgentScope {
             return AgentScopeImpl(
                 name = name,
@@ -105,6 +113,7 @@ interface AgentScope : Named, Described, GoalSource, ConditionSource, ActionSour
                 actions = actions,
                 goals = goals,
                 conditions = conditions,
+                opaque = opaque,
             )
         }
     }
@@ -117,4 +126,5 @@ private data class AgentScopeImpl(
     override val goals: Set<Goal>,
     override val conditions: Set<Condition>,
     override val domainTypes: Collection<DynamicType> = emptyList(),
+    override val opaque: Boolean = false,
 ) : AgentScope

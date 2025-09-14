@@ -45,7 +45,7 @@ val MdrFiles = listOf(
 )
 
 val TransformSuccessResponses = MdrFiles.map {
-    "$it 100% Complete"
+    "LLM call $it 100% Complete"
 } +
         kier("I knew you could do it. Even in your darkest moments I could see you arriving here")
 
@@ -175,12 +175,11 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(
         "[${e.processId}] ${highlight("WOE")}: (${e.request.action?.shortName()}) tool ${e.request.tool} failed $throwable in ${e.runningTime.toMillis()}ms with payload ${e.request.toolInput}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
-        "[${e.processId}] \uD83D\uDDA5\uFE0F MACRODATA REFINEMENT: requesting LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm} using ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"
+        "[${e.processId}] (${e.interaction.id.value}) \uD83D\uDDA5\uFE0F MACRODATA REFINEMENT using LLM ${e.llm.name}, creating ${e.outputClass.simpleName}: ${e.interaction.llm} with tools ${e.interaction.toolCallbacks.joinToString { it.toolDefinition.name() }}"
 
     override fun getLlmResponseEventMessage(e: LlmResponseEvent<*>): String =
         """
-        [${e.processId}] received LLM response ${e.request.interaction.id.value} of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
-        ${TransformSuccessResponses.random()}
+        [${e.processId}] (${e.request.interaction.id.value}) received LLM response of type ${e.response?.let { it::class.java.simpleName } ?: "null"} from ${e.request.interaction.llm.criteria} in ${e.runningTime.seconds} seconds
         """.trimIndent()
 
     override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =

@@ -1,4 +1,85 @@
 [[reference.domain]]
-=== Domain objects
+=== Domain Objects
 
-Not just strong typing Behavior
+Domain objects in Embabel are not just strongly-typed data structures - they are real objects with behavior that can be selectively exposed to LLMs and used in agent actions.
+
+==== Objects with Behavior
+
+Unlike simple structs or DTOs, Embabel domain objects can encapsulate business logic and expose it to LLMs through the `@Tool` annotation:
+
+[source,java]
+----
+@Entity
+public class Customer {
+    private String name;
+    private LoyaltyLevel loyaltyLevel;
+    private List<Order> orders;
+
+    @Tool(description = "Calculate the customer's loyalty discount percentage")
+    public BigDecimal getLoyaltyDiscount() {
+        return loyaltyLevel.calculateDiscount(orders.size());
+    }
+
+    @Tool(description = "Check if customer is eligible for premium service")  
+    public boolean isPremiumEligible() {
+        return orders.stream()
+            .mapToDouble(Order::getTotal)
+            .sum() > 1000.0;
+    }
+
+    // Regular methods not exposed to LLMs
+    private void updateLoyaltyLevel() {
+        // Internal business logic
+    }
+}
+----
+
+==== Selective Tool Exposure
+
+The `@Tool` annotation allows you to selectively expose domain object methods to LLMs:
+
+- **Business Logic**: Expose methods that provide business value to the LLM
+- **Calculated Properties**: Methods that compute derived values
+- **Business Rules**: Methods that implement domain-specific rules
+- **Keep Private**: Internal implementation details remain hidden
+
+==== Use in Actions
+
+Domain objects can be used naturally in action methods, combining LLM interactions with traditional object-oriented programming:
+
+[source,java]
+----
+@Action
+public Recommendation generateRecommendation(Customer customer, OperationContext context) {
+    // LLM has access to customer.getLoyaltyDiscount() and customer.isPremiumEligible()
+    // as tools, plus the customer object structure
+    
+    String prompt = String.format(
+        "Generate a personalized recommendation for %s based on their profile",
+        customer.getName()
+    );
+    
+    return context.ai()
+        .withDefaultLlm()
+        .createObject(prompt, Recommendation.class);
+}
+----
+
+==== Domain Understanding is Critical
+
+As outlined in Rod Johnson's blog introducing DICE (Domain-Integrated Context Engineering) in https://medium.com/@springrod/context-engineering-needs-domain-understanding-b4387e8e4bf8[Context Engineering Needs Domain Understanding], domain understanding is fundamental to effective context engineering.
+Domain objects serve as the bridge between:
+
+- **Business Domain**: Real-world entities and their relationships
+- **Agent Behavior**: How LLMs understand and interact with the domain
+- **Code Actions**: Traditional programming logic that operates on domain objects
+
+==== Benefits
+
+- **Rich Context**: LLMs receive both data structure and behavioral context
+- **Encapsulation**: Business logic stays within domain objects where it belongs
+- **Reusability**: Domain objects can be used across multiple agents
+- **Testability**: Domain logic can be unit tested independently
+- **Evolution**: Adding new tools to domain objects extends agent capabilities
+
+This approach ensures that agents work with meaningful business entities rather than generic data structures, leading to more natural and effective AI interactions.

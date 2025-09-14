@@ -27,9 +27,18 @@ import com.embabel.common.util.indent
 interface RagService : Described, HasInfoString {
 
     /**
-     * Human-readable name of the RAG service.
+     * Name of the RAG service. Should be unique
+     * per application instance. User code may use this to select
+     * a RAG service.
      */
     val name: String
+
+    /**
+     * Provision this rag service if necessary
+     */
+    fun provision() {
+        // Default no-op
+    }
 
     /**
      * Make a RAG request
@@ -55,39 +64,6 @@ interface RagService : Described, HasInfoString {
     }
 }
 
-sealed interface ExplorationRequest
-
-data class DepthExplorationRequest(
-    val depth: Int,
-) : ExplorationRequest
-
-data class PathsExplorationRequest(
-    val paths: List<String>,
-) : ExplorationRequest
-
-/**
- * Rag service that supports navigation in a graph of retrievable objects.
- * This may not be supported by all RAG services.
- * It need not be a graph but could be implemented by a relational database or other structure.
- */
-interface NavigableRagService : RagService {
-
-    /**
-     * Explore the graph of retrievable objects around the given retrievable object.
-     */
-    fun explore(retrievable: Retrievable, explorationRequest: ExplorationRequest): Retrievable
-}
-
-
-/**
- * RagService comparable to a Spring Data repository.
- */
-interface RepositoryRagService : RagService {
-
-    fun findById(id: String, label: String, explorationRequest: ExplorationRequest): EntityData?
-
-    fun save(entityData: EntityData): EntityData
-}
 
 private data class EmptyRagService(
     override val name: String,
@@ -96,6 +72,7 @@ private data class EmptyRagService(
 
     override fun search(ragRequest: RagRequest): RagResponse {
         return RagResponse(
+            request = ragRequest,
             service = name,
             results = emptyList(),
         )

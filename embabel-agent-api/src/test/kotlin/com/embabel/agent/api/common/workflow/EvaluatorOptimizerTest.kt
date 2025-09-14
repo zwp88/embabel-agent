@@ -22,6 +22,7 @@ import com.embabel.agent.api.annotation.support.AgentMetadataReader
 import com.embabel.agent.api.common.ActionContext
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.asSubProcess
+import com.embabel.agent.api.common.workflow.loop.TextFeedback
 import com.embabel.agent.core.AgentProcessStatusCode
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.domain.io.UserInput
@@ -42,7 +43,7 @@ class EvaluationFlowDoesNotTerminate {
     fun toFeedback(
         userInput: UserInput,
         context: ActionContext,
-    ): ScoredResult<Report, SimpleFeedback> {
+    ): ScoredResult<Report, TextFeedback> {
         var count = 0
         return context.asSubProcess(
             EvaluatorOptimizer.generateUntilAcceptable(
@@ -51,7 +52,7 @@ class EvaluationFlowDoesNotTerminate {
                     Report("thing-$count")
                 },
                 evaluator = {
-                    SimpleFeedback(.5, "feedback")
+                    TextFeedback(.5, "feedback")
                 },
                 maxIterations = 3,
             )
@@ -60,7 +61,7 @@ class EvaluationFlowDoesNotTerminate {
 
     @AchievesGoal(description = "Creating a person")
     @Action
-    fun done(scoredResult: ScoredResult<Report, SimpleFeedback>): Report {
+    fun done(scoredResult: ScoredResult<Report, TextFeedback>): Report {
         assertEquals(0.5, scoredResult.feedback.score)
         return scoredResult.result
     }
@@ -73,7 +74,7 @@ class EvaluationFlowTerminatesWithBestLast {
     fun toFeedback(
         userInput: UserInput,
         context: ActionContext,
-    ): ScoredResult<Report, SimpleFeedback> {
+    ): ScoredResult<Report, TextFeedback> {
         var count = 0
         return context.asSubProcess(
             EvaluatorOptimizer.generateUntilAcceptable(
@@ -82,7 +83,7 @@ class EvaluationFlowTerminatesWithBestLast {
                     Report("thing-$count")
                 },
                 evaluator = {
-                    SimpleFeedback(.3 * count, "feedback")
+                    TextFeedback(.3 * count, "feedback")
                 },
                 maxIterations = 5,
             )
@@ -91,7 +92,7 @@ class EvaluationFlowTerminatesWithBestLast {
 
     @AchievesGoal(description = "Creating a person")
     @Action
-    fun done(scoredResult: ScoredResult<Report, SimpleFeedback>): Report {
+    fun done(scoredResult: ScoredResult<Report, TextFeedback>): Report {
         assertTrue(scoredResult.feedback.score > .9)
         return scoredResult.result
     }
@@ -101,13 +102,13 @@ class EvaluationFlowTerminatesWithBestLast {
 class EvaluationFlowTerminatesWithRandomBest {
 
     // TODO this being stateful isn't OK for production but this is a test
-    private var allFeedbacks: MutableList<SimpleFeedback> = mutableListOf()
+    private var allFeedbacks: MutableList<TextFeedback> = mutableListOf()
 
     @Action
     fun toFeedback(
         userInput: UserInput,
         context: ActionContext,
-    ): ScoredResult<Report, SimpleFeedback> {
+    ): ScoredResult<Report, TextFeedback> {
         val random = Random()
         var count = 0
         return context.asSubProcess(
@@ -117,7 +118,7 @@ class EvaluationFlowTerminatesWithRandomBest {
                     Report("thing-$count")
                 },
                 evaluator = {
-                    val f = SimpleFeedback(score = random.nextDouble(1.0), "feedback")
+                    val f = TextFeedback(score = random.nextDouble(1.0), "feedback")
                     allFeedbacks.add(f)
                     f
                 },
@@ -130,7 +131,7 @@ class EvaluationFlowTerminatesWithRandomBest {
     @AchievesGoal(description = "Creating a person")
     @Action
     fun done(
-        scoredResult: ScoredResult<Report, SimpleFeedback>,
+        scoredResult: ScoredResult<Report, TextFeedback>,
         context: OperationContext,
     ): Report {
         assertTrue(allFeedbacks.isNotEmpty(), "Must have feedbacks:\n${context.infoString(true)}")

@@ -23,7 +23,8 @@ import com.embabel.agent.api.dsl.exportedEvenMoreEvilWizard
 import com.embabel.agent.api.dsl.userInputToFrogOrPersonBranch
 import com.embabel.agent.testing.integration.IntegrationTestUtils
 import com.embabel.agent.testing.integration.RandomRanker
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.embabel.agent.config.AgentPlatformProperties
+import com.embabel.agent.testing.integration.forAutonomyTesting
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -35,9 +36,9 @@ class PerGoalToolFactoryTest {
         val agentPlatform = IntegrationTestUtils.dummyAgentPlatform()
         agentPlatform.deploy(evenMoreEvilWizard())
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
-        val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
+        val autonomy = Autonomy(agentPlatform, RandomRanker(), forAutonomyTesting())
 
-        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = false, listeners = emptyList())
         assertEquals(
@@ -51,9 +52,9 @@ class PerGoalToolFactoryTest {
         val agentPlatform = IntegrationTestUtils.dummyAgentPlatform()
         agentPlatform.deploy(evenMoreEvilWizard())
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
-        val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
+        val autonomy = Autonomy(agentPlatform, RandomRanker(), forAutonomyTesting())
 
-        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = true, listeners = emptyList())
         assertEquals(
@@ -68,9 +69,9 @@ class PerGoalToolFactoryTest {
         val agentPlatform = IntegrationTestUtils.dummyAgentPlatform()
         agentPlatform.deploy(exportedEvenMoreEvilWizard())
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
-        val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
+        val autonomy = Autonomy(agentPlatform, RandomRanker(), forAutonomyTesting())
 
-        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = true, listeners = emptyList())
         assertEquals(
@@ -85,9 +86,9 @@ class PerGoalToolFactoryTest {
         val agentPlatform = IntegrationTestUtils.dummyAgentPlatform()
         agentPlatform.deploy(exportedEvenMoreEvilWizard())
         agentPlatform.deploy(userInputToFrogOrPersonBranch())
-        val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
+        val autonomy = Autonomy(agentPlatform, RandomRanker(), forAutonomyTesting())
 
-        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, "testApp")
 
         val toolCallbacks = provider.toolCallbacks(remoteOnly = false, listeners = emptyList())
 
@@ -124,9 +125,9 @@ class PerGoalToolFactoryTest {
     fun `test structured input type function for goal`() {
         val agentPlatform = IntegrationTestUtils.dummyAgentPlatform()
         agentPlatform.deploy(evenMoreEvilWizardWithStructuredInput())
-        val autonomy = Autonomy(agentPlatform, RandomRanker(), AutonomyProperties())
+        val autonomy = Autonomy(agentPlatform, RandomRanker(), forAutonomyTesting())
 
-        val provider = PerGoalToolCallbackFactory(autonomy, jacksonObjectMapper(), "testApp")
+        val provider = PerGoalToolCallbackFactory(autonomy, "testApp")
         val toolCallbacks = provider.toolCallbacks(remoteOnly = false, listeners = emptyList())
 
         assertNotNull(toolCallbacks)

@@ -28,7 +28,7 @@ import com.embabel.agent.spi.PlatformServices
 data class ProcessContext(
     val processOptions: ProcessOptions = ProcessOptions(),
     internal val platformServices: PlatformServices,
-    val outputChannel: OutputChannel = platformServices.outputChannel,
+    val outputChannel: OutputChannel = platformServices.outputChannel + processOptions.outputChannel,
     val agentProcess: AgentProcess,
 ) : LlmOperations by platformServices.llmOperations, AgenticEventListener by MulticastAgenticEventListener(
     processOptions.listeners + platformServices.eventListener,

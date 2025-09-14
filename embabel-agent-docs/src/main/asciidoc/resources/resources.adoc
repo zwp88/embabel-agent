@@ -3,4 +3,100 @@
 :sectids:
 :sectanchors:
 
-Reading list
+=== Rod Johnson's Blog Posts
+
+- https://medium.com/@springrod/embabel-a-new-agent-platform-for-the-jvm-1c83402e0014[Embabel: A new Agent Platform For the JVM] - Introduction to the Embabel agent framework, explaining the motivation for building an agent platform specifically for the JVM ecosystem.
+Covers the key differentiators and benefits of the approach.
+
+- https://medium.com/@springrod/the-embabel-vision-967654f13793[The Embabel Vision] - Rod Johnson's vision for the future of agent frameworks and how Embabel fits into the broader AI landscape.
+Discusses the long-term goals and strategic direction of the project.
+
+- https://medium.com/@springrod/context-engineering-needs-domain-understanding-b4387e8e4bf8[Context Engineering Needs Domain Understanding] - Deep dive into the DICE (Domain-Integrated Context Engineering) concept and why domain understanding is fundamental to effective context engineering in AI systems.
+
+=== Examples and Tutorials
+
+- https://www.baeldung.com/java-embabel-agent-framework[Creating an AI Agent in Java Using Embabel Agent Framework] by Baeldung - A nice introductory example, in Java.
+- https://jettro.dev/building-agents-with-embabel-a-hands-on-introduction-4f96d2edeac0[Building Agents With Embabel: A Hands-On Introduction] by Jettro Coenradie - An excellent Java tutorial.
+
+==== https://github.com/embabel/embabel-agent-examples[Embabel Agent Examples Repository]
+
+Comprehensive collection of example agents demonstrating different aspects of the framework:
+
+- **Beginner Examples**: Simple horoscope agents showing basic concepts
+- **Intermediate Examples**: Multi-LLM research agents with self-improvement
+- **Advanced Examples**: Fact-checking agents with parallel verification and confidence scoring
+- **Integration Examples**: Agents that use web tools, databases, and external APIs
+
+Perfect starting point for learning Embabel development with hands-on examples.
+
+==== https://github.com/embabel/java-agent-template[Java Agent Template]
+
+Template repository for creating new Java-based Embabel agents.
+Includes:
+
+- Pre-configured project structure
+- Example WriteAndReviewAgent demonstrating multi-LLM workflows
+- Build scripts and Docker configuration
+- Getting started documentation
+
+==== https://github.com/embabel/kotlin-agent-template[Kotlin Agent Template]
+
+Template repository for Kotlin-based agent development with similar features to the Java template but using idiomatic Kotlin patterns.
+
+=== Sophisticated Example: Tripper Travel Planner
+
+==== https://github.com/embabel/tripper[Tripper - AI-Powered Travel Planning Agent]
+
+A production-quality example demonstrating advanced Embabel capabilities:
+
+**Features:**
+
+- Generates personalized travel itineraries using multiple AI models
+- Integrates web search, mapping, and accommodation search
+- Modern web interface built with htmx
+- Containerized deployment with Docker
+- CI/CD pipeline with GitHub Actions
+
+**Technical Highlights:**
+
+- Uses both Claude Sonnet and GPT-4.1-mini models
+- Demonstrates domain-driven design principles
+- Shows how to build user-facing applications with Embabel
+- Practical example of deterministic planning with AI
+
+**Learning Value:**
+
+- Real-world application of Embabel concepts
+- Integration patterns with external services
+- Production deployment considerations
+- User interface design for AI applications
+
+=== Goal-Oriented Action Planning (GOAP)
+
+==== https://medium.com/@vedantchaudhari/goal-oriented-action-planning-34035ed40d0b[Goal Oriented Action Planning]
+
+Introduction to GOAP, the planning algorithm used by Embabel.
+Explains the core concepts and why GOAP is effective for AI agent planning.
+
+==== https://research.nvidia.com/labs/lpr/slm-agents/[Small Language Model Agents - NVIDIA Research]
+
+Research paper discussing the division between "code agency" and "LLM agency" - concepts that inform Embabel's architecture.
+
+==== https://en.wikipedia.org/wiki/OODA_loop[OODA Loop - Wikipedia]
+
+Background on the Observe-Orient-Decide-Act loop that underlies Embabel's replanning approach.
+
+=== Domain-Driven Design
+
+==== https://martinfowler.com/bliki/DomainDrivenDesign.html[Domain-Driven Design - Martin Fowler]
+
+Foundational concepts of Domain-Driven Design that inform Embabel's approach to domain modeling.
+
+==== https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215[Domain-Driven Design: Tackling Complexity in the Heart of Software]
+
+Eric Evans' seminal book on DDD principles.
+Essential reading for understanding how to model complex domains effectively.
+
+==== https://www.infoq.com/articles/ddd-contextual-validation/[DDD and Contextual Validation]
+
+Advanced DDD concepts relevant to building sophisticated domain models for AI agents.

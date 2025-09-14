@@ -62,7 +62,7 @@ inline fun <reified A, reified B : Any> split(
 ): AgentScopeBuilder<Unit> = doSplit({ splitter(it.input) }, A::class.java, B::class.java)
 
 inline infix fun <reified A, reified B, reified C> ((A) -> B).andThenDo(
-    crossinline that: (InputActionContext<B>) -> C
+    crossinline that: (InputActionContext<B>) -> C,
 ): AgentScopeBuilder<C> {
     val javaFunction1 = JavaFunction<InputActionContext<A>, B> { ctx -> this(ctx.input) }
     val javaFunction2 = JavaFunction<InputActionContext<B>, C> { ctx -> that(ctx) }
@@ -77,7 +77,7 @@ inline infix fun <reified A, reified B, reified C> ((A) -> B).andThenDo(
 }
 
 inline infix fun <reified A, reified B, reified C> ((A) -> B).andThen(
-    crossinline that: (B) -> C
+    crossinline that: (B) -> C,
 ): AgentScopeBuilder<C> {
     val javaFunction1 = JavaFunction<InputActionContext<A>, B> { ctx -> this(ctx.input) }
     val javaFunction2 = JavaFunction<InputActionContext<B>, C> { ctx -> that(ctx.input) }
@@ -451,6 +451,7 @@ data class AgentScopeBuilder<O>(
     val actions: List<Action> = emptyList(),
     val goals: Set<Goal> = emptySet(),
     val conditions: Set<Condition> = emptySet(),
+    val opaque: Boolean = false,
 ) {
     fun build(): AgentScope {
         return AgentScope(
@@ -458,6 +459,7 @@ data class AgentScopeBuilder<O>(
             actions = actions,
             goals = goals,
             conditions = conditions,
+            opaque = opaque,
         )
     }
 
@@ -494,7 +496,6 @@ data class AgentScopeBuilder<O>(
 
         singleAction.execute(
             processContext = context.processContext,
-            action = context.action!!,
         )
         return context.last(outputClass) ?: throw IllegalStateException(
             "No output of type ${outputClass.name} found in context"
@@ -502,7 +503,7 @@ data class AgentScopeBuilder<O>(
     }
 
     inline fun <reified O : Any> asSubProcess(
-        context: ActionContext
+        context: ActionContext,
     ): O {
         return asSubProcess(
             context = context,
@@ -516,7 +517,7 @@ data class AgentScopeBuilder<O>(
 
     fun <F> andThenDo(
         fn: Transformation<O, F>,
-        fClass: Class<F>
+        fClass: Class<F>,
     ): AgentScopeBuilder<F> {
         // TODO is this safe?
         val lastAction = actions.last()
@@ -542,7 +543,10 @@ data class AgentScopeBuilder<O>(
     /**
      * Changes output
      */
-    fun <F> andThen(fn: (e: O) -> F, fClass: Class<F>): AgentScopeBuilder<F> =
+    fun <F> andThen(
+        fn: (e: O) -> F,
+        fClass: Class<F>,
+    ): AgentScopeBuilder<F> =
         andThenDo({ fn(it.input) }, fClass)
 
 
@@ -558,7 +562,6 @@ inline fun <reified I, reified O : Any> runAgent(
     val singleAction = agent.asAction<Any, O>()
     singleAction.execute(
         processContext = context.processContext,
-        action = context.action,
     )
     return context.last<O>() ?: throw IllegalStateException(
         "No output of type ${O::class.java} found in context"

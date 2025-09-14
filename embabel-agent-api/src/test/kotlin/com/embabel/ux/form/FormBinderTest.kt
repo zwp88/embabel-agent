@@ -15,6 +15,7 @@
  */
 package com.embabel.ux.form
 
+import com.embabel.example.simple.horoscope.java.StarPerson
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -47,7 +48,7 @@ data class TypeTestUser(
     val dateValue: LocalDate,
 
     @property:FormField("time-id")
-    val timeValue: LocalTime
+    val timeValue: LocalTime,
 )
 
 data class OptionalFieldsUser(
@@ -58,7 +59,7 @@ data class OptionalFieldsUser(
     val age: Int?,
 
     @property:FormField("email-id")
-    val email: String?
+    val email: String?,
 )
 
 class FormBinderTest {
@@ -69,7 +70,7 @@ class FormBinderTest {
         val name: String,
 
         @property:FormField("age-id")
-        val age: Int
+        val age: Int,
     )
 
     data class UserWithOptional(
@@ -80,7 +81,7 @@ class FormBinderTest {
         val age: Int,
 
         @property:FormField("bio-id")
-        val bio: String? = null
+        val bio: String? = null,
     )
 
     data class ComplexUser(
@@ -106,7 +107,7 @@ class FormBinderTest {
         val country: String,
 
         @property:FormField("hobbies-id")
-        val hobbies: List<String>
+        val hobbies: List<String>,
     )
 
     data class UnmappedFieldUser(
@@ -114,7 +115,7 @@ class FormBinderTest {
         val name: String,
 
         @property:NoFormField
-        val unmappedField: String // No annotation
+        val unmappedField: String, // No annotation
     )
 
     // Setup helper functions
@@ -287,6 +288,28 @@ class FormBinderTest {
             val user: JavaPersonRecord = submission.bindTo()
             assertEquals("John Doe", user.name)
             assertEquals(30, user.age)
+        }
+
+        @Test
+        fun `bind StarPerson record`() {
+            val submission = FormSubmissionResult(
+                submission = FormSubmission(
+                    formId = "test-form",
+                    values = mapOf(
+                        "name" to "John Doe",
+                        "sign" to "virgo"
+                    )
+                ),
+                values = mapOf(
+                    "name" to ControlValue.TextValue("John Doe"),
+                    "sign" to ControlValue.TextValue("virgo")
+                ),
+                valid = true,
+                validationErrors = emptyMap()
+            )
+            val user: StarPerson = submission.bindTo()
+            assertEquals("John Doe", user.name)
+            assertEquals("virgo", user.sign)
         }
 
         @Test

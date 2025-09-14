@@ -63,7 +63,6 @@ open class TransformationAction<I, O>(
     @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
-        action: Action,
     ): ActionStatus = ActionRunner.execute(processContext) {
         val input = processContext.getValue(inputVarName, inputClass.name) as I
         val output = block.transform(

@@ -19,10 +19,12 @@ import com.embabel.agent.rag.Chunk
 import com.embabel.agent.rag.RagRequest
 import com.embabel.agent.rag.RagResponse
 import com.embabel.agent.rag.WritableRagService
+import com.embabel.agent.rag.ingestion.MaterializedDocument
 import com.embabel.common.core.types.SimilarityResult
 import com.embabel.common.core.types.ZeroToOne
 import com.embabel.common.util.indent
 import com.embabel.common.util.trim
+import org.jetbrains.annotations.ApiStatus
 import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
@@ -31,6 +33,7 @@ import org.springframework.ai.vectorstore.VectorStore
 /**
  * RagService wrapping a Spring AI VectorStore.
  */
+@ApiStatus.Experimental
 class SpringVectorStoreRagService(
     private val vectorStore: VectorStore,
     override val description: String,
@@ -50,6 +53,7 @@ class SpringVectorStoreRagService(
             .build()
         val results: List<Document> = vectorStore.similaritySearch(searchRequest)!!
         return RagResponse(
+            request = ragRequest,
             service = name,
             results = results.map { it ->
                 DocumentSimilarityResult(
@@ -63,6 +67,10 @@ class SpringVectorStoreRagService(
     override fun accept(documents: List<Document>) {
         logger.info("Writing ${documents.size} documents into Spring vector store")
         vectorStore.accept(documents)
+    }
+
+    override fun writeContent(root: MaterializedDocument): List<String> {
+        TODO("Not yet implemented")
     }
 
     override fun infoString(

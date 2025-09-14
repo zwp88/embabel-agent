@@ -1,21 +1,254 @@
 [[reference.tools]]
 === Tools
 
-Tools are passed to LLMs to allow them to perform actions.
+Tools can be passed to LLMs to allow them to perform actions.
 
-Embabel provides tools to LLMs in two ways:
+Embabel provides tools to LLMs in several ways:
 
-* At action or `PromptRunner` level, from a tool group.
+* At action or `PromptRunner` level, from a tool group or _tool instance_.
+A tool instance is an object with `@Tool` methods.
 * At domain object level via `@Tool` methods authored by the application developer.
 
+==== Implementing Tool Instances
+
+Classes implementing tools can be stateful.
+They are often domain objects.
+
+Return type restrictions: TODO
+
+Method parameter restrictions: TODO
+
+You can obtain the current `AgentProcess` in a Tool method implementation via `AgentProcess.get()`.
+This enables tools to bind to the `AgentProcess`, making objects available to other actions.
+For example:
+
+[source,java]
+----
+@Tool(description="My Tool")
+String bindCustomer(Long id) {
+    var customer = customerRepository.findById(id);
+    var agentProcess = AgentProcess.get();
+    if (agentProcess != null) {
+        agentProcess.addObject(customer);
+        return "Customer bound to blackboard";
+    }
+    return "No agent process: Unable to bind customer";
+}
+----
+
+[[tool-groups]]
 ==== Tool Groups
 
 Embabel introduces the concept of a *tool group*.
 This is a level of indirection between user intent and tool selection.
 For example, we don't ask for Brave or Google web search: we ask for "web" tools, which may be resolved differently in different environments.
 
-> Tools are deliberately focused.
+TIP: Tools use should be focused.
 Thus tool groups cannot be specified at agent level, but must be specified on individual actions.
+
+Tool groups are often backed by <<mcp,MCP>>.
+
+===== Configuring Tool Groups with Spring
+
+Embabel uses Spring's `@Configuration` and `@Bean` annotations to expose ToolGroups to the agent platform.
+The framework provides a default `ToolGroupsConfiguration` that demonstrates how to inject MCP servers and selectively expose MCP tools:
+
+[source,kotlin]
+----
+@Configuration
+class ToolGroupsConfiguration(
+    private val mcpSyncClients: List<McpSyncClient>,
+) {
+    
+    @Bean
+    fun mathToolGroup() = MathTools()
+
+    @Bean
+    fun mcpWebToolsGroup(): ToolGroup {
+        return McpToolGroup(
+            description = CoreToolGroups.WEB_DESCRIPTION,
+            name = "docker-web",
+            provider = "Docker",
+            permissions = setOf(ToolGroupPermission.INTERNET_ACCESS),
+            clients = mcpSyncClients,
+            filter = {
+                // Only expose specific web tools, exclude rate-limited ones
+                (it.toolDefinition.name().contains("brave") || 
+                 it.toolDefinition.name().contains("fetch")) &&
+                !it.toolDefinition.name().contains("brave_local_search")
+            }
+        )
+    }
+}
+----
+
+===== Key Configuration Patterns
+
+**MCP Client Injection:**
+The configuration class receives a `List<McpSyncClient>` via constructor injection.
+Spring automatically provides all available MCP clients that have been configured in the application.
+
+**Selective Tool Exposure:**
+Each `McpToolGroup` uses a `filter` lambda to control which tools from the MCP servers are exposed to agents.
+This allows fine-grained control over tool availability and prevents unwanted or problematic tools from being used.
+
+**Tool Group Metadata:**
+Tool groups include descriptive metadata like `name`, `provider`, and `description` to help agents understand their capabilities.
+The `permissions` property declares what access the tool group requires (e.g., `INTERNET_ACCESS`).
+
+===== Creating Custom Tool Group Configurations
+
+Applications can implement their own `@Configuration` classes to expose custom tool groups:
+
+[source,java]
+----
+@Configuration
+public class MyToolGroupsConfiguration {
+    
+    @Bean
+    public ToolGroup databaseToolsGroup(DataSource dataSource) {
+        return new DatabaseToolGroup(dataSource);
+    }
+    
+    @Bean
+    public ToolGroup emailToolsGroup(EmailService emailService) {
+        return new EmailToolGroup(emailService);
+    }
+}
+----
+
+This approach leverages Spring's dependency injection to provide tool groups with the services and resources they need, while maintaining clean separation of concerns between tool configuration and agent logic.
+
+===== Tool Usage in Action Methods
+
+The `toolGroups` parameter on `@Action` methods specifies which tool groups are required for that action to execute.
+The framework automatically provides these tools to the LLM when the action runs.
+
+Here's an example from the `StarNewsFinder` agent that demonstrates web tool usage:
+
+[tabs]
+====
+Java::
++
+[source,java]
+----
+// toolGroups specifies tools that are required for this action to run
+@Action(toolGroups = {CoreToolGroups.WEB})
+public RelevantNewsStories findNewsStories(
+        StarPerson person, Horoscope horoscope, OperationContext context) {
+    var prompt = """
+            %s is an astrology believer with the sign %s.
+            Their horoscope for today is:
+                <horoscope>%s</horoscope>
+            Given this, use web tools and generate search queries
+            to find %d relevant news stories summarize them in a few sentences.
+            Include the URL for each story.
+            Do not look for another horoscope reading or return results directly about astrology;
+            find stories relevant to the reading above.
+            """.formatted(
+            person.name(), person.sign(), horoscope.summary(), storyCount);
+
+    return context.ai().withDefaultLlm().createObject(prompt, RelevantNewsStories.class);
+}
+----
+
+Kotlin::
++
+[source,kotlin]
+----
+// toolGroups specifies tools that are required for this action to run
+@Action(toolGroups = [CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION])
+internal fun findNewsStories(
+    person: StarPerson,
+    horoscope: Horoscope,
+    context: OperationContext,
+): RelevantNewsStories =
+    context.ai().withDefaultLlm() createObject (
+        """
+        ${person.name} is an astrology believer with the sign ${person.sign}.
+        Their horoscope for today is:
+            <horoscope>${horoscope.summary}</horoscope>
+        Given this, use web tools and generate search queries
+        to find $storyCount relevant news stories summarize them in a few sentences.
+        Include the URL for each story.
+        Do not look for another horoscope reading or return results directly about astrology;
+        find stories relevant to the reading above.
+        """.trimIndent()
+    )
+----
+====
+
+===== Key Tool Usage Patterns
+
+**Tool Group Declaration:**
+The `toolGroups` parameter on `@Action` methods explicitly declares which tool groups the action needs.
+This ensures the LLM has access to the appropriate tools when executing that specific action.
+
+**Multiple Tool Groups:**
+Actions can specify multiple tool groups (e.g., `[CoreToolGroups.WEB, CoreToolGroups.BROWSER_AUTOMATION]`) when they need different types of capabilities.
+
+**Automatic Tool Provisioning:**
+The framework automatically makes the specified tools available to the LLM during the action execution.
+Developers don't need to manually manage tool availability - they simply declare what's needed.
+
+**Tool-Aware Prompts:**
+Prompts should explicitly instruct the LLM to use the available tools.
+For example, "use web tools and generate search queries" clearly directs the LLM to utilize the web search capabilities.
+
+===== Using Tools at PromptRunner Level
+
+Instead of declaring tools at the action level, you can also specify tools directly on the `PromptRunner` for more granular control:
+
+[source,kotlin]
+----
+// Add tool groups to a specific prompt
+context.promptRunner().withToolGroup(CoreToolGroups.WEB).create(
+    """
+    Given the topic, generate a detailed report using web research.
+    
+    # Topic
+    ${reportRequest.topic}
+    """.trimIndent()
+)
+
+// Add multiple tool groups
+context.ai().withDefaultLlm()
+    .withToolGroup(CoreToolGroups.WEB)
+    .withToolGroup(CoreToolGroups.MATH)
+    .createObject("Calculate stock performance with web data", StockReport::class)
+----
+
+**Adding Tool Objects with @Tool Methods:**
+
+You can also provide domain objects with `@Tool` methods directly to specific prompts:
+
+[source,java]
+----
+context.ai()
+    .withDefaultLlm()
+    .withToolObject(jokerTool)
+    .createObject("Create a UserInput object for fun", UserInput.class);
+
+// Add tool object with filtering and custom naming strategy
+context.ai()
+    .withDefaultLlm()
+    .withToolObject(
+        ToolObject(calculatorService)
+            .withNamingStrategy { "calc_$it" }
+            .withFilter { methodName -> methodName.startsWith("compute") }
+    ).createObject("Perform calculations", Result.class);
+----
+
+**Available PromptRunner Tool Methods:**
+
+- `withToolGroup(String)`: Add a single tool group by name
+- `withToolGroup(ToolGroup)`: Add a specific ToolGroup instance
+- `withToolGroups(Set<String>)`: Add multiple tool groups
+- `withTools(vararg String)`: Convenient method to add multiple tool groups
+- `withToolObject(Any)`: Add domain object with @Tool methods
+- `withToolObject(ToolObject)`: Add ToolObject with custom configuration
+
+==== Tool Objects
 
 ==== Tools on Domain Objects
 

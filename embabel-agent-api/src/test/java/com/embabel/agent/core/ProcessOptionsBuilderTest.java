@@ -16,19 +16,26 @@
 package com.embabel.agent.core;
 
 import com.embabel.agent.core.support.InMemoryBlackboard;
-import com.embabel.agent.testing.unit.FakeOperationContext;
+import com.embabel.agent.event.AgenticEventListener;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProcessOptionsBuilderTest {
 
     @Test
     void builder() {
+        var identities = new Identities();
         var blackboard = new InMemoryBlackboard();
+        var listener  = AgenticEventListener.Companion.getDevNull();
 
         var po = ProcessOptions.builder()
+                .contextId("42")
+                .identities(identities)
                 .blackboard(blackboard)
                 .test(true)
                 .verbosity(vb -> vb
@@ -43,8 +50,16 @@ class ProcessOptionsBuilderTest {
                         .actions(2)
                         .tokens(3)
                 )
+                .control(cb -> cb
+                        .toolDelay(Delay.MEDIUM)
+                        .operationDelay(Delay.LONG)
+                )
+                .prune(true)
+                .listener(listener)
+                .listeners(listeners -> assertEquals(List.of(listener), listeners))
                 .build();
 
+        assertEquals(identities, po.getIdentities());
         assertEquals(blackboard, po.getBlackboard());
         assertTrue(po.getTest());
 
@@ -53,9 +68,18 @@ class ProcessOptionsBuilderTest {
         assertTrue(po.getVerbosity().getDebug());
         assertTrue(po.getVerbosity().getShowPlanning());
 
+        assertFalse(po.getAllowGoalChange());
+
         assertEquals(1, po.getBudget().getCost());
         assertEquals(2, po.getBudget().getActions());
         assertEquals(3, po.getBudget().getTokens());
+
+        assertEquals(Delay.MEDIUM, po.getControl().getToolDelay());
+        assertEquals(Delay.LONG, po.getControl().getOperationDelay());
+
+        assertTrue(po.getPrune());
+        assertEquals(List.of(listener), po.getListeners());
+
     }
 
 }

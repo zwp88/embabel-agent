@@ -15,115 +15,100 @@
  */
 package com.embabel.agent.api.common
 
-import com.embabel.agent.api.annotation.using
+import com.embabel.agent.api.annotation.support.AgenticInfo
+import com.embabel.agent.core.Agent
+import com.embabel.agent.core.AgentPlatform
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupRequirement
-import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
-import com.embabel.agent.spi.LlmCall
+import com.embabel.agent.rag.tools.RagOptions
 import com.embabel.agent.spi.LlmUse
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.core.types.ZeroToOne
-import com.embabel.common.util.StringTransformer
-import org.springframework.ai.tool.ToolCallback
+import com.embabel.common.ai.prompt.PromptElement
+import com.embabel.common.util.loggerFor
+import org.jetbrains.annotations.ApiStatus
 
 /**
- * User-facing interface for executing prompts.
+ * Define a handoff to a subagent.
+
  */
-interface PromptRunnerOperations {
-
-    /**
-     * Generate text
-     */
-    infix fun generateText(prompt: String): String =
-        createObject(
-            prompt = prompt,
-            outputClass = String::class.java,
-        )
-
-    /**
-     * Create an object of the given type using the given prompt and LLM options from context
-     * (process context or implementing class).
-     * Prompts are typically created within the scope of an
-     * @Action method that provides access to
-     * domain object instances, offering type safety.
-     */
-    fun <T> createObject(
-        prompt: String,
-        outputClass: Class<T>,
-    ): T
-
-    /**
-     * Try to create an object of the given type using the given prompt and LLM options from context
-     * (process context or implementing class).
-     * Prompt is typically created within the scope of an
-     * @Action method that provides access to
-     * domain object instances, offering type safety.
-     */
-    fun <T> createObjectIfPossible(
-        prompt: String,
-        outputClass: Class<T>,
-    ): T?
-
-    fun evaluateCondition(
-        condition: String,
-        context: String,
-        confidenceThreshold: ZeroToOne = 0.8,
-    ): Boolean
-
-}
-
-/**
- * Holds an annotated tool object.
- * Adds a naming strategy and a filter to the object.
- * @param obj the object the tool annotations are on
- * @param namingStrategy the naming strategy to use for the tool object's methods
- * @param filter a filter to apply to the tool object's methods
- */
-data class ToolObject(
-    val obj: Any,
-    val namingStrategy: StringTransformer = StringTransformer.IDENTITY,
-    val filter: (String) -> Boolean = { true },
+class Subagent private constructor(
+    private val agentRef: Any,
+    val inputClass: Class<*>,
 ) {
 
-    init {
-        if (obj is Iterable<*>) {
-            throw IllegalArgumentException("Internal error: ToolObject cannot be an Iterable. Offending object: $obj")
-        }
-    }
-
-    constructor (
-        obj: Any,
+    /**
+     * Subagent that is an agent
+     * @param agent the subagent to hand off to
+     * @param inputClass the class of the input that the subagent expects
+     */
+    constructor(
+        agent: Agent,
+        inputClass: Class<*>,
     ) : this(
-        obj = obj,
-        namingStrategy = StringTransformer.IDENTITY,
-        filter = { true },
+        agentRef = agent,
+        inputClass = inputClass,
     )
 
-    fun withNamingStrategy(
-        namingStrategy: StringTransformer,
-    ): ToolObject = copy(namingStrategy = namingStrategy)
+    constructor(
+        agentName: String,
+        inputClass: Class<*>,
+    ) : this(
+        agentRef = agentName,
+        inputClass = inputClass,
+    )
 
-    fun withFilter(
-        filter: (String) -> Boolean,
-    ): ToolObject = copy(filter = filter)
+    /**
+     * Reference to an annotated agent class.
+     */
+    constructor(
+        agentType: Class<*>,
+        inputClass: Class<*>,
+    ) : this(
+        agentRef = agentType,
+        inputClass = inputClass,
+    )
 
-    companion object {
+    fun resolve(agentPlatform: AgentPlatform): Agent {
+        return when (agentRef) {
+            is Agent -> agentRef
+            is String -> agentPlatform.agents().find { it.name == agentRef }
+                ?: throw IllegalArgumentException(
+                    "Subagent with name '$agentRef' not found in platform ${agentPlatform.name}. " +
+                            "Available agents: ${agentPlatform.agents().map { it.name }}"
+                )
 
-        fun from(o: Any): ToolObject = o as? ToolObject
-            ?: ToolObject(
-                obj = o,
-                namingStrategy = StringTransformer.IDENTITY,
-                filter = { true },
+            is Class<*> -> {
+                val agenticInfo = AgenticInfo(agentRef)
+                if (!agenticInfo.agentic()) {
+                    throw IllegalArgumentException(
+                        "Subagent must be an Agent or a String representing the agent name, but was: $agentRef"
+                    )
+                }
+                agentPlatform.agents().find { it.name == agenticInfo.agentName() }
+                    ?: throw IllegalArgumentException(
+                        "Subagent of type $agentRef with name '$agentRef' not found in platform ${agentPlatform.name}. " +
+                                "Available agents: ${agentPlatform.agents().map { it.name }}"
+                    )
+            }
+
+            else -> throw IllegalArgumentException(
+                "Subagent must be an Agent or a String representing the agent name, but was: $agentRef"
             )
-
+        }
     }
 }
+
 
 /**
  * User code should always use this interface to execute prompts.
+ * Typically obtained from an [OperationContext] or [ActionContext] parameter,
+ * via [OperationContext.ai]
  * A PromptRunner is immutable once constructed, and has determined
- * LLM and hyperparameters.
+ * LLM and hyperparameters. Use the "with" methods to evolve
+ * the state to your desired configuration before executing createObject,
+ * generateText or other LLM invocation methods.
  * Thus, a PromptRunner can be reused within an action implementation.
  * A contextual facade to LlmOperations.
  * @see com.embabel.agent.spi.LlmOperations
@@ -134,7 +119,6 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
      * Additional objects with @Tool annotation for use in this PromptRunner
      */
     val toolObjects: List<ToolObject>
-
 
     /**
      * Specify an LLM for the PromptRunner
@@ -149,8 +133,20 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     fun withToolGroup(toolGroup: String): PromptRunner =
         withToolGroup(ToolGroupRequirement(toolGroup))
 
+    /**
+     * Allows for dynamic tool groups to be added to the PromptRunner.
+     */
+    fun withToolGroup(toolGroup: ToolGroup): PromptRunner
+
     fun withToolGroups(toolGroups: Set<String>): PromptRunner =
         toolGroups.fold(this) { acc, toolGroup -> acc.withToolGroup(toolGroup) }
+
+    /**
+     * Add a set of tool groups to the PromptRunner
+     * @param toolGroups the set of named tool groups to add
+     */
+    fun withTools(vararg toolGroups: String): PromptRunner =
+        withToolGroups(toolGroups.toSet())
 
     fun withToolGroup(toolGroup: ToolGroupRequirement): PromptRunner
 
@@ -175,16 +171,65 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
         toolObject: ToolObject,
     ): PromptRunner
 
+    fun withToolObjects(vararg toolObjects: Any?): PromptRunner =
+        toolObjects.fold(this) { acc, toolObject -> acc.withToolObject(toolObject) }
+
+    /**
+     * Add tools for RAG. Will use platform RagService
+     * @param options options for the RAG tools. Control similarity threshold, topK, labels, and response formatting.
+     */
+    @ApiStatus.Experimental
+    fun withRag(options: RagOptions): PromptRunner
+
+    /**
+     * Add a reference which provides tools and prompt contribution.
+     */
+    fun withReference(reference: LlmReference): PromptRunner {
+        return withToolObject(reference.toolObject())
+            .withPromptContributor(reference)
+    }
+
+    /**
+     * Add a list of references which provide tools and prompt contributions.
+     */
+    fun withReferences(references: List<LlmReference>): PromptRunner {
+        return references.fold(this) { acc, reference -> acc.withReference(reference) }
+    }
+
+    /**
+     * Add varargs of references which provide tools and prompt contributions.
+     */
+    fun withReferences(vararg references: LlmReference): PromptRunner =
+        withReferences(references.toList())
+
     /**
      * Add a list of handoffs to agents on this platform
      * @param outputTypes the types of objects that can result from output flow
      */
+    @ApiStatus.Experimental
     fun withHandoffs(
         vararg outputTypes: Class<*>,
     ): PromptRunner
 
     /**
-     * Add a prompt contributor
+     * Add a list of subagents to hand off to.
+     */
+    @ApiStatus.Experimental
+    fun withSubagents(
+        vararg subagents: Subagent,
+    ): PromptRunner
+
+    /**
+     * Add a literal system prompt
+     */
+    fun withSystemPrompt(systemPrompt: String): PromptRunner =
+        withPromptContributor(
+            PromptContributor.fixed(systemPrompt)
+        )
+
+    /**
+     * Add a prompt contributor that can add to the prompt.
+     * Facilitates reuse of prompt elements.
      * @param promptContributor
      * @return PromptRunner instance with the added PromptContributor
      */
@@ -192,6 +237,26 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
         withPromptContributors(listOf(promptContributor))
 
     fun withPromptContributors(promptContributors: List<PromptContributor>): PromptRunner
+
+    /**
+     * Add varargs of prompt contributors and contextual prompt elements.
+     */
+    fun withPromptElements(vararg elements: PromptElement): PromptRunner {
+        val promptContributors = elements.filterIsInstance<PromptContributor>()
+        val contextualPromptElements = elements.filterIsInstance<ContextualPromptElement>()
+        val oddOnesOut = elements.filterNot { it is PromptContributor || it is ContextualPromptElement }
+        if (oddOnesOut.isNotEmpty()) {
+            loggerFor<PromptRunner>().warn(
+                "{} arguments to withPromptElements were not prompt contributors or contextual prompt elements and will be ignored: {}",
+                oddOnesOut.size,
+                oddOnesOut.joinToString(
+                    ", ", prefix = "[", postfix = "]"
+                )
+            )
+        }
+        return withPromptContributors(promptContributors)
+            .withContextualPromptContributors(contextualPromptElements)
+    }
 
     /**
      * Add a prompt contributor that can see context
@@ -205,19 +270,19 @@ interface PromptRunner : LlmUse, PromptRunnerOperations {
     ): PromptRunner =
         withContextualPromptContributors(listOf(contextualPromptContributor))
 
+    /**
+     * Set whether to generate examples of the output in the prompt
+     * on a per-PromptRunner basis. This overrides platform defaults.
+     * Note that adding individual examples with [ObjectCreator.withExample]
+     * will always override this.
+     */
     fun withGenerateExamples(generateExamples: Boolean): PromptRunner
 
-    companion object {
-
-        /**
-         * Create a PromptRunner instance for use in @Action methods
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun usingLlm(llm: LlmOptions = LlmOptions()): PromptRunner {
-            return using(llm)
-        }
-    }
+    /**
+     * Create an object creator for the given output class.
+     * Allows setting strongly typed examples.
+     */
+    fun <T> creating(outputClass: Class<T>): ObjectCreator<T>
 
 }
 
@@ -237,80 +302,7 @@ inline infix fun <reified T> PromptRunner.create(prompt: String): T =
 inline fun <reified T> PromptRunner.createObjectIfPossible(prompt: String): T? =
     createObjectIfPossible(prompt, T::class.java)
 
-interface LlmObjectCreationRequest : LlmCall {
-    val requireResult: Boolean
-    val outputClass: Class<*>
-}
-
-interface LlmCallRequest : LlmObjectCreationRequest {
-    val prompt: String
-}
-
-/**
- * Exception thrown to indicate that a prompt should be executed.
- * This is not a real failure but meant to be intercepted by infrastructure.
- * It allows us to maintain strong typing.
- * @param requireResult whether to require a result or allow the LLM to
- * say that it cannot produce a result
- * @param llm llm to use. Contextual LLM will be used if not set
- */
-sealed class ExecutePromptException(
-    override val requireResult: Boolean,
-    override val llm: LlmOptions? = null,
-    override val outputClass: Class<*>,
-    override val toolCallbacks: List<ToolCallback>,
-    val toolObjects: List<ToolObject>,
-    override val promptContributors: List<PromptContributor>,
-    override val contextualPromptContributors: List<ContextualPromptElement>,
-    override val generateExamples: Boolean?,
-) : LlmObjectCreationRequest, RuntimeException(
-    "Not a real failure but meant to be intercepted by infrastructure"
-) {
-
-    override val name = "ExecutePromptException"
-}
-
-class CreateObjectPromptException(
-    override val prompt: String,
-    requireResult: Boolean,
-    llm: LlmOptions? = null,
-    outputClass: Class<*>,
-    override val toolGroups: Set<ToolGroupRequirement>,
-    toolCallbacks: List<ToolCallback>,
-    toolObjects: List<ToolObject>,
-    promptContributors: List<PromptContributor>,
-    contextualPromptContributors: List<ContextualPromptElement>,
-    generateExamples: Boolean? = null,
-) : ExecutePromptException(
-    requireResult = requireResult,
-    llm = llm,
-    outputClass = outputClass,
-    toolCallbacks = toolCallbacks,
-    toolObjects = toolObjects,
-    promptContributors = promptContributors,
-    contextualPromptContributors = contextualPromptContributors,
-    generateExamples = generateExamples,
-), LlmCallRequest
-
-class EvaluateConditionPromptException(
-    val condition: String,
-    val context: String,
-    val confidenceThreshold: ZeroToOne,
-    requireResult: Boolean,
-    llm: LlmOptions? = null,
-    override val toolGroups: Set<ToolGroupRequirement>,
-    toolObjects: List<ToolObject>,
-    toolCallbacks: List<ToolCallback>,
-    promptContributors: List<PromptContributor>,
-    contextualPromptContributors: List<ContextualPromptElement>,
-    generateExamples: Boolean? = null,
-) : ExecutePromptException(
-    requireResult = requireResult,
-    llm = llm,
-    outputClass = Determination::class.java,
-    toolCallbacks = toolCallbacks,
-    toolObjects = toolObjects,
-    promptContributors = promptContributors,
-    contextualPromptContributors = contextualPromptContributors,
-    generateExamples = generateExamples,
-)
+inline fun <reified T> TemplateOperations.createObject(
+    model: Map<String, Any>,
+): T =
+    createObject(outputClass = T::class.java, model = model)

@@ -4,19 +4,23 @@ ifndef::imagesdir[]
 endif::[]
 
 include::overview/overview.adoc[]
+
 include::getting-started/getting-started.adoc[]
+
 include::reference/reference.adoc[]
 
 
-include::shell/shell-guide.adoc[]
+// include::shell/shell-guide.adoc[]
+
 // include::eval/eval-guide.adoc[]
-include::examples/examples-guide.adoc[]
+
+// include::examples/examples-guide.adoc[]
 
 include::design/design.adoc[]
 
 include::contributing/contributing.adoc[]
 
-include::roadmap/roadmap.adoc[]
+// include::roadmap/roadmap.adoc[]
 
 include::resources/resources.adoc[]
 

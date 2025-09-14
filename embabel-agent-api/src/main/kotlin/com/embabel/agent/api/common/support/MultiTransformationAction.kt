@@ -62,7 +62,6 @@ class MultiTransformationAction<O : Any>(
     @Suppress("UNCHECKED_CAST")
     override fun execute(
         processContext: ProcessContext,
-        action: Action,
     ): ActionStatus = ActionRunner.execute(processContext) {
         val inputValues: List<Any> = inputs.map {
             processContext.getValue(variable = it.name, type = it.type)
@@ -91,8 +90,6 @@ class MultiTransformationAction<O : Any>(
             throw IllegalArgumentException(
                 """
                 Output of action $name is not of type ${outputClass.name}.
-                Did you incorrectly obtain a PromptRunner via 'using' before the end of an action method?
-                Take a context object as the last signature of your method signature.
                 Return was $output
                 """.trimIndent()
             )

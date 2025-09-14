@@ -16,41 +16,43 @@
 package com.embabel.chat
 
 import com.embabel.agent.api.common.autonomy.AgentProcessExecution
+import com.embabel.agent.domain.library.HasContent
 import com.embabel.common.ai.prompt.PromptContributor
-import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.StableIdentified
+import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timestamped
+import com.embabel.common.util.trim
 import java.time.Instant
 
 /**
- * Conversation shim for agent system
+ * Conversation shim for agent system.
+ * Mutable.
  */
-interface Conversation : StableIdentified {
+interface Conversation : StableIdentified, HasInfoString {
 
     val messages: List<Message>
 
-    fun withMessage(message: Message): Conversation
+    /**
+     * Non-null if the conversation has messages and the last message is from the user.
+     */
+    fun lastMessageMustBeFromUser(): UserMessage? = messages.lastOrNull() as? UserMessage
+
+    /**
+     * Modify the state of this conversation
+     * This method is mutable, and returns itself only for convenience
+     */
+    fun addMessage(message: Message): Conversation
 
     fun promptContributor(
         conversationFormatter: ConversationFormatter = WindowingConversationFormatter(),
     ) = PromptContributor.dynamic({ "Conversation so far:\n" + conversationFormatter.format(this) })
 
-
-}
-
-data class InMemoryConversation(
-    override val id: String = MobyNameGenerator.generateName(),
-    override val messages: List<Message> = emptyList(),
-    private val persistent: Boolean = false,
-) : Conversation {
-
-    override fun withMessage(message: Message): Conversation {
-        return copy(
-            messages = messages + message,
-        )
+    override fun infoString(
+        verbose: Boolean?,
+        indent: Int,
+    ): String {
+        return promptContributor().contribution()
     }
-
-    override fun persistent(): Boolean = persistent
 }
 
 /**
@@ -60,6 +62,7 @@ data class InMemoryConversation(
 enum class Role {
     USER,
     ASSISTANT,
+    SYSTEM,
 }
 
 /**
@@ -70,32 +73,56 @@ enum class Role {
  */
 sealed class Message(
     val role: Role,
-    val content: String,
+    override val content: String,
     val name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Timestamped
+) : HasContent, Timestamped {
+
+    val sender: String get() = name ?: role.name.lowercase().replaceFirstChar { it.uppercase() }
+}
 
 /**
  * Message sent by the user.
  * @param content Content of the message
  * @param name Name of the user, if available
  */
-class UserMessage(
+class UserMessage @JvmOverloads constructor(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Message(Role.USER, content, name, timestamp)
+) : Message(role = Role.USER, content = content, name = name, timestamp = timestamp) {
+
+    override fun toString(): String {
+        return "UserMessage(from='${sender}', content='${trim(content, 80, 10)}')"
+    }
+}
 
 /**
  * Message sent by the assistant.
  * @param content Content of the message
  * @param name Name of the assistant, if available
  */
-open class AssistantMessage(
+open class AssistantMessage @JvmOverloads constructor(
     content: String,
     name: String? = null,
     override val timestamp: Instant = Instant.now(),
-) : Message(Role.ASSISTANT, content, name, timestamp)
+) : Message(role = Role.ASSISTANT, content = content, name = name, timestamp = timestamp) {
+
+    override fun toString(): String {
+        return "AssistantMessage(from='${sender}', content='${trim(content, 80, 10)}')"
+    }
+}
+
+class SystemMessage @JvmOverloads constructor(
+    content: String,
+    override val timestamp: Instant = Instant.now(),
+) : Message(role = Role.SYSTEM, content = content, name = null, timestamp = timestamp) {
+
+    override fun toString(): String {
+        return "SystemMessage(content='${trim(content, 80, 10)}')"
+    }
+
+}
 
 /**
  * Assistant message resulting from an agentic execution

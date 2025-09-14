@@ -25,6 +25,9 @@ import java.util.concurrent.CompletableFuture
  * drawing on all of its agents as its own actions, goals, and conditions.
  * An AgentPlatform is stateful, as agents can be deployed to it.
  * See TypedOps for a higher level API with typed I/O.
+ * Typically, there is one AgentPlatform per Spring Boot application,
+ * with agents discovered by classpath scanning for @Agent annotations,
+ * but this is not a requirement.
  */
 interface AgentPlatform : AgentScope {
 
@@ -73,7 +76,6 @@ interface AgentPlatform : AgentScope {
      * @param bindings the bindings for the process: Objects that are pre-bound
      * to the blackboard.
      */
-    @Deprecated("Use createAgentProcess and run or start instead")
     fun runAgentFrom(
         agent: Agent,
         processOptions: ProcessOptions = ProcessOptions(),
@@ -152,12 +154,12 @@ interface AgentPlatform : AgentScope {
         get() = agents().flatMap { it.domainTypes }.distinctBy { it.name }
 
     override val actions: List<Action>
-        get() = agents().flatMap { it.actions }.distinctBy { it.name }
+        get() = agents().filterNot { it.opaque }.flatMap { it.actions }.distinctBy { it.name }
 
     override val goals: Set<Goal>
         get() = agents().flatMap { it.goals }.distinctBy { it.name }.toSet()
 
     override val conditions: Set<Condition>
-        get() = agents().flatMap { it.conditions }.distinctBy { it.name }.toSet()
+        get() = agents().filterNot { it.opaque }.flatMap { it.conditions }.distinctBy { it.name }.toSet()
 
 }

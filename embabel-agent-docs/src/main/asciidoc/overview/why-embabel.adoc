@@ -1,8 +1,41 @@
 [[overview.why-embabel]]
 === Embabel Differentiators
 
-Planning Type safety Domain model
+==== Sophisticated Planning
 
-Intent
+Goes beyond a finite state machine or sequential execution with nesting by introducing a true planning step, using a non-LLM AI algorithm.
+This enables the system to perform tasks it wasn't programmed to do by combining known steps in a novel order, as well as make decisions about parallelization and other runtime behavior.
 
-Extensibility
+==== Superior Extensibility and Reuse
+
+Because of dynamic planning, adding more domain objects, actions, goals and conditions can extend the capability of the system, _without editing FSM definitions_ or existing code.
+
+==== Strong Typing and Object Orientation
+
+Actions, goals and conditions are informed by a domain model, which can include behavior.
+Everything is strongly typed and prompts and manually authored code interact cleanly.
+No more magic maps.
+Enjoy full refactoring support.
+
+==== Platform Abstraction
+
+Clean separation between programming model and platform internals allows running locally while potentially offering higher QoS in production without changing application code.
+
+==== LLM Mixing
+
+It is easy to build applications that mix LLMs, ensuring the most cost-effective yet capable solution.
+This enables the system to leverage the strengths of different models for different tasks.
+In particular, it facilitates the use of local models for point tasks.
+This can be important for cost and privacy.
+
+==== Spring and JVM Integration
+
+Built on Spring and the JVM, making it easy to access existing enterprise functionality and capabilities.
+For example:
+
+- Spring can inject and manage agents, including using Spring AOP to decorate functions.
+- Robust persistence and transaction management solutions are available.
+
+==== Designed for Testability
+
+Both unit testing and agent end-to-end testing are easy from the ground up.

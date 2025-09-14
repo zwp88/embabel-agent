@@ -1,13 +1,113 @@
 [[reference.types-runner]]
-=== Core types
+=== Core Types
 
 ==== LlmOptions
 
+The `LlmOptions` class specifies which LLM to use and its hyperparameters.
+It's defined in the https://github.com/embabel/embabel-common[embabel-common] project and provides a fluent API for LLM configuration:
+
+[source,java]
+----
+// Create LlmOptions with model and temperature
+var options = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+    .withTemperature(0.8);
+
+// Use different hyperparameters for different tasks
+var analyticalOptions = LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+    .withTemperature(0.2)
+    .withTopP(0.9);
+----
+
+**Important Methods:**
+
+- `withModel(String)`: Specify the model name
+- `withTemperature(Double)`: Set creativity/randomness (0.0-1.0)
+- `withTopP(Double)`: Set nucleus sampling parameter
+- `withTopK(Integer)`: Set top-K sampling parameter
+- `withPersona(String)`: Add a system message persona
+
 ==== PromptRunner
 
-All LLM calls go via the `PromptRunner` interface.
+All LLM calls in user applications should be made via the `PromptRunner` interface.
 Once created, a `PromptRunner` can run multiple prompts with the same LLM, hyperparameters, tool groups and `PromptContributors`.
 
-===== Getting a `PromptRunner`
+===== Getting a PromptRunner
 
-===== `PromptRunner` methods
+You obtain a `PromptRunner` from an `OperationContext` using the fluent API:
+
+[source,java]
+----
+@Action
+public Story createStory(UserInput input, OperationContext context) {
+    // Get PromptRunner with default LLM
+    var runner = context.ai().withDefaultLlm();
+    
+    // Get PromptRunner with specific LLM options
+    var customRunner = context.ai().withLlm(
+        LlmOptions.withModel(OpenAiModels.GPT_4O_MINI)
+            .withTemperature(0.8)
+    );
+    
+    return customRunner.createObject("Write a story about: " + input.getContent(), Story.class);
+}
+----
+
+===== PromptRunner Methods
+
+**Core Object Creation:**
+
+- `createObject(String, Class<T>)`: Create a typed object from a prompt, otherwise throw an exception. An exception triggers retry. If retry fails repeatedly, re-planning occurs.
+- `createObjectIfPossible(String, Class<T>)`: Try to create an object, return null on failure.
+This can cause replanning.
+- `generateText(String)`: Generate simple text response
+
+TIP: Normally you want to use one of the `createObject` methods to ensure the response is typed correctly.
+
+**Tool and Context Management:**
+
+- `withToolGroup(String)`: Add <<tool-groups, tool groups>> for LLM access
+- `withToolObject(Object)`: Add domain objects with <<reference.tools, @Tool>> methods
+- `withPromptContributor(PromptContributor)`: Add <<reference.prompt-contributors, context>> contributors
+
+**LLM Configuration:**
+
+- `withLlm(LlmOptions)`: Use specific LLM configuration
+- `withGenerateExamples(Boolean)`: Control example generation
+
+**Returning a Specific Type**
+
+- `creating(Class<T>)`: Go into the `ObjectCreator` fluent API for returning a particular type.
+
+For example:
+
+[source,java]
+----
+var story = context.ai()
+    .withDefaultLlm()
+    .withToolGroup(CoreToolGroups.WEB)
+    .creating(Story.class)
+    .fromPrompt("Create a story about: " + input.getContent());
+----
+
+The main reason to do this is to add strongly typed examples for https://www.promptingguide.ai/techniques/fewshot[few-shot prompting].
+For example:
+
+[source,java]
+----
+var story = context.ai()
+    .withDefaultLlm()
+    .withToolGroup(CoreToolGroups.WEB)
+    .withExample("A children's story", new Story("Once upon a time...")) // <1>
+    .creating(Story.class)
+    .fromPrompt("Create a story about: " + input.getContent());
+----
+
+<1> **Example**: The example will be included in the prompt in JSON format to guide the LLM.
+
+**Advanced Features:**
+
+- `withTemplate(String)`: Use <<reference.templates, Jinja>> templates for prompts
+- `withSubagents(Subagent...)`: Enable handoffs to other agents
+- `evaluateCondition(String, String)`: Evaluate boolean condition
+
+// TODO: (jasper notes) Add links to subagent and evaluateCondition

@@ -16,10 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.api.common.StuckHandler
-import com.embabel.common.core.types.AssetCoordinates
-import com.embabel.common.core.types.Described
-import com.embabel.common.core.types.Named
-import com.embabel.common.core.types.Semver
+import com.embabel.common.core.types.*
 import com.embabel.common.util.ComputerSaysNoSerializer
 import com.embabel.common.util.indentLines
 import com.embabel.plan.goap.GoapPlanningSystem
@@ -37,6 +34,8 @@ import org.slf4j.LoggerFactory
  * @param stuckHandler The handler to call when the agent is stuck, if provided
  * @param conditions Well-known conditions that can be referenced by actions
  * @param actions The actions the agent can use
+ * @param opaque whether to hide the agent's actions and conditions
+ *                 from the outside world, defaults to false.
  * @param domainTypes Data types used in this agent
  */
 @JsonSerialize(using = ComputerSaysNoSerializer::class)
@@ -49,12 +48,13 @@ data class Agent(
     override val actions: List<Action>,
     override val goals: Set<Goal>,
     val stuckHandler: StuckHandler? = null,
+    override val opaque: Boolean = false,
     override val domainTypes: Collection<DomainType> = mergeTypes(
         agentName = name,
         defaultDataTypes = emptyList(),
         actions = actions,
     ),
-) : Described, AssetCoordinates, AgentScope {
+) : NamedAndDescribed, AssetCoordinates, AgentScope {
 
     @JvmOverloads
     constructor(

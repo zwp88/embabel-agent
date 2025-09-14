@@ -1,5 +1,8 @@
 # Embabel Agent Framework
 
+<img align="left" src="https://github.com/embabel/embabel-agent/blob/main/embabel-agent-api/images/315px-Meister_der_Weltenchronik_001.jpg?raw=true" width="180">
+
+[![Docs](https://img.shields.io/badge/docs-live-brightgreen)](https://docs.embabel.com/embabel-agent/guide/0.1.2-SNAPSHOT/)
 ![Build](https://github.com/embabel/embabel-agent/actions/workflows/maven.yml/badge.svg)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=embabel_embabel-agent&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=embabel_embabel-agent)
 [![Discord](https://img.shields.io/discord/1277751399261798401?logo=discord)](https://discord.gg/t6bjkyj93q)
@@ -24,11 +27,6 @@
 [![License](https://img.shields.io/github/license/embabel/embabel-agent?style=for-the-badge&logo=apache&color=brightgreen)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Commits](https://img.shields.io/github/commit-activity/m/embabel/embabel-agent.svg?label=commits&style=for-the-badge&logo=git&logoColor=white)](https://github.com/embabel/embabel-agent/pulse)
 
-
-
-
-<img align="left" src="https://github.com/embabel/embabel-agent/blob/main/embabel-agent-api/images/315px-Meister_der_Weltenchronik_001.jpg?raw=true" width="180">
-
 &nbsp;&nbsp;&nbsp;&nbsp;
 
 Embabel (Em-BAY-bel) is a framework for authoring agentic flows on the JVM that seamlessly mix LLM-prompted interactions
@@ -37,6 +35,8 @@ intelligent path finding towards goals. Written in Kotlin
 but offers a natural usage
 model from Java.
 From the creator of Spring.
+
+&nbsp;
 
 ## Key Concepts
 
@@ -162,10 +162,18 @@ uvx --from git+https://github.com/embabel/project-creator.git project-creator
 Choose Java or Kotlin and specify your project name and package name and you'll have an agent running in under a minute,
 if you already have an `OPENAI_API_KEY` and have Maven installed.
 
-> **📚 For examples and tutorials**, see
-> the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
+**📚 For examples and tutorials**, see
+the [Embabel Agent Examples Repository](https://github.com/embabel/embabel-agent-examples)
 
-> **🚗 For a realistic example application**, see the [Tripper travel planner agent](https://github.com/embabel/tripper)
+**🚗 For a realistic example application**, see the [Tripper travel planner agent](https://github.com/embabel/tripper)
+
+<img src="images/tripper_output1.jpg" alt="Travel Planner Output" width="600"/>
+
+*AI-generated travel itinerary with detailed recommendations*
+
+<img src="images/tripper_map.jpg" alt="Interactive map" width="600"/>
+
+*Map link included in output*
 
 ## Why Is Embabel Needed?
 
@@ -201,29 +209,157 @@ framework on the JVM will deliver great business value.
 
 ## Show Me The Code
 
-In Kotlin or Java, agent implementation code is intuitive and easy to test.
+In Java or Kotlin, agent implementation code is intuitive and easy to test.
+
+<details open>
+<summary>Java</summary>
+
+```java
+
+@Agent(description = "Find news based on a person's star sign")
+public class StarNewsFinder {
+
+    private final HoroscopeService horoscopeService;
+    private final int storyCount;
+
+    // Services are injected by Spring
+    public StarNewsFinder(
+            HoroscopeService horoscopeService,
+            @Value("${star-news-finder.story.count:5}") int storyCount) {
+        this.horoscopeService = horoscopeService;
+        this.storyCount = storyCount;
+    }
+
+    @Action
+    public StarPerson extractStarPerson(UserInput userInput, OperationContext context) {
+        return context.ai()
+                .withLlm(OpenAiModels.GPT_41)
+                .createObjectIfPossible(
+                        """
+                                Create a person from this user input, extracting their name and star sign:
+                                %s""".formatted(userInput.getContent()),
+                        StarPerson.class
+                );
+    }
+
+    @Action
+    public Horoscope retrieveHoroscope(StarPerson starPerson) {
+        return new Horoscope(horoscopeService.dailyHoroscope(starPerson.sign()));
+    }
+
+    // toolGroups specifies tools that are required for this action to run
+    @Action(toolGroups = {CoreToolGroups.WEB})
+    public RelevantNewsStories findNewsStories(
+            StarPerson person,
+            Horoscope horoscope,
+            OperationContext context) {
+        var prompt = """
+                %s is an astrology believer with the sign %s.
+                Their horoscope for today is:
+                    <horoscope>%s</horoscope>
+                Given this, use web tools and generate search queries
+                to find %d relevant news stories summarize them in a few sentences.
+                Include the URL for each story.
+                Do not look for another horoscope reading or return results directly about astrology;
+                find stories relevant to the reading above.
+                
+                For example:
+                - If the horoscope says that they may
+                want to work on relationships, you could find news stories about
+                novel gifts
+                - If the horoscope says that they may want to work on their career,
+                find news stories about training courses.""".formatted(
+                person.name(), person.sign(), horoscope.summary(), storyCount);
+        return context.ai()
+                .withDefaultLlm()
+                .createObject(prompt, RelevantNewsStories.class);
+    }
+
+    // The @AchievesGoal annotation indicates that completing this action
+    // achieves the given goal, so the agent can be complete
+    @AchievesGoal(
+            description = "Write an amusing writeup for the target person based on their horoscope and current news stories",
+            export = @Export(
+                    remote = true,
+                    name = "starNewsWriteupJava",
+                    startingInputTypes = {StarPerson.class, UserInput.class})
+    )
+    @Action
+    public Writeup writeup(
+            StarPerson person,
+            RelevantNewsStories relevantNewsStories,
+            Horoscope horoscope,
+            OperationContext context) {
+        var llm = LlmOptions
+                .withModel(OpenAiModels.GPT_41_MINI)
+                // High temperature for creativity
+                .withTemperature(0.9);
+
+        var newsItems = relevantNewsStories.getItems().stream()
+                .map(item -> "- " + item.getUrl() + ": " + item.getSummary())
+                .collect(Collectors.joining("\n"));
+
+        var prompt = """
+                Take the following news stories and write up something
+                amusing for the target person.
+                
+                Begin by summarizing their horoscope in a concise, amusing way, then
+                talk about the news. End with a surprising signoff.
+                
+                %s is an astrology believer with the sign %s.
+                Their horoscope for today is:
+                    <horoscope>%s</horoscope>
+                Relevant news stories are:
+                %s
+                
+                Format it as Markdown with links.""".formatted(
+                person.name(), person.sign(), horoscope.summary(), newsItems);
+        return context.ai()
+                .withLlm(llm)
+                .createObject(prompt, Writeup.class);
+    }
+}
+```
+
+</details>
+
+<details>
+<summary>Kotlin</summary>
 
 ```kotlin
 @Agent(description = "Find news based on a person's star sign")
 class StarNewsFinder(
-    // Services such as Horoscope are injected using Spring
+    // Services such as Horoscope are injected by Spring
     private val horoscopeService: HoroscopeService,
+    // Potentially externalized by Spring
+    @param:Value("\${star-news-finder.story.count:5}")
     private val storyCount: Int = 5,
 ) {
 
     @Action
-    fun extractPerson(userInput: UserInput): StarPerson =
+    fun extractPerson(
+        userInput: UserInput,
+        context: OperationContext
+    ): StarPerson =
         // All prompts are typesafe
-        PromptRunner().createObject("Create a person from this user input, extracting their name and star sign: $userInput")
+        context.ai().withDefaultLlm()
+            .createObject("Create a person from this user input, extracting their name and star sign: $userInput")
 
+    // This action doesn't use an LLM
+    // Embabel makes it easy to mix LLM use with regular code
     @Action
     fun retrieveHoroscope(starPerson: StarPerson) =
         Horoscope(horoscopeService.dailyHoroscope(starPerson.sign))
 
-    // toolGroups specifies tools that are required for this action to run
+    // This action uses tools
+    // "toolGroups" specifies tools that are required for this action to run
     @Action(toolGroups = [ToolGroup.WEB])
-    fun findNewsStories(person: StarPerson, horoscope: Horoscope): RelevantNewsStories =
-        PromptRunner().createObject(
+    fun findNewsStories(
+        person: StarPerson,
+        horoscope: Horoscope,
+        context: OperationContext
+    ): RelevantNewsStories =
+        context.ai().withDefaultLlm().createObject(
             """
             ${person.name} is an astrology believer with the sign ${person.sign}.
             Their horoscope for today is:
@@ -253,10 +389,16 @@ class StarNewsFinder(
         person: StarPerson,
         relevantNewsStories: RelevantNewsStories,
         horoscope: Horoscope,
+        context: OperationContext,
     ): Writeup =
-        // Customize LLM call
-        PromptRunner().withTemperature(1.2).createObject(
-            """
+        context.ai()
+            .withLlm(
+                LlmOptions
+                    .withModel(model)
+                    .withTemperature(0.9)
+            )
+            .createObject(
+                """
             Take the following news stories and write up something
             amusing for the target person.
 
@@ -271,12 +413,66 @@ class StarNewsFinder(
 
             Format it as Markdown with links.
         """.trimIndent()
-        )
+            )
 
 }
 ```
 
+</details>
+
+
 The following domain classes ensure type safety:
+
+<details open>
+<summary>Java</summary>
+
+```java
+
+@JsonClassDescription("Person with astrology details")
+@JsonDeserialize(as = StarPerson.class)
+public record StarPerson(
+        String name,
+        @JsonPropertyDescription("Star sign") String sign
+) implements Person {
+
+    @JsonCreator
+    public StarPerson(
+            @JsonProperty("name") String name,
+            @JsonProperty("sign") String sign
+    ) {
+        this.name = name;
+        this.sign = sign;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+}
+
+public record Horoscope(String summary) {
+}
+
+@JsonClassDescription("Writeup relating to a person's horoscope and relevant news")
+public record Writeup(String text) implements HasContent {
+
+    @JsonCreator
+    public Writeup(@JsonProperty("text") String text) {
+        this.text = text;
+    }
+
+    @Override
+    public String getContent() {
+        return text;
+    }
+}
+
+```
+
+</details>
+
+<details>
+<summary>Kotlin</summary>
 
 ```kotlin
 data class RelevantNewsStories(
@@ -303,9 +499,56 @@ data class FunnyWriteup(
 ) : HasContent
 ```
 
+</details>
+
+It's easy to unit test your agents to ensure that they correctly execute logic
+and pass the correct prompts and hyperparameters to LLMs. For example:
+
+```java
+public class StarNewsFinderTest {
+
+    @Test
+    void writeupPromptMustContainKeyData() {
+        HoroscopeService horoscopeService = mock(HoroscopeService.class);
+        StarNewsFinder starNewsFinder = new StarNewsFinder(horoscopeService, 5);
+        var context = new FakeOperationContext();
+        context.expectResponse(new com.embabel.example.horoscope.Writeup("Gonna be a good day"));
+
+        NewsStory cockatoos = new NewsStory(
+                "https://fake.com.au",
+                "Cockatoo behavior",
+                "Cockatoos are eating cabbages"
+        );
+
+        NewsStory emus = new NewsStory(
+                "https://morefake.com.au",
+                "Emu movements",
+                "Emus are massing"
+        );
+
+        StarPerson starPerson = new StarPerson("Lynda", "Scorpio");
+        RelevantNewsStories relevantNewsStories = new RelevantNewsStories(Arrays.asList(cockatoos, emus));
+        Horoscope horoscope = new Horoscope("This is a good day for you");
+
+        starNewsFinder.writeup(starPerson, relevantNewsStories, horoscope, context);
+
+        var prompt = context.getLlmInvocations().getFirst().getPrompt();
+        var toolGroups = context.getLlmInvocations().getFirst().getInteraction().getToolGroups();
+
+
+        assertTrue(prompt.contains(starPerson.getName()));
+        assertTrue(prompt.contains(starPerson.sign()));
+        assertTrue(prompt.contains(cockatoos.getSummary()));
+        assertTrue(prompt.contains(emus.getSummary()));
+
+        assertTrue(toolGroups.isEmpty(), "The LLM should not have been given any tool groups");
+    }
+}
+```
+
 ## Dog Food Policy
 
-We believe that all aspects of software development can and should
+We believe that all aspects of software development and business can and should
 be greatly accelerated through the use of AI agents. The ultimate decision
 makers remain human, but they can and should be greatly augmented.
 
@@ -315,17 +558,18 @@ makers remain human, but they can and should be greatly augmented.
 
 Our key principles:
 
-1. **We will use AI agents to help every aspect of the project:** coding, documentation, producing marketing copy etc.
+1. **We will use AI agents to help every aspect of the project:** coding, documentation, community management, producing
+   marketing copy etc.
    Any
    human performing a task should ask why it cannot be automated, and strive toward maximum automation.
 2. **Developers retain ultimate control.** Developers are responsible for guiding agents toward the solution and
    iterating
    as necessary. A developer who commits or merges an agent contribution
    is responsible for ensuring that it meets the project coding standards, which are
-   independent of the use of agents. For example, code must be human readable.
-3. **We will use only open source agents built on the Embabel platform,** and contribute any improvements. While
-   commercial coding agents
-   may be more advanced, we believe that our
+   independent of the use of agents. For example, code must be human-readable.
+3. **We will favour open source agents built on the Embabel platform,** and contribute improvements. While
+   commercial agents
+   may be more advanced in some areas, we believe that our
    platform is the best general solution for automation and by dogfooding we will improve it fastest.
    By open sourcing agents used on our open source projects, we will maximize benefit to the community.
 4. **We will prioritize agents that help accelerate our progress.** Per the flight safety advice to fit your own mask
@@ -334,6 +578,11 @@ Our key principles:
    project velocity.
 
 Developers must carefully read all code they commit and improve generated code if possible.
+
+> Coding agents are a special case. While the `embabel-agent-code` submodule offers support for project modification
+> that is useful for project bootstrapping, coding agents are the most mature of commercial agents, and their vendors
+> are
+> heavily subsidising their users, making it economically irrational to insist on our own platform.
 
 ## Getting Started
 
@@ -403,24 +652,9 @@ cd embabel-agent-examples/scripts/kotlin
 
 #### Shell Commands
 
-Type `help` to see available commands. Example:
+Spring Shell is an easy way to interact with the Embabel agent framework, especially during development.
 
-```
-execute "Lynda is a Scorpio, find news for her" -p -r
-```
-
-Options:
-
-- `-p` logs prompts
-- `-r` logs LLM responses
-
-Use `chat` for interactive conversations with agents.
-
-> **Tip:** Spring Shell supports history - type `!!` to repeat the last command
-
-Type `help` to see the available commands.
-
-An example:
+Type `help` to see available commands. Use `execute` or `x` to run an agent:
 
 ```
 execute "Lynda is a Scorpio, find news for her" -p -r
@@ -430,8 +664,13 @@ This will look for an agent, choose the star finder agent and
 run the flow. `-p` will log prompts `-r` will log LLM responses.
 Omit these for less verbose logging.
 
+Options:
+
+- `-p` logs prompts
+- `-r` logs LLM responses
+
 Use the `chat` command to enter an interactive chat with the agent.
-It will retain conversation history, and attempt to run the most appropriate
+It will attempt to run the most appropriate
 agent for each command.
 
 > Spring Shell supports history. Type `!!` to repeat the last command.
@@ -449,17 +688,6 @@ execute "research the recent australian federal election. what is the position o
 # x is a shortcut for execute
 x "fact check the following: holden cars are still made in australia; the koel is a bird native only to australia; fidel castro is justin trudeau's father"
 
-```
-
-Try the [coding agent](https://www.github.com/embabel/embabel-coding-agent) (separate repo) with commands such as:
-
-```
-
-x "explain this project for a five your old"
-
-x "take the StarNewsFinder kotlin example of the agent framework. create a parallel .java package beside its and create a java version of the same agent use the same annotations and other classes. use records for the data classes. make it modern java"
-
-x "consider the StarNewsFinder kotlin class. This is intended as an example. Is there anything you could do to make it simpler? Include suggested API changes. Do not change code"
 ```
 
 ### Bringing in additional LLMs
@@ -746,6 +974,13 @@ Add the required repositories to your `build.gradle.kts`:
 repositories {
     mavenCentral()
     maven {
+        name = "embabel-releases"
+        url = uri("https://repo.embabel.com/artifactory/libs-release")
+        mavenContent {
+            releasesOnly()
+        }
+    }
+    maven {
         name = "embabel-snapshots"
         url = uri("https://repo.embabel.com/artifactory/libs-snapshot")
         mavenContent {
@@ -809,11 +1044,23 @@ Binary Packages are located in Embabel Maven Repository.
 You would need to add Embabel Snapshot Repository to your pom.xml or configure in settings.xml
 
 ```xml
-
 <repositories>
+    <repository>
+        <id>embabel-releases</id>
+        <url>https://repo.embabel.com/artifactory/libs-release</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
     <repository>
         <id>embabel-snapshots</id>
         <url>https://repo.embabel.com/artifactory/libs-snapshot</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
         <snapshots>
             <enabled>true</enabled>
         </snapshots>
@@ -841,6 +1088,7 @@ This file also informs coding agent behavior.
   not be implemented.
 - README badges come from [here](https://github.com/Ileriayo/markdown-badges)
   and [here](https://home.aveek.io/GitHub-Profile-Badges/).
+- Don't forget to join [Discord](https://discord.gg/t6bjkyj93q) to collaborate with the Embabel community. It is a good place to receive support, showcase your work, discuss ideas and connect with like-minded people. 
 
 ## Star history
 

@@ -24,7 +24,10 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.rag.RagService
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.InMemoryAgentProcessRepository
+import com.embabel.agent.spi.support.InMemoryContextRepository
+import com.embabel.agent.spi.support.SpringContextPlatformServices
 import com.embabel.agent.testing.integration.DummyObjectCreatingLlmOperations
+import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -47,12 +50,14 @@ internal class DefaultAgentPlatform(
     override val toolGroupResolver: ToolGroupResolver,
     private val eventListener: AgenticEventListener,
     private val agentProcessIdGenerator: AgentProcessIdGenerator = AgentProcessIdGenerator.RANDOM,
+    private val contextRepository: ContextRepository = InMemoryContextRepository(),
     private val agentProcessRepository: AgentProcessRepository = InMemoryAgentProcessRepository(),
     private val operationScheduler: OperationScheduler = OperationScheduler.PRONTO,
     private val ragService: RagService,
     private val asyncer: Asyncer,
     private val objectMapper: ObjectMapper,
     private val outputChannel: OutputChannel,
+    private val templateRenderer: TemplateRenderer,
     private val applicationContext: ApplicationContext? = null,
 ) : AgentPlatform {
 
@@ -62,21 +67,24 @@ internal class DefaultAgentPlatform(
 
     private val agents: MutableMap<String, Agent> = ConcurrentHashMap()
 
-    override val platformServices = PlatformServices(
+    override val platformServices = SpringContextPlatformServices(
         llmOperations = llmOperations,
         agentPlatform = this,
         eventListener = eventListener,
         operationScheduler = operationScheduler,
-        ragService = ragService,
+        defaultRagService = ragService,
         asyncer = asyncer,
         objectMapper = objectMapper,
         applicationContext = applicationContext,
         outputChannel = outputChannel,
+        templateRenderer = templateRenderer,
     )
 
     init {
         logger.debug("{}: event listener: {}", name, eventListener)
     }
+
+    override val opaque = false
 
     override fun getAgentProcess(id: String): AgentProcess? {
         return agentProcessRepository.findById(id)
@@ -127,12 +135,38 @@ internal class DefaultAgentPlatform(
         return this
     }
 
-    private fun createBlackboard(processOptions: ProcessOptions): Blackboard {
-        if (processOptions.blackboard != null) {
-            logger.info("Using existing blackboard {}", processOptions.blackboard.blackboardId)
-            return processOptions.blackboard
+    private fun createBlackboard(
+        processOptions: ProcessOptions,
+        processId: String,
+    ): Blackboard {
+        val blackboard = if (processOptions.blackboard != null) {
+            logger.info(
+                "Using existing blackboard {} for agent process {}",
+                processOptions.blackboard.blackboardId,
+                processId,
+            )
+            processOptions.blackboard
+        } else {
+            InMemoryBlackboard()
         }
-        return InMemoryBlackboard()
+        if (processOptions.contextId != null) {
+            val context = contextRepository.findById(processOptions.contextId.value)
+            if (context != null) {
+                logger.info(
+                    "Using existing context {} for agent process {}",
+                    context.id,
+                    processId,
+                )
+                context.populate(blackboard)
+            } else {
+                logger.warn(
+                    "Context {} not found for agent process {}",
+                    processOptions.contextId,
+                    processId,
+                )
+            }
+        }
+        return blackboard
     }
 
     override fun runAgentFrom(
@@ -149,7 +183,8 @@ internal class DefaultAgentPlatform(
         processOptions: ProcessOptions,
         bindings: Map<String, Any>,
     ): AgentProcess {
-        val blackboard = createBlackboard(processOptions)
+        val id = agentProcessIdGenerator.createProcessId(agent, processOptions)
+        val blackboard = createBlackboard(processOptions, id)
         blackboard.bindAll(bindings)
         val platformServicesToUse = if (processOptions.test) {
             logger.warn("Using test LLM operations: {}", processOptions)
@@ -162,7 +197,7 @@ internal class DefaultAgentPlatform(
             agent = agent,
             platformServices = platformServicesToUse,
             blackboard = blackboard,
-            id = agentProcessIdGenerator.createProcessId(agent, processOptions),
+            id = id,
             parentId = null,
             processOptions = processOptions,
         )

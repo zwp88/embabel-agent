@@ -1,52 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.embabel.agent</groupId>
         <artifactId>embabel-agent-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.3-SNAPSHOT</version>
     </parent>
     <artifactId>embabel-agent-autoconfigure</artifactId>
-    <packaging>jar</packaging>
-    <name>Embabel Agent Autoconfiguration</name>
+    <packaging>pom</packaging>
+    <name>Embabel Agent Autoconfigurations</name>
     <description>Spring Boot Auto-Configurations for Embabel Agent API</description>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.embabel.agent</groupId>
-            <artifactId>embabel-agent-api</artifactId>
-        </dependency>
+    <modules>
+        <module>embabel-agent-platform-autoconfigure</module>
+        <module>models/embabel-agent-bedrock-autoconfigure</module>
+        <module>models/embabel-agent-openai-autoconfigure</module>
+        <module>models/embabel-agent-anthropic-autoconfigure</module>
+    </modules>
 
-
-        <!--  overriding optional parameter for bedrock -->
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-bedrock</artifactId>
-            <optional>false</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-bedrock-converse</artifactId>
-            <optional>false</optional>
-        </dependency>
-
-        <!-- Move this one to a dedicted starter once ready-->
-        <dependency>
-            <groupId>com.embabel.agent</groupId>
-            <artifactId>embabel-agent-mcpserver</artifactId>
-        </dependency>
-
-        <!-- Move this one to a dedicted starter once ready-->
-        <dependency>
-            <groupId>com.embabel.agent</groupId>
-            <artifactId>embabel-agent-shell</artifactId>
-        </dependency>
-    </dependencies>
+    <build>
+        <plugins>
+            <!-- Production Build Plugins -->
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <source>src/main/java</source>
+                                <source>src/main/kotlin</source>
+                                <source>target/generated-sources/annotations</source>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <source>src/test/java</source>
+                                <source>src/test/kotlin</source>
+                                <source>target/generated-test-sources/test-annotations</source>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -20,6 +20,7 @@ import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
 import com.embabel.agent.api.annotation.support.AgentMetadataReader;
 import com.embabel.agent.api.common.ActionContext;
+import com.embabel.agent.api.common.workflow.loop.TextFeedback;
 import com.embabel.agent.core.AgentProcessStatusCode;
 import com.embabel.agent.core.ProcessOptions;
 import com.embabel.agent.domain.io.UserInput;
@@ -40,7 +41,7 @@ class EvaluatorOptimizerJavaTest {
         var ap = IntegrationTestUtils.dummyAgentPlatform();
         var result = ap.runAgentFrom(
                 agent,
-                ProcessOptions.Companion.getDEFAULT(),
+                ProcessOptions.getDEFAULT(),
                 Map.of("it", new UserInput("input"))
         );
         assertEquals(AgentProcessStatusCode.COMPLETED, result.getStatus());
@@ -72,28 +73,28 @@ class EvaluatorOptimizerJavaTest {
     @Agent(description = "evaluator test")
     public static class EvaluationFlowDoesNotTerminateJava {
         @Action
-        public ScoredResult<Report, SimpleFeedback> toFeedback(UserInput userInput, ActionContext context) {
+        public ScoredResult<Report, TextFeedback> toFeedback(UserInput userInput, ActionContext context) {
             final int[] count = {0};
             var eo = EvaluatorOptimizer.generateUntilAcceptable(
                     (tac) -> {
                         count[0]++;
                         return new Report("thing-" + count[0]);
                     },
-                    (ctx) -> new SimpleFeedback(0.5, "feedback"),
+                    (ctx) -> new TextFeedback(0.5, "feedback"),
                     (f) -> false, // never acceptable, hit max iterations
                     3,
                     Report.class,
-                    SimpleFeedback.class
+                    TextFeedback.class
             );
             return context.asSubProcess(
-                    (Class<ScoredResult<Report, SimpleFeedback>>) (Class<?>) ScoredResult.class,
+                    (Class<ScoredResult<Report, TextFeedback>>) (Class<?>) ScoredResult.class,
                     eo
             );
         }
 
         @AchievesGoal(description = "Creating a person")
         @Action
-        public Report done(ScoredResult<Report, SimpleFeedback> scoredResult) {
+        public Report done(ScoredResult<Report, TextFeedback> scoredResult) {
             assertEquals(0.5, scoredResult.getFeedback().getScore());
             return scoredResult.getResult();
         }

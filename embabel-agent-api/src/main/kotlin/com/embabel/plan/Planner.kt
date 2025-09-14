@@ -48,23 +48,21 @@ interface Planner<S : PlanningSystem, W : WorldState, P : Plan> {
     fun worldState(): W
 
     /**
-     * Plan from here to the given goal. Planner is assumed to world state.
+     * Plan from here to the given goal
      */
-    fun planToGoal(actions: Collection<Action>, goal: Goal): P?
+    fun planToGoal(
+        actions: Collection<Action>,
+        goal: Goal,
+    ): P?
 
     /**
-     * Return the best plan to each goal. Planner is assumed to world state.
+     * Return the best plan to each goal from the present world state.
+     * The plans (one for each goal) are sorted by net value, descending.
      */
-    fun plansToGoals(system: S): List<P> {
-        val plans = mutableListOf<P>()
-        for (goal in system.goals) {
-            val plan = planToGoal(system.actions, goal)
-            if (plan != null) {
-                plans.add(plan)
-            }
-        }
-        return plans.sortedBy { p -> -p.netValue }
-    }
+    fun plansToGoals(system: S): List<P> =
+        system.goals.mapNotNull { goal ->
+            planToGoal(system.actions, goal)
+        }.sortedByDescending { p -> p.netValue }
 
     /**
      * Return the best plan to any goal

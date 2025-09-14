@@ -22,7 +22,6 @@ import com.embabel.common.util.indentLines
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import kotlin.jvm.java
 
 /**
  * May the force be with you
@@ -116,7 +115,7 @@ class StarWarsLoggingAgenticEventListener : LoggingAgenticEventListener(
         "A little more knowledge lights our way: Object added: ${if (e.agentProcess.processContext.processOptions.verbosity.debug) e.value else e.value::class.java.simpleName} to process ${e.processId}"
 
     override fun getLlmRequestEventMessage(e: LlmRequestEvent<*>): String =
-        "[${e.processId}] Ask LLM we will: Requesting LLM ${e.llm.name} to transform ${e.interaction.id.value} from ${e.outputClass.simpleName} -> ${e.interaction.llm}"
+        "[${e.processId}] (${e.interaction.id.value}) Ask LLM ${e.llm.name} we will: ${e.outputClass.simpleName} -> ${e.interaction.llm}"
 
     override fun getActionExecutionStartMessage(e: ActionExecutionStartEvent): String =
         "[${e.processId}] Do or do not. There is no try: executing action ${e.action.name}"

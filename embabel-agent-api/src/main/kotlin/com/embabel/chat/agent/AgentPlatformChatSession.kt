@@ -15,12 +15,23 @@
  */
 package com.embabel.chat.agent
 
-import com.embabel.agent.api.common.autonomy.*
+import com.embabel.agent.api.common.autonomy.PlanLister
+import com.embabel.agent.api.common.autonomy.ProcessWaitingException
+import com.embabel.agent.channel.OutputChannel
+import com.embabel.agent.config.models.OpenAiModels
 import com.embabel.agent.core.Blackboard
+import com.embabel.agent.core.Goal
 import com.embabel.agent.core.ProcessOptions
 import com.embabel.agent.core.support.InMemoryBlackboard
 import com.embabel.agent.domain.io.UserInput
+import com.embabel.agent.event.AgentProcessEvent
+import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.event.ObjectBindingEvent
+import com.embabel.agent.identity.User
 import com.embabel.chat.*
+import com.embabel.chat.support.InMemoryConversation
+import com.embabel.common.ai.model.LlmOptions
+import com.embabel.common.util.loggerFor
 
 
 /**
@@ -32,100 +43,110 @@ data class ChatConfig(
     val confirmGoals: Boolean = true,
     val bindConversation: Boolean = false,
     val multiGoal: Boolean = false,
-)
+    val model: String = OpenAiModels.GPT_41_MINI,
+    val temperature: Double? = null,
+) {
+
+    /**
+     * Options for the LLM used in the chat session
+     */
+    val llm: LlmOptions = LlmOptions
+        .withModel(model)
+        .withTemperature(temperature)
+}
 
 /**
- * Base class for agent platform chat sessions.
- * Uses last message as intent and delegates handling to agent platform.
+ * Generates response(s) in a chat session.
  */
-abstract class AgentPlatformChatSession(
-    private val autonomy: Autonomy,
-    private val goalChoiceApprover: GoalChoiceApprover,
-    override val messageListener: MessageListener,
-    val processOptions: ProcessOptions = ProcessOptions(),
-    val chatConfig: ChatConfig = ChatConfig(),
-) : ChatSession {
-
-    private var internalConversation: Conversation = InMemoryConversation()
-
-    private val blackboard: Blackboard = processOptions.blackboard ?: InMemoryBlackboard()
-
-    override val conversation: Conversation
-        get() = internalConversation
-
-    override fun respond(
-        message: UserMessage,
-        additionalListener: MessageListener?,
-    ) {
-        internalConversation = conversation.withMessage(message)
-        val assistantMessage = generateResponse(message)
-        internalConversation = conversation.withMessage(assistantMessage)
-        messageListener.onMessage(assistantMessage)
-        additionalListener?.onMessage(assistantMessage)
-    }
-
-    protected fun generateResponse(message: UserMessage): AssistantMessage {
-
-        val handledCommand = handleAsCommand(message)
-        if (handledCommand != null) {
-            return handledCommand
-        }
-
-        val bindings = buildMap {
-            put("userInput", UserInput(message.content))
-            if (shouldBindConversation())
-                put("conversation", conversation)
-        }
-        try {
-            val dynamicExecutionResult = autonomy.chooseAndAccomplishGoal(
-                // We continue to use the same blackboard.
-                processOptions = processOptions.copy(
-                    blackboard = blackboard,
-                ),
-                goalChoiceApprover = goalChoiceApprover,
-                agentScope = autonomy.agentPlatform,
-                bindings = bindings,
-                goalSelectionOptions = GoalSelectionOptions(
-                    multiGoal = chatConfig.multiGoal,
-                ),
-            )
-            val result = dynamicExecutionResult.output
-            // Bind the result to the blackboard.
-            blackboard += result
-            return AgenticResultAssistantMessage(
-                agentProcessExecution = dynamicExecutionResult,
-                content = result.toString(),
-            )
-        } catch (pwe: ProcessWaitingException) {
-            return handleProcessWaitingException(pwe, message.content)
-        } catch (_: NoGoalFound) {
-            return AssistantMessage(
-                content = """|
-                    |I'm sorry Dave. I'm afraid I can't do that.
-                    |
-                    |Things I CAN do:
-                    |${autonomy.agentPlatform.goals.joinToString("\n") { "- ${it.description}" }}
-                """.trimMargin(),
-            )
-        } catch (_: GoalNotApproved) {
-            return AssistantMessage(
-                content = "I obey. That action will not be executed.",
-            )
-        }
-    }
+interface ResponseGenerator {
 
     /**
-     * Determines whether conversation should be bound to the blackboard
+     * Generate response(s) in this conversation
+     * @param conversation Current conversation state, hopefully including new message
+     * from the user
+     * @param processOptions Options for the process, including blackboard
      */
-    protected abstract fun shouldBindConversation(): Boolean
+    fun generateResponses(
+        conversation: Conversation,
+        processOptions: ProcessOptions,
+        outputChannel: OutputChannel,
+    )
+}
 
-    /**
-     * Handles process waiting exceptions in a platform-specific way
-     */
-    protected abstract fun handleProcessWaitingException(
+/**
+ * Handles process waiting exceptions in a platform-specific way
+ */
+interface ProcessWaitingHandler {
+
+    fun handleProcessWaitingException(
         pwe: ProcessWaitingException,
         basis: Any,
     ): AssistantMessage
+}
+
+/**
+ * Support for chat sessions leveraging an AgentPlatform.
+ */
+class AgentPlatformChatSession(
+    override val user: User?,
+    override val outputChannel: OutputChannel,
+    private val planLister: PlanLister,
+    val processOptions: ProcessOptions = ProcessOptions(),
+    val responseGenerator: ResponseGenerator,
+    override val conversation: Conversation = InMemoryConversation(),
+) : ChatSession {
+
+    private val blackboard: Blackboard = processOptions.blackboard ?: InMemoryBlackboard()
+
+    override fun onUserMessage(
+        userMessage: UserMessage,
+    ) {
+        conversation.addMessage(userMessage)
+        generateResponses(userMessage = userMessage)
+    }
+
+    private fun generateResponses(
+        userMessage: UserMessage,
+    ) {
+        // TODO could this be generic with subprocesses?
+        val outerBindingListener = object : AgenticEventListener {
+            override fun onProcessEvent(event: AgentProcessEvent) {
+                if (event is ObjectBindingEvent) {
+                    when (event.value) {
+                        // An AssistantMessage being bound will cause the second process to think its complete
+                        is Conversation, is Message -> {
+                            loggerFor<AgentPlatformChatSession>().info(
+                                "Ignoring subagent binding of type {}",
+                                event.type,
+                            )
+                        }
+
+                        else -> {
+                            loggerFor<AgentPlatformChatSession>().info(
+                                "Promoting subagent binding of type {}",
+                                event.type,
+                            )
+                            blackboard.addObject(event.value)
+                        }
+                    }
+                }
+            }
+        }
+        val handledCommand = handleAsCommand(userMessage)
+        if (handledCommand != null) {
+            TODO("handle diagnostic messages")
+//            outputChannel.onMessage(handledCommand, conversation)
+        } else {
+            responseGenerator.generateResponses(
+                conversation = conversation,
+                processOptions = processOptions.copy(
+                    blackboard = blackboard,
+                    listeners = listOf(outerBindingListener),
+                ),
+                outputChannel = outputChannel,
+            )
+        }
+    }
 
     private fun handleAsCommand(message: UserMessage): AssistantMessage? {
         return parseSlashCommand(message.content)?.let { (command, args) ->
@@ -135,6 +156,7 @@ abstract class AgentPlatformChatSession(
                         |Available commands:
                         |/help - Show this help message
                         |/bb, blackboard - Show the blackboard
+                        |/plans - Show possible plans from here, with the existing blackboard and user input
                     """.trimMargin(),
                 )
 
@@ -142,7 +164,17 @@ abstract class AgentPlatformChatSession(
                     AssistantMessage(blackboard.infoString(verbose = true, indent = 2))
                 }
 
-                else -> AssistantMessage("Unrecognized / command $command")
+                "plans" -> {
+                    val plans = planLister.achievablePlans(
+                        processOptions.copy(blackboard = blackboard),
+                        mapOf("userInput" to UserInput("won't be used"))
+                    )
+                    AssistantMessage("Plans:\n\t" + plans.joinToString("\n\t") {
+                        ((it.goal as? Goal)?.description) ?: it.goal.name
+                    })
+                }
+
+                else -> AssistantMessage("Unrecognized slash command $command")
             }
         }
     }

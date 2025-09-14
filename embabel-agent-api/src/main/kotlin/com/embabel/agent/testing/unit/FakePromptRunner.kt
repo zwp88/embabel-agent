@@ -15,18 +15,23 @@
  */
 package com.embabel.agent.testing.unit
 
-import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.api.common.PromptRunner
-import com.embabel.agent.api.common.ToolObject
+import com.embabel.agent.api.common.*
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupRequirement
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.prompt.element.ContextualPromptElement
+import com.embabel.agent.rag.RagService
+import com.embabel.agent.rag.tools.RagOptions
+import com.embabel.agent.rag.tools.SingleShotRagServiceSearchTools
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.chat.Message
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.textio.template.JinjavaTemplateRenderer
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
 
 enum class Method {
@@ -100,6 +105,7 @@ data class FakePromptRunner(
     override fun <T> createObject(
         prompt: String,
         outputClass: Class<T>,
+        interactionId: String?,
     ): T {
         _llmInvocations += LlmInvocation(
             interaction = createLlmInteraction(),
@@ -119,6 +125,14 @@ data class FakePromptRunner(
             method = Method.CREATE_OBJECT_IF_POSSIBLE,
         )
         return getResponse(outputClass)
+    }
+
+    override fun <T> createObject(
+        messages: List<Message>,
+        outputClass: Class<T>,
+        interactionId: String?,
+    ): T {
+        return createObject(prompt = messages.joinToString(), outputClass = outputClass)
     }
 
     override fun evaluateCondition(
@@ -171,7 +185,33 @@ data class FakePromptRunner(
             generateExamples = generateExamples,
         )
 
+    override fun withTemplate(templateName: String): TemplateOperations {
+        return TemplateOperations(
+            templateName,
+            templateRenderer = JinjavaTemplateRenderer(),
+            promptRunnerOperations = this,
+        )
+    }
+
+    override fun withRag(options: RagOptions): PromptRunner {
+        logger.warn("RAG tools not implemented in FakePromptRunner")
+        return this.withToolObject(SingleShotRagServiceSearchTools(RagService.empty(), RagOptions()))
+
+    }
+
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         TODO("Implement handoff support")
+    }
+
+    override fun withSubagents(vararg subagents: Subagent): PromptRunner {
+        TODO("Implement subagent handoff support")
+    }
+
+    override fun withToolGroup(toolGroup: ToolGroup): PromptRunner {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T> creating(outputClass: Class<T>): ObjectCreator<T> {
+        return PromptRunnerObjectCreator(this, outputClass, jacksonObjectMapper())
     }
 }

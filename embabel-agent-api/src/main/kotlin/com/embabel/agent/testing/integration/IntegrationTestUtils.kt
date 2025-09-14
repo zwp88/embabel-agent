@@ -28,7 +28,9 @@ import com.embabel.agent.spi.PlatformServices
 import com.embabel.agent.spi.ToolGroupResolver
 import com.embabel.agent.spi.support.ExecutorAsyncer
 import com.embabel.agent.spi.support.RegistryToolGroupResolver
+import com.embabel.agent.spi.support.SpringContextPlatformServices
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
+import com.embabel.common.textio.template.JinjavaTemplateRenderer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.concurrent.Executors
 
@@ -47,35 +49,37 @@ object IntegrationTestUtils {
     ): AgentPlatform {
         return DefaultAgentPlatform(
             llmOperations = llmOperations ?: DummyObjectCreatingLlmOperations.LoremIpsum,
-            eventListener = AgenticEventListener.Companion.from(
+            eventListener = AgenticEventListener.from(
                 listOfNotNull(
                     EventSavingAgenticEventListener(),
                     listener
                 )
             ),
             toolGroupResolver = toolGroupResolver ?: RegistryToolGroupResolver("empty", emptyList()),
-            ragService = ragService ?: RagService.Companion.empty(),
+            ragService = ragService ?: RagService.empty(),
             name = "dummy-agent-platform",
             description = "Dummy Agent Platform for Integration Testing",
             asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor()),
             objectMapper = jacksonObjectMapper(),
             outputChannel = DevNullOutputChannel,
+            templateRenderer = JinjavaTemplateRenderer(),
         )
     }
 
     @JvmStatic
     @JvmOverloads
     fun dummyPlatformServices(eventListener: AgenticEventListener? = null): PlatformServices {
-        return PlatformServices(
+        return SpringContextPlatformServices(
             agentPlatform = dummyAgentPlatform(),
             llmOperations = DummyObjectCreatingLlmOperations.LoremIpsum,
             eventListener = eventListener ?: EventSavingAgenticEventListener(),
             operationScheduler = OperationScheduler.PRONTO,
-            ragService = RagService.empty(),
+            defaultRagService = RagService.empty(),
             asyncer = ExecutorAsyncer(Executors.newSingleThreadExecutor()),
             objectMapper = jacksonObjectMapper(),
             applicationContext = null,
             outputChannel = DevNullOutputChannel,
+            templateRenderer = JinjavaTemplateRenderer(),
         )
     }
 

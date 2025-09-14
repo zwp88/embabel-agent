@@ -19,6 +19,7 @@ import com.embabel.agent.api.dsl.Frog
 import com.embabel.agent.api.dsl.MagicVictim
 import com.embabel.agent.core.*
 import com.embabel.agent.core.support.InMemoryBlackboard
+import com.embabel.chat.Message
 import com.embabel.common.ai.model.LlmOptions
 import io.mockk.every
 import io.mockk.mockk
@@ -30,7 +31,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.ai.tool.ToolCallback
 
 
-data class PromptPerson(val name: String, val age: Int)
+data class PromptPerson(
+    val name: String,
+    val age: Int,
+)
+
 data class Summary(val text: String)
 
 class PromptTransformerKtTest {
@@ -61,7 +66,7 @@ class PromptTransformerKtTest {
                     MagicVictim::class.java.name
                 )
             } returns magicVictim
-            val promptSlot = slot<String>()
+            val promptSlot = slot<List<Message>>()
             every {
                 processContext.createObject(
                     capture(promptSlot),
@@ -71,7 +76,7 @@ class PromptTransformerKtTest {
                     transformer
                 )
             } returns frog
-            transformer.execute(processContext, action = transformer)
+            transformer.execute(processContext)
         }
 
         @Test
@@ -108,7 +113,7 @@ class PromptTransformerKtTest {
                 )
             } returns summary
 
-            transformer.execute(processContext = processContext, action = transformer)
+            transformer.execute(processContext = processContext)
 
             verify { processContext.getValue("person", PromptPerson::class.java.name) }
         }
@@ -137,9 +142,9 @@ class PromptTransformerKtTest {
 
         @Test
         fun `transformer should handle custom LLM options`() {
-            val customLlmOptions = LlmOptions(temperature = 0.7)
+            val customLlmOptions = LlmOptions().withTemperature(temperature = 0.7)
 
-            val transformer = promptTransformer<MagicVictim, Frog>(
+            val transformer = promptTransformer(
                 name = "customLlmTransformer",
                 llm = customLlmOptions,
                 inputClass = MagicVictim::class.java,
@@ -171,7 +176,7 @@ class PromptTransformerKtTest {
                 )
             } returns Frog(name = "Alice")
 
-            transformer.execute(processContext = processContext, action = transformer)
+            transformer.execute(processContext = processContext)
         }
 
         @Test
@@ -215,7 +220,7 @@ class PromptTransformerKtTest {
                 )
             } returns Frog(name = "Bob")
 
-            transformer.execute(processContext = processContext, action = transformer)
+            transformer.execute(processContext = processContext)
         }
 
         @Test

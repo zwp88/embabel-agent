@@ -22,6 +22,7 @@ import com.embabel.agent.event.AgenticEventListener
 import com.embabel.agent.event.logging.LoggingAgenticEventListener
 import com.embabel.agent.event.logging.personality.ColorPalette
 import com.embabel.agent.event.logging.personality.DefaultColorPalette
+import com.embabel.agent.rag.RagServiceEnhancerProperties
 import com.embabel.agent.spi.*
 import com.embabel.agent.spi.support.*
 import com.embabel.agent.spi.support.springai.DefaultToolDecorator
@@ -45,7 +46,12 @@ import org.springframework.web.client.RestTemplate
  * Core configuration for AgentPlatform
  */
 @Configuration
-@EnableConfigurationProperties(ConfigurableModelProviderProperties::class)
+@EnableConfigurationProperties(
+    ConfigurableModelProviderProperties::class,
+    AgentPlatformProperties::class,
+    ProcessRepositoryProperties::class,
+    RagServiceEnhancerProperties::class,
+)
 /*internal*/ class AgentPlatformConfiguration(
 ) {
 
@@ -105,7 +111,14 @@ import org.springframework.web.client.RestTemplate
     )
 
     @Bean
-    fun agentProcessRepository(): AgentProcessRepository = InMemoryAgentProcessRepository()
+    fun agentProcessRepository(
+        processRepositoryProperties: ProcessRepositoryProperties,
+    ): AgentProcessRepository = InMemoryAgentProcessRepository(processRepositoryProperties)
+
+    @Bean
+    fun contextRepository(
+        contextRepositoryProperties: ContextRepositoryProperties,
+    ): ContextRepository = InMemoryContextRepository(contextRepositoryProperties)
 
     @Bean
     fun toolGroupResolver(toolGroups: List<ToolGroup>): ToolGroupResolver = RegistryToolGroupResolver(
@@ -124,13 +137,12 @@ import org.springframework.web.client.RestTemplate
         ProcessOptionsOperationScheduler()
 
     /**
-     * Ollama, Docker and Bedrock models won't be loaded unless the profile is set.
+     * Ollama and Docker models won't be loaded unless the profile is set.
      * However, we need to depend on them to make sure any LLMs they
      * might create get injected here
-     * Bedrock Models design patterned after Ollama
      */
     @Bean
-    @DependsOn("ollamaModels", "dockerLocalModels", "bedrockModels")
+    @DependsOn("ollamaModels", "dockerLocalModels")
     fun modelProvider(
         llms: List<Llm>,
         embeddingServices: List<EmbeddingService>,

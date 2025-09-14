@@ -20,6 +20,7 @@ import com.embabel.common.core.types.HasInfoString
 import com.embabel.common.core.types.Timed
 import com.embabel.common.core.types.Timestamped
 import com.embabel.common.util.ComputerSaysNoSerializer
+import com.embabel.plan.Planner
 import com.embabel.plan.WorldState
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.time.Duration
@@ -66,12 +67,25 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
 
     val parentId: String?
 
+    /**
+     * Get the planner for this process
+     */
+    val planner: Planner<*, *, *>
+
     val history: List<ActionInvocation>
 
     /**
      * Goal of this process.
      */
     val goal: com.embabel.plan.Goal?
+
+    val finished: Boolean
+        get() = status in setOf(
+            AgentProcessStatusCode.COMPLETED,
+            AgentProcessStatusCode.FAILED,
+            AgentProcessStatusCode.KILLED,
+            AgentProcessStatusCode.TERMINATED,
+        )
 
     /**
      * Return a serializable status report for this process.
@@ -143,6 +157,28 @@ interface AgentProcess : Blackboard, Timestamped, Timed, OperationStatus<AgentPr
         }
         return processContext.getValue(IoBinding.DEFAULT_BINDING, outputClass.simpleName) as O?
             ?: error("No result of type ${outputClass.name} found in process status")
+    }
+
+    companion object {
+        private val threadLocalAgentProcess = ThreadLocal<AgentProcess>()
+
+        internal fun set(agentProcess: AgentProcess) {
+            threadLocalAgentProcess.set(agentProcess)
+        }
+
+        internal fun remove() {
+            threadLocalAgentProcess.remove()
+        }
+
+        /**
+         * Get the current agent process for this thread, if any.
+         * This can only be relied on during tool calls.
+         */
+        @JvmStatic
+        fun get(): AgentProcess? {
+            return threadLocalAgentProcess.get()?.let { return it }
+        }
+
     }
 
 }

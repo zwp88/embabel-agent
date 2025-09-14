@@ -114,7 +114,7 @@ class AgentBuilderTest {
                 processOptions = ProcessOptions(blackboard = blackboard),
                 platformServices = platformServices,
             )
-            val r = action.execute(processContext, action)
+            val r = action.execute(processContext)
             assertEquals(ActionStatusCode.SUCCEEDED, r.status)
             assertEquals(
                 MagicVictim("Hamish"),
@@ -143,7 +143,7 @@ class AgentBuilderTest {
                 processOptions = ProcessOptions(blackboard = blackboard),
                 platformServices = platformServices,
             )
-            val r = action.execute(processContext, action)
+            val r = action.execute(processContext)
             assertEquals(ActionStatusCode.SUCCEEDED, r.status)
             val output = processContext.blackboard.lastResult()
             assertTrue(

@@ -15,20 +15,29 @@
  */
 package com.embabel.agent.api.common.support
 
-import com.embabel.agent.api.common.ActionContext
-import com.embabel.agent.api.common.OperationContext
-import com.embabel.agent.api.common.PromptRunner
-import com.embabel.agent.api.common.ToolObject
+import com.embabel.agent.api.common.*
+import com.embabel.agent.core.ProcessOptions
+import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupRequirement
+import com.embabel.agent.core.Verbosity
 import com.embabel.agent.core.support.safelyGetToolCallbacks
 import com.embabel.agent.experimental.primitive.Determination
 import com.embabel.agent.prompt.element.ContextualPromptElement
+import com.embabel.agent.rag.PromptRunnerRagResponseSummarizer
+import com.embabel.agent.rag.tools.DualShotRagServiceSearchTools
+import com.embabel.agent.rag.tools.RagOptions
+import com.embabel.agent.rag.tools.SingleShotRagServiceSearchTools
 import com.embabel.agent.spi.InteractionId
 import com.embabel.agent.spi.LlmInteraction
+import com.embabel.agent.tools.agent.AgentToolCallback
 import com.embabel.agent.tools.agent.Handoffs
+import com.embabel.agent.tools.agent.PromptedTextCommunicator
+import com.embabel.chat.Message
+import com.embabel.chat.UserMessage
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.prompt.PromptContributor
 import com.embabel.common.core.types.ZeroToOne
+import com.embabel.common.util.StringTransformer
 import com.embabel.common.util.loggerFor
 import org.springframework.ai.tool.ToolCallback
 
@@ -44,34 +53,35 @@ internal data class OperationContextPromptRunner(
     override val promptContributors: List<PromptContributor>,
     private val contextualPromptContributors: List<ContextualPromptElement>,
     override val generateExamples: Boolean?,
-    private val handoffToolCallbacks: List<ToolCallback> = emptyList(),
+    private val otherToolCallbacks: List<ToolCallback> = emptyList(),
 ) : PromptRunner {
 
     val action = (context as? ActionContext)?.action
 
     private fun idForPrompt(
-        prompt: String,
+        messages: List<Message>,
         outputClass: Class<*>,
     ): InteractionId {
         return InteractionId("${context.operation.name}-${outputClass.name}")
     }
 
     override fun <T> createObject(
-        prompt: String,
+        messages: List<Message>,
         outputClass: Class<T>,
+        interactionId: String?,
     ): T {
         return context.processContext.createObject(
-            prompt = prompt,
+            messages = messages,
             interaction = LlmInteraction(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
-                toolCallbacks = safelyGetToolCallbacks(toolObjects) + handoffToolCallbacks,
+                toolCallbacks = safelyGetToolCallbacks(toolObjects) + otherToolCallbacks,
                 promptContributors = promptContributors + contextualPromptContributors.map {
                     it.toPromptContributor(
                         context
                     )
                 },
-                id = idForPrompt(prompt, outputClass),
+                id = interactionId?.let { InteractionId(it) } ?: idForPrompt(messages, outputClass),
                 generateExamples = generateExamples,
             ),
             outputClass = outputClass,
@@ -89,13 +99,13 @@ internal data class OperationContextPromptRunner(
             interaction = LlmInteraction(
                 llm = llm,
                 toolGroups = this.toolGroups + toolGroups,
-                toolCallbacks = safelyGetToolCallbacks(toolObjects) + handoffToolCallbacks,
+                toolCallbacks = safelyGetToolCallbacks(toolObjects) + otherToolCallbacks,
                 promptContributors = promptContributors + contextualPromptContributors.map {
                     it.toPromptContributor(
                         context
                     )
                 },
-                id = idForPrompt(prompt, outputClass),
+                id = idForPrompt(listOf(UserMessage(prompt)), outputClass),
                 generateExamples = generateExamples,
             ),
             outputClass = outputClass,
@@ -143,24 +153,112 @@ internal data class OperationContextPromptRunner(
         return determination.result && determination.confidence >= confidenceThreshold
     }
 
+    override fun withTemplate(templateName: String): TemplateOperations {
+        return TemplateOperations(
+            templateName = templateName,
+            promptRunnerOperations = this,
+            templateRenderer = context.agentPlatform().platformServices.templateRenderer,
+        )
+    }
+
     override fun withLlm(llm: LlmOptions): PromptRunner =
         copy(llm = llm)
 
     override fun withToolGroup(toolGroup: ToolGroupRequirement): PromptRunner =
         copy(toolGroups = this.toolGroups + toolGroup)
 
+    override fun withToolGroup(toolGroup: ToolGroup): PromptRunner =
+        copy(otherToolCallbacks = otherToolCallbacks + toolGroup.toolCallbacks)
+
     override fun withToolObject(toolObject: ToolObject): PromptRunner =
         copy(toolObjects = this.toolObjects + toolObject)
+
+    override fun withRag(options: RagOptions): PromptRunner {
+        if (toolObjects.map { it.obj }
+                .any { it is SingleShotRagServiceSearchTools && it.options.service == options.service }
+        ) error("Cannot add Rag Tools against service '${options.service ?: "DEFAULT"}' twice")
+        val ragService =
+            context.agentPlatform().platformServices.ragService(context, options.service, options.listener)
+                ?: error("No RAG service named '${options.service}' available")
+
+        val namingStrategy: StringTransformer = if (options.service == null) {
+            StringTransformer.IDENTITY
+        } else {
+            StringTransformer { s -> "${options.service}-$s" }
+        }
+        val toolInstance = if (options.dualShot != null) {
+            DualShotRagServiceSearchTools(
+                ragService = ragService,
+                options = options,
+                summarizer = PromptRunnerRagResponseSummarizer(this, options)
+            )
+        } else {
+            SingleShotRagServiceSearchTools(
+                ragService = ragService,
+                options = options,
+            )
+        }
+        val withTools = withToolObject(
+            ToolObject(
+                obj = toolInstance,
+                namingStrategy = namingStrategy,
+            )
+        )
+        val systemPrompt = """|
+            |You have access to RAG search tools to help you answer questions
+            |about ${ragService.description}
+            """.trimMargin()
+        return if (options.service == null) {
+            // Default service, no need to explain
+            withTools.withSystemPrompt(systemPrompt)
+        } else {
+            withTools.withSystemPrompt(
+                """|
+                    |$systemPrompt
+                    |The tools are prefixed with ${ragService.name}
+                    """.trimMargin()
+            )
+        }
+    }
 
     override fun withHandoffs(vararg outputTypes: Class<*>): PromptRunner {
         val handoffs = Handoffs(
             autonomy = context.agentPlatform().platformServices.autonomy(),
-            objectMapper = context.agentPlatform().platformServices.objectMapper,
             outputTypes = outputTypes.toList(),
             applicationName = context.agentPlatform().name,
         )
         return copy(
-            handoffToolCallbacks = this.handoffToolCallbacks + handoffs.toolCallbacks,
+            otherToolCallbacks = this.otherToolCallbacks + handoffs.toolCallbacks,
+        )
+    }
+
+    override fun withSubagents(
+        vararg subagents: Subagent,
+    ): PromptRunner {
+        val newCallbacks = subagents.map { subagent ->
+            val agent = subagent.resolve(context.agentPlatform())
+            AgentToolCallback(
+                autonomy = context.agentPlatform().platformServices.autonomy(),
+                agent = agent,
+                textCommunicator = PromptedTextCommunicator,
+                objectMapper = context.agentPlatform().platformServices.objectMapper,
+                inputType = subagent.inputClass,
+                processOptionsCreator = { agentProcess ->
+                    val blackboard = agentProcess.processContext.blackboard.spawn()
+                    loggerFor<OperationContextPromptRunner>().info(
+                        "Creating subagent process for {} with blackboard {}",
+                        agent.name,
+                        blackboard,
+                    )
+                    ProcessOptions(
+                        verbosity = Verbosity(showPrompts = true),
+                        blackboard = blackboard,
+                    )
+                },
+            )
+        }
+        return copy(
+            otherToolCallbacks = this.otherToolCallbacks + newCallbacks,
         )
     }
 
@@ -174,4 +272,12 @@ internal data class OperationContextPromptRunner(
 
     override fun withGenerateExamples(generateExamples: Boolean): PromptRunner =
         copy(generateExamples = generateExamples)
+
+    override fun <T> creating(outputClass: Class<T>): ObjectCreator<T> {
+        return PromptRunnerObjectCreator(
+            promptRunner = this,
+            outputClass = outputClass,
+            objectMapper = context.agentPlatform().platformServices.objectMapper,
+        )
+    }
 }

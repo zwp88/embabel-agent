@@ -21,10 +21,13 @@ import com.embabel.agent.core.*
 import com.embabel.agent.domain.io.UserInput
 import com.embabel.agent.event.logging.LoggingPersonality
 import com.embabel.agent.event.logging.personality.ColorPalette
-import com.embabel.agent.rag.Ingester
+import com.embabel.agent.rag.ingestion.Ingester
 import com.embabel.agent.shell.config.ShellProperties
-import com.embabel.chat.agent.shell.LastMessageIntentAgentPlatformChatSession
+import com.embabel.chat.agent.*
+import com.embabel.chat.agent.shell.TerminalServicesProcessWaitingHandler
+import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.ai.model.ModelProvider
+import com.embabel.common.textio.template.TemplateRenderer
 import com.embabel.common.util.bold
 import com.embabel.common.util.color
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -44,17 +47,7 @@ import kotlin.system.exitProcess
 data class ShellConfig(
     val lineLength: Int = 140,
     val chat: ChatConfig = ChatConfig(),
-) {
-    /**
-     * Configuration for the chat session
-     * @param confirmGoals Whether to confirm goals with the user before proceeding
-     * @param bindConversation Whether to bind the conversation to the chat session
-     */
-    data class ChatConfig(
-        val confirmGoals: Boolean = true,
-        val bindConversation: Boolean = false,
-    )
-}
+)
 
 
 /**
@@ -63,6 +56,7 @@ data class ShellConfig(
 @ShellComponent
 class ShellCommands(
     private val autonomy: Autonomy,
+    private val planLister: PlanLister,
     private val modelProvider: ModelProvider,
     private val terminalServices: TerminalServices,
     private val environment: ConfigurableEnvironment,
@@ -71,6 +65,7 @@ class ShellCommands(
     private val loggingPersonality: LoggingPersonality,
     private val ingester: Ingester,
     private val toolsStats: ToolsStats,
+    private val templateRenderer: TemplateRenderer,
     private val context: ConfigurableApplicationContext,
     private val shellProperties: ShellProperties = ShellProperties(),
 ) {
@@ -123,22 +118,38 @@ class ShellCommands(
         val processOptions = ProcessOptions(
             verbosity = Verbosity(
                 debug = false,
-                showPrompts = false,
+                showPrompts = true,
                 showLlmResponses = false,
                 showPlanning = true,
             )
         )
         blackboard = processOptions.blackboard
 
-        val chatSession = LastMessageIntentAgentPlatformChatSession(
-            messageListener = { },
-            autonomy = autonomy,
+        val goalChoiceApprover =
+            if (shellProperties.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL
+
+        val chatSession = AgentPlatformChatSession(
+            user = null,
+            planLister = planLister,
             processOptions = processOptions,
-            goalChoiceApprover = if (shellProperties.chat.confirmGoals) terminalServices else GoalChoiceApprover.APPROVE_ALL,
-            terminalServices = terminalServices,
-            config = shellProperties.chat,
+            outputChannel = terminalServices.outputChannel(),
+            responseGenerator = if (shellProperties.chat.bindConversation) AgentResponseGenerator(
+                agentPlatform = agentPlatform,
+                agent = DefaultChatAgentBuilder(
+                    autonomy = autonomy,
+                    persona = K9,
+                    llm = LlmOptions
+                        .withModel(shellProperties.chat.model)
+                        .withTemperature(null)
+                ).build()
+            ) else AutonomyResponseGenerator(
+                autonomy = autonomy,
+                goalChoiceApprover = goalChoiceApprover,
+                processWaitingHandler = TerminalServicesProcessWaitingHandler(terminalServices),
+                chatConfig = shellProperties.chat,
+            ),
         )
-        return terminalServices.chat(chatSession, colorPalette)
+        return terminalServices.chat(chatSession = chatSession, welcome = null, colorPalette = colorPalette)
     }
 
     @ShellMethod("List agents")
@@ -149,15 +160,16 @@ class ShellCommands(
                     it.infoString(verbose = true, indent = 1)
                 }
         }"
-        return detail + "\n\nTLDR;\n${agentPlatform.agents().joinToString("\n") { "${it.name}: ${it.description}" }}"
+        return detail + "\n\nTL;DR\n${agentPlatform.agents().joinToString("\n") { "${it.name}: ${it.description}" }}"
     }
 
     @ShellMethod("List actions")
     fun actions(): String {
-        return "${"Actions:".bold()}\n${
+        val detail = "${"Actions:".bold()}\n${
             agentPlatform.actions
                 .joinToString(separator = "\n") { it.infoString(verbose = true, indent = 1) }
         }"
+        return detail + "\n\nTL;DR\n${agentPlatform.actions.joinToString("\n") { "${it.name}: ${it.description}" }}"
     }
 
     @ShellMethod("List conditions")
@@ -237,10 +249,6 @@ class ShellCommands(
     fun models(): String =
         modelProvider.infoString(true)
 
-    @ShellMethod("List available rag services")
-    fun ragService(): String =
-        autonomy.agentPlatform.platformServices.ragService.infoString(verbose = true)
-
     @ShellMethod("ingest")
     fun ingest(
         @ShellOption(
@@ -259,6 +267,7 @@ class ShellCommands(
                 "Could not process ingestion."
             }
         } catch (e: Exception) {
+            logger.error("Failed to ingest $url: ${e.message}", e)
             "Failed to ingest $url: ${e.message}"
         }
     }

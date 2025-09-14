@@ -16,7 +16,7 @@
 package com.embabel.agent.core
 
 import com.embabel.agent.api.dsl.evenMoreEvilWizard
-import com.embabel.agent.event.AgentProcessFinishedEvent
+import com.embabel.agent.event.AgentProcessCompletedEvent
 import com.embabel.agent.testing.common.EventSavingAgenticEventListener
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyAgentProcessRunning
 import com.embabel.agent.testing.integration.IntegrationTestUtils.dummyPlatformServices
@@ -37,7 +37,7 @@ class ProcessContextTest {
         )
         assertEquals(0, ese.processEvents.size)
         processContext.onProcessEvent(
-            AgentProcessFinishedEvent(
+            AgentProcessCompletedEvent(
                 agentProcess = agentProcess
             )
         )
@@ -57,7 +57,7 @@ class ProcessContextTest {
         )
         assertEquals(0, ese.processEvents.size)
         processContext.onProcessEvent(
-            AgentProcessFinishedEvent(
+            AgentProcessCompletedEvent(
                 agentProcess = agentProcess
             )
         )

@@ -25,7 +25,6 @@ import com.embabel.agent.tools.agent.GoalToolCallback
 import com.embabel.agent.tools.agent.PerGoalToolCallbackFactory
 import com.embabel.agent.tools.agent.PromptedTextCommunicator
 import com.embabel.common.util.indent
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.modelcontextprotocol.server.McpSyncServer
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import org.slf4j.LoggerFactory
@@ -42,14 +41,12 @@ import org.springframework.stereotype.Service
 @Service
 class PerGoalMcpToolExportCallbackPublisher(
     autonomy: Autonomy,
-    objectMapper: ObjectMapper,
     private val mcpSyncServer: McpSyncServer,
     @Value("\${spring.application.name:agent-api}") applicationName: String,
 ) : McpToolExportCallbackPublisher {
 
     private val perGoalToolCallbackFactory = PerGoalToolCallbackFactory(
         autonomy = autonomy,
-        objectMapper = objectMapper,
         applicationName = applicationName,
         textCommunicator = PromptedTextCommunicator,
     )

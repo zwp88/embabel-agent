@@ -23,6 +23,30 @@ import com.embabel.common.util.indent
 import com.embabel.plan.goap.ConditionDetermination
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+
+
+@JsonDeserialize(`as` = ConditionMetadataImpl::class)
+interface ConditionMetadata : Operation {
+
+    /**
+     * Cost of evaluating the condition. 0 is cheap, 1 is expensive.
+     * Helps in planning.
+     */
+    val cost: ZeroToOne
+
+    companion object {
+        operator fun invoke(
+            name: String,
+            cost: ZeroToOne,
+        ): ConditionMetadata = ConditionMetadataImpl(name, cost)
+    }
+}
+
+private data class ConditionMetadataImpl(
+    override val name: String,
+    override val cost: ZeroToOne,
+) : ConditionMetadata
 
 /**
  * A Condition is a named, well known predicate that can be evaluated
@@ -34,13 +58,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     JsonSubTypes.Type(value = PromptCondition::class),
 )
-interface Condition : Operation, HasInfoString {
-
-    /**
-     * Cost of evaluating the condition. 0 is cheap, 1 is expensive.
-     * Helps in planning.
-     */
-    val cost: ZeroToOne
+interface Condition : ConditionMetadata, HasInfoString {
 
     /**
      * Evaluate the condition in the context of the process.

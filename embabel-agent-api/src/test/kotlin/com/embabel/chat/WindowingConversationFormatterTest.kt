@@ -15,6 +15,7 @@
  */
 package com.embabel.chat
 
+import com.embabel.chat.support.InMemoryConversation
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -32,10 +33,10 @@ class WindowingConversationFormatterTest {
     fun `does not cut off`() {
         val formatter = WindowingConversationFormatter(windowSize = 20)
         val conversation = InMemoryConversation()
-            .withMessage(UserMessage("hello", "Bill"))
-            .withMessage(AssistantMessage("Hi there!"))
-            .withMessage(UserMessage("How are you?", "Bill"))
-            .withMessage(UserMessage("I'm great", "Bill"))
+            .addMessage(UserMessage("hello", "Bill"))
+            .addMessage(AssistantMessage("Hi there!"))
+            .addMessage(UserMessage("How are you?", "Bill"))
+            .addMessage(UserMessage("I'm great", "Bill"))
         val formatted = formatter.format(conversation)
         assertTrue(formatted.contains("Bill"))
         assertTrue(formatted.contains("Hi there!"))
@@ -47,10 +48,10 @@ class WindowingConversationFormatterTest {
     fun `cuts off`() {
         val formatter = WindowingConversationFormatter(windowSize = 2)
         val conversation = InMemoryConversation()
-            .withMessage(UserMessage("hello", "Bill"))
-            .withMessage(AssistantMessage("Hi there!"))
-            .withMessage(UserMessage("How are you?", "Bill"))
-            .withMessage(UserMessage("I'm great", "Bill"))
+            .addMessage(UserMessage("hello", "Bill"))
+            .addMessage(AssistantMessage("Hi there!"))
+            .addMessage(UserMessage("How are you?", "Bill"))
+            .addMessage(UserMessage("I'm great", "Bill"))
         val formatted = formatter.format(conversation)
         assertTrue(formatted.contains("Bill"))
         assertFalse(formatted.contains("Hi there!"), "Should cut off first message:\n$formatted")

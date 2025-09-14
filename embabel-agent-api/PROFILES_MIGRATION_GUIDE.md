@@ -125,16 +125,16 @@ embabel:
 
 #### **Environment Variables**
 ```bash
-# Include packages (comma-separated)
-export EMBABEL_AGENT_PLATFORM_MIGRATION_SCANNING_INCLUDE_PACKAGES=com.embabel.agent,com.mycorp.custom
+# Production-Safe Defaults (Migration System DISABLED by default):
+export EMBABEL_AGENT_PLATFORM_MIGRATION_SCANNING_ENABLED=false
+export EMBABEL_AGENT_PLATFORM_MIGRATION_WARNINGS_ENABLED=true
+export EMBABEL_AGENT_PLATFORM_MIGRATION_WARNINGS_INDIVIDUAL_LOGGING=true
+export EMBABEL_AGENT_PLATFORM_MIGRATION_SCANNING_INCLUDE_PACKAGES=com.embabel.agent,com.embabel.agent.shell
 
-# Additional excludes (comma-separated)  
+# Optional: Customize scanning behavior when enabled
 export EMBABEL_AGENT_PLATFORM_MIGRATION_SCANNING_ADDITIONAL_EXCLUDES=com.noisy.framework,com.slow.scanner
 
-# Control scanning behavior
-export EMBABEL_AGENT_PLATFORM_MIGRATION_SCANNING_AUTO_EXCLUDE_JAR_PACKAGES=false
-
-# Enable for Iteration 1+ migrations (disabled by default in Iteration 0)
+# Enable comprehensive migration detection (opt-in):
 export EMBABEL_AGENT_PLATFORM_MIGRATION_SCANNING_ENABLED=true
 
 # Disable scanning entirely (e.g., in production)
@@ -358,7 +358,7 @@ class SeveranceLoggingAgenticEventListener : LoggingAgenticEventListener(...)
 
 ### **Target Configuration**
 ```yaml
-# application.yml
+# application.yml.unused
 embabel:
   agent:
     logging:
@@ -506,7 +506,7 @@ logging:
 
 ### **Target Configuration**
 ```yaml
-# application.yml
+# application.yml.unused
 embabel:
   shell:  # Note: Uses embabel.shell.* (existing structure)
     enabled: true  # New property-based activation
@@ -563,7 +563,7 @@ spring:
 
 ### **Target Configuration**
 ```yaml
-# application.yml
+# application.yml.unused
 embabel:
   agent:
     infrastructure:
@@ -656,7 +656,7 @@ spring:
 
 ### **Target Configuration**
 ```yaml
-# application.yml
+# application.yml.unused
 embabel:
   agent:
     infrastructure:
@@ -720,7 +720,7 @@ export EMBABEL_AGENT_INFRASTRUCTURE_MCP_ENABLED=true
 
 ### **Docker Desktop Simplified Configuration**
 ```yaml
-# application.yml (Docker Desktop preset)
+# application.yml.unused (Docker Desktop preset)
 embabel:
   agent:
     infrastructure:
@@ -782,7 +782,7 @@ management:
 
 ### **Target Configuration**
 ```yaml
-# application.yml
+# application.yml.unused
 embabel:
   agent:
     infrastructure:
@@ -955,7 +955,7 @@ src/main/resources/application-templates/
 
 **Development Template (`application-development.yml`):**
 ```yaml
-# Copy to your src/main/resources/application.yml and customize
+# Copy to your src/main/resources/application.yml.unused and customize
 embabel:
   agent:
     platform:
@@ -980,7 +980,7 @@ embabel:
 
 **Production Template (`application-production.yml`):**
 ```yaml
-# Copy to your src/main/resources/application.yml and customize
+# Copy to your src/main/resources/application.yml.unused and customize
 embabel:
   agent:
     platform:
@@ -1046,7 +1046,7 @@ export NEO4J_PASSWORD=$(aws secretsmanager get-secret-value --secret-id prod/neo
 
 ### **Development Environment**
 ```yaml
-# application.yml (development)
+# application.yml.unused (development)
 embabel:
   agent:
     shell:
@@ -1069,7 +1069,7 @@ embabel:
 
 ### **Production Environment**
 ```yaml
-# application.yml (production)
+# application.yml.unused (production)
 embabel:
   agent:
     shell:
@@ -1155,7 +1155,7 @@ echo $NEO4J_USERNAME  # Should show username
 echo $NEO4J_PASSWORD  # Should show password
 
 # Test configuration loading
-java -jar app.jar --spring.config.location=classpath:application.yml
+java -jar app.jar --spring.config.location=classpath:application.yml.unused
 ```
 
 ---

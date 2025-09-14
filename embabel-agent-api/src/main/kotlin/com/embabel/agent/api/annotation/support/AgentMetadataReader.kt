@@ -16,7 +16,6 @@
 package com.embabel.agent.api.annotation.support
 
 import com.embabel.agent.api.annotation.*
-import com.embabel.agent.api.common.EvaluateConditionPromptException
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.StuckHandler
 import com.embabel.agent.api.common.ToolObject
@@ -30,7 +29,6 @@ import com.embabel.agent.validation.AgentStructureValidator
 import com.embabel.agent.validation.AgentValidationManager
 import com.embabel.agent.validation.DefaultAgentValidationManager
 import com.embabel.agent.validation.GoapPathToCompletionValidator
-import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Semver
 import com.embabel.common.util.NameUtils
 import com.embabel.common.util.loggerFor
@@ -72,6 +70,11 @@ data class AgenticInfo(
     }
 
     fun noAutoScan() = agentCapabilitiesAnnotation?.scan == false || agentAnnotation?.scan == false
+
+    /**
+     * Name for this agent. Valid only if agentic() is true.
+     */
+    fun agentName(): String = (agentAnnotation?.name ?: "").ifBlank { type.simpleName }
 }
 
 /**
@@ -173,7 +176,7 @@ class AgentMetadataReader(
 
         val agent = if (agenticInfo.agentAnnotation != null) {
             CoreAgent(
-                name = agenticInfo.agentAnnotation.name.ifBlank { agenticInfo.type.simpleName },
+                name = agenticInfo.agentName(),
                 provider = agenticInfo.agentAnnotation.provider.ifBlank {
                     instance.javaClass.`package`.name
                 },
@@ -183,6 +186,7 @@ class AgentMetadataReader(
                 actions = actions,
                 goals = goals.toSet(),
                 stuckHandler = instance as? StuckHandler,
+                opaque = agenticInfo.agentAnnotation.opaque,
             )
         } else {
             AgentScope(
@@ -270,6 +274,7 @@ class AgentMetadataReader(
         method: Method,
         instance: Any,
     ): ComputedBooleanCondition {
+        requireNonAmbiguousParameters(method)
         val conditionAnnotation = method.getAnnotation(Condition::class.java)
         return ComputedBooleanCondition(
             name = conditionAnnotation.name.ifBlank {
@@ -305,11 +310,8 @@ class AgentMetadataReader(
                 else -> {
                     val requireNameMatch = parameter.getAnnotation(RequireNameMatch::class.java)
                     val domainTypes = context.agentProcess.agent.jvmTypes.map { it.clazz }
-                    val variable = if (requireNameMatch != null) {
-                        parameter.name
-                    } else {
-                        IoBinding.DEFAULT_BINDING
-                    }
+                    val variable = getBindingParameterName(parameter.name, requireNameMatch)
+                        ?: error("Parameter name should be available")
                     args += context.getValue(
                         variable = variable,
                         type = parameter.type.name,
@@ -341,6 +343,7 @@ class AgentMetadataReader(
             }
         }
         return try {
+            method.trySetAccessible()
             val evaluationResult = ReflectionUtils.invokeMethod(method, instance, *args.toTypedArray()) as Boolean
             logger.debug(
                 "Condition evaluated to {}, calling {} on {} using args {}",
@@ -350,20 +353,6 @@ class AgentMetadataReader(
                 args,
             )
             evaluationResult
-        } catch (ecpe: EvaluateConditionPromptException) {
-            // This is our own exception to get typesafe prompt execution
-            // It is not a failure
-            val promptRunner = context.promptRunner(
-                llm = ecpe.llm ?: LlmOptions(),
-                promptContributors = ecpe.promptContributors,
-                contextualPromptContributors = ecpe.contextualPromptContributors,
-            )
-
-            promptRunner.evaluateCondition(
-                condition = ecpe.condition,
-                context = ecpe.context,
-                confidenceThreshold = ecpe.confidenceThreshold,
-            )
         } catch (t: Throwable) {
             logger.warn("Error invoking condition method ${method.name} with args $args", t)
             false

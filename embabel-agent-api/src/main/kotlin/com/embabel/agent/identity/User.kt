@@ -15,27 +15,24 @@
  */
 package com.embabel.agent.identity
 
-import com.embabel.agent.domain.library.Person
-
 /**
  * Superinterface for all users in the system.
  */
-interface User : Person {
-    val email: String
+interface User {
+    val id: String
 }
 
 interface UserService<U : User> {
 
-    fun findByEmail(email: String): U?
+    fun findById(id: String): U?
 
     /**
      * Add the user to the system.
      * Default implementation refuses to do so.
      */
     fun provisionUser(
-        email: String,
-        name: String,
+        userInfo: U,
     ): U {
-        error("User not authorized: $email")
+        error("User cannot be provisioned: $userInfo")
     }
 }

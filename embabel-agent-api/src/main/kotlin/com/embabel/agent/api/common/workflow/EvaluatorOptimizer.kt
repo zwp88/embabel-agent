@@ -19,24 +19,15 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.TransformationActionContext
 import com.embabel.agent.api.common.support.SupplierAction
 import com.embabel.agent.api.common.support.TransformationAction
+import com.embabel.agent.api.common.workflow.loop.Feedback
 import com.embabel.agent.api.dsl.AgentScopeBuilder
 import com.embabel.agent.core.Action
 import com.embabel.agent.core.ComputedBooleanCondition
 import com.embabel.agent.core.Goal
 import com.embabel.common.core.MobyNameGenerator
 import com.embabel.common.core.types.Timestamped
-import com.embabel.common.core.types.ZeroToOne
 import org.slf4j.LoggerFactory
 import java.time.Instant
-
-interface Feedback {
-    val score: ZeroToOne
-}
-
-data class SimpleFeedback(
-    override val score: ZeroToOne,
-    val feedback: String,
-) : Feedback
 
 data class ScoredResult<RESULT, FEEDBACK>(
     val result: RESULT,
@@ -51,6 +42,7 @@ data class ScoredResult<RESULT, FEEDBACK>(
 /**
  * See https://www.anthropic.com/engineering/building-effective-agents
  */
+@Deprecated("Use RepeatUntilBuilder instead")
 object EvaluatorOptimizer {
 
     private val logger = LoggerFactory.getLogger(EvaluatorOptimizer::class.java)

@@ -16,38 +16,67 @@
 package com.embabel.agent.spi
 
 import com.embabel.agent.api.common.Asyncer
+import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.autonomy.Autonomy
 import com.embabel.agent.channel.OutputChannel
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.event.AgenticEventListener
+import com.embabel.agent.event.RagEventListener
 import com.embabel.agent.rag.RagService
+import com.embabel.common.ai.model.ModelProvider
+import com.embabel.common.textio.template.TemplateRenderer
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.context.ApplicationContext
 
 /**
  * Services used by the platform and available to user-authored code.
- * @param agentPlatform agent platform executing this agent
- * @param llmOperations operations to use for LLMs
- * @param eventListener event listener for agentic events
- * @param operationScheduler operation scheduler for scheduling operations
  */
-data class PlatformServices(
-    val agentPlatform: AgentPlatform,
-    val llmOperations: LlmOperations,
-    val eventListener: AgenticEventListener,
-    val operationScheduler: OperationScheduler,
-    val asyncer: Asyncer,
-    val ragService: RagService,
-    val objectMapper: ObjectMapper,
-    val outputChannel: OutputChannel,
-    private val applicationContext: ApplicationContext?,
-) {
+interface PlatformServices {
 
-    // We get this from the context because of circular dependencies
-    fun autonomy(): Autonomy {
-        if (applicationContext == null) {
-            throw IllegalStateException("Application context is not available, cannot retrieve Autonomy bean.")
-        }
-        return applicationContext.getBean(Autonomy::class.java)
-    }
+    /**
+     * The agent platform executing this agent
+     */
+    val agentPlatform: AgentPlatform
+
+    /**
+     * Operations to use for LLMs
+     */
+    val llmOperations: LlmOperations
+
+    /**
+     * Event listener for agentic events
+     */
+    val eventListener: AgenticEventListener
+
+    /**
+     * Operation scheduler for scheduling operations
+     */
+    val operationScheduler: OperationScheduler
+
+    /**
+     * Asyncer for async operations
+     */
+    val asyncer: Asyncer
+
+
+    val objectMapper: ObjectMapper
+
+    val outputChannel: OutputChannel
+
+    val templateRenderer: TemplateRenderer
+
+    fun autonomy(): Autonomy
+
+    fun modelProvider(): ModelProvider
+
+    /**
+     * Create a RagService with the given name, or the default if no name is given.
+     * Enhance if necessary
+     */
+    fun ragService(
+        context: OperationContext,
+        serviceName: String?,
+        listener: RagEventListener,
+    ): RagService?
+
+    fun withEventListener(agenticEventListener: AgenticEventListener): PlatformServices
 }

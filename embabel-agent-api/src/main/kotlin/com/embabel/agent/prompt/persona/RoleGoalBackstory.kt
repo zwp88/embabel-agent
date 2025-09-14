@@ -35,4 +35,30 @@ data class RoleGoalBackstory(
         Goal: $goal
         Backstory: $backstory
     """.trimIndent()
+
+    companion object {
+
+        /**
+         * Convenient Java-friendly way to start building a RoleGoalBackstory in fluent style.
+         */
+        @JvmStatic
+        fun withRole(role: String) = RoleBuilder(role)
+
+    }
+
+    class RoleBuilder(private val role: String) {
+
+        fun andGoal(goal: String): GoalBuilder = GoalBuilder(role, goal)
+
+    }
+
+    class GoalBuilder(
+        private val role: String,
+        private val goal: String,
+    ) {
+
+        fun andBackstory(backstory: String): RoleGoalBackstory =
+            RoleGoalBackstory(role, goal, backstory)
+
+    }
 }

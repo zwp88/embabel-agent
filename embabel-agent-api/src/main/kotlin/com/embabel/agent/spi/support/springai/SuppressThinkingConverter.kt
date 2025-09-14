@@ -109,23 +109,14 @@ class SuppressThinkingConverter<T>(
             logger.debug("Failed to parse input as JSON, sanitizing for think blocks", e)
         }
         // Try to find and remove the think block markup
-        for (thinkBlockFinder in thinkBlockFinders) {
-            val thinkBlock = thinkBlockFinder(input)
-            if (thinkBlock != null && thinkBlock.isNotEmpty()) {
-                return ThinkBlockSanitization(
-                    input = input,
-                    thinkBlock = thinkBlock,
-                    cleaned = input.replace(thinkBlock, ""),
-                )
-            }
-        }
-        // If no think block is found, return the original input as cleaned
-        return ThinkBlockSanitization(
-            input = input,
-            thinkBlock = null,
-            cleaned = input,
-        )
+        return thinkBlockSanitization(thinkBlockFinders, input)
+            ?: ThinkBlockSanitization(
+                input = input,
+                thinkBlock = null,
+                cleaned = input,
+            )
     }
+
 
 }
 
@@ -137,6 +128,31 @@ val FindMarkupThinkBlock: ThinkBlockFinder = { input ->
 val FindPrefixThinkBlock: ThinkBlockFinder = { input ->
     val thinkBlockRegex = "[^{]*".toRegex(RegexOption.DOT_MATCHES_ALL)
     thinkBlockRegex.find(input)?.value
+}
+
+fun stringWithoutThinkBlocks(
+    source: String,
+    thinkBlockFinders: List<ThinkBlockFinder> = listOf(FindMarkupThinkBlock),
+): String {
+    val sanitization = thinkBlockSanitization(thinkBlockFinders, source)
+    return sanitization?.cleaned ?: source
+}
+
+internal fun thinkBlockSanitization(
+    thinkBlockFinders: List<ThinkBlockFinder>,
+    input: String,
+): ThinkBlockSanitization? {
+    for (thinkBlockFinder in thinkBlockFinders) {
+        val thinkBlock = thinkBlockFinder(input)
+        if (thinkBlock != null && thinkBlock.isNotEmpty()) {
+            return ThinkBlockSanitization(
+                input = input,
+                thinkBlock = thinkBlock,
+                cleaned = input.replace(thinkBlock, ""),
+            )
+        }
+    }
+    return null
 }
 
 /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.agent.test.annotation.support
+package com.embabel.agent.test.type
 
 import com.embabel.agent.api.annotation.*
 import com.embabel.agent.api.common.*
@@ -228,7 +228,10 @@ class CustomNameConditionFromBlackboard {
 class ConditionsFromBlackboard {
 
     @Condition
-    fun condition1(person: PersonWithReverseTool, frog: Frog): Boolean {
+    fun condition1(
+        person: PersonWithReverseTool,
+        frog: Frog,
+    ): Boolean {
         return person.name == "Rod"
     }
 
@@ -248,7 +251,10 @@ class OneTransformerActionOnly {
 class OneTransformerActionWithNullableParameter {
 
     @Action(cost = 500.0)
-    fun toPerson(userInput: UserInput, person: SnakeMeal?): PersonWithReverseTool {
+    fun toPerson(
+        userInput: UserInput,
+        person: SnakeMeal?,
+    ): PersonWithReverseTool {
         var content = userInput.content
         if (person != null) {
             content += " and tasty!"
@@ -333,7 +339,10 @@ class OneTransformerActionTakingInterfaceWithExpectationCustomToolGroupOnly {
 
     @AchievesGoal(description = "Creating a frog")
     @Action(cost = 500.0, toolGroups = ["magic"])
-    fun toPerson(person: PersonWithReverseTool, context: OperationContext): Frog {
+    fun toPerson(
+        person: PersonWithReverseTool,
+        context: OperationContext,
+    ): Frog {
         val pr = context.promptRunner()
         return Frog(person.name)
     }
@@ -345,7 +354,10 @@ class OneTransformerActionTakingInterfaceWithExpectationCustomToolGroupRequireme
 
     @AchievesGoal(description = "Creating a frog")
     @Action(cost = 500.0, toolGroups = ["frogs"], toolGroupRequirements = [ToolGroup("magic")])
-    fun toPerson(person: PersonWithReverseTool, context: OperationContext): Frog {
+    fun toPerson(
+        person: PersonWithReverseTool,
+        context: OperationContext,
+    ): Frog {
         val pr = context.promptRunner()
         return Frog(person.name)
     }
@@ -365,7 +377,10 @@ data class Task(
 class AgentWithCustomName {
 
     @Action(cost = 500.0)
-    fun toPerson(userInput: UserInput, task: Task): PersonWithReverseTool {
+    fun toPerson(
+        userInput: UserInput,
+        task: Task,
+    ): PersonWithReverseTool {
         return PersonWithReverseTool(userInput.content)
     }
 
@@ -378,7 +393,10 @@ class AgentWithCustomName {
 class AgentWithOneTransformerActionWith2ArgsOnly {
 
     @Action(cost = 500.0)
-    fun toPerson(userInput: UserInput, task: Task): PersonWithReverseTool {
+    fun toPerson(
+        userInput: UserInput,
+        task: Task,
+    ): PersonWithReverseTool {
         return PersonWithReverseTool(userInput.content)
     }
 
@@ -401,7 +419,10 @@ class OneTransformerActionWith2ArgsAndCustomInputBindings {
 class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 
     @Action(outputBinding = "person")
-    fun toPerson(userInput: UserInput, task: Task): PersonWithReverseTool {
+    fun toPerson(
+        userInput: UserInput,
+        task: Task,
+    ): PersonWithReverseTool {
         return PersonWithReverseTool(userInput.content)
     }
 
@@ -411,14 +432,16 @@ class OneTransformerActionWith2ArgsAndCustomOutputBinding {
 class OnePromptActionOnly(
 ) {
 
-    val promptRunner = using(
-        // Java style usage
-        llm = LlmOptions().withTemperature(1.7).withModel("magical"),
-    )
+    val
+    // Java style usage
+            llm = LlmOptions.withModel("magical").withTemperature(1.7)
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
-        return promptRunner.createObject("Generated prompt for ${userInput.content}")
+    fun toPersonWithPrompt(
+        userInput: UserInput,
+        context: OperationContext,
+    ): PersonWithReverseTool {
+        return context.ai().withLlm(llm).createObject("Generated prompt for ${userInput.content}")
     }
 
 }
@@ -448,10 +471,9 @@ class Combined {
     ).withValue(30.0)
 
     // Can reuse this or inject
-    val magicalLlm = using(
-        // Java style usage
-        llm = LlmOptions().withTemperature(1.7).withModel("magical"),
-    )
+    val magicalLlm =
+        LlmOptions.withModel("magical").withTemperature(1.7)
+
 
     @Condition(cost = .5)
     fun condition1(processContext: ProcessContext): Boolean {
@@ -464,8 +486,13 @@ class Combined {
     }
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
-        return magicalLlm.createObject("Generated prompt for ${userInput.content}")
+    fun toPersonWithPrompt(
+        userInput: UserInput,
+        context: OperationContext,
+    ): PersonWithReverseTool {
+        return context.ai().withLlm(
+            magicalLlm
+        ).createObject("Generated prompt for ${userInput.content}")
     }
 
     @Tool
@@ -480,8 +507,11 @@ class OnePromptActionWithToolOnly(
 ) {
 
     @Action(cost = 500.0)
-    fun toPersonWithPrompt(userInput: UserInput): PersonWithReverseTool {
-        return usingDefaultLlm createObject
+    fun toPersonWithPrompt(
+        userInput: UserInput,
+        context: OperationContext,
+    ): PersonWithReverseTool {
+        return context.ai().withDefaultLlm() createObject
                 "Generated prompt for ${userInput.content}"
     }
 
@@ -497,9 +527,10 @@ class FromPersonUsesDomainObjectTools {
 
     @Action
     fun fromPerson(
-        person: PersonWithReverseTool
+        person: PersonWithReverseTool,
+        context: OperationContext,
     ): UserInput {
-        return using().createObject("Create a UserInput")
+        return context.ai().withDefaultLlm().createObject("Create a UserInput")
     }
 }
 
@@ -520,9 +551,10 @@ class FromPersonUsesObjectToolsViaUsing {
 
     @Action
     fun fromPerson(
-        person: PersonWithReverseTool
+        person: PersonWithReverseTool,
+        context: ActionContext,
     ): UserInput {
-        return using(toolObjects = listOf(ToolObject(FunnyTool()))).createObject("Create a UserInput")
+        return context.promptRunner(toolObjects = listOf(ToolObject(FunnyTool()))).createObject("Create a UserInput")
     }
 }
 
@@ -597,7 +629,8 @@ class ToolMethodsOnDomainObjects {
 
     @Action
     fun toFrog(
-        wumpty: Wumpus, person: PersonWithReverseTool,
+        wumpty: Wumpus,
+        person: PersonWithReverseTool,
     ): Frog {
         return Frog(wumpty.name)
     }
@@ -613,7 +646,7 @@ class DefineFlowTest {
     @Action
     fun toFrog(
         userInput: UserInput,
-        context: TransformationActionContext<UserInput, PersonWithReverseTool>
+        context: TransformationActionContext<UserInput, PersonWithReverseTool>,
     ): Frog {
         return chain<UserInput, PersonWithReverseTool, Frog>(
             { PersonWithReverseTool(it.input.content) },
@@ -632,7 +665,10 @@ class DefineFlowTest {
 class LocalAgentTest {
 
     @Action
-    fun toDeadPerson(userInput: UserInput, context: TransformationActionContext<UserInput, SnakeMeal>): SnakeMeal {
+    fun toDeadPerson(
+        userInput: UserInput,
+        context: TransformationActionContext<UserInput, SnakeMeal>,
+    ): SnakeMeal {
         return runAgent<UserInput, SnakeMeal>(evenMoreEvilWizard(), context)
     }
 

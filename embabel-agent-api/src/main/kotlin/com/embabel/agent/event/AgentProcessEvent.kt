@@ -18,6 +18,7 @@ package com.embabel.agent.event
 import com.embabel.agent.core.*
 import com.embabel.agent.spi.LlmInteraction
 import com.embabel.agent.spi.support.springai.ChatModelCallEvent
+import com.embabel.chat.Message
 import com.embabel.common.ai.model.Llm
 import com.embabel.common.ai.model.LlmOptions
 import com.embabel.common.core.types.Timed
@@ -134,9 +135,27 @@ class ToolCallResponseEvent internal constructor(
     override val runningTime: Duration,
 ) : AbstractAgentProcessEvent(request.agentProcess), Timed
 
-class AgentProcessFinishedEvent(
+/**
+ * The agent process has finished.
+ * It may have completed successfully or failed.
+ * Check the status code to determine the outcome.
+ */
+sealed class AgentProcessFinishedEvent(
     agentProcess: AgentProcess,
 ) : AbstractAgentProcessEvent(agentProcess)
+
+class AgentProcessCompletedEvent(
+    agentProcess: AgentProcess,
+) : AgentProcessFinishedEvent(agentProcess) {
+
+    val result: Any
+        get() =
+            agentProcess.lastResult() ?: throw IllegalStateException("Agent process ${agentProcess.id} has no result")
+}
+
+class AgentProcessFailedEvent(
+    agentProcess: AgentProcess,
+) : AgentProcessFinishedEvent(agentProcess)
 
 class AgentProcessWaitingEvent(
     agentProcess: AgentProcess,
@@ -161,7 +180,7 @@ class LlmRequestEvent<O>(
     val outputClass: Class<O>,
     val interaction: LlmInteraction,
     val llm: Llm,
-    val prompt: String,
+    val messages: List<Message>,
 ) : AbstractAgentProcessEvent(agentProcess) {
 
     /**
@@ -173,7 +192,6 @@ class LlmRequestEvent<O>(
             outputClass = outputClass,
             interaction = interaction,
             llm = llm,
-            prompt = prompt,
             springAiPrompt = springAiPrompt
         )
     }
@@ -203,7 +221,7 @@ class LlmRequestEvent<O>(
     }
 
     override fun toString(): String {
-        return "LlmRequestEvent(outputClass=$outputClass, interaction=$interaction, prompt='$prompt')"
+        return "LlmRequestEvent(outputClass=$outputClass, interaction=$interaction, messages=$messages)"
     }
 }
 
@@ -225,6 +243,10 @@ class LlmResponseEvent<O> internal constructor(
     }
 }
 
+/**
+ * An object was bound to the process.
+ * May or may not be found. See subclasses for details.
+ */
 interface ObjectBindingEvent : AgentProcessEvent {
 
     val value: Any
@@ -259,4 +281,12 @@ class ProgressUpdateEvent(
 
 class ProcessKilledEvent(
     agentProcess: AgentProcess,
+) : AbstractAgentProcessEvent(agentProcess)
+
+/**
+ * Any RAG event that occurs within an agent process
+ */
+class AgentProcessRagEvent(
+    agentProcess: AgentProcess,
+    val ragEvent: RagEvent,
 ) : AbstractAgentProcessEvent(agentProcess)

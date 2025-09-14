@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.embabel.agent</groupId>
         <artifactId>embabel-agent-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.3-SNAPSHOT</version>
     </parent>
     <artifactId>embabel-agent-starters</artifactId>
     <packaging>pom</packaging>
     <name>Embabel Agent Starters</name>
     <description>Embabel Agent Starters</description>
+    
     <modules>
         <module>embabel-agent-starter</module>
         <module>embabel-agent-starter-platform</module>
+        <module>embabel-agent-starter-shell</module>
+        <module>embabel-agent-starter-mcpserver</module>
         <module>embabel-agent-starter-bedrock</module>
+        <module>embabel-agent-starter-openai</module>
+        <module>embabel-agent-starter-anthropic</module>
     </modules>
 
 </project>

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.embabel.agent</groupId>
         <artifactId>embabel-agent-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.3-SNAPSHOT</version>
     </parent>
     <artifactId>embabel-agent-docs</artifactId>
     <packaging>jar</packaging>
@@ -80,9 +79,10 @@
                                 <docinfo>shared</docinfo>
                                 <source-highlighter>rouge</source-highlighter>
                                 <icons>font</icons>
-                                <pagenums/>
-                                <toc/>
-                                <idprefix/>
+                                <iconfont-remote>true</iconfont-remote>
+                                <pagenums />
+                                <toc />
+                                <idprefix />
                                 <idseparator>-</idseparator>
                             </attributes>
                         </configuration>
@@ -96,13 +96,16 @@
                         <configuration>
                             <backend>html5</backend>
                             <attributes>
+                                <notitle>true</notitle>
                                 <doctype>book</doctype>
                                 <docinfo>shared</docinfo>
                                 <source-highlighter>rouge</source-highlighter>
                                 <icons>font</icons>
-                                <pagenums/>
+                                <pagenums />
                                 <toc>left</toc>
-                                <idprefix/>
+                                <sectanchors>true</sectanchors>
+                                <toclevels>3</toclevels>
+                                <idprefix />
                                 <idseparator>-</idseparator>
                             </attributes>
                         </configuration>
@@ -125,10 +128,16 @@
                                 <dir>${project.parent.basedir}/embabel-agent-api/src/main/kotlin</dir>
                                 <dir>${project.parent.basedir}/embabel-agent-api/src/main/java</dir>
                                 <dir>${project.parent.basedir}/embabel-agent-a2a/src/main/kotlin</dir>
-                                <dir>${project.parent.basedir}/embabel-agent-autoconfigure/src/main/java</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-code/src/main/kotlin</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-autoconfigure/embabel-agent-platform-autoconfigure/src/main/java</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-autoconfigure/models/embabel-agent-bedrock-autoconfigure/src/main/java</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-autoconfigure/models/embabel-agent-bedrock-autoconfigure/src/main/kotlin</dir>
                                 <dir>${project.parent.basedir}/embabel-agent-eval/src/main/kotlin</dir>
-                                <dir>${project.parent.basedir}/embabel-agent-rag/src/main/kotlin</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-mcpserver/src/main/kotlin</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-rag/embabel-agent-rag-neo/src/main/kotlin</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-rag/embabel-agent-rag-lucene/src/main/kotlin</dir>
                                 <dir>${project.parent.basedir}/embabel-agent-shell/src/main/kotlin</dir>
+                                <dir>${project.parent.basedir}/embabel-agent-discord/src/main/kotlin</dir>
                                 <dir>${project.parent.basedir}/embabel-agent-ux/src/main/kotlin</dir>
                             </sourceDirectories>
                             <samples>
